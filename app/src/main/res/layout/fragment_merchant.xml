@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+    <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#0099cc"
+        tools:context=".ui.merchant.MerchantFragment">
+
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:fitsSystemWindows="true">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical">
+
+                <Button
+                    android:id="@+id/no_recepits"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:background="@drawable/button_shape"
+                    android:text="@string/Number_of_Receipts"
+                    />
+
+                <Button
+                    android:id="@+id/lang_btn"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/button_shape"
+                    android:centerColor="#88B8AD"
+                    android:startColor="#E8E8E8"
+                    android:endColor="#2CA0B1"
+                    android:layout_weight="1"
+                    android:text="Language" />
+
+                <Button
+                    android:id="@+id/claims_btn"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/button_shape"
+                    android:layout_weight="1"
+                    android:text="@string/Claims" />
+
+                <Button
+                    android:id="@+id/change_pass_btn"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:background="@drawable/button_shape"
+                    android:text="@string/changepassword" />
+
+                <Button
+                    android:id="@+id/back_btn"
+                    style="?metaButtonBarButtonStyle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:background="@drawable/button_shape"
+                    android:text="@string/back" />
+            </LinearLayout>
+
+        </FrameLayout>
+
+    </FrameLayout>

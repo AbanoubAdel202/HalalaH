@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/activity_packet_process"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    tools:context="com.standard.app.activity.PacketProcessActivity">
+
+    <ImageView
+        android:id="@+id/rote_image"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginTop="100dp"
+        android:src="@drawable/rote_image"
+        android:visibility="gone"/>
+
+    <TextView
+        android:id="@+id/proc_detail"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="50dp"
+        android:layout_below="@+id/rote_image"
+        android:text="@string/socket_proc_status_ing"
+        android:textSize="30sp"/>
+
+    <TextView
+        android:id="@+id/proc_status"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_below="@+id/proc_detail"
+        android:text="@string/socket_proc_status_conning"
+        android:textSize="25sp"/>
+
+    <TextView
+        android:id="@+id/proc_time"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="10dp"
+        android:layout_below="@+id/proc_status"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="60"
+        android:textSize="30sp" />
+</RelativeLayout>

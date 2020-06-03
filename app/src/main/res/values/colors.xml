@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+
+    <color name="colorAccent">#03DAC5</color>
+    <color name="colorPrimary">#3F51B5</color>
+    <color name="colorPrimaryDark">#303F9F</color>
+
+
+    <color name="btn_background">#f5f5f5</color>
+    <color name="brn_edge">#D6D6D6</color>
+
+    <color name="button_background_normal">#F5F5F5</color>
+    <color name="button_background_pressed">#bababa</color>
+    <color name="button_edge">#D6D6D6</color>
+
+    <color name="flow_background">#f5f5f5</color>
+    <color name="flow_background_edg">#D6D6D6</color>
+
+    <color name="amount_num_color">#FF7718</color>
+    <color name="consume_sucess">#FF7718</color>
+    <color name="home_page_background">#595959</color>
+    <color name="home_page_view_bundle">#484848</color>
+
+    <color name="button_background_consume_normal">#0ba13f</color>
+    <color name="button_background_consume_pressed">#055c1e</color>
+
+    <color name="button_background_scanner_normal">#0c56c4</color>
+    <color name="button_background_scanner_pressed">#083a83</color>
+
+    <color name="button_background_settings_normal">#98b409</color>
+    <color name="button_background_settings_pressed">#536305</color>
+
+    <color name="button_background_sys_settings_normal">#d15a5a</color>
+    <color name="button_background_sys_settings_pressed">#964040</color>
+
+    <color name="button_background_sys_info_normal">#cf8989</color>
+    <color name="button_background_sys_info_pressed">#8b5b5b</color>
+
+    <color name="button_background_prod_test_normal">#e24c07</color>
+    <color name="button_background_prod_test_pressed">#9b3405</color>
+
+    <color name="home_page_text_color">#f5f5f5</color>
+    <color name="qr_code_white">#FFFFFFFF</color>
+    <color name="qr_code_flashlight_bg">#66000000</color>
+    <color name="qr_code_finder_mask">#80000000</color>
+    <color name="qr_code_flash_light_text_color">#66FFFFFF</color>
+    <color name="qr_code_finder_frame">#FFFFFFFF</color>
+    <color name="qr_code_finder_laser">#ef8394</color>
+
+    <color name="black_overlay">#66000000</color>
+</resources>

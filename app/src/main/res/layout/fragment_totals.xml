@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+    <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#0099cc"
+        tools:context=".ui.totals.TotalsFragment">
+
+
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical">
+
+                <Button
+                    android:id="@+id/recon_btn"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:background="@drawable/button_shape"
+                    android:onClick="onClick"
+                    android:clickable="true"
+                    android:text="@string/Reconciliation"
+                    />
+
+                <Button
+                    android:id="@+id/run_tot_btn"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/button_shape"
+                    android:onClick="onClick"
+                    android:clickable="true"
+                    android:layout_weight="1"
+                    android:text="@string/Run_total" />
+
+                <Button
+                    android:id="@+id/Snapshot_btn"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/button_shape"
+                    android:onClick="onClick"
+                    android:clickable="true"
+                    android:layout_weight="1"
+                    android:text="@string/Snapshot" />
+
+                <Button
+                    android:id="@+id/back_btn"
+                    style="?metaButtonBarButtonStyle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:onClick="onClick"
+                    android:clickable="true"
+                    android:layout_weight="1"
+                    android:background="@drawable/button_shape"
+                    android:text="@string/back" />
+            </LinearLayout>
+
+
+
+    </FrameLayout>

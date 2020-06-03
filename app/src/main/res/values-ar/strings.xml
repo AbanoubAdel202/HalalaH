@@ -1,0 +1,307 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="nav_header_title">هلله</string>
+    <string name="nav_header_subtitle">Support@halalah.com</string>
+    <string name="nav_header_desc">Navigation header</string>
+    <string name="action_settings">خصائص</string>
+    <string name="action_Admin">المستخدم الرئيسي</string>
+    <string name="menu_transaction">عمليات</string>
+    <string name="menu_merchant">التاجر</string>
+    <string name="menu_totals">الموازنه</string>
+    <string name="menu_reports">تقارير</string>
+
+    <string name="home_second">Home Second</string>
+    <string name="app_name">هلله</string>
+    <string name="hello_blank_fragment">فارغ</string>
+    <string name="Purchase">شراء</string>
+    <string name="NaQD">نقد</string>
+    <string name="Refund">استرداد</string>
+    <string name="preauthorization">preauthorization</string>
+    <string name="authorization">authorization</string>
+    <string name="Purchase_Advice">Purchase Advice</string>
+    <string name="cash_advance">cash_advance</string>
+    <string name="changepassword">Change password</string>
+    <string name="back">back</string>
+    <string name="Claims">Claims</string>
+    <string name="search_Transaction">Search for Transaction</string>
+    <string name="Mer_rep">Merchant Transaction Report</string>
+    <string name="Reconciliation">Reconciliation</string>
+    <string name="Run_total">runnging Totals</string>
+    <string name="Snapshot">Snapshot</string>
+    <string name="network_settings">network settings</string>
+    <string name="print">Print</string>
+
+    <string name="log_in">LOG IN</string>
+    <string name="log_in_id">ACOUNT NUMBER  </string>
+    <string name="log_in_password">PASSWORD  </string>
+    <string name="log_in_ok">OK</string>
+    <string name="log_in_error_id">Acount number error.</string>
+    <string name="log_in_error_password">Password error.</string>
+
+    <string name="initialize">Initialize</string>
+    <string name="initialize_para_error">Initialize para error</string>
+    <string name="initialize_para_initing">Initializing para......</string>
+    <string name="initialize_init_failed">Initialize is failed</string>
+    <string name="is_exit_app">Is exit app？ </string>
+
+    <string name="warnings">warning</string>
+    <string name="warnings_code">warning code: </string>
+    <string name="warnings_message">warning message: </string>
+    <string name="warnings_message_auth_entication_err">Authentication failed : </string>
+    <string name="warnings_message_device_err">Device exception: </string>
+    <string name="warnings_get_failed">Get failed warnings.</string>
+
+    <string name="title_consume">PURSHASE</string>
+    <string name="flow_scan_pay">Scan Pay</string>
+    <string name="app_settings">Settings</string>
+    <string name="system_settings">Sys Settings</string>
+    <string name="system_informatin">Sys Info</string>
+    <string name="production_inspection">Perform Test</string>
+    <string name="app_not_install_hint">The application is not install!</string>
+
+
+    <string name="amount_input">Input amount</string>
+    <string name="amount_input_tip">Transaction amount :</string>
+    <string name="amount_input_cancle">Cancel</string>
+    <string name="amount_input_search_card">bank card</string>
+    <string name="amount_input_scan">Scan</string>
+    <string name="amount_input_skip">Skip</string>
+
+    <string name="card_num_confirm_no">Card number： </string>
+    <string name="card_num_confirm_ok">OK</string>
+    <string name="card_num_confirm_cancle">Cancel</string>
+
+    <string name="please_input_pin">PASSWORD:</string>
+    <string name="pin_tip_amount">Amount:</string>
+    <string name="pin_tip_card_num">Card Number:</string>
+
+    <string name="scan_error_code">Error code:</string>
+
+    <string name="setting_activity_name">Settings</string>
+
+    <string name="term_para">Merchant And Terminal</string>
+    <string name="merchine_id">Merchant NO.:</string>
+    <string name="merchine_name">Merchant Name:</string>
+    <string name="term_id">Terminal NO.:</string>
+    <string name="term_para_cancle">Cancel</string>
+    <string name="term_para_save">Save</string>
+
+    <string name="communication_para">Communication Para</string>
+    <string name="host_ip_1">Host IP:</string>
+    <string name="host_port_1">Host Port:</string>
+    <string name="host_ip_2">Second IP:</string>
+    <string name="host_port_2">Second Port:</string>
+    <string name="tpdu_value">TPDU:</string>
+    <string name="tip_mer_id_changed_error">The length of merchant number must be 15 </string>
+    <string name="tip_term_id_changed_error">The length of device number must be 8 </string>
+    <string name="communication_para_cancle">Cancel</string>
+    <string name="communication_para_save">Save</string>
+
+    <string name="trad_manager">交易管理设置</string>
+    <string name="trad_is_no_pin">非接是否免密</string>
+    <string name="trad_no_pin_max_amount">免密金额</string>
+    <string name="trad_is_no_sign">非接是否免签</string>
+    <string name="trad_para_cancle">Cancel</string>
+    <string name="trad_para_save">Save</string>
+
+    <string name="online_init">Online Initialization</string>
+    <string name="please_input_secure_password">Secure Password:</string>
+    <string name="input_secure_password_error">Security password error</string>
+    <string name="please_input_init_password">Initial Password:</string>
+    <string name="input_init_password_error">Initial password error</string>
+    <string name="online_init_cancle">Cancel</string>
+    <string name="online_init_ok">Ok</string>
+
+    <string name="ic_capk_para_download">DownLoad IC CAPK and PARA</string>
+    <string name="ic_capk_para_download_success">DownLoad IC card public key and parameters success</string>
+
+    <string name="tmk_tpk_tak_trk_download">DownLoad TMK、TAK、TPK、TRK</string>
+    <string name="tmk_download_succ">DownLoad TMK success</string>
+    <string name="tmk_download_err">DownLoad TMK failed</string>
+    <string name="tak_download_succ">DownLoad TAK success</string>
+    <string name="tak_download_err">DownLoad TAK failed</string>
+    <string name="tpk_download_succ">DownLoad TPK success</string>
+    <string name="tpk_download_err">DownLoad TPK failed</string>
+    <string name="trk_download_succ">DownLoad TRK success</string>
+    <string name="trk_download_err">DownLoad TRK failed</string>
+
+    <string name="other_setting">Other Settings</string>
+    <string name="text_param_trans">Transmit Parameters</string>
+    <string name="text_status_upload">Upload Status</string>
+    <string name="text_sign_up">Sign Up</string>
+    <string name="text_ic_capk_download">DownLoad CAPK</string>
+    <string name="text_ic_para_download">DownLoad PARM</string>
+    <string name="text_echo_test">"Echo Test"</string>
+    <string name="text_consume">"Consume"</string>
+    <string name="text_consume_positive">"Consume positive"</string>
+    <string name="text_scan">"Scan pay"</string>
+
+    <string name="device_info_default">Unkown</string>
+    <string name="device_info_hardware">Hardware information</string>
+    <string name="device_info_vendor">Vendor name: </string>
+    <string name="device_info_model">Device model: </string>
+    <string name="device_info_uniqueCode">Device uniqueCode: </string>
+    <string name="device_info_hardware_ver">Hardware vertion: </string>
+    <string name="device_info_kernel_ver">Kernel vertion: </string>
+    <string name="device_info_rom_ver">ROM vertion: </string>
+    <string name="device_info_firmware_ver">Firmware vertion: </string>
+    <string name="device_info_secure_firmware_ver">Secure firmware vertion: </string>
+    <string name="device_info_ksn">KSN No.: </string>
+    <string name="device_info_imsi">IMSI No.: </string>
+    <string name="device_info_imer">IMEI No.: </string>
+
+    <string name="software_info_software">Software information</string>
+    <string name="software_info_os_version">OS vertion: </string>
+    <string name="software_info_android_version">Android vertion: </string>
+    <string name="software_info_lkl_version">LKL interface vertion: </string>
+    <string name="software_info_lkl_to_android_version">Rules LKL maked to Android vertion:</string>
+    <string name="software_info_app_version">Application vertion: </string>
+
+    <string name="other_info">Others</string>
+    <string name="other_info_save_path">Path to get storage</string>
+    <string name="other_info_sim_iccId">The ICCID of SIM card</string>
+    <string name="other_info_silent_install_app">Install app silently</string>
+    <string name="other_info_set_apn">Set APN</string>
+    <string name="other_info_update_system_time">Update system time</string>
+    <string name="other_info_firmware_upgrade">Firmware upgrade</string>
+    <string name="other_info_firmware_update">Firmware update</string>
+    <string name="other_info_firmware_update_status">Enquiry firmware update status</string>
+    <string name="other_info_reboot">Reboot</string>
+
+    <string name="trans_amount">Transaction amount： ￥</string>
+    <string name="search_card_rf_priority_more">Insertor swip card</string>
+    <string name="search_card_rf"><!--请挥卡\n-->Please put RF card on the device</string>
+    <string name="search_card_ic"><!--请插卡\n-->Please insert IC card to the right of device</string>
+    <string name="search_card_msr"><!--请刷卡\n-->Please swipe card</string>
+
+    <string name="search_card_error_msr_read">Read card failed, please reset card again</string>
+    <string name="search_card_error_msr_is_ic">IC card, please insert card</string>
+    <string name="search_card_error_ic">Read card failed, please swip card</string>
+    <string name="search_card_error_electric_card">This card is electric card, this device is no support electric transaction</string>
+
+    <string name="search_card_trans_result_reject">Transaction refused</string>
+    <string name="search_card_trans_result_stop">Transaction is stoped</string>
+    <string name="search_card_trans_result_fallback">FALLBACK</string>
+    <string name="search_card_trans_result_other_ui">Please use others function</string>
+    <string name="search_card_trans_result_others">Others</string>
+
+    <string name="card_number_input">Card No. Confirm</string>
+    <string name="card_number_confirm_tip">Please confirm your card number</string>
+    <string name="card_number">Card No.：</string>
+    <string name="card_number_amount">Amount：</string>
+    <string name="card_number_cancle">Cancel</string>
+    <string name="card_number_confirm">OK</string>
+
+    <string name="socket_proc_commu">Communication</string>
+    <string name="socket_proc_status_ing">Dealing</string>
+    <string name="socket_proc_status_conning">Connecting, please wait...</string>
+    <string name="socket_proc_status_sending">Sending, please wait...</string>
+    <string name="socket_proc_status_receing">Receiving, please wait...</string>
+    <string name="socket_proc_detail_emv_capk">Enquiring IC capk</string>
+
+    <string name="socket_proc_detail_emv_capk_download_success">IC capk download successfully</string>
+    <string name="socket_proc_detail_emv_capk_download_failed">IC capk download failedly</string>
+    <string name="socket_proc_detail_emv_para">Enquiring IC para</string>
+
+    <string name="socket_proc_detail_emv_para_download_success">IC para download successfully</string>
+    <string name="socket_proc_detail_emv_para_download_failed">IC para download failedly</string>
+
+    <string name="result_error_unkown">Unkown error</string>
+    <string name="result_error_ip_or_port">IP or port error.</string>
+    <string name="result_error_conn">Connect failedly</string>
+    <string name="result_error_send">Send failedly</string>
+    <string name="result_error_rece">Receive failedly</string>
+    <string name="result_error_rece_time_out">Receive timeout</string>
+    <string name="result_sucess">Successful</string>
+    <string name="result_sucess_online_init">Online init successfully</string>
+    <string name="result_failed_online_init">Online init failedly</string>
+    <string name="result_sucess_sign_up">Sign up successfully</string>
+    <string name="result_failed_sign_up">Sign up failedly</string>
+    <string name="result_sucess_para_trans">Para translation successful</string>
+    <string name="result_sucess_status_upload">Status upload successful</string>
+    <string name="result_sucess_consume">Transaction Successful</string>
+    <string name="result_sucess_consume_positive">Consume positive successful</string>
+    <string name="result_sucess_consume_amount">Transaction Amount</string>
+    <string name="result_sucess_consume_type">Transaction Type:</string>
+    <string name="result_sucess_consume_cardnum">Card No.:</string>
+    <string name="result_sucess_consume_vouchernum">Voucher No.:</string>
+    <string name="result_sucess_consume_referencenum">Reference No.:</string>
+    <string name="result_sucess_consume_operatornum">Operator No.:</string>
+    <string name="result_sucess_consume_time">Transaction Time:</string>
+
+    <string name="result_sucess_scan">Consume Successfully</string>
+    <string name="result_sucess_scan_amount">Consume Amount:</string>
+    <string name="result_sucess_scan_type">Consume Type:</string>
+    <string name="result_sucess_scan_pay_num">Pay Account:</string>
+    <string name="result_sucess_scan_trad_num">Transaction No.:</string>
+    <string name="result_sucess_scan_referencenum">Referencen No.:</string>
+    <string name="result_sucess_scan_operatornum">Operationer:</string>
+    <string name="result_sucess_scan_time">Transation Time:</string>
+
+    <string name="result_exit">Exit</string>
+    <string name="result_print">Print</string>
+    <string name="result_print_more">Is print merchant and bank.</string>
+    <string name="result_print_success">Print successfully！</string>
+    <string name="result_need_paper">Please put in paper and go on！</string>
+    <string name="result_check_paper">Please check is there any paper！</string>
+    <string name="result_remove_ic_card">Please remove ic card</string>
+    <string name="result_dialog_ok">OK</string>
+    <string name="result_dialog_cancle">Cancel</string>
+
+    <string name="dialog_cancle">Cancel</string>
+    <string name="dialog_ok">Ok</string>
+    <string name="init_again">Initialize again.</string>
+
+    <string name="print_purchase_order">POS Purchase Order</string>
+    <string name="print_transaction_documents">===Print Transaction Documents===</string>
+    <string name="print_version">Version:140429</string>
+    <string name="print_business_name">Business Name:Jinxian stores—test3</string>
+    <string name="print_business_number">Business No:990605055336000</string>
+    <string name="print_terminal_number">Terminal No:00000008 Operator:01</string>
+    <string name="print_acquirer">Acquirer:48210001</string>
+    <string name="print_card_number">Card No:</string>
+    <string name="print_transaction_type">Transaction Type:Consumption</string>
+    <string name="print_validity">Validity:20/12 Batch No:000001</string>
+    <string name="print_document_number">Document No:000031 Authorization No:204001</string>
+    <string name="print_reference_no">Reference No:153530205002</string>
+    <string name="print_time">Time:</string>
+    <string name="print_amount">Amount:</string>
+    <string name="print_dotted_line">--------------------------------</string>
+    <string name="print_ticket_number">Ticket No:111703370000009862 B</string>
+    <string name="print_cardholder_signature">Cardholder Signature:</string>
+    <string name="print_confirm_transaction">I ACKNOWLEDGE SATISFACTORY RECEIPT OF RELATIVE GOODS/SERVICES</string>
+
+    <string name="print_ticket_number_scan">Ticket No:111703370000013969</string>
+    <string name="print_reference_no_scan">Reference No:0516432598</string>
+    <string name="print_transaction_type_scan">Transaction Type:Scan pay</string>
+    <string name="print_no_password_scan">No Password, No Signature Required</string>
+    <string name="print_notice_scan">Note: Payment is successful, Please note that changes in funds</string>
+    <string name="import_key">Import Key</string>
+    <string name="app_version">App Version</string>
+    <string name="qr_code_auto_scan_notification">Please put the two-dimensional code into the box</string>
+
+
+
+    <string name="qr_code_camera_not_open">camera no open</string>
+    <string name="qr_code_positive_button_know">ok </string>
+    <string name="qr_code_positive_button_confirm">confirm</string>
+    <string name="qr_code_could_not_read_qr_code_from_picture">try another picture</string>
+    <string name="qr_code_could_not_read_qr_code_from_scanner">can not get the conntext</string>
+    <string name="qr_code_camera_not_found">no camera</string>
+
+    <string name="qr_code_open_flash_light">打开闪光灯</string>
+    <string name="qr_code_close_flash_light">关闭闪光灯</string>
+    <string name="qr_code_notification">Scan the code</string>
+    <string name="pay_app_error">Error</string>
+    <string name="pay_app_para_set_error">Setting Error</string>
+    <string name="qc_code_close">关闭扫码</string>
+    <string name="System_Admin_Menu">System Admin Menu</string>
+    <string name="title_activity_network_settings">Network Settings</string>
+    <string name="title_activity_lang">Language</string>
+    <string name="title_activity_trxreport">Transaction Report</string>
+    <string name="title_activity_search__trx">Search Transaction</string>
+    <string name="title_activity_hosttransaction">Host Transaction</string>
+</resources>

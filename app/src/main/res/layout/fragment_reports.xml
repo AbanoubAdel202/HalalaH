@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ui.reports.Reports">
+
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <Button
+            android:id="@+id/disp_host_trx_btn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="@drawable/btn2"
+            android:text="@string/display_host_transaction" />
+
+        <Button
+            android:id="@+id/searchtrx_btn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/btn1"
+            android:layout_weight="1"
+            android:text="@string/search_Transaction" />
+
+        <Button
+            android:id="@+id/mer_report_btn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/btn2"
+            android:layout_weight="1"
+            android:text="@string/Mer_rep" />
+
+        <Button
+            android:id="@+id/back_btn"
+            style="?metaButtonBarButtonStyle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="@drawable/btn3"
+            android:text="@string/back" />
+
+
+    </LinearLayout>
+
+</FrameLayout>
+

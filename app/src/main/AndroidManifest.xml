@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    package="com.example.halalah">
+
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" /> <!-- 1、设置打印机权限 -->
+    <uses-permission android:name="android.permission.CLOUDPOS_PRINTER" /> <!-- 2、访问密码键盘权限 -->
+    <uses-permission android:name="android.permission.CLOUDPOS_PINPAD" /> <!-- 3、密码键盘计算Pinblock权限 -->
+    <uses-permission android:name="android.permission.CLOUDPOS_PINPAD_PIN_BLOCK" /> <!-- 4、密码键盘计算Mac权限 -->
+    <uses-permission android:name="android.permission.CLOUDPOS_PINPAD_PIN_MAC" /> <!-- 5、密码键盘加密数据权限 -->
+    <uses-permission android:name="android.permission.CLOUDPOS_PINPAD_ENCRYPT_DATA" /> <!-- 6、密码键盘更新终端主密钥权限 -->
+    <uses-permission android:name="android.permission.CLOUDPOS_PINPAD_UPDATE_MKEY" /> <!-- 7、密码键盘更新⼯作密钥权限 -->
+    <uses-permission android:name="android.permission.CLOUDPOS_PINPAD_UPDATE_WKEY" /> <!-- 8、访问接触式IC卡读卡设备权限 -->
+    <uses-permission android:name="android.permission.CLOUDPOS_ICCARD" /> <!-- 9、访问EMV权限 -->
+    <uses-permission android:name="android.permission.CLOUDPOS_EMVL2" /> <!-- 10、访问⾮接触IC卡读卡设备权限 -->
+    <uses-permission android:name="android.permission.CLOUDPOS_RFCARD" /> <!-- 11、访问磁条卡读卡器设备权限 -->
+    <uses-permission android:name="android.permission.CLOUDPOS_MAGCARD" /> <!-- 12、获取磁道明⽂接⼜权限 -->
+    <uses-permission android:name="android.permission.CLOUDPOS_MAGCARD_GETTRACKDATA" /> <!-- 13、获取磁道密⽂数据接⼜权限 -->
+    <uses-permission android:name="android.permission.CLOUDPOS_MAGCARD_GETENCRYPTTRACKDATA" /> <!-- 14、访问PSAM卡设备权限 -->
+    <uses-permission android:name="android.permission.CLOUDPOS_PSAMCARD" /> <!-- 15、访问串⼜设备权限 -->
+    <uses-permission android:name="android.permission.CLOUDPOS_SERIALPORT" /> <!-- 16、访问系统设备权限 -->
+    <uses-permission android:name="android.permission.CLOUDPOS_SYSTEMDEV" /> <!-- 17、设置系统时钟权限 -->
+    <uses-permission android:name="android.permission.CLOUDPOS_SYSTEMDEV_ALARM" /> <!-- 18、访问静默安装权限 -->
+    <uses-permission android:name="android.permission.CLOUDPOS_SYSTEMDEV_INSTALL" /> <!-- 19、更新终端OS、驱动权限 -->
+    <uses-permission android:name="android.permission.CLOUDPOS_SYSTEMDEV_OS_UPDATE" /> <!-- 20、ShellMonitor权限 -->
+    <uses-permission android:name="android.permission.CLOUDPOS_SHELLMONITORDEV" /> <!-- 21、接触式CPUCard读卡设备权限 -->
+    <uses-permission android:name="android.permission.CLOUDPOS_CPUCARD" /> <!-- 22、收银机设备权限 -->
+    <uses-permission android:name="android.permission.CLOUDPOS_CASHER" />
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.INTERNET" /> <!-- 往SDCard写入数据权限 -->
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" /> <!-- 在SDCard中创建与删除文件权限 -->
+    <uses-permission android:name="android.permission.MOUNT_UNMOUNT_FILESYSTEMS"
+        tools:ignore="ProtectedPermissions" />
+
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+
+    <application
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/AppTheme"
+        android:name=".PosApplication"
+
+        >
+        <activity
+            android:name=".network_settings"
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:label="@string/title_activity_network_settings"
+            android:theme="@style/FullscreenTheme"></activity>
+        <activity
+            android:name=".snapshot"
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:label="@string/title_activity_snapshot"
+            android:theme="@style/FullscreenTheme" />
+        <activity
+            android:name=".running_totals"
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:label="@string/title_activity_running_totals"
+            android:theme="@style/FullscreenTheme" />
+        <activity
+            android:name=".reconciliation"
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:label="@string/title_activity_reconciliation"
+            android:theme="@style/FullscreenTheme" />
+        <activity
+            android:name=".change_pass"
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:label="@string/title_activity_change_pass"
+            android:theme="@style/FullscreenTheme" />
+        <activity
+            android:name=".claims"
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:label="@string/title_activity_claims"
+            android:theme="@style/FullscreenTheme" />
+        <activity
+            android:name=".lang"
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:label="@string/title_activity_lang"
+            android:theme="@style/FullscreenTheme" />
+        <activity
+            android:name=".Trxreport"
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:label="@string/title_activity_trxreport"
+            android:theme="@style/FullscreenTheme" />
+        <activity
+            android:name=".search_Trx"
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:label="@string/title_activity_search__trx"
+            android:theme="@style/FullscreenTheme" />
+        <activity
+            android:name=".hosttransaction"
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:label="@string/title_activity_hosttransaction"
+            android:theme="@style/FullscreenTheme" />
+        <activity
+            android:name=".ildescreenActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:label="@string/title_activity_ildescreen"
+            android:theme="@style/FullscreenTheme" />
+        <activity
+            android:name=".ui.AmountInputActivity"
+            android:label="@string/amount_input" />
+        <activity android:name=".ui.SearchCardActivity" />
+        <activity android:name=".ui.PinpadActivity" />
+        <activity android:name=".ui.PacketProcessActivity" />
+        <activity android:name=".ui.ConsumeSuccessActivity"/>
+        <activity android:name=".ui.CardConfirmActivity" />
+        <activity android:name=".ui.admin_settings.SuperAdminActivity"/>
+        <activity android:name=".ui.admin_settings.OthersSettingActivity"/>
+        <activity android:name=".ui.admin_settings.CommunicationSettingActivity"/>
+        <activity android:name=".ui.admin_settings.ImportKeyActivity"/>
+        
+        <activity
+            android:name=".MainActivity"
+            android:label="@string/app_name"
+            android:theme="@style/AppTheme.NoActionBar">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+                <category android:name="android.intent.category.HOME" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+
+            <meta-data
+                android:name="default_launcher_flag"
+                android:value="yes" />
+        </activity>
+
+        <service
+            android:name=".card.CardMoniterService"
+            android:enabled="true" />
+
+    </application>
+
+</manifest>

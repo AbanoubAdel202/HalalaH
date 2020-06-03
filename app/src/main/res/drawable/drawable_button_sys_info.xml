@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android" >
+    <item android:state_pressed="true">
+        <shape xmlns:android="http://schemas.android.com/apk/res/android" >
+            <solid android:color="@color/button_background_sys_settings_pressed"/>
+            <stroke android:color="@color/home_page_view_bundle" android:width="1dp"></stroke>
+            <corners android:radius="6dp"></corners>
+        </shape>
+    </item>
+    <item>
+        <shape xmlns:android="http://schemas.android.com/apk/res/android" >
+            <solid android:color="@color/button_background_sys_settings_normal"/>
+            <stroke android:color="@color/home_page_view_bundle" android:width="1dp"></stroke>
+            <corners android:radius="6dp"></corners>
+        </shape>
+    </item>
+</selector>
