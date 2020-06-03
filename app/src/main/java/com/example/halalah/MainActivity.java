@@ -185,8 +185,8 @@ public class MainActivity extends AppCompatActivity {
                 String success = "";
                 String fail = "";
                 // 获取IC卡参数信息
-//                mPbocManager.updateAID(0x03, null);
-//                mPbocManager.updateCAPK(0x03, null);
+                mPbocManager.updateAID(0x03, null);
+                mPbocManager.updateCAPK(0x03, null);
 
                 InputStream ins = this.getAssets().open("icparam/ic_param.txt");
                 if (ins != null && ins.available() != 0x00) {
