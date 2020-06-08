@@ -84,7 +84,7 @@ public class POS_MAIN {
                 break;
 
             case CASH_ADVANCE://CASH_ADVANCE:
-                //todo startcash advance
+                //todo start cash advance
                 break;
             case REVERSAL://REVERSAL:
                 //todo check and do reversal
