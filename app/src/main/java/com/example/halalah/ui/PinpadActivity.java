@@ -256,7 +256,9 @@ public class PinpadActivity extends Activity {
                 }
             }
             Log.d(TAG, "isOnline: " + isOnline);
-            PosApplication.getApp().oGPosTransaction.m_sTrxPIN=new String(pin);
+            if(pin!=null) {
+                PosApplication.getApp().oGPosTransaction.m_sTrxPIN = new String(pin);
+            }
             if (isOnline) {
                 //socket通信
                 Bundle bundle = new Bundle();

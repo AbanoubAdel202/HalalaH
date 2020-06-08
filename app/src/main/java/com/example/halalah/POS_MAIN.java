@@ -1,17 +1,10 @@
 package com.example.halalah;
 
-import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
-import android.widget.Switch;
-import android.widget.Toast;
 
-import com.example.halalah.POSTransaction;
-import com.example.halalah.iso8583.BCDASCII;
-import com.example.halalah.iso8583.ISO8583;
+import com.example.halalah.TMS.SAMA_TMS;
 import com.example.halalah.ui.AmountInputActivity;
-
-import java.util.Arrays;
 
 /** Header POS Main
  \Class Name: POS_MAIN
@@ -45,16 +38,21 @@ public class POS_MAIN {
             POSTransaction oReversal_Trx = null;
             perform_reversal(oPos_trans,oReversal_Trx);
         }
+        Intent AmountACT;
         switch(Trxtype)
         {
             case PURCHASE://purchase
 
                 //get amount
-                Intent AmountACT = new Intent(mcontext, AmountInputActivity.class);
+                AmountACT= new Intent(mcontext, AmountInputActivity.class);
+                AmountACT.putExtra("transaction Type",Trxtype);
                 mcontext.startActivity(AmountACT);
                 break;
             case PURCHASE_WITH_NAQD://PURCHASE_WITH_NAQD
-
+                //get amount
+                 AmountACT = new Intent(mcontext, AmountInputActivity.class);
+                 AmountACT.putExtra("transaction Type",Trxtype);
+                mcontext.startActivity(AmountACT);
 
                 break;
             case REFUND://REFUND
@@ -65,8 +63,17 @@ public class POS_MAIN {
 
                 break;
             case AUTHORISATION://AUTHORISATION:
+                //get amount
+                AmountACT = new Intent(mcontext, AmountInputActivity.class);
+                AmountACT.putExtra("transaction Type",Trxtype);
+                mcontext.startActivity(AmountACT);
+
                 break;
             case AUTHORISATION_ADVICE://AUTHORISATION_ADVICE:
+                //get amount
+                AmountACT = new Intent(mcontext, AmountInputActivity.class);
+                AmountACT.putExtra("transaction Type",Trxtype);
+                mcontext.startActivity(AmountACT);
                 break;
             case AUTHORISATION_VOID://AUTHORISATION_VOID:
                 break;
@@ -81,6 +88,7 @@ public class POS_MAIN {
                 break;
             case REVERSAL://REVERSAL:
                 //todo check and do reversal
+
                 break;
             case SADAD_BILL://SADAD_BILL:
                 //todo  sadad
@@ -139,6 +147,104 @@ public class POS_MAIN {
     {
         return true;
     }
+
+    public static int Recognise_card(){
+            if(PosApplication.getApp().oGPosTransaction.m_enmTrxCardType==POSTransaction.CardType.MANUAL)
+            {
+                SAMA_TMS.Get_card_scheme_BY_PAN(PosApplication.getApp().oGPosTransaction.m_sPAN);
+            }
+               SAMA_TMS.Get_card_scheme_BY_AID(PosApplication.getApp().oGPosTransaction.m_sAID);
+
+           return 0;
+
+    }
+
+    /** Header  Check_transaction_allowed
+     \function Name: Check_transaction_allowed
+     \Param  : Transaction Type
+     \Return : boolean Transaction allowed or not
+     \Pre    :
+     \Post   :
+     \Author	: Mostafa Hussiny
+     \DT		: 6/7/2020
+     \Des    : check transaction allowed flag for each transaction
+     */
+    public static boolean Check_transaction_allowed(POSTransaction.TranscationType Trxtype) {
+
+            //note : Pre-authorization (includes PreAuthorization Extension), Purchase Advice (for Pre-Authorization Capture or Completion )
+            // and Correction/Reversal (including PreAuthorization Void/Partial Void)
+            // shall be configured for the mada scheme for POS terminals that support the Pre-Authorization and Capture service
+
+        switch (Trxtype) {
+            case PURCHASE://purchase  offset 0
+                if ("1".equals(PosApplication.getApp().oGPosTransaction.card_scheme.m_sTransactions_Allowed.charAt(0)))
+                return true;
+                break;
+            case PURCHASE_WITH_NAQD://PURCHASE_WITH_NAQD                                 offset 1
+                if ("1".equals(PosApplication.getApp().oGPosTransaction.card_scheme.m_sTransactions_Allowed.charAt(1)))
+                return true;
+                break;
+            case PURCHASE_ADVICE://PURCHASE_ADVICE:                                      offset 2
+            case AUTHORISATION_ADVICE://AUTHORISATION_ADVICE:
+                if ("1".equals(PosApplication.getApp().oGPosTransaction.card_scheme.m_sTransactions_Allowed.charAt(2)))
+                return true;
+                break;
+            case REFUND://REFUND                                                         offset 3
+                if ("1".equals(PosApplication.getApp().oGPosTransaction.card_scheme.m_sTransactions_Allowed.charAt(3)))
+                return true;
+                break;
+            case AUTHORISATION://AUTHORISATION:                                          offset 4
+                if ("1".equals(PosApplication.getApp().oGPosTransaction.card_scheme.m_sTransactions_Allowed.charAt(4)))
+                return true;
+                break;
+            case CASH_ADVANCE://CASH_ADVANCE:                                            offset 5
+                if ("1".equals(PosApplication.getApp().oGPosTransaction.card_scheme.m_sTransactions_Allowed.charAt(5)))
+                return true;
+                break;
+            case REVERSAL://REVERSAL:                                                    offset 6
+                if ("1".equals(PosApplication.getApp().oGPosTransaction.card_scheme.m_sTransactions_Allowed.charAt(6)))
+                return true;
+                break;
+            case AUTHORISATION_EXTENSION://AUTHORISATION_EXTENSION                       offset 7
+                if ("1".equals(PosApplication.getApp().oGPosTransaction.card_scheme.m_sTransactions_Allowed.charAt(7)))
+                return true;
+                break;
+            case AUTHORISATION_VOID://AUTHORISATION_VOID:                                offset 8
+                if ("1".equals(PosApplication.getApp().oGPosTransaction.card_scheme.m_sTransactions_Allowed.charAt(8)))
+                return true;
+                break;
+            case SADAD_BILL://SADAD_BILL:                                                offset 9
+                if ("1".equals(PosApplication.getApp().oGPosTransaction.card_scheme.m_sTransactions_Allowed.charAt(9)))
+                return true;
+                break;
+
+
+        }
+        return false;  // transaction not allowed
+    }
+    public static int Check_transaction_limits()
+    {
+
+        return 0;
+    }
+    public boolean Check_manual_allowed()
+    {
+        if(PosApplication.getApp().oGPosTransaction.card_scheme.m_sManual_entry_allowed=="1")
+            return true;
+        else
+            return false;
+    }
+    public int Check_max_cashback(int cashbackamount)
+    {
+        return 0;
+    }
+
+    public static boolean Check_MADA_Card()
+    {
+      //  if()
+        return true;
+    }
+
 }
 
 

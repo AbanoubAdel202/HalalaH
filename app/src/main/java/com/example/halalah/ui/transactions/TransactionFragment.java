@@ -69,27 +69,31 @@ public class TransactionFragment extends Fragment implements View.OnClickListene
         {
             case R.id.Mada_btn:
                 Toast.makeText(getContext(),R.string.Purchase,Toast.LENGTH_LONG).show();
-
+                PosApplication.getApp().oGPosTransaction.m_enmTrxType=POSTransaction.TranscationType.PURCHASE;
                 oPos_main.Start_Transaction(oPostransaction, POSTransaction.TranscationType.PURCHASE);
                 break;
             case R.id.Naqd_btn:
                 Toast.makeText(getContext(),R.string.NaQD,Toast.LENGTH_LONG).show();
+                PosApplication.getApp().oGPosTransaction.m_enmTrxType=POSTransaction.TranscationType.PURCHASE_WITH_NAQD;
                 oPos_main.Start_Transaction(oPostransaction,POSTransaction.TranscationType.PURCHASE_WITH_NAQD);
                 break;
             case R.id.authorization_btn: // authorization transaction
-
+                PosApplication.getApp().oGPosTransaction.m_enmTrxType=POSTransaction.TranscationType.AUTHORISATION;
                 oPos_main.Start_Transaction(oPostransaction,POSTransaction.TranscationType.AUTHORISATION);
                 break;
             case R.id.preauthorization_btn:
 
+                PosApplication.getApp().oGPosTransaction.m_enmTrxType=POSTransaction.TranscationType.AUTHORISATION_ADVICE;
                 oPos_main.Start_Transaction(oPostransaction,POSTransaction.TranscationType.AUTHORISATION_ADVICE);
                 break;
             case R.id.Purchase_advice_btn:
-                //POS_transaction(purchase_advice)
+
+                PosApplication.getApp().oGPosTransaction.m_enmTrxType=POSTransaction.TranscationType.PURCHASE_ADVICE;
                 oPos_main.Start_Transaction(oPostransaction,POSTransaction.TranscationType.PURCHASE_ADVICE);
                 break;
             case R.id.cash_advance_btn:
                 //POS_transaction(cash_advance)
+                PosApplication.getApp().oGPosTransaction.m_enmTrxType=POSTransaction.TranscationType.CASH_ADVANCE;
                 oPos_main.Start_Transaction(oPostransaction,POSTransaction.TranscationType.CASH_ADVANCE);
                 break;
 

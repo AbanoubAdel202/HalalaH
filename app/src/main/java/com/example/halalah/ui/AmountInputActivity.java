@@ -25,9 +25,12 @@ public class AmountInputActivity extends Activity implements View.OnClickListene
     private static final int MSG_TIME_UPDATE = 100;
 
     private TextView mTextAmount;
+    private TextView mTextAmount2;
     private Button mBtnConfirm;
     private StringBuilder mAmountBuilder;
     private StringBuilder mAmount;
+    private StringBuilder mNAQD_Amount;
+
 
     private int mTime = 30;
 
@@ -41,11 +44,33 @@ public class AmountInputActivity extends Activity implements View.OnClickListene
         actionBar.setTitle(R.string.title_consume);*/
         mBtnConfirm = (Button) findViewById(R.id.btn_search_card);
         mTextAmount = (TextView) findViewById(R.id.edit_amount);
+        mTextAmount2 = (TextView) findViewById(R.id.edit_naqd_amount);
 
         mAmountBuilder = new StringBuilder("R");
 
         mBtnConfirm.setText(R.string.amount_input_search_card);
         mHandle.sendEmptyMessage(MSG_TIME_UPDATE);
+
+        if( PosApplication.getApp().oGPosTransaction.m_enmTrxType== POSTransaction.TranscationType.PURCHASE
+                ||PosApplication.getApp().oGPosTransaction.m_enmTrxType== POSTransaction.TranscationType.AUTHORISATION
+                ||PosApplication.getApp().oGPosTransaction.m_enmTrxType==POSTransaction.TranscationType.AUTHORISATION_ADVICE
+                ||PosApplication.getApp().oGPosTransaction.m_enmTrxType==POSTransaction.TranscationType.PURCHASE_ADVICE) {
+
+
+        }
+         else if (PosApplication.getApp().oGPosTransaction.m_enmTrxType== POSTransaction.TranscationType.PURCHASE_WITH_NAQD)
+        {
+           // todo show naqd amount
+
+
+        }
+        else if (PosApplication.getApp().oGPosTransaction.m_enmTrxType== POSTransaction.TranscationType.REFUND) {
+
+            //TODO show RRN and other DATA activity
+        }
+        else{
+
+        }
     }
 
     private Handler mHandle = new Handler() {
@@ -113,21 +138,23 @@ public class AmountInputActivity extends Activity implements View.OnClickListene
                 finish();
                 break;
             case R.id.btn_search_card:
-                //todo : mostafa to return to POS_main with AMount using callback
+
                 String sAmount=mAmount.substring(1);
 
 
-                    PosApplication.getApp().oGPosTransaction.m_sTrxAmount=sAmount;
+                    PosApplication.getApp().oGPosTransaction.m_sTrxAmount = sAmount;
+
                     try {
                         Intent intent = new Intent(this, SearchCardActivity.class);
                         startActivity(intent);
+                    } catch (Exception e) {
+                        Log.i(TAG, e.toString());
                     }
-                     catch (Exception e)
-                                {
-                                    Log.i(TAG,  e.toString());
-                                }
 
-               finish();
+
+
+                    finish();
+
             default:
                 break;
         }

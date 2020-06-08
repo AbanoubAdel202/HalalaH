@@ -65,6 +65,7 @@ public class MainActivity extends AppCompatActivity {
         date.setText(s);
         CharSequence t = DateFormat.format("HH:MM",d.getTime());
         time.setText(t);
+
         PosApplication.getApp().getDeviceManager();
 
         // Mostafa 21/4/2020 added to remove bars for full screen application
@@ -98,7 +99,8 @@ public class MainActivity extends AppCompatActivity {
 
 
         Terminal_Initialization();
-        StartMADA_APP();
+            //StartMADA_APP();
+
     }
 
     @Override
@@ -117,6 +119,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
+        PosApplication.getApp().oGPosTransaction.Reset();
         Intent returnhome = new Intent(this,Fragment_home_Transaction.class);
 
         startActivity(returnhome);
@@ -133,7 +136,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-
+        PosApplication.getApp().oGPosTransaction.Reset();
         AidlLed mAidlLed = DeviceTopUsdkServiceManager.getInstance().getLedManager();
         try {
             if(mAidlLed != null){
@@ -144,7 +147,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void Terminal_Initialization(){
+    private boolean Terminal_Initialization(){
 
         // todo Terminal initialization
                 //check hardware();
@@ -169,13 +172,13 @@ public class MainActivity extends AppCompatActivity {
             }
         }).start();
 
-
+return true;
 
 
 
     }
-    private void downLoadParM(){
-        AidlPboc mPbocManager = DeviceTopUsdkServiceManager.getInstance().getPbocManager();
+    private boolean downLoadParM(){
+      AidlPboc mPbocManager = DeviceTopUsdkServiceManager.getInstance().getPbocManager();
         try {
             //Read the IC card parameter configuration file under assert and load the relevant parameters into the EMV kernel
             try {
@@ -185,8 +188,8 @@ public class MainActivity extends AppCompatActivity {
                 String success = "";
                 String fail = "";
                 // 获取IC卡参数信息
-                mPbocManager.updateAID(0x03, null);
-                mPbocManager.updateCAPK(0x03, null);
+                  mPbocManager.updateAID(0x03, null);
+                  mPbocManager.updateCAPK(0x03, null);
 
                 InputStream ins = this.getAssets().open("icparam/ic_param.txt");
                 if (ins != null && ins.available() != 0x00) {
@@ -213,11 +216,11 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace();
         }
 
-
+        return true;
     }
 
 
-    private void downLoadKeys(){
+    private boolean downLoadKeys(){
 
         final AidlPinpad pinpadManager = DeviceTopUsdkServiceManager.getInstance().getPinpadManager(0);
         final byte[] tmk = BCDASCII.hexStringToBytes("89F8B0FDA2F2896B9801F131D32F986D89F8B0FDA2F2896B");
@@ -238,7 +241,7 @@ public class MainActivity extends AppCompatActivity {
         } catch (RemoteException e) {
             e.printStackTrace();
         }
-
+    return true;
     }
 
 

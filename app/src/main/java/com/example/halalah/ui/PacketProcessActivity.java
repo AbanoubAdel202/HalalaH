@@ -68,7 +68,7 @@ public class PacketProcessActivity extends Activity {
 
         mCommunicationInfo = new CommunicationInfo(this);
 
-        mPackPacket = new PackPacket(this, mCommunicationInfo.getTPDU());
+        mPackPacket = new PackPacket(this, mCommunicationInfo.getTPDU()); //todo add TPDU to message
         mUnpackPacket = new UnpackPacket(this, mProcType);
 
 

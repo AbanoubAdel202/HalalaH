@@ -6,6 +6,7 @@ import android.os.RemoteException;
 import android.util.Log;
 
 import com.example.halalah.DeviceTopUsdkServiceManager;
+import com.example.halalah.POS_MAIN;
 import com.example.halalah.PosApplication;
 import com.example.halalah.Utils;
 
@@ -39,13 +40,19 @@ public class ICPbocStartListenerSub extends AidlPbocStartListener.Stub {
     @Override
     public void finalAidSelect() throws RemoteException {
 
-       /* mPbocManager.setTlv("9f1a","0360".getBytes());
-        mPbocManager.setTlv("5f2a","0360".getBytes());
-        mPbocManager.setTlv("9f3c","0360".getBytes());*/
-
         mPbocManager.setTlv("9F1A", BCDASCII.hexStringToBytes("0682"));
         mPbocManager.setTlv("5F2A", BCDASCII.hexStringToBytes("0682"));
         mPbocManager.setTlv("9f3c", BCDASCII.hexStringToBytes("0682"));
+
+        //todo AID supported or not
+
+        byte[] bAIDs;
+        String[] AIDs = new String[]{"9F06"};
+        bAIDs= getTlv(AIDs);
+
+        POS_MAIN.Recognise_card();
+        POS_MAIN.Check_transaction_allowed(PosApplication.getApp().oGPosTransaction.m_enmTrxType);
+        POS_MAIN.Check_transaction_limits();
 
 
 
@@ -58,10 +65,6 @@ public class ICPbocStartListenerSub extends AidlPbocStartListener.Stub {
     @Override
     public void requestImportAmount(int type) throws RemoteException {
         Log.d(TAG, "requestImportAmount(), type: " + type);
-
-        /*String s = "0840";
-        mPbocManager.setTlv("9F1A", BCDASCII.hexStringToBytes(s));
-        mPbocManager.setTlv("5F2A", BCDASCII.hexStringToBytes(s));*/
 
         boolean isSuccess = mPbocManager.importAmount(PosApplication.getApp().oGPosTransaction.m_sTrxAmount);
         Log.d(TAG, "isSuccess() : " + isSuccess);
@@ -81,8 +84,26 @@ public class ICPbocStartListenerSub extends AidlPbocStartListener.Stub {
     @Override
     public void requestAidSelect(int times, String[] aids) throws RemoteException {
         Log.d(TAG, "requestAidSelect(), times: " + times + ", aids.length = " + aids.length);
+     int iAID_Index=0;
 
-        boolean isSuccess = mPbocManager.importAidSelectRes(1);
+       //auto selection for mada
+        if(PosApplication.getApp().oGTerminal_Operation_Data.Mada_Auto_Selection==1)
+        {
+            for(int index=0 ;index<aids.length;index++)
+            {
+                if (aids[index].contains("mada"))
+                    iAID_Index=index+1;
+            }
+
+        }
+        else
+        {
+               // show selection
+                //todo AID ACtivity selection and return AID selected index or it's value
+                iAID_Index=1;
+        }
+
+        boolean isSuccess = mPbocManager.importAidSelectRes(iAID_Index);
         Log.d(TAG, "isSuccess() : " + isSuccess);
     }
 
@@ -108,9 +129,13 @@ public class ICPbocStartListenerSub extends AidlPbocStartListener.Stub {
 
        // isEcCard();
 
+
+
+
         PosApplication.getApp().oGPosTransaction.m_iCardType=ConsumeData.CARD_TYPE_IC;
         PosApplication.getApp().oGPosTransaction.m_sPAN=cardno;
-        CardManager.getInstance().startActivity(mContext, null, CardConfirmActivity.class);
+        //CardManager.getInstance().startActivity(mContext, null, CardConfirmActivity.class);
+        CardManager.getInstance().setConfirmCardInfo(true);
     }
 
     /**

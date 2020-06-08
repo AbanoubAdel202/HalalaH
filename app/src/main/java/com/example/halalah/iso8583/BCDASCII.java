@@ -172,7 +172,7 @@ public class BCDASCII {
      * @param asciiBuf, ASCII编码缓冲区
      * @param asciiOffset, ASCII编码缓冲区的起始偏移
      * @param asciiLen, 采用ASCII编码时的信息长度
-     * @param rightAlign, 奇数个ASCII码时采用的右对齐方式标志
+     * @param rightAlignFlag, 奇数个ASCII码时采用的右对齐方式标志
      * @return, ASCII编码缓冲区
      */
     public static void fromBCDToASCII(byte[] bcdBuf, int bcdOffset, byte[] asciiBuf, int asciiOffset, int asciiLen,

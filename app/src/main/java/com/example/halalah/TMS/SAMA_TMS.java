@@ -273,7 +273,7 @@ public class SAMA_TMS implements Serializable
         char FS='';// field seperator  1C
 
         public SAMA_TMS()
-        {   retailer_data= new Retailer_Data();
+        {   retailer_data=new Retailer_Data();
             card_scheme = new Card_Scheme();
             //public_keys = new Public_Key[MAXCAPK];
             public_keys = new Public_Key();
@@ -448,8 +448,8 @@ public class SAMA_TMS implements Serializable
 
 
 */
-
-
+                       
+                       
                         String[] temp;
                         String sDatatype="";
                         String[] segments = DE72_Buffer.split("\u001D");
@@ -547,7 +547,7 @@ public class SAMA_TMS implements Serializable
                                             retailer_data.m_sAutomatic_Load = ret_seg4_elements[4];
                                             retailer_data.m_sSAF_Retry_Limit = ret_seg4_elements[5];
                                             retailer_data.m_sSAF_Default_Message_Transmission_Number = ret_seg4_elements[6];
-
+                                           
                                             break;
                                     }
 
@@ -595,7 +595,7 @@ public class SAMA_TMS implements Serializable
                                          card_scheme.m_sTransactions_Allowed=crd_seg2_elements[1];
                                          card_scheme.m_sCardholder_Authentication=crd_seg2_elements[2];
                                          card_scheme.m_sSupervisor_Functions=crd_seg2_elements[3];
-                                         card_scheme.Manual_entry_allowed=crd_seg2_elements[4];
+                                         card_scheme.m_sManual_entry_allowed=crd_seg2_elements[4];
                                          card_scheme.m_sFloor_Limit_Indicator=crd_seg2_elements[5];
                                          card_scheme.m_sTerminal_Floor_Limit=crd_seg2_elements[6];
                                          card_scheme.m_sTerminal_Floor_Limit_Fallback=crd_seg2_elements[7];
@@ -690,7 +690,7 @@ public class SAMA_TMS implements Serializable
                                             switch(connection_type)
                                                 {
                                                     case DIAL_UP:
-
+                                                        
                                                         connection_parameters.conn_primary.dialup. Priority=priority;
                                                         connection_parameters.conn_primary.dialup. Communication_Type=connection_type; //01=Dialup_;_02=TCP/IP_;03=GPRS;04=wifi;05=GSM
                                                         connection_parameters.conn_primary.dialup. Phone_Number=conn_seg1_elements[2];
@@ -732,8 +732,8 @@ public class SAMA_TMS implements Serializable
                                                         connection_parameters.conn_primary.wifi. Response_Time_Out=conn_seg1_elements[5];
                                                         connection_parameters.conn_primary.wifi. SSL_Certificate_File=conn_seg1_elements[6];
 
-
-
+                                             
+                                               
 
                                                         break;
                                                     case GSM:
@@ -1059,6 +1059,16 @@ public class SAMA_TMS implements Serializable
             fis.close();
         }
 
+        public static int Get_card_scheme_BY_AID(String AID)
+        {
+            // todo get Card scheme by ID form database
+            return 0;
+        }
+        public static int Get_card_scheme_BY_PAN(String PAN)
+        {
+            //todo get card scheme by pan from database
+            return 0;
+        }
 
     }
 

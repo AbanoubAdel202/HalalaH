@@ -62,7 +62,7 @@ public class SocketProcessTask extends AsyncTask<byte[], Integer, Void> {
     protected Void doInBackground(byte[]... params) {
         Log.i(TAG,"doInBackground()");
 
-
+        if (mProcType != PacketProcessUtils.PACKET_PROCESS_PURCHASE) {
             mSendPacket = (params[0]);
             mCommSocket = new CommSocket();
 
@@ -70,9 +70,9 @@ public class SocketProcessTask extends AsyncTask<byte[], Integer, Void> {
 
             //todo communication choosing (wifi , GSM , GPRS, 3G)
             mHostIp = mCommunicationInfo.getHostIP();
-           // mHostIp= PosApplication.getApp().oGSama_TMS.connection_parameters.conn_primary.gprs.Network_IP_address;
+            // mHostIp= PosApplication.getApp().oGSama_TMS.connection_parameters.conn_primary.gprs.Network_IP_address;
             mHostPort = mCommunicationInfo.getHostPort();
-           // mHostPort =PosApplication.getApp().oGSama_TMS.connection_parameters.conn_primary.gprs.Network_TCP_port;
+            // mHostPort =PosApplication.getApp().oGSama_TMS.connection_parameters.conn_primary.gprs.Network_TCP_port;
             if (mHostIp == null || mHostPort == null) {
                 mHostIp = mCommunicationInfo.getSpareHostIP();
                 mHostPort = mCommunicationInfo.getSpareHostPort();
@@ -122,6 +122,8 @@ public class SocketProcessTask extends AsyncTask<byte[], Integer, Void> {
                 mErrorReson = PacketProcessUtils.SOCKET_PROC_ERROR_REASON_RECE;
                 return null;
             }
+
+        }
 
         return null;
     }

@@ -12,8 +12,12 @@
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginStart="16dp"
         android:layout_marginTop="10dp"
+        android:layout_marginEnd="16dp"
         android:background="@drawable/btn_background">
 
         <TextView
@@ -41,6 +45,42 @@
             android:textSize="30sp" />
     </RelativeLayout>
 
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="168dp"
+        android:layout_marginEnd="16dp"
+        android:background="@drawable/btn_background">
+
+        <TextView
+            android:id="@+id/amount_input_tip2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="20dp"
+            android:layout_marginTop="20dp"
+            android:text="@string/NaQD_AMOUNT"
+            android:textAppearance="?android:attr/textAppearanceLarge" />
+
+        <TextView
+            android:id="@+id/edit_naqd_amount"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/button_height"
+            android:layout_below="@+id/amount_input_tip2"
+            android:layout_marginTop="30dp"
+            android:gravity="right|center_vertical"
+            android:maxLength="14"
+            android:paddingRight="40dp"
+            android:singleLine="true"
+            android:text="￥0.00"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:textColor="@color/amount_num_color"
+            android:textSize="30sp" />
+    </RelativeLayout>
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -56,7 +96,7 @@
             <ImageButton
                 android:id="@+id/btn_1"
                 android:layout_width="0dp"
-                android:layout_height="match_parent"
+                android:layout_height="wrap_content"
                 android:layout_margin="@dimen/login_num_margin"
                 android:layout_weight="1"
                 android:background="@drawable/drawable_button"
@@ -66,7 +106,7 @@
             <ImageButton
                 android:id="@+id/btn_2"
                 android:layout_width="0dp"
-                android:layout_height="match_parent"
+                android:layout_height="wrap_content"
                 android:layout_margin="@dimen/login_num_margin"
                 android:layout_weight="1"
                 android:background="@drawable/drawable_button"
@@ -76,7 +116,7 @@
             <ImageButton
                 android:id="@+id/btn_3"
                 android:layout_width="0dp"
-                android:layout_height="match_parent"
+                android:layout_height="wrap_content"
                 android:layout_margin="@dimen/login_num_margin"
                 android:layout_weight="1"
                 android:background="@drawable/drawable_button"
@@ -92,7 +132,7 @@
             <ImageButton
                 android:id="@+id/btn_4"
                 android:layout_width="0dp"
-                android:layout_height="match_parent"
+                android:layout_height="wrap_content"
                 android:layout_margin="@dimen/login_num_margin"
                 android:layout_weight="1"
                 android:background="@drawable/drawable_button"
@@ -102,7 +142,7 @@
             <ImageButton
                 android:id="@+id/btn_5"
                 android:layout_width="0dp"
-                android:layout_height="match_parent"
+                android:layout_height="wrap_content"
                 android:layout_margin="@dimen/login_num_margin"
                 android:layout_weight="1"
                 android:background="@drawable/drawable_button"
@@ -112,7 +152,7 @@
             <ImageButton
                 android:id="@+id/btn_6"
                 android:layout_width="0dp"
-                android:layout_height="match_parent"
+                android:layout_height="wrap_content"
                 android:layout_margin="@dimen/login_num_margin"
                 android:layout_weight="1"
                 android:background="@drawable/drawable_button"
@@ -128,7 +168,7 @@
             <ImageButton
                 android:id="@+id/btn_7"
                 android:layout_width="0dp"
-                android:layout_height="match_parent"
+                android:layout_height="wrap_content"
                 android:layout_margin="@dimen/login_num_margin"
                 android:layout_weight="1"
                 android:background="@drawable/drawable_button"
@@ -138,7 +178,7 @@
             <ImageButton
                 android:id="@+id/btn_8"
                 android:layout_width="0dp"
-                android:layout_height="match_parent"
+                android:layout_height="wrap_content"
                 android:layout_margin="@dimen/login_num_margin"
                 android:layout_weight="1"
                 android:background="@drawable/drawable_button"
@@ -148,7 +188,7 @@
             <ImageButton
                 android:id="@+id/btn_9"
                 android:layout_width="0dp"
-                android:layout_height="match_parent"
+                android:layout_height="wrap_content"
                 android:layout_margin="@dimen/login_num_margin"
                 android:layout_weight="1"
                 android:background="@drawable/drawable_button"
@@ -164,7 +204,7 @@
             <ImageButton
                 android:id="@+id/btn_clear"
                 android:layout_width="0dp"
-                android:layout_height="match_parent"
+                android:layout_height="wrap_content"
                 android:layout_margin="@dimen/login_num_margin"
                 android:layout_weight="1"
                 android:background="@drawable/drawable_button"
@@ -174,7 +214,7 @@
             <ImageButton
                 android:id="@+id/btn_0"
                 android:layout_width="0dp"
-                android:layout_height="match_parent"
+                android:layout_height="wrap_content"
                 android:layout_margin="@dimen/login_num_margin"
                 android:layout_weight="1"
                 android:background="@drawable/drawable_button"
@@ -184,7 +224,7 @@
             <ImageButton
                 android:id="@+id/btn_back"
                 android:layout_width="0dp"
-                android:layout_height="match_parent"
+                android:layout_height="wrap_content"
                 android:layout_margin="@dimen/login_num_margin"
                 android:layout_weight="1"
                 android:background="@drawable/drawable_button"

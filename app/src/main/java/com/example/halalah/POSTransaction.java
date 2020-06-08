@@ -1,6 +1,7 @@
 package com.example.halalah;
 import android.util.Log;
 
+import com.example.halalah.TMS.Card_Scheme;
 import com.example.halalah.iso8583.BCDASCII;
 import com.example.halalah.iso8583.ISO8583;
 import com.example.halalah.packet.PackPurchase;
@@ -127,7 +128,8 @@ public class POSTransaction {
     public String	m_sOrigLocalTrxDate;			    /* Original Local Transaction Date , Size 6 Default value of ‘000000’ if unavailable.*/
     /*********************************************/
 
-
+   public Card_Scheme card_scheme = new Card_Scheme();
+       public String m_sAID;                             // AID for the card ICC
 
 //    Terminal Status Data (REQUEST), to be used on DE62
 //    *********************************************
@@ -662,6 +664,7 @@ public class POSTransaction {
         Log.i(TAG, "DE 59 [m_sTransportData]= " + m_sTransportData+"Length ="+m_sTransportData.length());
 
         //62.Terminal Status
+        ComposeTerminalStatusData();
         m_RequestISOMsg.SetDataElement(62, m_sTerminalStatus.getBytes(), m_sTerminalStatus.length());
         Log.i(TAG, "DE 62 [m_sTerminalStatus]= " + m_sTerminalStatus+"Length ="+m_sTerminalStatus.length());
 

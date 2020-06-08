@@ -9,6 +9,7 @@ import com.example.halalah.PosApplication;
 import com.example.halalah.packet.PackUtils;
 
 import java.util.Arrays;
+import java.util.BitSet;
 import java.util.Locale;
 
 /** Header ISO8583:1993 modified for mada
@@ -104,6 +105,7 @@ public class ISO8583 {
         for (int i = 0; i < bytenum/2; i++) {
             byte bitmap = 0; //Represents 8 bitmap fields in a byte in a 64-bit bitmap
             int bitmask = 0x80;
+
             for (int j = 0; j < bitnum; j++, bitmask>>=1) {
                 n = (i<<3) + j;
                 if((i==0 & bitmask==0x80)& bytenum==32)

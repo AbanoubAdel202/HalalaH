@@ -23,7 +23,7 @@ package com.example.halalah.TMS;
         public String m_sCardholder_Authentication;
 
         public String m_sSupervisor_Functions;
-        public String Manual_entry_allowed;
+        public String m_sManual_entry_allowed;
         public String m_sFloor_Limit_Indicator;
         public String m_sTerminal_Floor_Limit;
         public String m_sTerminal_Floor_Limit_Fallback;
@@ -38,7 +38,7 @@ package com.example.halalah.TMS;
         ////////////////
         public String[] cardranges;
         public String m_sCard_Prefix_Sequence_Indicator;
-        Card_Scheme()
+        public Card_Scheme()
         {
             /////////////////
             //Segment1

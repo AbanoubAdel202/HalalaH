@@ -18,5 +18,6 @@ public class Terminal_Operation_Data {
         public  String sTerminalID;
         public  String sMerchantID;
         public  String sAcquirer_ins_Code;
+        public  int Mada_Auto_Selection;
 
 }

@@ -44,7 +44,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:name=".PosApplication"
-
+        android:launchMode="singleTask"
         >
         <activity
             android:name=".network_settings"

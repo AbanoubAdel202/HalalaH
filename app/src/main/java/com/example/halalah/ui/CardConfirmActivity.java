@@ -43,12 +43,6 @@ public class CardConfirmActivity extends Activity implements View.OnClickListene
         CardManager.getInstance().finishPreActivity();
         CardManager.getInstance().initCardExceptionCallBack(mCallBack);
 
-        if (ConsumeData.CARD_TYPE_MAG == mCardType) {
-            Intent intent = new Intent(this, PinpadActivity.class);
-            startActivity(intent);
-        } else {
-            CardManager.getInstance().setConfirmCardInfo(true);
-        }
     }
 
     @Override
