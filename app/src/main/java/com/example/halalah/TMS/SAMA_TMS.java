@@ -553,7 +553,7 @@ public class SAMA_TMS implements Serializable
 
 
                                  }
-                                //todo save retailer data
+                                //todo save(retailer_data)
                                 break;
                             case DT_Card_Scheme:
 
@@ -619,7 +619,7 @@ public class SAMA_TMS implements Serializable
                                          card_scheme.m_sCard_Prefix_Sequence_Indicator=crd_seg3_elements[2];
                                          break;
                                      }
-                                     // append&save(cardscheme);    // card scheme maay be sent in two meesages so we need to add to last one
+                                     // todo append&save(cardscheme);    // card scheme maay be sent in two meesages so we need to add to last one
                                  }
 
                                 break;
@@ -669,7 +669,7 @@ public class SAMA_TMS implements Serializable
                                         public_keys.CA_Public_Key_Expiry_Date=Capk_seg1_elements[8];
 
                                     }
-                                // Save(public_key)         // save each data on file
+                                // todo Save(public_key)         // save each data on file
 
                                 break;
                             case DT_Connection_Parameters:
@@ -818,7 +818,7 @@ public class SAMA_TMS implements Serializable
                                              }
                                          }
                                 }
-                                // save (connection_parameter)
+                                // todo save (connection_parameter)
                                 break;
 
                             case DT_Device_Specific:
@@ -915,7 +915,7 @@ public class SAMA_TMS implements Serializable
                                     }
 
                                 }
-                                //save(aid_list);
+                                //todo save(aid_list);
                                 break;
                             case DT_AID_Data:
                                 for (int i = 1; i < segments.length; i++) {
@@ -1069,6 +1069,30 @@ public class SAMA_TMS implements Serializable
             //todo get card scheme by pan from database
             return 0;
         }
+
+        public Card_Scheme getCard_scheme() {
+            return card_scheme;
+        }
+
+        public Retailer_Data getRetailer_data() {
+            return retailer_data;
+        }
+
+
+
+        public Message_Text[] getMessage_text_file() {
+               Message_Text[] message_texts=new Message_Text[100];
+               // todo get all messages
+            return message_texts;
+        }
+
+
+
+       private Public_Key[] get_all_CAPK()
+       {        Public_Key[] public_keys=new Public_Key[20];
+       //todo get all public keys
+           return public_keys;
+       }
 
     }
 

@@ -51,7 +51,7 @@ public class AmountInputActivity extends Activity implements View.OnClickListene
         mBtnConfirm.setText(R.string.amount_input_search_card);
         mHandle.sendEmptyMessage(MSG_TIME_UPDATE);
 
-        if( PosApplication.getApp().oGPosTransaction.m_enmTrxType== POSTransaction.TranscationType.PURCHASE
+        /*if( PosApplication.getApp().oGPosTransaction.m_enmTrxType== POSTransaction.TranscationType.PURCHASE
                 ||PosApplication.getApp().oGPosTransaction.m_enmTrxType== POSTransaction.TranscationType.AUTHORISATION
                 ||PosApplication.getApp().oGPosTransaction.m_enmTrxType==POSTransaction.TranscationType.AUTHORISATION_ADVICE
                 ||PosApplication.getApp().oGPosTransaction.m_enmTrxType==POSTransaction.TranscationType.PURCHASE_ADVICE) {
@@ -68,9 +68,9 @@ public class AmountInputActivity extends Activity implements View.OnClickListene
 
             //TODO show RRN and other DATA activity
         }
-        else{
+        else if(PosApplication.getApp().oGPosTransaction.m_enmTrxType== POSTransaction.TranscationType.AUTHORISATION_EXTENSION) {
 
-        }
+        }*/
     }
 
     private Handler mHandle = new Handler() {

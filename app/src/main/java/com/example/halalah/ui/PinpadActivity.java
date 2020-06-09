@@ -14,6 +14,7 @@ import android.widget.TextView;
 import com.example.halalah.DeviceTopUsdkServiceManager;
 import com.example.halalah.PosApplication;
 import com.example.halalah.R;
+import com.example.halalah.Terminal_Operation_Data;
 import com.example.halalah.Utils;
 import com.example.halalah.cache.ConsumeData;
 import com.example.halalah.card.CardManager;
@@ -100,7 +101,7 @@ public class PinpadActivity extends Activity {
             @Override
             public void run() {
                 try {
-                    mPinpad.setPinKeyboardMode(1);
+                    mPinpad.setPinKeyboardMode(PosApplication.getApp().oGTerminal_Operation_Data.m_iPinKeyboardMode);// keyboard out of order =1 , in order =0
                     mPinpad.getPin(getParam(cardNo, amount), mPinListener);
                     /*mPinpad.setPinKeyboardMode(1);
                     Log.d("topwise", "mPinListener: " + mPinListener);

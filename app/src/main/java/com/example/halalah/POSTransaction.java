@@ -1192,7 +1192,7 @@ public class POSTransaction {
 
 
         // Set Transaction STAN
-        m_sSTAN=String.valueOf(PosApplication.getApp().oGTerminal_Operation_Data.iSTAN);
+        m_sSTAN=String.valueOf(PosApplication.getApp().oGTerminal_Operation_Data.m_iSTAN);
         m_RequestISOMsg.SetDataElement(11, m_sSTAN.getBytes(), m_sSTAN.length());
         Log.i(TAG, " DE 11 [m_sSTAN]= " + m_sSTAN+"Length ="+m_sSTAN.length());
 

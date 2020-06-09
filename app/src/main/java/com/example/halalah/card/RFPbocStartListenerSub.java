@@ -6,6 +6,7 @@ import android.os.RemoteException;
 import android.util.Log;
 
 import com.example.halalah.DeviceTopUsdkServiceManager;
+import com.example.halalah.POS_MAIN;
 import com.example.halalah.PosApplication;
 import com.example.halalah.Utils;
 
@@ -33,6 +34,16 @@ public class RFPbocStartListenerSub extends AidlPbocStartListener.Stub {
 
     @Override
     public void finalAidSelect() throws RemoteException {
+
+        //todo AID supported or not
+
+        byte[] bAIDs;
+        String[] AIDs = new String[]{"9F06"};
+        bAIDs= getTlv(AIDs);
+        POS_MAIN.Recognise_card();
+        POS_MAIN.Check_transaction_allowed(PosApplication.getApp().oGPosTransaction.m_enmTrxType);
+        POS_MAIN.Check_transaction_limits();
+        POS_MAIN.supervisor_pass_required();
         mPbocManager.importFinalAidSelectRes(true);
     }
 
@@ -65,8 +76,25 @@ public class RFPbocStartListenerSub extends AidlPbocStartListener.Stub {
     @Override
     public void requestAidSelect(int times, String[] aids) throws RemoteException {
         Log.d(TAG, "requestAidSelect(), times: " + times + ", aids.length = " + aids.length);
+        int iAID_Index=0;
 
-        boolean isSuccess = mPbocManager.importAidSelectRes(0);
+        //auto selection for mada
+        if(PosApplication.getApp().oGTerminal_Operation_Data.Mada_Auto_Selection==1)
+        {
+            for(int index=0 ;index<aids.length;index++)
+            {
+                if (aids[index].contains("mada"))
+                    iAID_Index=index+1;
+            }
+
+        }
+        else
+        {
+            // show selection
+            //todo AID ACtivity selection and return AID selected index or it's value
+            iAID_Index=0;
+        }
+        boolean isSuccess = mPbocManager.importAidSelectRes(iAID_Index);
         Log.d(TAG, "isSuccess() : " + isSuccess);
     }
 
@@ -129,7 +157,7 @@ public class RFPbocStartListenerSub extends AidlPbocStartListener.Stub {
         setTrack2();
         setExpired();
         setSeqNum();
-        setConsume55();
+        setDE55();
         setConsumePositive55();
 
         isOnline = true;
@@ -352,7 +380,7 @@ public class RFPbocStartListenerSub extends AidlPbocStartListener.Stub {
         return resultStr;
     }
 
-    private void setConsume55() {
+    private void setDE55() {
         String[] consume55Tag = new String[]{"9F26", "9F27", "9F10", "9F37", "9F36", "95", "9A", "9C", "9F02", "5F2A",
                 "82", "9F1A", "9F03", "9F33", "9F34", "9F35", "9F1E", "84", "9F09",
                 "91", "71", "72", "DF32", "DF33", "DF34"};

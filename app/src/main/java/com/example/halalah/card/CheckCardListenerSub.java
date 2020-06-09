@@ -50,6 +50,7 @@ public class CheckCardListenerSub extends AidlCheckCardListener.Stub {
             PosApplication.getApp().oGPosTransaction.m_sCardExpDate=data.getExpiryDate();
             track2 = track2.replace("=", "D");
             PosApplication.getApp().oGPosTransaction.m_sTrack2=track2;
+            //todo service code check
             /*if (track3 != null) {
                 track3 = track3.replace("=", "D");
                 PosApplication.getApp().mConsumeData.setThirdTrackData(track3);

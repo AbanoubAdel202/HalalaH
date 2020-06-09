@@ -5,6 +5,8 @@ import android.content.Intent;
 
 import com.example.halalah.TMS.SAMA_TMS;
 import com.example.halalah.ui.AmountInputActivity;
+import com.example.halalah.ui.P_NAQD_InputActivity;
+import com.example.halalah.ui.Refund_InputActivity;
 
 /** Header POS Main
  \Class Name: POS_MAIN
@@ -50,7 +52,7 @@ public class POS_MAIN {
                 break;
             case PURCHASE_WITH_NAQD://PURCHASE_WITH_NAQD
                 //get amount
-                 AmountACT = new Intent(mcontext, AmountInputActivity.class);
+                 AmountACT = new Intent(mcontext, P_NAQD_InputActivity.class);
                  AmountACT.putExtra("transaction Type",Trxtype);
                 mcontext.startActivity(AmountACT);
 
@@ -59,7 +61,9 @@ public class POS_MAIN {
 
                 // TODO check supervisour password
                 // TODO get original transaction Type
-                // TODO Input RRN,other required data
+                AmountACT = new Intent(mcontext, Refund_InputActivity.class);
+                AmountACT.putExtra("transaction Type",Trxtype);
+                mcontext.startActivity(AmountACT);
 
                 break;
             case AUTHORISATION://AUTHORISATION:
@@ -78,6 +82,7 @@ public class POS_MAIN {
             case AUTHORISATION_VOID://AUTHORISATION_VOID:
                 break;
             case AUTHORISATION_EXTENSION://AUTHORISATION_EXTENSION
+
                 break;
             case PURCHASE_ADVICE://PURCHASE_ADVICE:
                 //todo PURCHASE_ADVICE
@@ -224,7 +229,7 @@ public class POS_MAIN {
     }
     public static int Check_transaction_limits()
     {
-
+            // todo get transaction limits
         return 0;
     }
     public boolean Check_manual_allowed()
@@ -236,12 +241,20 @@ public class POS_MAIN {
     }
     public int Check_max_cashback(int cashbackamount)
     {
+        //todo get max cash back
+
         return 0;
     }
 
     public static boolean Check_MADA_Card()
     {
+        //todo check mada card
       //  if()
+        return true;
+    }
+    public static boolean supervisor_pass_required(){
+
+        //todo
         return true;
     }
 

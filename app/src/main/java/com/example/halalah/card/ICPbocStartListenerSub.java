@@ -53,7 +53,7 @@ public class ICPbocStartListenerSub extends AidlPbocStartListener.Stub {
         POS_MAIN.Recognise_card();
         POS_MAIN.Check_transaction_allowed(PosApplication.getApp().oGPosTransaction.m_enmTrxType);
         POS_MAIN.Check_transaction_limits();
-
+        POS_MAIN.supervisor_pass_required();
 
 
         mPbocManager.importFinalAidSelectRes(true);
@@ -100,7 +100,7 @@ public class ICPbocStartListenerSub extends AidlPbocStartListener.Stub {
         {
                // show selection
                 //todo AID ACtivity selection and return AID selected index or it's value
-                iAID_Index=1;
+                iAID_Index=0;
         }
 
         boolean isSuccess = mPbocManager.importAidSelectRes(iAID_Index);
@@ -403,13 +403,10 @@ public class ICPbocStartListenerSub extends AidlPbocStartListener.Stub {
 
     private void setDE55() {
         Log.i(TAG, "getDE55()");
-        /*String[] consume55Tag = new String[]{"9F26", "9F27", "9F10", "9F37", "9F36", "95", "9A", "9C", "9F02", "5F2A",
-                "82", "9F1A", "9F03", "9F33", "9F34", "9F35", "9F1E", "84", "9F09",
-                "91", "71", "72", "DF32", "DF33", "DF34"};*/
-        String[] DE55Tag = new String[]{"4F", "82", "95", "9A", "9B", "9C", "5F24",
-                "5F2A", "9F02", "9F03", "9F06", "9F10", "9F12", "9F1A", "9F1C", "9F26",
-                "9F27", "9F33", "9F34", "9F36", "9F37", "C2", "CD", "CE", "C0", "C4",
-                "C7", "C8"};
+
+        String[] DE55Tag = new String[]{"82","9F02","9F03","4F","50","9F12","9F36","9F6C","9F26","9F27","9F34",
+                                        "84","9F6E","9F10","9F1E","5A","9F24","57","9F33","9F66","9F35","95",
+                                        "9F1A","5F2A","9A","9C","9F37","9F37","9F19","9F25"};
         byte[] DE55TlvList = getTlv(DE55Tag);
         Log.d(TAG, "setDE55 DE55TlvList : " + BCDASCII.bytesToHexString(DE55TlvList));
         PosApplication.getApp().oGPosTransaction.m_sICCRelatedTags=BCDASCII.bytesToHexString(DE55TlvList);
