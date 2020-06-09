@@ -16,6 +16,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 import com.example.halalah.iso8583.BCDASCII;
 
+import com.example.halalah.sqlite.model.RequestModel;
+import com.example.halalah.sqlite.storage.RequestRepository;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.navigation.NavigationView;
@@ -99,8 +101,7 @@ public class MainActivity extends AppCompatActivity {
 
 
         Terminal_Initialization();
-            //StartMADA_APP();
-
+        StartMADA_APP();
     }
 
     @Override
