@@ -5,14 +5,18 @@ import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
 
+import android.os.RemoteException;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.Toast;
 
+import com.example.halalah.TMS.AID_Data;
+import com.example.halalah.TMS.Public_Key;
 import com.example.halalah.TMS.SAMA_TMS;
 import com.example.halalah.ui.AmountInputActivity;
+import com.topwise.cloudpos.aidl.emv.AidlPboc;
 
 
 /**
@@ -60,6 +64,8 @@ public class Fragment_home_Transaction extends Fragment implements View.OnClickL
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
 
+
+
     }
 
     @Override
@@ -88,7 +94,7 @@ View root =inflater.inflate(R.layout.fragment_home_transaction, container, false
                 PosApplication.getApp().oGPosTransaction.card_scheme.m_sTransactions_Allowed="111111111";
                 /**********************************/
 
-                Toast.makeText(getContext(),"go to purshase",Toast.LENGTH_LONG).show();
+                Toast.makeText(getContext(),"Purshase Transaction",Toast.LENGTH_LONG).show();
                /* SAMA_TMS sama_tms = new SAMA_TMS();
                 //3060125\u001D011\u001C1720\u001Cاهرêماو امسبرس 72\u001C400101490012\u001CMobily\u001C2\u001C682\u001C682\u001C02\u001C\u001CSAR\u001C\u001C\u001C\u001C\u001D012 انظنêا\u001COlaya 1222\u001D013 انرêاض\u001CRIYADH\u001D014E0F8C8\u001CD000F0A000\u001C\u001C22\u001C0\u001C03\u001C03
                 // this is for testing here should be
@@ -179,7 +185,7 @@ View root =inflater.inflate(R.layout.fragment_home_transaction, container, false
 
                 }
                 */
-                PosApplication.getApp().oGPosTransaction.Reset();
+                PosApplication.getApp().oGPosTransaction.Reset();  //
                 PosApplication.getApp().oGPosTransaction.m_enmTrxType=POSTransaction.TranscationType.PURCHASE;
                 Intent amounttest = new Intent(getContext(), AmountInputActivity.class);
                 startActivity(amounttest);
@@ -187,4 +193,6 @@ View root =inflater.inflate(R.layout.fragment_home_transaction, container, false
         }
 
     }
+
+
 }

@@ -95,8 +95,7 @@ public class PacketProcessActivity extends Activity {
             actionBar.setTitle(getString(R.string.socket_proc_commu) + "(" + getString(R.string.text_ic_para_download) + ") ");
         } else if (mProcType == PacketProcessUtils.PACKET_PROCESS_PURCHASE) {
             actionBar.setTitle(getString(R.string.socket_proc_commu) + "(" + getString(R.string.text_consume) + ") ");
-        } else if (mProcType == PacketProcessUtils.PACKET_PROCESS_CONSUME_POSITIVE) {
-            actionBar.setTitle(getString(R.string.socket_proc_commu) + "(" + getString(R.string.text_consume_positive) + ") ");
+
         } else if (mProcType == PacketProcessUtils.PACKET_PROCESS_SCAN) {
             actionBar.setTitle(getString(R.string.socket_proc_commu) + "(" + getString(R.string.text_scan) + ") ");
         }

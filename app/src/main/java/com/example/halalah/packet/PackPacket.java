@@ -43,12 +43,12 @@ public class PackPacket {
         }
          else if (procType == PacketProcessUtils.PACKET_PROCESS_PURCHASE) {
 
-            PosApplication.getApp().oGPosTransaction.m_sProcessCode="000000";
+            PosApplication.getApp().oGPosTransaction.GetDE03();
             PosApplication.getApp().oGPosTransaction.m_sTrxDateTime= ExtraUtil.GetDate_Time();
-            PosApplication.getApp().oGPosTransaction.m_sSTAN=String.valueOf(PosApplication.getApp().oGTerminal_Operation_Data.iSTAN++);
+            PosApplication.getApp().oGPosTransaction.m_sSTAN=String.valueOf(PosApplication.getApp().oGTerminal_Operation_Data.m_iSTAN++);
             PosApplication.getApp().oGPosTransaction.m_sLocalTrxDateTime=ExtraUtil.GetDate_Time();
-            PosApplication.getApp().oGPosTransaction.m_sPOSEntryMode="12122323";
-            PosApplication.getApp().oGPosTransaction.m_sFunctionCode="34";
+            PosApplication.getApp().oGPosTransaction.GetDE22();
+            PosApplication.getApp().oGPosTransaction.GetDE24FunctionCode();
             PosApplication.getApp().oGPosTransaction.m_sMsgReasonCode="12";
             PosApplication.getApp().oGPosTransaction.m_sCardAcceptorBusinessCode="11";
             PosApplication.getApp().oGPosTransaction.m_sAquirerInsIDCode="12";

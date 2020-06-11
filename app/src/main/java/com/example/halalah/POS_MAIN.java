@@ -3,6 +3,7 @@ package com.example.halalah;
 import android.content.Context;
 import android.content.Intent;
 
+import com.example.halalah.TMS.AID_Data;
 import com.example.halalah.TMS.SAMA_TMS;
 import com.example.halalah.ui.AmountInputActivity;
 import com.example.halalah.ui.P_NAQD_InputActivity;
@@ -256,6 +257,106 @@ public class POS_MAIN {
 
         //todo
         return true;
+    }
+
+
+/********************************************************************************
+    // Topwise Tags
+
+9f06 07 A0000002282010      -->AID
+    df01 01 00                   -->ApplicationSelectionIndicator(0:PartMatch,1:ExactMatch)
+9f09 02 00084                -->ApplicationVersionNumber
+
+    df11 05 BC40BC8000           -->TerminalActionCode-Default
+    df12 05 BC40BC8000		     -->TerminalActionCode-Online
+    df13 05 0010000000           -->TerminalActionCode-Decline
+
+9f1b 04 00000000             -->TerminalFloorLimit
+    df15 04 00000290             -->ThresholdValueforBiasedRandomSelection
+    df16 01 00                   -->MaximumTargetPercentagetobeUsedforBiasedRandomSelection
+    df17 01 00                   -->TargetPercentagetobeUsedforRandomSelection
+    df14 03 9F3704               -->DDOLdefault
+    df19 06 000000000000         -->ContactlessReaderfloorLimit
+    df20 06 000099999999         -->ContactlessReader
+    df21 06 000000010000         -->Contactless Reader CVM Limit
+
+
+
+// Sample formated string for mada AIDs
+9f0607A0000002282010df0101009f09020084df1105BC40BC8000df1205BC40BC8000df130500100000009f1b0400000000df150400000290df160100df170100df14039F3704df1906000000000000df2006000099999999df2106000000010000
+9f0608a0000003330101df0101009f09020020df1105fc78fcf8f0df1205fc78fcf8f0df130500100000009f1b04000186a0df150400000028df160150df170120df14039f3704df2006000099999999df2106000000100000df1906000000030000
+
+*********************************************************************************************/
+
+
+
+
+
+
+    public String FormatAIDData(AID_Data AIDObj)
+    {
+        int iRetRes = -1;
+        StringBuilder strFormatedAIDData = new StringBuilder();
+
+        if (AIDObj == null)
+        {
+            // log an error message
+            return String.valueOf(iRetRes);
+        }
+
+        // Adding AID
+        if (AIDObj.AID.length() > 0)
+            strFormatedAIDData.append("9f06" +AIDObj.AID.length()+AIDObj.AID.toString());
+
+        // Adding ApplicationSelectionIndicator(0:PartMatch,1:ExactMatch)
+        strFormatedAIDData.append("df010100");
+
+        // Adding ApplicationVersionNumber
+        if (AIDObj.Terminal_AID_version_numbers.length() > 0)
+            strFormatedAIDData.append("9f09" +AIDObj.Terminal_AID_version_numbers.length()+AIDObj.Terminal_AID_version_numbers.toString());
+
+        // Adding Default_action_code
+        if (AIDObj.Denial_action_code.length() > 0)
+            strFormatedAIDData.append("df11" +AIDObj.Default_action_code.length()+AIDObj.Default_action_code.toString());
+
+
+        // Adding Online_action_code
+        if (AIDObj.Denial_action_code.length() > 0)
+            strFormatedAIDData.append("df12" +AIDObj.Online_action_code.length()+AIDObj.Online_action_code.toString());
+
+
+        // Adding Denial_action_code
+        if (AIDObj.Denial_action_code.length() > 0)
+            strFormatedAIDData.append("df13" +AIDObj.Denial_action_code.length()+AIDObj.Denial_action_code.toString());
+
+
+        // Adding Default_TDOL
+        if (AIDObj.Default_DDOL.length() > 0)
+            strFormatedAIDData.append("df14" +AIDObj.Default_DDOL.length()+AIDObj.Default_DDOL.toString());
+
+        // Adding ThresholdValueforBiasedRandomSelection
+        if (AIDObj.Threshold_Value_for_Biased_Random_Selection.length() > 0)
+            strFormatedAIDData.append("df15" +AIDObj.Threshold_Value_for_Biased_Random_Selection.length()+AIDObj.Threshold_Value_for_Biased_Random_Selection.toString());
+
+        // Adding Maximum_Target_Percentage_for_Biased_Random_Selection
+        if (AIDObj.Maximum_Target_Percentage_for_Biased_Random_Selection.length() > 0)
+            strFormatedAIDData.append("df16" +AIDObj.Maximum_Target_Percentage_for_Biased_Random_Selection.length()+AIDObj.Maximum_Target_Percentage_for_Biased_Random_Selection.toString());
+
+        // Adding Target_Percentage
+        if (AIDObj.Target_Percentage.length() > 0)
+            strFormatedAIDData.append("df17" +AIDObj.Target_Percentage.length()+AIDObj.Target_Percentage.toString());
+
+	/*
+				>>>>>>>>>>>>>>>>>>>>>>>>>> NOTES <<<<<<<<<<<<<<<<<<<<<<<
+
+		 - Floor limits Value = Cardschema floor limits
+		 - Contactless Limits (CVM , FLoor,Reader) would be mada for all card schemes and AIDs
+	*/
+
+        // Log AID formated message
+
+        return strFormatedAIDData.toString();
+
     }
 
 }

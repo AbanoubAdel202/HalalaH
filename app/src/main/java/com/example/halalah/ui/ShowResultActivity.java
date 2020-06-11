@@ -131,10 +131,7 @@ public class ShowResultActivity extends Activity implements View.OnClickListener
                         mResponseDetail = getString(R.string.result_sucess_para_trans);
                     } else if (mProcType == PacketProcessUtils.PACKET_PROCESS_STATUS_UPLOAD) {
                         mResponseDetail = getString(R.string.result_sucess_status_upload);
-                    } else if (mProcType == PacketProcessUtils.PACKET_PROCESS_CONSUME_POSITIVE) {
-                        mResponseDetail = getString(R.string.result_sucess_consume_positive);
-
-                    } else {
+                    }  else {
                         if (mResponseDetail == null) {
                             mResponseDetail = getString(R.string.result_sucess);
                         }

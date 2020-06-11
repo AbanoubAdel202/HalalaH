@@ -14,6 +14,10 @@ import android.view.Menu;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.example.halalah.TMS.AID_Data;
+import com.example.halalah.TMS.Public_Key;
+import com.example.halalah.TMS.SAMA_TMS;
 import com.example.halalah.iso8583.BCDASCII;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -99,7 +103,8 @@ public class MainActivity extends AppCompatActivity {
 
 
         Terminal_Initialization();
-            //StartMADA_APP();
+        //StartMADA_APP();
+
 
     }
 
@@ -244,24 +249,23 @@ return true;
     return true;
     }
 
-
     private void StartMADA_APP()
     {   Load_Terminal_operation_data();
-        boolean bRegistered=PosApplication.getApp().oGTerminal_Operation_Data.bregistered;
-         Initialize_Security();
-         if(bRegistered==true) {
-             Initialize_EMV_Configuration();
-             Initialize_CTLS_configuration();
-         }
-         else{
+        boolean bRegistered=PosApplication.getApp().oGTerminal_Operation_Data.m_bregistered;
+        Initialize_Security();
+        if(bRegistered==true) {
+            Initialize_EMV_Configuration();
+            Initialize_CTLS_configuration();
+        }
+        else{
 
-             while (!PosApplication.getApp().oGTerminal_Operation_Data.bregistered)  //todo add tries counter due to connection failures
-             {
-                 POS_MAIN oPos_Main = new POS_MAIN();
-                 oPos_Main.Start_Transaction(PosApplication.getApp().oGPosTransaction,POSTransaction.TranscationType.TERMINAL_REGISTRATION);
+            while (!PosApplication.getApp().oGTerminal_Operation_Data.m_bregistered)  //todo add tries counter due to connection failures
+            {
+                POS_MAIN oPos_Main = new POS_MAIN();
+                oPos_Main.Start_Transaction(PosApplication.getApp().oGPosTransaction,POSTransaction.TranscationType.TERMINAL_REGISTRATION);
 
-             }
-         }
+            }
+        }
     }
     private void Initialize_Security()
     {
@@ -270,6 +274,45 @@ return true;
     private void Initialize_EMV_Configuration()
     {
         //todo initialize emv parameters
+        ////////////////////////////////
+
+        AidlPboc mPbocManager = DeviceTopUsdkServiceManager.getInstance().getPbocManager();
+
+        try {
+            boolean updateResult = false;
+            boolean flag = true;
+            int i = 0;
+            String success = "";
+            String fail = "";
+            // Get IC card parameter information
+            mPbocManager.updateAID(0x03, null);
+            mPbocManager.updateCAPK(0x03, null);
+
+            AID_Data AIDdata[] = SAMA_TMS.GET_AID_Data_PARAM();
+            String sAIDdata = "0000000000000000";  //todo getting AID in specific string AS TOP WISE TAGS AND SPEC
+            for(int index=0;index<AIDdata.length;index++)
+            {
+                updateResult = mPbocManager.updateAID(0x01, sAIDdata);
+
+            }
+
+            Public_Key CAPK[] = SAMA_TMS.get_all_CAPK();
+            String sCAPK="000000000000000";// todo capk conversion to string as TOP wise spec AND TAGS
+            for (int index = 0; index<CAPK.length; index++)
+            {
+                updateResult = mPbocManager.updateCAPK(0x01,sCAPK);
+            }
+
+
+
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+
+
+        ///////////////////////////
+
+
     }
     private void Initialize_CTLS_configuration()
     {
@@ -279,6 +322,10 @@ return true;
     {
         //todo Load Terminal operation data from database
     }
+
+
+
+
 
 
 }

@@ -1088,11 +1088,16 @@ public class SAMA_TMS implements Serializable
 
 
 
-       private Public_Key[] get_all_CAPK()
+       public static Public_Key[] get_all_CAPK()
        {        Public_Key[] public_keys=new Public_Key[20];
        //todo get all public keys
            return public_keys;
        }
+        public static AID_Data[] GET_AID_Data_PARAM()
+        {
+            AID_Data[] aid_data=new AID_Data[20];
+            return aid_data;
+        }
 
     }
 

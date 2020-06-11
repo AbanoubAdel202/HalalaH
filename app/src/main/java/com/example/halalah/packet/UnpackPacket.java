@@ -64,8 +64,7 @@ public class UnpackPacket {
             mResponse = unpackParaTrans.getResponse();
             mResponseDetail = unpackParaTrans.getResponseDetail();
         } else if (mProcType == PacketProcessUtils.PACKET_PROCESS_STATUS_UPLOAD ||
-                mProcType == PacketProcessUtils.PACKET_PROCESS_ECHO_TEST ||
-                mProcType == PacketProcessUtils.PACKET_PROCESS_CONSUME_POSITIVE) {
+                mProcType == PacketProcessUtils.PACKET_PROCESS_ECHO_TEST ) {
             UnpackDefault unpackDefault = new UnpackDefault(mRecePacket, mRecePacket.length);
             mResponse = unpackDefault.getResponse();
             mResponseDetail = unpackDefault.getResponseDetail();

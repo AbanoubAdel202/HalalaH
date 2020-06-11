@@ -3,8 +3,8 @@ package com.example.halalah.util;
 public class PacketProcessUtils {
     public static final String PACKET_PROCESS_TYPE = "process_type";
     public static final int PACKET_PROCESS_PURCHASE = 1;
-    public static final int PACKET_PROCESS_CONSUME_POSITIVE = 2;
-    public static final int PACKET_PROCESS_CONSUME_REVOKE = 3;
+    public static final int PACKET_PROCESS_REFUND = 2;
+    public static final int PACKET_PROCESS_REVERSAL = 3;
     public static final int PACKET_PROCESS_CONSUME_REVOKE_POSITIVE = 4;
     public static final int PACKET_PROCESS_BALANCE_INQUIRY = 5;
     public static final int PACKET_PROCESS_RETURN_GOODS = 6;

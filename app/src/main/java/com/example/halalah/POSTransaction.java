@@ -67,8 +67,47 @@ public class POSTransaction {
     // Constractur
     public POSTransaction()
     {
-                m_RequestISOMsg=new ISO8583();          /* ISO8583 Request message to be sent constractor*/
-                m_ResponseISOMsg=new ISO8583();         /* ISO8583 Response message constractor*/
+        // Transaction Data Elements as per SP Terminal interface specification document 6.0.9
+        	m_sPAN=null;								/* DE2   – Primary account Number -Size 19  –Reconcilation value would be Terminal ID as is present in DE 41*/
+        	m_sProcessCode=null;	    				/* DE3   – Process Code  –Size 6 */
+        	m_sTrxAmount=null;						/* DE4   – Transaction Amount – Size 12*/
+        	m_sTrxDateTime=null;					/* DE7   – Transaction Date Time  – size 10 (MMDDhhmmss) */
+        	m_sSTAN=null;							/* DE11  – Transaction STAN  – Size 6*/
+        	m_sLocalTrxDateTime=null;				/* DE12  – Local Transaction Date Time  –n 12 (YYMMDDhhmmss)*/
+        	m_sCardExpDate=null;						/* DE14  – Card Expiration Date  –n 4 (YYMM)*/
+        	m_sPOSEntryMode=null;					/* DE22  – Point of Service Data Code – an 12*/
+        	m_sCardSeqNum=null;						/* DE 23 – Card Sequence Number -Size n 3*/
+        	m_sFunctionCode=null;					/* DE 24 – Function Code -Size n 3*/
+        	m_sMsgReasonCode=null;					/* DE 25 – Message Reason Code -Size 4*/
+        	m_sCardAcceptorBusinessCode=null;		/* DE 26 – Card Acceptor Business Code -Size 4*/
+        	m_sReconDateTime=null;					/* DE 28 – Reconciliation Date - Size n 6 (YYMMDD)*/
+        	m_sOrigAmount=null;						/* DE 30 – Original Amount - Size n 12*/
+        	m_sAquirerInsIDCode=null; 				/* DE 32 – Acquirer Institution Identification Code -Size n..11 , Recieved after terminal registration*/
+        	m_sTrack2=null;			    			/* DE 35 – Track-2 Data -Size z..37*/
+        	m_sRRNumber=null;						/* DE 37 – Retrieval Reference Number -Size anp 12*/
+        	m_sApprovalCode=null;					/* DE 38 – Approval Code -Size anp 6 , Host reveived value*/
+        	m_sActionCode=null;						/* DE 39 – Action Code - Size n 3 , Host reveived value*/
+        	m_sTerminalID=null;						/* DE 41 – Card Acceptor Terminal Identification -Size ans 16 */
+        	m_sMerchantID=null;						/* DE 42 – Card Acceptor Identification Code (Merchant ID) - Size ans 15*/
+            m_sAdditionalResponseData=null;			/* DE 44 - Additional Response Data - Size ans..99 , ag based data elements originating from either the Issuer,mada Switch */
+            m_sCardSchemeSponsorID=null;				/* DE 47 – Private - Card Scheme Sponsor ID - Size ans..999 , Used to sent Bank ID(len = 4) and Card Scheme ID(len 2) and other details for Bill Payments*/
+            m_sHostData_DE48=null;					/* DE 48 – Private – Additional Data-Size ans..999 ,Used during terminal registation and campaign footer messages */
+            m_sCurrencyCode=null;				    /* DE 49 – Currency Code, Transaction - Size n 3 , fixed value "682" */
+            m_sReconCurrencyCode=null;				/* DE 50 – DE 50 – Currency Code, Reconciliation - Size n 3 , "682" */
+        	m_sTrxPIN=null;							/* DE 52 – Personal Identification Number (PIN) - Size 8 BYTE */
+            m_sTrxSecurityControl=null;	            /* DE 53 – Security Related Control Information - Size b..48 , KSN + KSN Descriptor (609)*/
+        	m_sAdditionalAmount=null;				/* DE 54 – Additional Amounts Used currently for CashBack  , formated as "0040+CurrencyCode (682)D+ CashBack amount*/
+            m_sICCRelatedTags=null;					/* DE 55 – ICC Related Data (Tags for both ICC & CTLS Trx) Request/Response - Size b..255 */
+            m_sOriginalTrxData=null;					/* DE 56 – Original Data Elements - Size ANP..58*/
+            m_sTransportData=null;                   /* DE 59 – Transport Data -Size ans..999*/
+            m_sTerminalStatus =null;                  /* DE 62 – Private – Terminal Status ans..999*/
+            m_sTrxMACBlock=null;                     /* DE 64/128 – Message Authentication Code (MAC) - Size 8 bytes only the left 4 bytes will be used for the MAC and the right 4 bytes will bepadded with F’s.*/
+            m_sDataRecord72=null;	                /* DE 72 – Data Record Used on TMS and Admin messages -  Size ans11..999*/
+            m_sReconciliationTotals=null;            /* DE 124 – Private – mada POS Terminal Reconciliation Totals - Size  ans..999*/
+
+            m_RequestISOMsg=new ISO8583();                  /* ISO8583 Request message to be sent constractor*/
+            m_ResponseISOMsg=new ISO8583();         /* ISO8583 Response message constractor*/
+            card_scheme = new Card_Scheme();                /* card scheme for the card used in this transaction */
     }
 
 
@@ -128,7 +167,7 @@ public class POSTransaction {
     public String	m_sOrigLocalTrxDate;			    /* Original Local Transaction Date , Size 6 Default value of ‘000000’ if unavailable.*/
     /*********************************************/
 
-   public Card_Scheme card_scheme = new Card_Scheme();
+   public Card_Scheme card_scheme;
        public String m_sAID;                             // AID for the card ICC
 
 //    Terminal Status Data (REQUEST), to be used on DE62
@@ -1717,6 +1756,724 @@ public class POSTransaction {
             m_sTerminalStatus.concat("06"+PosApplication.Terminal_Online_Flag); // '0'=No action. '1' = Go on-line.
         //Force Reconciliation Flag
             m_sTerminalStatus.concat("08"+PosApplication.Force_Reconciliation_Flag);// '0'=No action. '1' = Go on-line.*/
+
+    }
+
+    /** for reference
+     * \Function Name: GetDE03
+     * \Param  : void
+     * \Return : Error codes
+     * \Author : Mostafa Hussiny
+     * \DT		: 6/10/2020
+     * \Des    : for getting PROCESSING CODE to be used in message request
+     */
+
+    public void GetDE03()
+    {
+        if(card_scheme.m_sCard_Scheme_ID=="P1") {
+            switch (m_enmTrxType) {
+                case PURCHASE:
+                case PURCHASE_ADVICE:
+
+                    PosApplication.getApp().oGPosTransaction.m_sProcessCode="000000";
+                    break;
+                case PURCHASE_WITH_NAQD:
+                PosApplication.getApp().oGPosTransaction.m_sProcessCode="090000";
+                break;
+                case AUTHORISATION_ADVICE:
+                    PosApplication.getApp().oGPosTransaction.m_sProcessCode="220000";
+                    break;
+
+                case REFUND:
+                    PosApplication.getApp().oGPosTransaction.m_sProcessCode="200000";
+                    break;
+                case AUTHORISATION:
+                case AUTHORISATION_EXTENSION:
+                    PosApplication.getApp().oGPosTransaction.m_sProcessCode="900000";
+                    break;
+
+
+
+                case AUTHORISATION_VOID:
+                case REVERSAL:
+                    //todo original processing code
+                    break;
+                case RECONCILIATION:
+                case CASH_ADVANCE:
+                    PosApplication.getApp().oGPosTransaction.m_sProcessCode="500000";
+                    break;
+
+            }
+        }
+        else {    // non mada card
+            switch (m_enmTrxType) {
+                case PURCHASE:
+                case PURCHASE_ADVICE:
+                    PosApplication.getApp().oGPosTransaction.m_sProcessCode="000000";
+
+                    //todo purchase with criedit card account
+                    // PosApplication.getApp().oGPosTransaction.m_sProcessCode="003000";
+
+                    break;
+
+                case PURCHASE_WITH_NAQD:
+                case REFUND:
+                    PosApplication.getApp().oGPosTransaction.m_sProcessCode="200000";
+                    //todo refund with criedit card account
+                    // PosApplication.getApp().oGPosTransaction.m_sProcessCode="203000";
+                    break;
+                case AUTHORISATION:
+                    PosApplication.getApp().oGPosTransaction.m_sProcessCode="900000";
+                    //todo authorization with criedit card account
+                    // PosApplication.getApp().oGPosTransaction.m_sProcessCode="903000";
+                    break;
+                case AUTHORISATION_EXTENSION:
+                case AUTHORISATION_ADVICE:
+                case AUTHORISATION_VOID:
+                case REVERSAL:
+                    //todo original processing code
+                    //PosApplication.getApp().oGPosTransaction.m_sProcessCode=;
+                case RECONCILIATION:
+                case CASH_ADVANCE:
+                    PosApplication.getApp().oGPosTransaction.m_sProcessCode="013000";
+                    break;
+
+                case SADAD_BILL:
+                    PosApplication.getApp().oGPosTransaction.m_sProcessCode="500000";
+                    break;
+
+
+            }
+        }
+    }
+
+
+    /** for reference
+     * \Function Name: GetDE22
+     * \Param  : void
+     * \Return : Error codes
+     * \Author : Mostafa Hussiny
+     * \DT		: 5/28/2020
+     * \Des    : for getting primary bitmap to be used in MAC calculation
+     */
+
+    //Position 1 – Card data input capability (Indicates the primary means of getting the information on the card into the terminal)
+     enum Card_data_input_capability{PAN_Entry_Mode_Unknown ,
+        Manual_no_terminal  ,
+        Magnetic_stripe_read ,
+        Bar_Code    ,
+        OCR     ,
+        ICC ,
+        Key_Entered ,
+        Contactless }
+    //Position 2 – Cardholder authentication capability (Indicates the primary means of verifying the cardholder at this terminal.)
+    enum Cardholder_authentication_capability{No_electronic_authentication,
+        PIN,
+        Electronic_signature_analysis,
+        Biometrics,
+        Biographic,
+        Electronic_authentication_inoperative,
+        other,
+
+    }
+    //Position 3 – Card capture capability (Indicates whether or not the terminal has the ability to capture a card) which always 0
+
+    // Position 4 – Operating environment  (Indicates if the terminal is attended by the card acceptor at its location)
+    enum Operating_environment {
+        On_premises_of_card_acceptor_attended,
+        On_premises_of_card_acceptor_unattended,
+        Off_premises_of_card_acceptor_attended,
+        Off_premises_of_card_acceptor_unattended
+    }
+    //Position 5 – Cardholder present
+    enum Cardholder_present{
+        Cardholder_present,
+        Cardholder_not_present_unspecified
+    }
+    //Position 6 – Card present
+    enum Card_present{
+        Card_not_present,
+        Card_present
+    }
+
+    // Position 7 – Card data input mode (Indicates method used to input the information from the card to the terminal)
+    enum Card_data_input_mode {
+        Unspecified,
+        Manual_no_terminal,
+        Magnetic_stripe_read,
+        Bar_Code,
+        OCR,
+        ICC,
+        Key_entered,
+        Contactless
+    }
+    //Position 8 – Cardholder authentication method (Indicates the method for verifying the cardholder identity)
+    enum Cardholder_authentication_method {
+        Not_authenticated,
+        PIN,
+        Electronic_signature_analysis,
+        Biometrics,
+        Biographic,
+        Manual_signature_analysis,
+        Other_manual_verifications
+    }
+    //Position 9 – Cardholder authentication entity  (Indicates the entity verifying the cardholder identity)
+    enum Cardholder_authentication_entity{
+        Not_authenticated,
+        ICC,
+        CAD,
+        Authorising_agent,
+        By_merchant,
+        other
+    }
+    //Position 10 – Card data output capability (Indicates the ability of the terminal to update the card)
+    enum Card_data_output_capability
+    {
+        Unknown,
+        None,
+        Magnetic_Stripe_write,
+        ICC
+    }
+    //Position 11 – Terminal output capability (Indicates the ability of the terminal to print/display messages)
+    enum Terminal_output_capability{
+        Unknown,
+        None,
+        Printing,
+        Display,
+        Printing_and_display
+    }
+    //Position 12 – PIN capture capability (Indicates the length of PIN which the terminal is capable of capturing)
+    enum PIN_capture_capability{
+        No_PIN_capture_capability,
+        Device_PIN_capture_capability_unknown,
+        Four_characters,
+        Five_characters,
+        Six_characters,
+        Seven_characters,
+        Eight_characters,
+        Nine_characters,
+        Ten_characters,
+        Eleven_characters,
+        Twelve_characters
+    }
+    public byte[] GetDE22()
+    {   Card_data_input_capability cdic = null;
+        Cardholder_authentication_capability cac=null;
+        Operating_environment oe=null;
+        Cardholder_present Cardholder_p=null;
+        Card_present Card_p=null;
+        Card_data_input_mode cdim=null;
+        Cardholder_authentication_method cam=null;
+        Cardholder_authentication_entity cae=null;
+        Card_data_output_capability coc=null;
+        Terminal_output_capability toc=null;
+        PIN_capture_capability pcc=null;
+
+
+
+        byte[] bDE22=new byte[12];
+
+        switch(cdic){
+
+            case PAN_Entry_Mode_Unknown:
+                bDE22[0]=0;
+                break;
+            case Manual_no_terminal:
+                bDE22[0]=1;
+                break;
+            case Magnetic_stripe_read:
+                bDE22[0]=2;
+                break;
+            case Bar_Code:
+                bDE22[0]=3;
+                break;
+            case OCR:
+                bDE22[0]=4;
+                break;
+            case ICC:
+                bDE22[0]=5;
+                break;
+            case Key_Entered:
+                bDE22[0]=6;
+                break;
+            case Contactless:
+                bDE22[0]=7;
+                break;
+
+        }
+
+        switch(cac){
+            case No_electronic_authentication:
+                bDE22[1]=0;
+                break;
+            case PIN:
+                bDE22[1]=1;
+                break;
+            case Electronic_signature_analysis:
+                bDE22[1]=2;
+                break;
+            case Biometrics:
+                bDE22[1]=3;
+                break;
+            case Biographic:
+                bDE22[1]=4;
+                break;
+            case Electronic_authentication_inoperative:
+                bDE22[1]=5;
+                break;
+            case other:
+                bDE22[1]=6;
+                break;
+        }
+
+        bDE22[2]=0;   // for position 3 always 0
+
+        switch (oe)
+        {
+            case On_premises_of_card_acceptor_attended:
+                bDE22[3]=1;
+                break;
+            case On_premises_of_card_acceptor_unattended:
+                bDE22[3]=2;
+                break;
+            case Off_premises_of_card_acceptor_attended:
+                bDE22[3]=3;
+                break;
+            case Off_premises_of_card_acceptor_unattended:
+                bDE22[3]=4;
+                break;
+        }
+        switch (Cardholder_p)
+        {
+            case Cardholder_present:
+                bDE22[4]=0;
+                break;
+            case Cardholder_not_present_unspecified:
+                bDE22[4]=1;
+                break;
+        }
+        switch (Card_p)
+        {
+            case Card_not_present:
+                bDE22[5]=0;
+                break;
+            case Card_present:
+                bDE22[5]=1;
+                break;
+        }
+        switch (cdim)
+        {
+            case Unspecified:
+                bDE22[6]=0;
+                break;
+            case Manual_no_terminal:
+                bDE22[6]=1;
+                break;
+            case  Magnetic_stripe_read:
+                bDE22[6]=2;
+                break;
+            case Bar_Code:
+                bDE22[6]=3;
+                break;
+            case OCR:
+                bDE22[6]=4;
+                break;
+            case ICC:
+                bDE22[6]=5;
+                break;
+            case Key_entered:
+                bDE22[6]=6;
+                break;
+            case Contactless:
+                bDE22[6]=7;
+                break;
+        }
+
+        switch (cam)
+        {
+            case Not_authenticated:
+                bDE22[7]=0;
+                break;
+            case PIN:
+                bDE22[7]=1;
+                break;
+            case Electronic_signature_analysis:
+                bDE22[7]=2;
+                break;
+            case Biometrics:
+                bDE22[7]=3;
+                break;
+            case Biographic:
+                bDE22[7]=4;
+                break;
+            case Manual_signature_analysis:
+                bDE22[7]=5;
+                break;
+            case Other_manual_verifications:
+                bDE22[7]=6;
+                break;
+
+        }
+
+        switch (cae)
+        {
+            case Not_authenticated:
+                bDE22[8]=0;
+                break;
+            case ICC:
+                bDE22[8]=1;
+                break;
+            case CAD:
+                bDE22[8]=2;
+                break;
+            case Authorising_agent:
+                bDE22[8]=3;
+                break;
+            case By_merchant:
+                bDE22[8]=4;
+                break;
+            case other:
+                bDE22[8]=5;
+                break;
+
+        }
+
+        switch (coc)
+        {
+            case Unknown:
+                bDE22[9]=0;
+                break;
+            case None:
+                bDE22[9]=1;
+            case Magnetic_Stripe_write:
+                bDE22[9]=2;
+            case ICC:
+                bDE22[9]=3;
+        }
+
+        switch (toc)
+        {
+            case Unknown:
+                bDE22[10]=0;
+                break;
+            case None:
+                bDE22[10]=1;
+                break;
+            case Printing:
+                bDE22[10]=2;
+                break;
+            case Display:
+                bDE22[10]=3;
+                break;
+            case Printing_and_display:
+                bDE22[10]=4;
+                break;
+        }
+
+        switch (pcc)
+        {
+            case No_PIN_capture_capability:
+                break;
+            case Device_PIN_capture_capability_unknown:
+                break;
+            case Four_characters:
+                break;
+            case Five_characters:
+                break;
+            case Six_characters:
+                break;
+            case Seven_characters:
+                break;
+            case Eight_characters:
+                break;
+            case Nine_characters:
+                break;
+            case Ten_characters:
+                break;
+            case Eleven_characters:
+                break;
+            case Twelve_characters:
+                break;
+        }
+
+
+
+        return bDE22;
+    }
+    /**
+     * \Function Name: GetDE24
+     * \Param  : void
+     * \Return : Error codes
+     * \Author : Mostafa Hussiny
+     * \DT		: 5/28/2020
+     * \Des    : for getting primary bitmap to be used in MAC calculation
+     */
+
+    enum  Function_Code{
+        Original_authorisation_amount_accurate,
+        Original_authorisation_amount_estimated,
+        Original_authorisation_Bill_Payment,
+        Original_authorization_Fee_Payment,
+        Notification_of_pre_authorisation_initial_completion,
+        Notification_of_a_pre_authorisation_expiry_extension,
+        Original_financial_request_advice,
+        Original_financial_request_advice_Bill_Payment,
+        Original_financial_request_advice_Fee_Payment,
+        Previously_approved_authorisation_amount_same,
+        Previously_approved_authorisation_amount_differs,
+        Previously_approved_authorisation_Bill_Payment,
+        Previously_approved_authorisation_Fee_Payment,
+        Replace_fields_within_record_partial_download,
+        Replace_entire_record_partial_download,
+        Replace_file_full_download,
+        Full_reversal_transaction_did_not_complete_as_approved,
+        Full_reversal_transaction_did_not_complete_as_approved_Bill_Payment,
+        Full_reversal_transaction_did_not_complete_as_approved_Fee_Payment,
+        Terminal_reconciliation,
+        Force_reconciliation,
+        Unable_to_parse_message,
+        MAC_Error,
+        Device_authentication
+    }
+    public void GetDE24FunctionCode(){
+        Function_Code fc=null;
+
+
+
+
+        switch (fc) {
+            case Original_authorisation_amount_accurate:
+                m_sFunctionCode="100";
+                break;
+            case Original_authorisation_amount_estimated:
+                m_sFunctionCode="101";
+                break;
+            case Original_authorisation_Bill_Payment:
+                m_sFunctionCode="160";
+                break;
+            case Original_authorization_Fee_Payment:
+                m_sFunctionCode="161";
+                break;
+            case Notification_of_pre_authorisation_initial_completion:
+                m_sFunctionCode="182";
+                break;
+            case Notification_of_a_pre_authorisation_expiry_extension:
+                m_sFunctionCode="183";
+                break;
+            case Original_financial_request_advice:
+                m_sFunctionCode="200";
+                break;
+            case Original_financial_request_advice_Bill_Payment:
+                m_sFunctionCode="260";
+                break;
+            case Original_financial_request_advice_Fee_Payment:
+                m_sFunctionCode="261";
+                break;
+            case Previously_approved_authorisation_amount_same:
+                m_sFunctionCode="201";
+                break;
+            case Previously_approved_authorisation_amount_differs:
+                m_sFunctionCode="202";
+                break;
+            case Previously_approved_authorisation_Bill_Payment:
+                m_sFunctionCode="262";
+                break;
+            case Previously_approved_authorisation_Fee_Payment:
+                m_sFunctionCode="263";
+                break;
+            case Replace_fields_within_record_partial_download:
+                m_sFunctionCode="302";
+                break;
+            case Replace_entire_record_partial_download:
+                m_sFunctionCode="304";
+                break;
+            case Replace_file_full_download:
+                m_sFunctionCode="306";
+                break;
+            case Full_reversal_transaction_did_not_complete_as_approved:
+                m_sFunctionCode="400";
+                break;
+            case Full_reversal_transaction_did_not_complete_as_approved_Bill_Payment:
+                m_sFunctionCode="420";
+                break;
+            case Full_reversal_transaction_did_not_complete_as_approved_Fee_Payment:
+                m_sFunctionCode="421";
+                break;
+            case Terminal_reconciliation:
+                m_sFunctionCode="570";
+                break;
+            case Force_reconciliation:
+                m_sFunctionCode="571";
+                break;
+            case Unable_to_parse_message:
+                m_sFunctionCode="650";
+                break;
+            case MAC_Error:
+                m_sFunctionCode="691";
+                break;
+            case Device_authentication:
+                m_sFunctionCode="814";
+                break;
+        }
+
+    }
+
+    enum Message_reason_code
+    {
+        //1000-1499 Reason for an advice/notification message rather than a request message.
+        // The valid codes for an 1120 / 1121 Authorization Transaction Advice
+        // or 1220 / 1221 Financial Transaction Advice generated for a chip ICC, contactless and magnetic stripe card are as follows.
+        Terminal_processed,
+        ICC_or_contactless_application_processed,
+        Magnetic_Stripe_Under_floor_limit,
+        Approved_by_mada_POS_in_Stand_In_Mode,
+        mada_Preauthorization_Void_or_Partial_Void,
+        mada_Preauthorization_Extension,
+        //1500-1999 Reason for a request message rather than an advice/notification message.
+        // The valid codes for an 1100 Authorisation Request generated for an ICS chip card or
+        // a 1200 Financial Request for mada or GCCNet ICC contact and contactless cards or for ICS  contactless cards are as follows.
+        ICC_random_selection,
+        Terminal_random_selection,
+        On_line_forced_by_ICC_CDF_or_ADF,
+        On_line_forced_by_card_acceptor,
+        On_line_forced_by_terminal,
+        On_line_forced_by_card_issuer,
+        Merchant_suspicious,
+        //Reason for a 1200 Financial Transaction Request for an ICS chip card rather than an 1100 Authorisation Message.
+        Fallback_from_chip_to_magnetic_stripe,
+        Contactless_Transaction,
+        Contactless_Transaction_Advice,
+        // 4000-4499 Reason for a reversal. The valid codes for an 1420 / 1421 Reversal Advice are as follows.
+        Customer_cancellation,
+        Unspecified_no_action_taken,
+        Suspected_malfunction,
+        Format_error_no_action_taken,
+        Original_amount_incorrect,
+        Response_received_too_late,
+        Card_acceptor_device_unable_to_complete_transaction,
+        Unable_to_deliver_message_to_point_of_service,
+        Invalid_response_no_action_taken,
+        Timeout_waiting_for_response,
+        MAC_failure
+        }
+    public void GetDE25Messagereasoncode()
+    {Message_reason_code mrc =null;
+
+            //todo getting original message reason code from authorization request message response
+        switch(mrc)
+        {
+            //1000-1499 Reason for an advice/notification message rather than a request message.
+            // The valid codes for an 1120 / 1121 Authorization Transaction Advice
+            // or 1220 / 1221 Financial Transaction Advice generated for a chip ICC, case contactless and magnetic stripe card are as follows.
+
+            case Terminal_processed:
+                m_sMsgReasonCode="1004";
+                break;
+
+           case  ICC_or_contactless_application_processed:
+                   m_sMsgReasonCode="1005";
+               break;
+                case Magnetic_Stripe_Under_floor_limit:
+                   m_sMsgReasonCode="1006";
+                   break;
+             case Approved_by_mada_POS_in_Stand_In_Mode:
+                   m_sMsgReasonCode="1008";
+                break;
+             case mada_Preauthorization_Void_or_Partial_Void:
+                 m_sMsgReasonCode="1151";
+                break;
+             case mada_Preauthorization_Extension:
+                 m_sMsgReasonCode="1152";
+                break;
+            //1500-1999 Reason for a request message rather than an advice/notification message.
+            // The valid codes for an 1100 Authorisation Request generated for an ICS chip card or
+            // a 1200 Financial Request for mada or GCCNet ICC contact and contactless cards or for ICS  contactless cards are as follows.
+             case ICC_random_selection:
+                 m_sMsgReasonCode="1502";
+                break;
+             case Terminal_random_selection:
+                 m_sMsgReasonCode="1503";
+                break;
+             case On_line_forced_by_ICC_CDF_or_ADF:
+                 m_sMsgReasonCode="1505";
+                break;
+             case On_line_forced_by_card_acceptor:
+                 m_sMsgReasonCode="1506";
+                break;
+             case On_line_forced_by_terminal:
+                 m_sMsgReasonCode="1508";
+                break;
+             case On_line_forced_by_card_issuer:
+                 m_sMsgReasonCode="1509";
+                break;
+             case Merchant_suspicious:
+                 m_sMsgReasonCode="1511";
+                break;
+            //Reason for a 1200 Financial Transaction Request for an ICS chip card rather than an 1100 Authorisation Message.
+             case Fallback_from_chip_to_magnetic_stripe:
+                 m_sMsgReasonCode="1776";
+                break;
+             case Contactless_Transaction:
+                 m_sMsgReasonCode="1990";
+                break;
+             case Contactless_Transaction_Advice:
+                 m_sMsgReasonCode="1490";
+                break;
+            // 4000-4499 Reason for a reversal. The valid codes for an 1420 / 1421 Reversal Advice are as follows.
+             case Customer_cancellation:
+                 m_sMsgReasonCode="4000";
+                break;
+             case Unspecified_no_action_taken:
+                 m_sMsgReasonCode="4001";
+                break;
+             case Suspected_malfunction:
+                 m_sMsgReasonCode="4002";
+                break;
+             case Format_error_no_action_taken:
+                 m_sMsgReasonCode="4003";
+                break;
+             case Original_amount_incorrect:
+                 m_sMsgReasonCode="4005";
+                break;
+             case Response_received_too_late:
+                 m_sMsgReasonCode="4006";
+                break;
+             case Card_acceptor_device_unable_to_complete_transaction:
+                 m_sMsgReasonCode="4007";
+                break;
+             case Unable_to_deliver_message_to_point_of_service:
+                 m_sMsgReasonCode="4013";
+                break;
+             case Invalid_response_no_action_taken:
+                 m_sMsgReasonCode="4020";
+                break;
+             case Timeout_waiting_for_response:
+                 m_sMsgReasonCode="4021";
+                break;
+             case MAC_failure:
+                 m_sMsgReasonCode="4351";
+
+                break;
+
+        }
+    }
+
+    public void GetDE_37_RRN()
+    {
+        m_sRRNumber= m_sSTAN+m_sLocalTrxDateTime;
+    }
+    public void GetDE41()
+    {
+        //// TODO: 6/10/2020   01-08 8 Unique terminal ID (Vendor Assigned)
+        //                      09-10 2 PTT area code 11-12 2 Bank Clearing Code
+        //                      13-16 4 Unique Device ID Within the Unique Retailer ID (Retailer Bank Assigned)
+    }
+    public void GetDE42()
+    {
+       // TODO: 6/10/2020   01-02 2 Bank Clearing Code
+        //                  03-04 2 Agent Value - For bank use to identify banks branches, multi-location Retailer
+        //                  05-12 8 Unique Retailer identification assigned by the Retailer Bank
+        //                  13-15 3 Spaces
 
     }
 
