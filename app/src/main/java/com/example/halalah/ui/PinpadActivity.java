@@ -12,6 +12,7 @@ import android.util.Log;
 import android.widget.TextView;
 
 import com.example.halalah.DeviceTopUsdkServiceManager;
+import com.example.halalah.POSTransaction;
 import com.example.halalah.PosApplication;
 import com.example.halalah.R;
 import com.example.halalah.Terminal_Operation_Data;
@@ -20,9 +21,11 @@ import com.example.halalah.cache.ConsumeData;
 import com.example.halalah.card.CardManager;
 import com.example.halalah.iso8583.BCDASCII;
 import com.example.halalah.util.CardSearchErrorUtil;
+import com.example.halalah.util.HexUtil;
 import com.example.halalah.util.PacketProcessUtils;
 import com.topwise.cloudpos.aidl.pinpad.AidlPinpad;
 import com.topwise.cloudpos.aidl.pinpad.GetPinListener;
+import com.topwise.cloudpos.data.PinpadConstant;
 
 public class PinpadActivity extends Activity {
     private static final String TAG = Utils.TAGPUBLIC + PinpadActivity.class.getSimpleName();
@@ -44,6 +47,9 @@ public class PinpadActivity extends Activity {
     private TextView mPin;
     private Intent mIntent;
     private Bundle mParam;
+    private byte[]   byteNewKSN;
+    int     m_WorkKey = 0x01;
+    int    iRetRes = -1;
 
     private boolean mIsCancleInputKey = false;
 
@@ -71,7 +77,8 @@ public class PinpadActivity extends Activity {
         mTestAmount.setText(getString(R.string.pin_tip_amount) + mAmount);
 
         //mPinpadManager = DeviceServiceManager.getInstance().getPinpadManager(0);
-        mPinpad = DeviceTopUsdkServiceManager.getInstance().getPinpadManager(0);
+        mPinpad=DeviceTopUsdkServiceManager.getInstance().getPinpadManager(0);
+
         mCardType = PosApplication.getApp().oGPosTransaction.m_iCardType;
         CardManager.getInstance().finishPreActivity();
 
@@ -97,12 +104,17 @@ public class PinpadActivity extends Activity {
     public void showPinpadActivity(final String cardNo, final String amount) {
         Log.i(TAG, "showPinpadActivity(), cardNo = " + cardNo);
 
+
         new Thread() {
             @Override
             public void run() {
                 try {
                     mPinpad.setPinKeyboardMode(PosApplication.getApp().oGTerminal_Operation_Data.m_iPinKeyboardMode);// keyboard out of order =1 , in order =0
-                    mPinpad.getPin(getParam(cardNo, amount), mPinListener);
+                    byteNewKSN = mPinpad.getDUKPTKsn(m_WorkKey, true);
+                    Log.i(TAG,"getDUKPTKsn with  KSN [ "+ HexUtil.bcd2str(byteNewKSN)+" ]  and m_WorkKey ["+m_WorkKey+" ]");
+
+                    mPinpad.getPin(SetPINParam(), mPinListener);
+                    Log.i(TAG,"getPin with Bundle input [ "+SetPINParam().toString()+" ] Returned [ "+iRetRes+"]");
                     /*mPinpad.setPinKeyboardMode(1);
                     Log.d("topwise", "mPinListener: " + mPinListener);
                     mPinpad.getPin(getDukptParam(cardNo, amount), mPinListener);
@@ -141,24 +153,31 @@ public class PinpadActivity extends Activity {
         return param;
     }
 
-    private Bundle getParam(String cardNo, String amount) {
+    private Bundle SetPINParam() {
         Log.i(TAG, "getParam()");
+        int     m_WorkKey = 0x01;  // Towpise Key index
         int type = 0;
         if (mParam != null) {
             type = mParam.getInt("type", 3) == 3 ? 0 : 1;
         }
 
-        final Bundle param = new Bundle();
-        param.putInt("wkeyid", 0x00);
-        param.putInt("keytype", type);
-        param.putByteArray("random", null);
-        param.putInt("inputtimes", 1);
-        param.putInt("minlength", 4);
-        param.putInt("maxlength", 12);
-        param.putString("pan", cardNo);
-        param.putString("tips", "RMB:" + amount);
-        param.putBoolean("is_lkl", false);
-        return param;
+        Bundle bundle = new Bundle();
+        byte   byteNewKSN;
+
+        Log.i(TAG," GetUserPIN STarted Amount [ "+PosApplication.getApp().oGPosTransaction.m_sTrxAmount+ " ] and Card PAN [ "+PosApplication.getApp().oGPosTransaction.m_sPAN+" ]");
+
+        // Set Key Info
+        bundle.putInt("wkeyid", m_WorkKey);
+        bundle.putInt("key_type", PosApplication.DUKPT_PEK);
+        bundle.putByteArray("random", null);
+        bundle.putInt("inputtimes", 1);
+        bundle.putInt("minlength", 4);
+        bundle.putInt("maxlength", 12);
+        bundle.putString("pan", /*PosApplication.getApp().oGPosTransaction.m_sPAN*/"5892068642097536");//for test
+        bundle.putString("tips", PosApplication.getApp().oGPosTransaction.m_sTrxAmount);
+        bundle.putBoolean("is_lkl", false);
+
+        return bundle;
     }
 
     /*private GetPinListener mGetPinListener = new GetPinListener.Stub() {

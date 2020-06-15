@@ -305,4 +305,5 @@
     <string name="title_activity_search__trx">Search Transaction</string>
     <string name="title_activity_hosttransaction">Host Transaction</string>
     <string name="NaQD_AMOUNT">NAQD Amount</string>
+    <string name="Errorcode">Error Code</string>
 </resources>

@@ -13,6 +13,11 @@ package com.example.halalah;
  */
 public class Terminal_Operation_Data {
 
+        public Terminal_Operation_Data(){
+                m_iPinKeyboardMode=1;
+                m_sMerchantID="111111111111111";
+                m_sTerminalID="12345678";
+        }
         public  boolean m_bregistered;
         public  int m_iSTAN;
         public int m_iTransactionCounter;
@@ -24,9 +29,5 @@ public class Terminal_Operation_Data {
         public int lastreconcile_time;
         public SAF_Info saf_info;
 
-        public Terminal_Operation_Data(){
-                m_iPinKeyboardMode=1;
-                m_sMerchantID="111111111111111";
-                m_sTerminalID="12345678";
-        }
+
 }

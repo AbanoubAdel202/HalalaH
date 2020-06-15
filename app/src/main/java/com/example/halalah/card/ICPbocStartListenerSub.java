@@ -100,7 +100,7 @@ public class ICPbocStartListenerSub extends AidlPbocStartListener.Stub {
         {
                // show selection
                 //todo AID ACtivity selection and return AID selected index or it's value
-                iAID_Index=0;
+                iAID_Index=1;
         }
 
         boolean isSuccess = mPbocManager.importAidSelectRes(iAID_Index);
@@ -406,7 +406,7 @@ public class ICPbocStartListenerSub extends AidlPbocStartListener.Stub {
 
         String[] DE55Tag = new String[]{"82","9F02","9F03","4F","50","9F12","9F36","9F6C","9F26","9F27","9F34",
                                         "84","9F6E","9F10","9F1E","5A","9F24","57","9F33","9F66","9F35","95",
-                                        "9F1A","5F2A","9A","9C","9F37","9F37","9F19","9F25"};
+                                        "9F1A","5F2A","9A","9C","9F37","9F19","9F25"};
         byte[] DE55TlvList = getTlv(DE55Tag);
         Log.d(TAG, "setDE55 DE55TlvList : " + BCDASCII.bytesToHexString(DE55TlvList));
         PosApplication.getApp().oGPosTransaction.m_sICCRelatedTags=BCDASCII.bytesToHexString(DE55TlvList);

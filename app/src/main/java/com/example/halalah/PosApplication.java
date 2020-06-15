@@ -49,6 +49,15 @@ public class PosApplication extends Application{
     public static String MTI_Network_Management_Response="1814";
 
 
+    /****************
+     * DukptKeyType *
+     ***************/
+    public final static int DUKPT_BDK = 0;
+    public final static int DUKPT_IPEK = 1;
+    public final static int DUKPT_MAK = 12;
+    public final static int DUKPT_PEK = 13;
+
+
     /**********************
      * Global Transaction *
      **********************/

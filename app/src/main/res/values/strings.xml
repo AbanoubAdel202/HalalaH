@@ -321,6 +321,8 @@
     <string name="title_activity_p__n_a_q_d__input">P_NAQD_InputActivity</string>
 
     <string name="title_activity_refund__input">Refund_InputActivity</string>
+    <string name="Errorcode">Error Code</string>
+    <string name="MAC_Success">MAC Sucess</string>
 
 
 </resources>

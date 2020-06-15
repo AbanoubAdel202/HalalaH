@@ -20,6 +20,7 @@ import com.example.halalah.TMS.Public_Key;
 import com.example.halalah.TMS.SAMA_TMS;
 import com.example.halalah.iso8583.BCDASCII;
 
+import com.example.halalah.secure.DUKPT_KEY;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.navigation.NavigationView;
@@ -103,7 +104,9 @@ public class MainActivity extends AppCompatActivity {
 
 
         Terminal_Initialization();
-        //StartMADA_APP();
+
+       // StartMADA_APP();
+
 
 
     }
@@ -269,10 +272,13 @@ return true;
     }
     private void Initialize_Security()
     {
+        DUKPT_KEY.InitilizeDUKPT("0123456789ABCDEF0123456789ABCDEF","47FFF00111100000016D");
+
         //todo initialize security parameter
     }
     private void Initialize_EMV_Configuration()
     {
+
         //todo initialize emv parameters
         ////////////////////////////////
 
