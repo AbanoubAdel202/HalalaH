@@ -158,7 +158,6 @@ public class RFPbocStartListenerSub extends AidlPbocStartListener.Stub {
         setExpired();
         setSeqNum();
         setDE55();
-        setConsumePositive55();
 
         isOnline = true;
         Bundle bundle = new Bundle();
@@ -381,20 +380,15 @@ public class RFPbocStartListenerSub extends AidlPbocStartListener.Stub {
     }
 
     private void setDE55() {
-        String[] consume55Tag = new String[]{"9F26", "9F27", "9F10", "9F37", "9F36", "95", "9A", "9C", "9F02", "5F2A",
-                "82", "9F1A", "9F03", "9F33", "9F34", "9F35", "9F1E", "84", "9F09",
-                "91", "71", "72", "DF32", "DF33", "DF34"};
+        String[] consume55Tag = new String[]{"82","9F02","9F03","4F","50","9F12","9F36","9F6C","9F26","9F27","9F34",
+                                             "84","9F6E","9F10","9F1E","5A","9F24","57","9F33","9F66","9F35","95",
+                                             "9F1A","5F2A","9A","9C","9F37","9F19","9F25"};
         byte[] consume55TlvList = getTlv(consume55Tag);
         Log.d(TAG, "setConsume55 consume55TlvList : " + BCDASCII.bytesToHexString(consume55TlvList));
         PosApplication.getApp().oGPosTransaction.m_sICCRelatedTags=BCDASCII.bytesToHexString(consume55TlvList);
     }
 
-    private void setConsumePositive55() {
-        String[] postive55Tag = new String[]{"95", "9F1E", "9F10", "9F36"};
-        byte[] postive55TagTlvList = getTlv(postive55Tag);
-        Log.d(TAG, "setConsume55 postive55TagTlvList : " + BCDASCII.bytesToHexString(postive55TagTlvList));
-      //  PosApplication.getApp().mConsumeData.setICPositiveData(postive55TagTlvList);
-    }
+
 
     private byte[] getTlv(String[] tags) {
         byte[] tempList = new byte[500];

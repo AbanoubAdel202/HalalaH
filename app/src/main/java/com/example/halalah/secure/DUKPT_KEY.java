@@ -118,7 +118,7 @@ Load Last Terminal Data from Terminal Operation Data Table
 
 
 
-/*
+/********************************************
 	\Function Name: InitilizeDUKPT
 	\Param        : string szBDK , string szKSN
 	\Return       : int
@@ -127,7 +127,7 @@ Load Last Terminal Data from Terminal Operation Data Table
 	\Author	      : MoamenAhmed
 	\DT		      : 05/06/2020
 	\Des: Used to initilize DUKPT Module
-*/
+**************************************************/
 
 
     public static boolean InitilizeDUKPT(String szBDK , String szKSN)
@@ -220,7 +220,7 @@ Load Last Terminal Data from Terminal Operation Data Table
     }
 
 
-/*
+/************************
 	\Function Name: CaluclateMACBlock
 	\Param        : string strMACInputData
 	\Return       : string
@@ -229,7 +229,7 @@ Load Last Terminal Data from Terminal Operation Data Table
 	\Author	      : MoamenAhmed
 	\DT		      : 07/06/2020
 	\Des: Used to generate MAC block for  passing input data
-*/
+**************************************/
 
 
     public static String CaluclateMACBlock(String strMACInputData)

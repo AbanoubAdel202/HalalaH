@@ -283,6 +283,7 @@ public class PinpadActivity extends Activity {
                 //socket通信
                 Bundle bundle = new Bundle();
                 bundle.putInt(PacketProcessUtils.PACKET_PROCESS_TYPE, PacketProcessUtils.PACKET_PROCESS_PURCHASE);
+
                 CardManager.getInstance().startActivity(PinpadActivity.this, bundle, PacketProcessActivity.class);
                 /*byte[] sendData = PosApplication.getApp().mConsumeData.getICData();
                 Log.d(TAG, BCDASCII.bytesToHexString(sendData));

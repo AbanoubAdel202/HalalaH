@@ -81,23 +81,17 @@ public class PacketProcessActivity extends Activity {
         ActionBar actionBar = this.getActionBar();
         if (mProcType == PacketProcessUtils.PACKET_PROCESS_ONLINE_INIT) {
             actionBar.setTitle(getString(R.string.socket_proc_commu) + "(" + getString(R.string.online_init) + ") ");
-        } else if (mProcType == PacketProcessUtils.PACKET_PROCESS_SIGN_UP) {
-            actionBar.setTitle(getString(R.string.socket_proc_commu) + "(" + getString(R.string.text_sign_up) + ") ");
-        } else if (mProcType == PacketProcessUtils.PACKET_PROCESS_PARAM_TRANS) {
-            actionBar.setTitle(getString(R.string.socket_proc_commu) + "(" + getString(R.string.text_param_trans) + ") ");
-        } else if (mProcType == PacketProcessUtils.PACKET_PROCESS_STATUS_UPLOAD) {
-            actionBar.setTitle(getString(R.string.socket_proc_commu) + "(" + getString(R.string.text_status_upload) + ") ");
-        } else if (mProcType == PacketProcessUtils.PACKET_PROCESS_ECHO_TEST) {
-            actionBar.setTitle(getString(R.string.socket_proc_commu) + "(" + getString(R.string.text_echo_test) + ") ");
-        } else if (mProcType == PacketProcessUtils.PACKET_PROCESS_IC_CAPK_DOWNLOAD) {
-            actionBar.setTitle(getString(R.string.socket_proc_commu) + "(" + getString(R.string.text_ic_capk_download) + ") ");
-        } else if (mProcType == PacketProcessUtils.PACKET_PROCESS_IC_PARA_DOWNLOAD) {
+        } else if (mProcType == PacketProcessUtils.PACKET_PROCESS_ADMIN) {
+            actionBar.setTitle(getString(R.string.socket_proc_commu) + "(" + getString(R.string.Admin) + ") ");
+        } else if (mProcType == PacketProcessUtils.PACKET_PROCESS_PURCHASE_WITH_NAQD) {
+            actionBar.setTitle(getString(R.string.socket_proc_commu) + "(" + getString(R.string.Purchase_with_naqd) + ") ");
+        } else if (mProcType == PacketProcessUtils.PACKET_PROCESS_AUTHORISATION) {
+            actionBar.setTitle(getString(R.string.socket_proc_commu) + "(" + getString(R.string.Authorization) + ") ");
+        } else if (mProcType == PacketProcessUtils.PACKET_PROCESS_TMS_FILE_DOWNLOAD) {
             actionBar.setTitle(getString(R.string.socket_proc_commu) + "(" + getString(R.string.text_ic_para_download) + ") ");
         } else if (mProcType == PacketProcessUtils.PACKET_PROCESS_PURCHASE) {
-            actionBar.setTitle(getString(R.string.socket_proc_commu) + "(" + getString(R.string.text_consume) + ") ");
+            actionBar.setTitle(getString(R.string.socket_proc_commu) + "(" + getString(R.string.Purchase) + ") ");
 
-        } else if (mProcType == PacketProcessUtils.PACKET_PROCESS_SCAN) {
-            actionBar.setTitle(getString(R.string.socket_proc_commu) + "(" + getString(R.string.text_scan) + ") ");
         }
     }
 
@@ -126,7 +120,7 @@ public class PacketProcessActivity extends Activity {
                     Intent intent = new Intent(this, PacketProcessActivity.class);
                     Bundle bundle = new Bundle();
                     bundle.putBoolean("is_need_proc", true);
-                    if (isNeedProcString.equals("1")) { //下发终端参数
+                  /*  if (isNeedProcString.equals("1")) { //下发终端参数
                         bundle.putInt(PacketProcessUtils.PACKET_PROCESS_TYPE, PacketProcessUtils.PACKET_PROCESS_PARAM_TRANS);
                     } else if (isNeedProcString.equals("2")) { //上传终端状态信息
                         bundle.putInt(PacketProcessUtils.PACKET_PROCESS_TYPE, PacketProcessUtils.PACKET_PROCESS_STATUS_UPLOAD);
@@ -136,7 +130,7 @@ public class PacketProcessActivity extends Activity {
                         bundle.putInt(PacketProcessUtils.PACKET_PROCESS_TYPE, PacketProcessUtils.PACKET_PROCESS_IC_CAPK_DOWNLOAD);
                     } else if (isNeedProcString.equals("5")) { //参数下载
                         bundle.putInt(PacketProcessUtils.PACKET_PROCESS_TYPE, PacketProcessUtils.PACKET_PROCESS_IC_PARA_DOWNLOAD);
-                    }
+                    }*/
                     intent.putExtras(bundle);
                     startActivityForResult(intent, 100);
                 } else {
@@ -195,29 +189,11 @@ public class PacketProcessActivity extends Activity {
                 } else {
                     getPacketAndSend(data);
                 }
-            } else if (mProcType == PacketProcessUtils.PACKET_PROCESS_SIGN_UP && mBundle.getBoolean("is_to_home_page", false)) {
-                String temp = null;
-                if (mResponseDetail != null && mResponseDetail.length() > 2) {
-                    temp = mResponseDetail.substring(0, 2);
-                    Log.i(TAG, "temp = " + temp);
-                }
-                if (temp == null || !temp.equals("01")) {
-                    mHandle.removeMessages(MSG_TIME_UPDATE);
-                    Intent intent = new Intent(this, MainActivity.class);
-                    startActivity(intent);
-                    finish();
-                } else {
-                    showResult(mResponse, mResponseDetail, errReason);
-                }
             }  else if (mProcType == PacketProcessUtils.PACKET_PROCESS_PURCHASE && (mResponse != null) && (mResponse.equals("00"))) {
                 byte[] field47 = mUnpackPacket.getField47();
                 showConsumeSuccResult(mResponse, mResponseDetail, field47);
 
-            } else if (mProcType == PacketProcessUtils.PACKET_PROCESS_SCAN && (mResponse != null) && (mResponse.equals("00"))) {
-                byte[] field47 = mUnpackPacket.getField47();
-                showScanSuccResult(mResponse, mResponseDetail, field47);
-
-            } else {
+            }  else {
                 showResult(mResponse, mResponseDetail, errReason);
             }
         } else {

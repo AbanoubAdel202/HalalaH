@@ -4,6 +4,9 @@ package com.example.halalah.TMS;
 import android.content.Context;
 import android.util.Log;
 
+import com.example.halalah.POS_MAIN;
+import com.example.halalah.PosApplication;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -250,7 +253,12 @@ public class SAMA_TMS implements Serializable
 
 
 
-
+/** for test**/
+int aidindexttest=0;
+int listlength=40;
+AID_Data[] AIDDATAtest = new AID_Data[listlength];
+Public_Key[] publickeystest=new Public_Key[listlength];
+int pkindextest=0;
 
 
 
@@ -285,6 +293,9 @@ public class SAMA_TMS implements Serializable
             aid_list=new AID_List();
             aid_data=new AID_Data();
             revoked_certificates=new Revoked_Certificates();
+            int aidindexttest=0;
+            int pkindextest=0;
+            int listlength=40;
         }
       public  void Get_Sama_param(String DE72_Buffer, Context applicationContext)
                     {
@@ -668,8 +679,12 @@ public class SAMA_TMS implements Serializable
                                         public_keys.CA_Public_Key_Length=Capk_seg1_elements[7];
                                         public_keys.CA_Public_Key_Expiry_Date=Capk_seg1_elements[8];
 
+                                        publickeystest[pkindextest]=public_keys;
+                                        pkindextest++;
+
+                                        // todo Save(public_key)         // save each data on file
                                     }
-                                // todo Save(public_key)         // save each data on file
+
 
                                 break;
                             case DT_Connection_Parameters:
@@ -915,6 +930,7 @@ public class SAMA_TMS implements Serializable
                                     }
 
                                 }
+                                listlength=aid_list.AID.length;
                                 //todo save(aid_list);
                                 break;
                             case DT_AID_Data:
@@ -929,25 +945,30 @@ public class SAMA_TMS implements Serializable
                                     System.arraycopy(temp, 0, aidD_seg1_elements, 0, temp.length);
                                     if (aidD_seg1_elements[0].length() > 3) {
                                         String aid = aidD_seg1_elements[0].substring(3, aidD_seg1_elements[0].length());  //check max length 3
-                                        aid_data.AID=aid;
+                                        aid_data.AID=aid.trim();
                                     }
 
-                                    aid_data.AID_Label=aidD_seg1_elements[1];
-                                    aid_data.Terminal_AID_version_numbers=aidD_seg1_elements[2];
-                                    aid_data.Exact_only_selection=aidD_seg1_elements[3];
-                                    aid_data.Skip_EMV_processing=aidD_seg1_elements[4];
-                                    aid_data.Default_TDOL=aidD_seg1_elements[5];
-                                    aid_data.Default_DDOL=aidD_seg1_elements[6];
-                                    aid_data.EMV_additional_tags=aidD_seg1_elements[7];
-                                    aid_data.Denial_action_code=aidD_seg1_elements[8];
-                                    aid_data.Online_action_code=aidD_seg1_elements[9];
-                                    aid_data.Default_action_code=aidD_seg1_elements[10];
-                                    aid_data.Threshold_Value_for_Biased_Random_Selection=aidD_seg1_elements[11];
-                                    aid_data.Target_Percentage=aidD_seg1_elements[12];
-                                    aid_data.Maximum_Target_Percentage_for_Biased_Random_Selection=aidD_seg1_elements[13];
+                                    aid_data.AID_Label=aidD_seg1_elements[1].trim();
+                                    aid_data.Terminal_AID_version_numbers=aidD_seg1_elements[2].trim();
+                                    aid_data.Exact_only_selection=aidD_seg1_elements[3].trim();
+                                    aid_data.Skip_EMV_processing=aidD_seg1_elements[4].trim();
+                                    aid_data.Default_TDOL=aidD_seg1_elements[5].trim();
+                                    aid_data.Default_DDOL=aidD_seg1_elements[6].trim();
+                                    aid_data.EMV_additional_tags=aidD_seg1_elements[7].trim();
+                                    aid_data.Denial_action_code=aidD_seg1_elements[8].trim();
+                                    aid_data.Online_action_code=aidD_seg1_elements[9].trim();
+                                    aid_data.Default_action_code=aidD_seg1_elements[10].trim();
+                                    aid_data.Threshold_Value_for_Biased_Random_Selection=aidD_seg1_elements[11].trim();
+                                    aid_data.Target_Percentage=aidD_seg1_elements[12].trim();
+                                    aid_data.Maximum_Target_Percentage_for_Biased_Random_Selection=aidD_seg1_elements[13].trim();
 
+                                    //for testing porpose
+                                    AIDDATAtest[aidindexttest]=aid_data;
+                                    aidindexttest++;
+                                    //save(AID_data);
                                 }
-                                //save(AID_data);
+
+
                                 break;
                             case DT_Revoked_Certificates:
                                 for (int i = 1; i < segments.length; i++) {
@@ -1088,17 +1109,34 @@ public class SAMA_TMS implements Serializable
 
 
 
-       public static Public_Key[] get_all_CAPK()
-       {        Public_Key[] public_keys=new Public_Key[20];
+       public  Public_Key[] get_all_CAPK()
+       {    AID_List aid_list = Get_AID_LIST_PARAM();
+           Public_Key[] public_keys=new Public_Key[aid_list.AID.length];
        //todo get all public keys
-           return public_keys;
+          // return public_keys;
+           return publickeystest;
        }
-        public static AID_Data[] GET_AID_Data_PARAM()
+        public  AID_Data[] GET_AID_Data_PARAM()
         {
-            AID_Data[] aid_data=new AID_Data[20];
-            return aid_data;
+
+            AID_List aid_list = Get_AID_LIST_PARAM();
+            // todo get AID array from database
+           // AID_Data[] aiddata = new AID_Data[aid_list.AID.length];
+
+         //   return aiddata;
+            return AIDDATAtest;
         }
 
+        public AID_List Get_AID_LIST_PARAM(){
+            //todo Get AID_list from Database
+            AID_List aidlist= PosApplication.getApp().oGSama_TMS.aid_list;
+            return aidlist;
+        }
+
+        public void clear() {
+            this.listlength=0;
+            //todo clear all elements;
+        }
     }
 
 /*class Connection_Parameters {

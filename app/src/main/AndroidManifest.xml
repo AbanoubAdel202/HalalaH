@@ -122,6 +122,7 @@
         <activity android:name=".ui.admin_settings.OthersSettingActivity" />
         <activity android:name=".ui.admin_settings.CommunicationSettingActivity" />
         <activity android:name=".ui.admin_settings.ImportKeyActivity" />
+        <activity android:name=".ui.ShowResultActivity"/>
         <activity
             android:name=".MainActivity"
             android:label="@string/app_name"

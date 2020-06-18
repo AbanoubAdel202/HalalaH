@@ -323,6 +323,9 @@
     <string name="title_activity_refund__input">Refund_InputActivity</string>
     <string name="Errorcode">Error Code</string>
     <string name="MAC_Success">MAC Sucess</string>
+    <string name="Authorization">Authorization</string>
+    <string name="Purchase_with_naqd">Purchase with NAQD</string>
+    <string name="Admin">Admin</string>
 
 
 </resources>

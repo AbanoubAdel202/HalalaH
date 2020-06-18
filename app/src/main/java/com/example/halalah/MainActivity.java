@@ -279,33 +279,35 @@ return true;
     private void Initialize_EMV_Configuration()
     {
 
-        //todo initialize emv parameters
-        ////////////////////////////////
+
 
         AidlPboc mPbocManager = DeviceTopUsdkServiceManager.getInstance().getPbocManager();
 
         try {
             boolean updateResult = false;
             boolean flag = true;
-            int i = 0;
+
             String success = "";
             String fail = "";
             // Get IC card parameter information
             mPbocManager.updateAID(0x03, null);
             mPbocManager.updateCAPK(0x03, null);
 
-            AID_Data AIDdata[] = SAMA_TMS.GET_AID_Data_PARAM();
-            String sAIDdata = "0000000000000000";  //todo getting AID in specific string AS TOP WISE TAGS AND SPEC
+            AID_Data AIDdata[] = PosApplication.getApp().oGSama_TMS.GET_AID_Data_PARAM();
+
+
             for(int index=0;index<AIDdata.length;index++)
             {
+                String sAIDdata = POS_MAIN.FormatAIDData(AIDdata[index]);
                 updateResult = mPbocManager.updateAID(0x01, sAIDdata);
 
             }
 
-            Public_Key CAPK[] = SAMA_TMS.get_all_CAPK();
-            String sCAPK="000000000000000";// todo capk conversion to string as TOP wise spec AND TAGS
+            Public_Key CAPK[] = PosApplication.getApp().oGSama_TMS.get_all_CAPK();
+
             for (int index = 0; index<CAPK.length; index++)
             {
+                String sCAPK=POS_MAIN.FormatCAKeys(CAPK[index]);
                 updateResult = mPbocManager.updateCAPK(0x01,sCAPK);
             }
 

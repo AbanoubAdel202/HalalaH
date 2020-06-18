@@ -1,14 +1,18 @@
 package com.example.halalah.card;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.RemoteException;
 import android.util.Log;
 
 import com.example.halalah.DeviceTopUsdkServiceManager;
+import com.example.halalah.POSTransaction;
+import com.example.halalah.POS_MAIN;
 import com.example.halalah.PosApplication;
 import com.example.halalah.Utils;
 //import com.example.halalah.activity.CardConfirmActivity;
 import com.example.halalah.cache.ConsumeData;
+import com.example.halalah.ui.PinpadActivity;
 import com.topwise.cloudpos.aidl.emv.AidlCheckCardListener;
 import com.topwise.cloudpos.aidl.emv.AidlPboc;
 import com.topwise.cloudpos.aidl.emv.EmvTransData;
@@ -35,7 +39,7 @@ public class CheckCardListenerSub extends AidlCheckCardListener.Stub {
 
         String cardNo = data.getCardno();
         String track2 = data.getSecondTrackData();
-        String track3 = data.getThirdTrackData();
+       // String track3 = data.getThirdTrackData();
 
         Log.d(TAG, "onFindMagCard cardNo : " + cardNo + " track2 : " + track2);
         if (cardNo == null || isTrack2Error(track2)) {
@@ -50,12 +54,20 @@ public class CheckCardListenerSub extends AidlCheckCardListener.Stub {
             PosApplication.getApp().oGPosTransaction.m_sCardExpDate=data.getExpiryDate();
             track2 = track2.replace("=", "D");
             PosApplication.getApp().oGPosTransaction.m_sTrack2=track2;
+
             //todo service code check
             /*if (track3 != null) {
                 track3 = track3.replace("=", "D");
                 PosApplication.getApp().mConsumeData.setThirdTrackData(track3);
             }*/
-          //  CardManager.getInstance().startActivity(mContext, null, CardConfirmActivity.class);
+            //CardManager.getInstance().startActivity(mContext, null, CardConfirmActivity.class);
+            POS_MAIN.Recognise_card();
+            POS_MAIN.Check_transaction_allowed(PosApplication.getApp().oGPosTransaction.m_enmTrxType);
+            POS_MAIN.Check_transaction_limits();
+            POS_MAIN.supervisor_pass_required();
+            CardManager.getInstance().setConfirmCardInfo(true);
+            Intent intent = new Intent(mContext, PinpadActivity.class);
+            mContext.startActivity(intent);
 
         }
     }

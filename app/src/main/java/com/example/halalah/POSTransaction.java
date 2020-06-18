@@ -6,6 +6,7 @@ import com.example.halalah.iso8583.BCDASCII;
 import com.example.halalah.iso8583.ISO8583;
 import com.example.halalah.packet.PackPurchase;
 import com.example.halalah.packet.PackUtils;
+import com.example.halalah.secure.DUKPT_KEY;
 import com.example.halalah.util.ExtraUtil;
 
 import java.lang.reflect.Array;
@@ -249,6 +250,7 @@ public class POSTransaction {
     {
         return "0";
     }
+
     public String ComposeTerminalRegistrationData()
     {
 
@@ -407,9 +409,8 @@ public class POSTransaction {
             sMAC.concat("F");
         }
 
-        //todo send bmac or smac to security module for mac generation
+        m_sTrxMACBlock= DUKPT_KEY.CaluclateMACBlock(sMAC);
 
-        //m_sTrxMACBlock= securityfunction for mac
         return "0";
     }
 
@@ -708,6 +709,7 @@ public class POSTransaction {
         Log.i(TAG, "DE 62 [m_sTerminalStatus]= " + m_sTerminalStatus+"Length ="+m_sTerminalStatus.length());
 
         //64.Transaction Block
+        ComposeMACBlockData(m_enmTrxType);
         m_RequestISOMsg.SetDataElement(64, m_sTrxMACBlock.getBytes(), m_sTrxMACBlock.length());
         Log.i(TAG, "DE 64 [m_sTrxMACBlock]= " + m_sTrxMACBlock+"Length ="+m_sTrxMACBlock.length());
 
@@ -873,7 +875,7 @@ public class POSTransaction {
         m_RequestISOMsg.SetDataElement(62, m_sTerminalStatus.getBytes(), m_sTerminalStatus.length());
         Log.i(TAG, "DE 62 [m_sTerminalStatus]= " + m_sTerminalStatus+"Length ="+m_sTerminalStatus.length());
 
-
+        ComposeMACBlockData(m_enmTrxType);
         m_RequestISOMsg.SetDataElement(64, m_sTrxMACBlock.getBytes(), m_sTrxMACBlock.length());
         Log.i(TAG, "DE 64 [m_sTrxMACBlock]= " + m_sTrxMACBlock+"Length ="+m_sTrxMACBlock.length());
 
@@ -1035,6 +1037,7 @@ public class POSTransaction {
         // ComposeMACData(TrxType);
 
         // Set MAC
+        ComposeMACBlockData(m_enmTrxType);
         m_RequestISOMsg.SetDataElement(64, m_sTrxMACBlock.getBytes(), m_sTrxMACBlock.length());
         Log.i(TAG, " DE 64 [m_sTrxMACBlock]= " + m_sTrxMACBlock+"Length ="+m_sTrxMACBlock.length());
 
@@ -1127,6 +1130,7 @@ public class POSTransaction {
         Log.i(TAG, " DE 124 [m_sReconciliationTotals]= " + m_sReconciliationTotals+"Length ="+m_sReconciliationTotals.length());
 
         //MAC
+        ComposeMACBlockData(m_enmTrxType);
         m_RequestISOMsg.SetDataElement(128, m_sTrxMACBlock.getBytes(), m_sTrxMACBlock.length());
         Log.i(TAG, " DE 124 [m_sTrxMACBlock]= " + m_sTrxMACBlock+"Length ="+m_sTrxMACBlock.length());
 
@@ -1277,6 +1281,7 @@ public class POSTransaction {
         Log.i(TAG, " DE 72 [m_sDataRecord72]= " + m_sDataRecord72+"Length ="+m_sDataRecord72.length());
 
         //MAC
+        ComposeMACBlockData(m_enmTrxType);
         m_RequestISOMsg.SetDataElement(128, m_sTrxMACBlock.getBytes(), m_sTrxMACBlock.length());
         Log.i(TAG, " DE 124 [m_sTrxMACBlock]= " + m_sTrxMACBlock+"Length ="+m_sTrxMACBlock.length());
         return 0;
@@ -1520,6 +1525,7 @@ public class POSTransaction {
         Log.i(TAG, "DE 62 [m_sTerminalStatus]= " + m_sTerminalStatus+"Length ="+m_sTerminalStatus.length());
 
         //64.Transaction Block
+        ComposeMACBlockData(m_enmTrxType);
         m_RequestISOMsg.SetDataElement(64, m_sTrxMACBlock.getBytes(), m_sTrxMACBlock.length());
         Log.i(TAG, "DE 64 [m_sTrxMACBlock]= " + m_sTrxMACBlock+"Length ="+m_sTrxMACBlock.length());
 
@@ -1693,6 +1699,7 @@ public class POSTransaction {
         Log.i(TAG, "DE 62 [m_sTerminalStatus]= " + m_sTerminalStatus+"Length ="+m_sTerminalStatus.length());
 
         //64.Transaction Block
+        ComposeMACBlockData(m_enmTrxType);
         m_RequestISOMsg.SetDataElement(64, m_sTrxMACBlock.getBytes(), m_sTrxMACBlock.length());
         Log.i(TAG, "DE 64 [m_sTrxMACBlock]= " + m_sTrxMACBlock+"Length ="+m_sTrxMACBlock.length());
 

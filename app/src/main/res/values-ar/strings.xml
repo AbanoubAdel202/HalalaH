@@ -306,4 +306,7 @@
     <string name="title_activity_hosttransaction">Host Transaction</string>
     <string name="NaQD_AMOUNT">NAQD Amount</string>
     <string name="Errorcode">Error Code</string>
+    <string name="Authorization">Authorization</string>
+    <string name="Purchase_with_naqd">Purchase with NAQD</string>
+    <string name="Admin">Admin</string>
 </resources>

@@ -95,15 +95,15 @@ public class ConsumeSuccessActivity extends Activity implements View.OnClickList
         mField47 = mBundle.getByteArray("result_field47");
 
         ActionBar actionBar = this.getActionBar();
-        actionBar.setTitle(R.string.title_consume);
+//        actionBar.setTitle(R.string.title_consume);
 
 //        mTransaction = TransactionSub.getInstance();
 
         mAlertDialog = new AlertDialog.Builder(this);
         getPrintMessage(mField47);
         //add by zongli for fake data
-        //showConsumeData(mShowMsg);
-        showConsumeFakeData(mShowMsg);
+        showConsumeData(mShowMsg);
+        //showConsumeFakeData(mShowMsg);
         //add end
 
         mHandle.sendEmptyMessage(MSG_TIME_UPDATE);
@@ -241,9 +241,9 @@ public class ConsumeSuccessActivity extends Activity implements View.OnClickList
 //                mPrintMerchant = "POS签购单\n===交易凭证(商户联)===\n" + mShowMsg + getString(R.string.print_no_sign)+"\n\n\n\n\n";
 //                mPrintBank = "POS签购单\n===交易凭证(银行联)===\n" + mShowMsg + getString(R.string.print_no_sign)+"\n\n\n\n\n";
 //            } else {
-            mPrintHolder = "POS签购单\n==交易凭证(持卡人联)==\n" + mShowMsg + new String(printConfirmHolder, "GBK") + "\n\n\n\n\n";
+            mPrintHolder = "POS HALA.com\n== محمد:هلا==\n" + mShowMsg + new String(printConfirmHolder, "GBK") + "\n\n\n\n\n";
             mPrintMerchant = "POS签购单\n===交易凭证(商户联)===\n" + mShowMsg + new String(printConfirmMerchant, "GBK") + "\n\n\n\n\n";
-            mPrintBank = "POS签购单\n===交易凭证(银行联)===\n" + mShowMsg + new String(printConfirmBank, "GBK") + "\n\n\n\n\n";
+            mPrintBank = "POS签购单\n===hala هلا===\n" + mShowMsg + new String(printConfirmBank, "GBK") + "\n\n\n\n\n";
 //            }
             Log.d(TAG, "mShowMsg = " + mShowMsg);
             Log.d(TAG, "mPrintHolder = " + mPrintHolder);
@@ -260,28 +260,28 @@ public class ConsumeSuccessActivity extends Activity implements View.OnClickList
         String data;
         String[] datas;
         for (int i = 0; i < print.length; i++) {
-            if (print[i].indexOf("金额") != -1) {
-                data = print[i].replace("金额:", "");
+            if (print[i].indexOf("Amount") != -1) {
+                data = print[i].replace("Amount:", "");
                 datas = data.split(" ");
                 mConsumeAmt.setText(datas[1]);
-            } else if (print[i].indexOf("交易类型") != -1) {
-                data = print[i].replace("交易类型:", "");
+            } else if (print[i].indexOf("Transaction Type\n") != -1) {
+                data = print[i].replace("Transaction Type\n:", "");
                 mConsumeType.setText(data);
-            } else if (print[i].indexOf("卡号") != -1) {
-                data = print[i].replace("卡号:", "");
+            } else if (print[i].indexOf("card number\n") != -1) {
+                data = print[i].replace("card number\n:", "");
                 mConsumeCardNum.setText(data);
-            } else if (print[i].indexOf("凭证号") != -1) {
-                data = print[i].replace("凭证号:", "");
+            } else if (print[i].indexOf("Voucher number") != -1) {
+                data = print[i].replace("Voucher number:", "");
                 datas = data.split(" ");
                 mConsumeVenchor.setText(datas[0]);
-            } else if (print[i].indexOf("操作员") != -1) {
+            } else if (print[i].indexOf("operator") != -1) {
                 data = print[i].substring(print[i].length() - 2, print[i].length());
                 mOperatorNum.setText(data);
-            } else if (print[i].indexOf("交易参考号") != -1) {
-                data = print[i].replace("交易参考号:", "");
+            } else if (print[i].indexOf("Transaction reference number\n") != -1) {
+                data = print[i].replace("Transaction reference number\n:", "");
                 mConsumeReference.setText(data);
-            } else if (print[i].indexOf("时间") != -1) {
-                data = print[i].replace("时间:", "");
+            } else if (print[i].indexOf("time") != -1) {
+                data = print[i].replace("time:", "");
                 mConsumeTime.setText(data);
             }
         }
