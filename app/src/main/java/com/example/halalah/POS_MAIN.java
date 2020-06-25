@@ -26,6 +26,7 @@ import java.util.Locale;
  */
 public class POS_MAIN {
     private static final String TAG = POS_MAIN.class.getSimpleName();
+    public static boolean isforced;
 
     public Context mcontext;
         public POS_MAIN()
@@ -86,16 +87,23 @@ public class POS_MAIN {
                 mcontext.startActivity(AmountACT);
                 break;
             case AUTHORISATION_VOID://AUTHORISATION_VOID:
+                AmountACT = new Intent(mcontext, AmountInputActivity.class);
+                AmountACT.putExtra("transaction Type",Trxtype);
                 break;
             case AUTHORISATION_EXTENSION://AUTHORISATION_EXTENSION
-
+                AmountACT = new Intent(mcontext, AmountInputActivity.class);
+                AmountACT.putExtra("transaction Type",Trxtype);
                 break;
             case PURCHASE_ADVICE://PURCHASE_ADVICE:
                 //todo PURCHASE_ADVICE
+                AmountACT = new Intent(mcontext, AmountInputActivity.class);
+                AmountACT.putExtra("transaction Type",Trxtype);
                 break;
 
             case CASH_ADVANCE://CASH_ADVANCE:
                 //todo start cash advance
+                AmountACT = new Intent(mcontext, AmountInputActivity.class);
+                AmountACT.putExtra("transaction Type",Trxtype);
                 break;
             case REVERSAL://REVERSAL:
                 //todo check and do reversal
@@ -502,6 +510,8 @@ DF03 Check Sum                                [20]   >> 4410C6D51C2F83ADFD92528F
         return strFormatedCAKey.toString();
 
     }
+
+
 
 }
 

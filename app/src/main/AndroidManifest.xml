@@ -61,17 +61,17 @@
             android:label="@string/title_activity_network_settings"
             android:theme="@style/FullscreenTheme" />
         <activity
-            android:name=".snapshot"
+            android:name=".ui.totals.snapshot"
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:label="@string/title_activity_snapshot"
             android:theme="@style/FullscreenTheme" />
         <activity
-            android:name=".running_totals"
+            android:name=".ui.totals.running_totals"
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:label="@string/title_activity_running_totals"
             android:theme="@style/FullscreenTheme" />
         <activity
-            android:name=".reconciliation"
+            android:name=".ui.totals.reconciliation"
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:label="@string/title_activity_reconciliation"
             android:theme="@style/FullscreenTheme" />

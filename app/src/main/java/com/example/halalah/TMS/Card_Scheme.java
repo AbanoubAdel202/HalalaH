@@ -46,7 +46,7 @@ package com.example.halalah.TMS;
              m_sCard_Scheme_ID="";
              m_sCard_Scheme_Name_Arabic="";
              m_sCard_Scheme_Name_English="";
-             m_sCard_Scheme_Acquirer_ID="";
+             m_sCard_Scheme_Acquirer_ID="0000";
              m_sMerchant_Category_Code="";
              m_sMerchant_ID="";
              m_sTerminal_ID="";

@@ -6,6 +6,7 @@ import android.os.RemoteException;
 import android.util.Log;
 
 import com.example.halalah.DeviceTopUsdkServiceManager;
+import com.example.halalah.POSTransaction;
 import com.example.halalah.POS_MAIN;
 import com.example.halalah.PosApplication;
 import com.example.halalah.Utils;
@@ -147,6 +148,7 @@ public class ICPbocStartListenerSub extends AidlPbocStartListener.Stub {
         isGetPin = true;
         Bundle param = new Bundle();
         param.putInt("type", type);
+
         CardManager.getInstance().startActivity(mContext, param, PinpadActivity.class);
     }
 
@@ -167,6 +169,38 @@ public class ICPbocStartListenerSub extends AidlPbocStartListener.Stub {
     @Override
     public void onRequestOnline() throws RemoteException {
         Log.d(TAG, "onRequestOnline()");
+
+        // getting CVM Results
+        byte[] bCVMR;
+        String[] sCVMR_Tag = new String[]{"9F34"};
+        bCVMR= getTlv(sCVMR_Tag);
+        switch(bCVMR[3]) {
+            case 0x01:
+            case 0x41:
+                PosApplication.getApp().oGPosTransaction.m_enmTrxCVM = POSTransaction.CVM.OFFLINE_PIN;
+                break;
+            case 0x02:
+            case 0x42:
+                PosApplication.getApp().oGPosTransaction.m_enmTrxCVM = POSTransaction.CVM.ONLINE_PIN;
+                break;
+            case 0x03:
+            case 0x43:
+            case 0x05:
+            case 0x45:
+                PosApplication.getApp().oGPosTransaction.m_enmTrxCVM = POSTransaction.CVM.OFFLINE_PIN_SIGNATURE;
+                break;
+            case 0x1E:
+            case 0x5E:
+                PosApplication.getApp().oGPosTransaction.m_enmTrxCVM = POSTransaction.CVM.SIGNATURE;
+            case 0x1F:
+            case 0x5F:
+                PosApplication.getApp().oGPosTransaction.m_enmTrxCVM = POSTransaction.CVM.NO_CVM;
+
+
+
+
+        }
+
 
         setExpired();
         setSeqNum();

@@ -49,6 +49,7 @@ public class CheckCardListenerSub extends AidlCheckCardListener.Stub {
             cancelCheckCard();
             CardManager.getInstance().callBackError(CARD_SEARCH_ERROR_REASON_MAG_EMV);
         } else {
+            PosApplication.getApp().oGPosTransaction.m_enmTrxCardType= POSTransaction.CardType.MAG;
             PosApplication.getApp().oGPosTransaction.m_iCardType=ConsumeData.CARD_TYPE_MAG;
             PosApplication.getApp().oGPosTransaction.m_sPAN=cardNo;
             PosApplication.getApp().oGPosTransaction.m_sCardExpDate=data.getExpiryDate();
@@ -87,6 +88,7 @@ public class CheckCardListenerSub extends AidlCheckCardListener.Stub {
         Log.d(TAG, "setEmvKernelType: " + result);
         EmvTransDataSub emvTransDataSub = new EmvTransDataSub();
         mEmvTransData = emvTransDataSub.getEmvTransData(true);
+        PosApplication.getApp().oGPosTransaction.m_enmTrxCardType= POSTransaction.CardType.ICC;
         mPbocManager.processPBOC(mEmvTransData, new ICPbocStartListenerSub(mContext));
     }
 
@@ -99,6 +101,7 @@ public class CheckCardListenerSub extends AidlCheckCardListener.Stub {
         Log.d(TAG, "setEmvKernelType: " + result);
         EmvTransDataSub emvTransDataSub = new EmvTransDataSub();
         mEmvTransData = emvTransDataSub.getEmvTransData(false);
+        PosApplication.getApp().oGPosTransaction.m_enmTrxCardType= POSTransaction.CardType.CTLS;
         mPbocManager.processPBOC(mEmvTransData, new RFPbocStartListenerSub(mContext));
     }
 

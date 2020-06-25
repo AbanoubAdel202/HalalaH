@@ -18,6 +18,7 @@ import com.example.halalah.TMS.SAMA_TMS;
  */
 public class PosApplication extends Application{
     private static final String TAG = Utils.TAGPUBLIC + PosApplication.class.getSimpleName();
+    public static boolean testapp=false;
 
     private Context mContext;
     private static PosApplication mPosApplication=new PosApplication();

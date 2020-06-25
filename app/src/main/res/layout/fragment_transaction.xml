@@ -24,20 +24,21 @@
                 android:layout_gravity="center"
                 android:layout_marginStart="20dp"
                 android:layout_marginTop="32dp"
-                android:background="@drawable/btn2"
+                android:background="@drawable/drawable_button_consume"
                 android:clickable="true"
                 android:onClick="onClick"
                 android:text="@string/authorization" />
 
             <Button
-                android:id="@+id/button2"
+                android:id="@+id/Refund_btn"
                 android:layout_width="100dp"
                 android:layout_height="100dp"
+                android:layout_gravity="center"
                 android:layout_marginStart="20dp"
                 android:layout_marginTop="32dp"
-                android:layout_gravity="center"
                 android:layout_weight="1"
-                android:text="Button" />
+                android:background="@drawable/btn1"
+                android:text="@string/Refund" />
 
             <Button
                 android:id="@+id/preauthorization_btn"

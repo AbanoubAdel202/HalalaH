@@ -185,7 +185,7 @@ View root =inflater.inflate(R.layout.fragment_home_transaction, container, false
 
 
                 }
-                Initialize_EMV_Configuration();
+                //Initialize_EMV_Configuration();
                 DUKPT_KEY.InitilizeDUKPT("0123456789ABCDEF0123456789ABCDEF","47FFF00111100000016D");
                 PosApplication.getApp().oGPosTransaction.Reset();  //
                 PosApplication.getApp().oGPosTransaction.m_enmTrxType=POSTransaction.TranscationType.PURCHASE;
@@ -242,5 +242,7 @@ View root =inflater.inflate(R.layout.fragment_home_transaction, container, false
 
 
     }
+
+
 
 }

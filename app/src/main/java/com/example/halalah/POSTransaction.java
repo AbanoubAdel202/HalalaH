@@ -1,7 +1,9 @@
 package com.example.halalah;
 import android.util.Log;
+import android.widget.Switch;
 
 import com.example.halalah.TMS.Card_Scheme;
+import com.example.halalah.TMS.SAMA_TMS;
 import com.example.halalah.iso8583.BCDASCII;
 import com.example.halalah.iso8583.ISO8583;
 import com.example.halalah.packet.PackPurchase;
@@ -27,6 +29,9 @@ public class POSTransaction {
 
     // Card Type
     public int m_iCardType;
+
+
+
     public enum CardType{
         MAG  ,
         ICC  ,
@@ -57,12 +62,14 @@ public class POSTransaction {
 
     // Mostafa hussiny 18/5/2020 modified for all CVM list
     // CVM Type
-    enum CVM{
+    public enum CVM{
         ONLINE_PIN,
         OFFLINE_PIN,
         SIGNATURE,
         NO_CVM,
-        CDCVM
+        CDCVM,
+        OFFLINE_PIN_SIGNATURE,
+
     }
 
     // Constractur
@@ -166,10 +173,12 @@ public class POSTransaction {
     public String	m_sOrigFWAquirerInsIDCode;          /* Original DE 33 Forwarding Aquirer Insititution ID Code , Size 11 Default "00" */
     public String	m_sOrigRRNumber;			        /* Original DE 37 Retrival Refrence Number , Size 12*/
     public String	m_sOrigLocalTrxDate;			    /* Original Local Transaction Date , Size 6 Default value of ‘000000’ if unavailable.*/
+    public TranscationType   m_enum_OrigTRxtype;            /* Original Transaction Type*/
     /*********************************************/
 
    public Card_Scheme card_scheme;
        public String m_sAID;                             // AID for the card ICC
+
 
 //    Terminal Status Data (REQUEST), to be used on DE62
 //    *********************************************
@@ -1777,6 +1786,39 @@ public class POSTransaction {
 
     public void GetDE03()
     {
+
+/*
+        mada Chip Card:
+        000000 Purchase from Default Account
+        090000 Purchase with Cash Back from Default Account
+        200000 Refund to Default Account
+        500000 Bill / Fee Payment from Default Account
+        mada Magnetic Stripe or Contactless Card:
+        000000 Purchase from Default Account
+        200000 Refund to Default Account
+        500000 Bill / Fee Payment from Default Account
+        GCCNET:
+        000000 Purchase from Default Account
+        200000 Refund to Default Account
+        500000 Bill / Fee Payment from Default Account
+        Non-mada (IBCS Chip Card:
+        000000 Purchase from Default Account
+        003000 Purchase from Credit Card Account
+        013000 Cash Advance from Credit Card Account
+        200000 Refund to Default Account
+        203000 Refund to Credit Card Account
+        500000 Bill / Fee Payment from Default Account
+        903000 Authorisation Only from Credit Card Account
+        Non-mada (IBCS) Magnetic Stripe or Contactless Card:
+        000000 Purchase from Default Account
+        003000 Purchase from Credit Card Account
+        013000 Cash Advance from Credit Card Account
+        200000 Refund to Default Account
+        203000 Refund to Credit Card Account
+        500000 Bill / Fee Payment from Default Account
+        903000 Authorisation Only from Credit Card Account
+*/
+
         if(card_scheme.m_sCard_Scheme_ID=="P1") {
             switch (m_enmTrxType) {
                 case PURCHASE:
@@ -1785,7 +1827,7 @@ public class POSTransaction {
                     PosApplication.getApp().oGPosTransaction.m_sProcessCode="000000";
                     break;
                 case PURCHASE_WITH_NAQD:
-                PosApplication.getApp().oGPosTransaction.m_sProcessCode="090000";
+                    PosApplication.getApp().oGPosTransaction.m_sProcessCode="090000";
                 break;
                 case AUTHORISATION_ADVICE:
                     PosApplication.getApp().oGPosTransaction.m_sProcessCode="220000";
@@ -1798,17 +1840,24 @@ public class POSTransaction {
                 case AUTHORISATION_EXTENSION:
                     PosApplication.getApp().oGPosTransaction.m_sProcessCode="900000";
                     break;
-
-
-
                 case AUTHORISATION_VOID:
+                    PosApplication.getApp().oGPosTransaction.m_sProcessCode="220000";
+                    break;
                 case REVERSAL:
-                    //todo original processing code
+                    //original processing code and should not alter the data
                     break;
                 case RECONCILIATION:
-                case CASH_ADVANCE:
+
                     PosApplication.getApp().oGPosTransaction.m_sProcessCode="500000";
                     break;
+                case CASH_ADVANCE:
+                    switch(card_scheme.m_sCard_Scheme_ID)
+                    {
+                        case"P1":
+
+                            break;
+                        default:
+                    }
 
             }
         }
@@ -1861,7 +1910,7 @@ public class POSTransaction {
      * \Return : Error codes
      * \Author : Mostafa Hussiny
      * \DT		: 5/28/2020
-     * \Des    : for getting primary bitmap to be used in MAC calculation
+     * \Des    : for getting entry mode data element 22
      */
 
     //Position 1 – Card data input capability (Indicates the primary means of getting the information on the card into the terminal)
@@ -1963,7 +2012,9 @@ public class POSTransaction {
         Eleven_characters,
         Twelve_characters
     }
-    public byte[] GetDE22()
+
+
+    public void GetDE22_POSEntryMode()
     {   Card_data_input_capability cdic = null;
         Cardholder_authentication_capability cac=null;
         Operating_environment oe=null;
@@ -1976,9 +2027,171 @@ public class POSTransaction {
         Terminal_output_capability toc=null;
         PIN_capture_capability pcc=null;
 
-
-
         byte[] bDE22=new byte[12];
+    if(m_enmTrxCardType==CardType.ICC)
+    {    cdic= Card_data_input_capability.ICC;
+         oe= Operating_environment.On_premises_of_card_acceptor_attended;
+        Cardholder_p= Cardholder_present.Cardholder_present;
+        Card_p=Card_present.Card_present;
+        cdim=Card_data_input_mode.ICC;
+        coc = Card_data_output_capability.ICC;
+        toc = Terminal_output_capability.Printing_and_display;   // todo if terminal type is minipos Terminal_output_capability.display;
+        pcc = PIN_capture_capability.Twelve_characters;
+
+
+        if (m_enmTrxCVM==CVM.ONLINE_PIN)
+        {
+            cac=Cardholder_authentication_capability.PIN;
+            cam=Cardholder_authentication_method.PIN;
+            cae=Cardholder_authentication_entity.Authorising_agent;
+        }
+
+        else if(m_enmTrxCVM==CVM.OFFLINE_PIN)
+        {
+            cac=Cardholder_authentication_capability.PIN;
+            cam=Cardholder_authentication_method.PIN;
+            cae=Cardholder_authentication_entity.ICC;
+        }
+        else if(m_enmTrxCVM==CVM.SIGNATURE)
+        {
+            cac=Cardholder_authentication_capability.other;
+            cam=Cardholder_authentication_method.Manual_signature_analysis;
+            cae=Cardholder_authentication_entity.By_merchant;
+        }
+        else if(m_enmTrxCVM==CVM.NO_CVM)
+        {
+            cac=Cardholder_authentication_capability.No_electronic_authentication;
+            cam=Cardholder_authentication_method.Not_authenticated;
+            cae=Cardholder_authentication_entity.Not_authenticated;
+        }
+
+    }
+    else if (m_enmTrxCardType==CardType.CTLS)
+    {
+        cdic= Card_data_input_capability.Contactless;
+        oe= Operating_environment.On_premises_of_card_acceptor_attended;
+        Cardholder_p= Cardholder_present.Cardholder_present;
+        Card_p=Card_present.Card_present;
+        cdim=Card_data_input_mode.Contactless;
+        coc = Card_data_output_capability.ICC;
+        toc = Terminal_output_capability.Printing_and_display;
+        pcc = PIN_capture_capability.Twelve_characters;
+
+        if (m_enmTrxCVM==CVM.ONLINE_PIN)
+        {
+            cac=Cardholder_authentication_capability.PIN;
+            cam=Cardholder_authentication_method.PIN;
+            cae=Cardholder_authentication_entity.Authorising_agent;
+        }
+
+        else if(m_enmTrxCVM==CVM.OFFLINE_PIN)
+        {
+            cac=Cardholder_authentication_capability.PIN;
+            cam=Cardholder_authentication_method.PIN;
+            cae=Cardholder_authentication_entity.ICC;
+
+        }
+        else if(m_enmTrxCVM==CVM.SIGNATURE)
+        {
+            cac=Cardholder_authentication_capability.other;
+            cam=Cardholder_authentication_method.Manual_signature_analysis;
+            cae=Cardholder_authentication_entity.Not_authenticated;
+
+        }
+        else if(m_enmTrxCVM==CVM.NO_CVM)
+        {
+            cac=Cardholder_authentication_capability.No_electronic_authentication;
+            cam=Cardholder_authentication_method.Not_authenticated;
+            //todo if transaction below floor limit and offline to be ICC or online by Authorization agent
+            cae=Cardholder_authentication_entity.ICC;
+        }
+
+    }
+    else if (m_enmTrxCardType==CardType.MAG)
+    {
+        cdic= Card_data_input_capability.Magnetic_stripe_read;
+        oe= Operating_environment.On_premises_of_card_acceptor_attended;
+        Cardholder_p= Cardholder_present.Cardholder_present;
+        Card_p=Card_present.Card_present;
+        cdim=Card_data_input_mode.Magnetic_stripe_read;
+        coc = Card_data_output_capability.Magnetic_Stripe_write;
+        toc = Terminal_output_capability.Printing_and_display;
+        pcc = PIN_capture_capability.Twelve_characters;
+
+
+        if (m_enmTrxCVM==CVM.ONLINE_PIN)
+        {
+            cac=Cardholder_authentication_capability.PIN;
+            cam=Cardholder_authentication_method.PIN;
+            cae=Cardholder_authentication_entity.Authorising_agent;
+        }
+
+        else if(m_enmTrxCVM==CVM.SIGNATURE)
+        {
+            cac=Cardholder_authentication_capability.other;
+            cam=Cardholder_authentication_method.Manual_signature_analysis;
+            cae=Cardholder_authentication_entity.By_merchant;
+        }
+        else if(m_enmTrxCVM==CVM.NO_CVM)
+        {
+            cac=Cardholder_authentication_capability.No_electronic_authentication;
+            cam=Cardholder_authentication_method.Not_authenticated;
+            cae=Cardholder_authentication_entity.Not_authenticated;
+        }
+
+    }
+    else if (m_enmTrxCardType==CardType.MANUAL)
+    {
+        cdic= Card_data_input_capability.Key_Entered;
+        oe= Operating_environment.On_premises_of_card_acceptor_attended;
+        Cardholder_p= Cardholder_present.Cardholder_not_present_unspecified;
+        Card_p=Card_present.Card_not_present;
+        cdim=Card_data_input_mode.Key_entered;
+        coc = Card_data_output_capability.None;
+        toc = Terminal_output_capability.Printing_and_display;
+        pcc = PIN_capture_capability.Twelve_characters;
+
+        if (m_enmTrxCVM==CVM.ONLINE_PIN)
+        {
+            cac=Cardholder_authentication_capability.PIN;
+            cam=Cardholder_authentication_method.PIN;
+            cae=Cardholder_authentication_entity.Authorising_agent;
+        }
+
+
+        else if(m_enmTrxCVM==CVM.SIGNATURE)
+        {
+            cac=Cardholder_authentication_capability.other;
+            cam=Cardholder_authentication_method.Manual_signature_analysis;
+            cae=Cardholder_authentication_entity.By_merchant;
+        }
+        else if(m_enmTrxCVM==CVM.NO_CVM)
+        {
+            cac=Cardholder_authentication_capability.No_electronic_authentication;
+            cam=Cardholder_authentication_method.Not_authenticated;
+            cae=Cardholder_authentication_entity.Not_authenticated;
+        }
+
+
+    }
+    else
+    {
+        cdic= Card_data_input_capability.PAN_Entry_Mode_Unknown;
+        cac = Cardholder_authentication_capability.other;
+        oe= Operating_environment.On_premises_of_card_acceptor_attended;
+        Cardholder_p= Cardholder_present.Cardholder_not_present_unspecified;
+        Card_p=Card_present.Card_not_present;
+        cdim=Card_data_input_mode.Unspecified;
+        cam=Cardholder_authentication_method.Not_authenticated;
+        cae=Cardholder_authentication_entity.Not_authenticated;
+        coc = Card_data_output_capability.Unknown;
+        toc = Terminal_output_capability.Printing_and_display;
+        pcc = PIN_capture_capability.Twelve_characters;
+
+
+
+
+    }
 
         switch(cdic){
 
@@ -2203,9 +2416,9 @@ public class POSTransaction {
                 break;
         }
 
+        m_sPOSEntryMode=bDE22.toString();
 
 
-        return bDE22;
     }
     /**
      * \Function Name: GetDE24
@@ -2242,9 +2455,87 @@ public class POSTransaction {
         MAC_Error,
         Device_authentication
     }
-    public void GetDE24FunctionCode(){
+    public void GetDE24_FunctionCode(){
         Function_Code fc=null;
 
+        switch(m_enmTrxType)
+        {
+            case PURCHASE:
+            case PURCHASE_WITH_NAQD:
+            case REFUND:
+            case CASH_ADVANCE:
+                fc=Function_Code.Original_financial_request_advice;
+               /* switch(card_scheme.m_sCard_Scheme_ID) {
+                    case "P1":  //MADA
+                         fc=Function_Code.Original_financial_request_advice;
+                        break;
+                    default: //ICS
+                        fc=Function_Code.Original_financial_request_advice;
+                }*/
+                break;
+            case PURCHASE_ADVICE:
+                fc=Function_Code.Previously_approved_authorisation_amount_same;
+            case AUTHORISATION:
+
+            case AUTHORISATION_VOID:
+                switch(card_scheme.m_sCard_Scheme_ID) {
+                    case "P1":  //MADA
+                        fc = Function_Code.Original_authorisation_amount_estimated;  // Original authorisation – amount estimated (used for mada preauthorizations and mada pre-authorization full or partial voids)
+                        break;
+                    default:
+                        fc = Function_Code.Original_authorisation_amount_accurate;
+
+                }
+                break;
+
+
+            case AUTHORISATION_ADVICE:
+                fc=Function_Code.Notification_of_pre_authorisation_initial_completion;
+                break;
+            case AUTHORISATION_EXTENSION:
+                fc=Function_Code.Notification_of_a_pre_authorisation_expiry_extension;
+                break;
+            case REVERSAL:
+                if(m_enum_OrigTRxtype==TranscationType.PURCHASE)
+                    fc=Function_Code.Full_reversal_transaction_did_not_complete_as_approved;
+                else if (m_enum_OrigTRxtype==TranscationType.SADAD_BILL)
+                    fc=Function_Code.Full_reversal_transaction_did_not_complete_as_approved_Bill_Payment;
+                else
+                    fc=Function_Code.Full_reversal_transaction_did_not_complete_as_approved_Fee_Payment;
+
+                break;
+            case SADAD_BILL:
+                switch(card_scheme.m_sCard_Scheme_ID) {
+                case "P1":  //MADA
+                    fc = Function_Code.Original_financial_request_advice_Bill_Payment;  // todo check fees also
+                    break;
+                default:   //ICS
+                    fc = Function_Code.Original_authorisation_Bill_Payment;
+                }
+            case RECONCILIATION:
+                if(!POS_MAIN.isforced)
+                    fc=Function_Code.Terminal_reconciliation;
+                else
+                    fc=Function_Code.Force_reconciliation;
+                break;
+            case ADMIN:
+                //todo admin cases
+                fc=Function_Code.MAC_Error;
+                break;
+            case TMS_FILE_DOWNLOAD:
+                if(PosApplication.getApp().oGSama_TMS.tms_download_type ==SAMA_TMS.TMS_Download_Type.Field_record)
+                    fc = Function_Code.Replace_fields_within_record_partial_download;
+                else if (PosApplication.getApp().oGSama_TMS.tms_download_type ==SAMA_TMS.TMS_Download_Type.partial_record)
+                    fc = Function_Code.Replace_entire_record_partial_download;
+                else if (PosApplication.getApp().oGSama_TMS.tms_download_type ==SAMA_TMS.TMS_Download_Type.full_download)
+                    fc = Function_Code.Replace_fields_within_record_partial_download;
+                break;
+            case TERMINAL_REGISTRATION:
+                fc=Function_Code.Device_authentication;
+                break;
+
+
+        }
 
 
 
@@ -2325,6 +2616,7 @@ public class POSTransaction {
 
     }
 
+
     enum Message_reason_code
     {
         //1000-1499 Reason for an advice/notification message rather than a request message.
@@ -2363,10 +2655,478 @@ public class POSTransaction {
         Timeout_waiting_for_response,
         MAC_failure
         }
-    public void GetDE25Messagereasoncode()
+    /**
+     * \Function Name: GetDE25Messagereasoncode
+     * \Param  : void
+     * \Return : Error codes
+     * \Author : Mostafa Hussiny
+     * \DT		: 5/28/2020
+     * \Des    : for getting messeage reason code
+     */
+    public void GetDE25_Messagereasoncode()
     {Message_reason_code mrc =null;
 
             //todo getting original message reason code from authorization request message response
+
+
+        switch(m_enmTrxType)
+        {
+            case PURCHASE:
+                      switch(card_scheme.m_sCard_Scheme_ID)
+                      {
+                          case "P1":            // For MADA card
+
+                                        switch (m_enmTrxCardType) {
+                                            case ICC:
+                                                mrc=Message_reason_code.ICC_random_selection;  //todo condition of other //15xx
+                                                break;
+                                            case CTLS:
+                                                mrc=Message_reason_code.Contactless_Transaction;
+                                                break;
+                                            case MAG:
+
+                                                break;
+                                            case FALLBACK:
+                                                mrc= Message_reason_code.Fallback_from_chip_to_magnetic_stripe;//1776
+                                                break;
+                                            case MANUAL:
+
+                                                break;
+                                        }
+
+
+                              break;
+
+
+                          default:       // For IBCS
+                              switch (m_enmTrxCardType) {
+                                  case ICC:
+
+                                      break;
+                                  case CTLS:
+
+                                      break;
+                                  case MAG:
+
+                                      break;
+                                  case FALLBACK:
+                                      mrc= Message_reason_code.Fallback_from_chip_to_magnetic_stripe;//1776
+                                      break;
+
+                                  case MANUAL:
+
+                                      break;
+                              }
+                              break;
+
+                      }
+                break;
+            case PURCHASE_ADVICE:
+                switch(card_scheme.m_sCard_Scheme_ID)
+                {
+                    case "P1":            // For MADA card
+
+                        switch (m_enmTrxCardType) {
+                            case ICC:
+                                mrc= Message_reason_code.Terminal_processed;//1004
+                                break;
+                            case CTLS:
+                                mrc= Message_reason_code.Contactless_Transaction_Advice;
+                                break;
+                            case MAG:
+
+                                break;
+                            case FALLBACK:
+                                mrc= Message_reason_code.Fallback_from_chip_to_magnetic_stripe;//1776
+                                break;
+                            case MANUAL:
+
+                                break;
+                        }
+
+
+                        break;
+
+
+                    default:       // For IBCS
+                        switch (m_enmTrxCardType) {
+                            case ICC:
+
+                                break;
+                            case CTLS:
+
+                                break;
+                            case MAG:
+
+                                break;
+                            case FALLBACK:
+                                mrc= Message_reason_code.Fallback_from_chip_to_magnetic_stripe;//1776
+                                break;
+
+                            case MANUAL:
+
+                                break;
+                        }
+                        break;
+
+                }
+                break;
+
+            case PURCHASE_WITH_NAQD:
+                switch(card_scheme.m_sCard_Scheme_ID)
+                {
+                    case "P1":            // For MADA card
+
+                        switch (m_enmTrxCardType) {
+                            case ICC:
+                                mrc=Message_reason_code.ICC_random_selection;  //todo condition of other //15xx
+                                break;
+                            case CTLS:
+                                mrc=Message_reason_code.Contactless_Transaction;
+                                break;
+                            case MAG:
+
+                                break;
+                            case FALLBACK:
+                                mrc= Message_reason_code.Fallback_from_chip_to_magnetic_stripe;//1776
+                                break;
+                            case MANUAL:
+
+                                break;
+                        }
+
+
+                        break;
+
+
+                    default:       // For IBCS
+                        switch (m_enmTrxCardType) {
+                            case ICC:
+
+                                break;
+                            case CTLS:
+
+                                break;
+                            case MAG:
+
+                                break;
+                            case FALLBACK:
+                                mrc= Message_reason_code.Fallback_from_chip_to_magnetic_stripe;//1776
+                                break;
+
+                            case MANUAL:
+
+                                break;
+                        }
+                        break;
+
+                }
+                break;
+
+            case REFUND:
+                switch(card_scheme.m_sCard_Scheme_ID)
+                {
+                    case "P1":            // For MADA card
+
+                        switch (m_enmTrxCardType) {
+                            case ICC:
+                                mrc=Message_reason_code.ICC_random_selection;  //todo condition of other //15xx
+                                break;
+                            case CTLS:
+                                mrc=Message_reason_code.Contactless_Transaction;
+                                break;
+                            case MAG:
+
+                                break;
+                            case FALLBACK:
+                                mrc= Message_reason_code.Fallback_from_chip_to_magnetic_stripe;//1776
+                                break;
+                            case MANUAL:
+
+                                break;
+                        }
+
+
+                        break;
+
+
+                    default:       // For IBCS
+                        switch (m_enmTrxCardType) {
+                            case ICC:
+                                mrc=Message_reason_code.Terminal_processed;
+                                break;
+                            case CTLS:
+                                mrc=Message_reason_code.Terminal_processed;
+                                break;
+                            case MAG:
+                                mrc=Message_reason_code.Terminal_processed;
+                                break;
+                            case FALLBACK:
+                                mrc= Message_reason_code.Fallback_from_chip_to_magnetic_stripe;//1776
+                                break;
+
+                            case MANUAL:
+
+                                break;
+                        }
+                        break;
+
+                }
+                break;
+            case AUTHORISATION:
+                switch(card_scheme.m_sCard_Scheme_ID)
+                {
+                    case "P1":            // For MADA card
+
+                        switch (m_enmTrxCardType) {
+                            case ICC:
+                                mrc=Message_reason_code.ICC_random_selection;  //todo condition of other //15xx
+                                break;
+                            case CTLS:
+                                mrc=Message_reason_code.Contactless_Transaction;
+                                break;
+                            case MAG:
+
+                                break;
+                            case FALLBACK:
+                                mrc= Message_reason_code.Fallback_from_chip_to_magnetic_stripe;//1776
+                                break;
+                            case MANUAL:
+
+                                break;
+                        }
+
+
+                        break;
+
+
+                    default:       // For IBCS
+                        switch (m_enmTrxCardType) {
+                            case ICC:
+                                mrc=Message_reason_code.ICC_random_selection;
+                                break;
+                            case CTLS:
+                                mrc=Message_reason_code.Contactless_Transaction;
+                                break;
+                            case MAG:
+
+                                break;
+                            case FALLBACK:
+                                mrc= Message_reason_code.Fallback_from_chip_to_magnetic_stripe;//1776
+                                break;
+
+                            case MANUAL:
+
+                                break;
+                        }
+                        break;
+
+                }
+                break;
+            case SADAD_BILL:
+                switch(card_scheme.m_sCard_Scheme_ID)
+                {
+                    case "P1":            // For MADA card
+
+                        switch (m_enmTrxCardType) {
+                            case ICC:
+                                mrc=Message_reason_code.ICC_random_selection;  //todo condition of other //15xx
+                                break;
+                            case CTLS:
+                                mrc=Message_reason_code.Contactless_Transaction;
+                                break;
+                            case MAG:
+
+                                break;
+                            case FALLBACK:
+                                mrc= Message_reason_code.Fallback_from_chip_to_magnetic_stripe;//1776
+                                break;
+                            case MANUAL:
+
+                                break;
+                        }
+
+
+                        break;
+
+
+                    default:       // For IBCS
+                        switch (m_enmTrxCardType) {
+                            case ICC:
+                                mrc=Message_reason_code.ICC_random_selection;
+                                break;
+                            case CTLS:
+                                mrc=Message_reason_code.Contactless_Transaction;
+                                break;
+                            case MAG:
+
+                                break;
+                            case FALLBACK:
+                                mrc= Message_reason_code.Fallback_from_chip_to_magnetic_stripe;//1776
+                                break;
+
+                            case MANUAL:
+
+                                break;
+                        }
+                        break;
+
+                }
+                break;
+            case REVERSAL:
+
+                mrc=Message_reason_code.Timeout_waiting_for_response;
+                break;
+            case CASH_ADVANCE:
+                switch(card_scheme.m_sCard_Scheme_ID)
+                {
+                    case "P1":            // For MADA card
+
+                        switch (m_enmTrxCardType) {
+                            case ICC:
+                                mrc=Message_reason_code.ICC_random_selection;  //todo condition of other //15xx
+                                break;
+                            case CTLS:
+                                mrc=Message_reason_code.Contactless_Transaction;
+                                break;
+                            case MAG:
+
+                                break;
+                            case FALLBACK:
+                                mrc= Message_reason_code.Fallback_from_chip_to_magnetic_stripe;//1776
+                                break;
+                            case MANUAL:
+
+                                break;
+                        }
+
+
+                        break;
+
+
+                    default:       // For IBCS
+                        switch (m_enmTrxCardType) {
+                            case ICC:
+
+                                break;
+                            case CTLS:
+
+                                break;
+                            case MAG:
+
+                                break;
+                            case FALLBACK:
+                                mrc= Message_reason_code.Fallback_from_chip_to_magnetic_stripe;//1776
+                                break;
+
+                            case MANUAL:
+
+                                break;
+                        }
+                        break;
+
+                }
+                break;
+            case AUTHORISATION_VOID:
+                switch(card_scheme.m_sCard_Scheme_ID)
+                {
+                    case "P1":            // For MADA card
+
+                        switch (m_enmTrxCardType) {
+                            case ICC:
+                            case CTLS:
+                            case MAG:
+                                mrc=Message_reason_code.mada_Preauthorization_Void_or_Partial_Void;
+                                break;
+                            case FALLBACK:
+                                mrc= Message_reason_code.Fallback_from_chip_to_magnetic_stripe;//1776
+                                break;
+                            case MANUAL:
+
+                                break;
+                        }
+
+
+                        break;
+
+
+                    default:       // For IBCS
+                        switch (m_enmTrxCardType) {
+                            case ICC:
+
+                                break;
+                            case CTLS:
+
+                                break;
+                            case MAG:
+
+                                break;
+
+                            case FALLBACK:
+                                mrc= Message_reason_code.Fallback_from_chip_to_magnetic_stripe;//1776
+                                break;
+                            case MANUAL:
+
+                                break;
+                        }
+                        break;
+
+                }
+
+                break;
+            case AUTHORISATION_EXTENSION:
+                switch(card_scheme.m_sCard_Scheme_ID)
+                {
+                    case "P1":            // For MADA card
+
+                        switch (m_enmTrxCardType) {
+                            case ICC:
+                            case CTLS:
+                            case MAG:
+                                mrc=Message_reason_code.mada_Preauthorization_Extension;
+                                break;
+                            case FALLBACK:
+                                mrc= Message_reason_code.Fallback_from_chip_to_magnetic_stripe;//1776
+                                break;
+                            case MANUAL:
+
+                                break;
+                        }
+
+
+                        break;
+
+
+                    default:       // For IBCS
+                        switch (m_enmTrxCardType) {
+                            case ICC:
+
+                                break;
+                            case CTLS:
+
+                                break;
+                            case MAG:
+
+                                break;
+                            case FALLBACK:
+                                mrc= Message_reason_code.Fallback_from_chip_to_magnetic_stripe;//1776
+                                break;
+                            case MANUAL:
+
+                                break;
+                        }
+                        break;
+
+                }
+
+                        break;
+
+
+
+
+
+        }
+
         switch(mrc)
         {
             //1000-1499 Reason for an advice/notification message rather than a request message.
@@ -2463,26 +3223,35 @@ public class POSTransaction {
                 break;
 
         }
+
+
+
+
     }
 
     public void GetDE_37_RRN()
     {
         m_sRRNumber= m_sSTAN+m_sLocalTrxDateTime;
     }
-    public void GetDE41()
-    {
-        //// TODO: 6/10/2020   01-08 8 Unique terminal ID (Vendor Assigned)
-        //                      09-10 2 PTT area code 11-12 2 Bank Clearing Code
-        //                      13-16 4 Unique Device ID Within the Unique Retailer ID (Retailer Bank Assigned)
-    }
-    public void GetDE42()
-    {
-       // TODO: 6/10/2020   01-02 2 Bank Clearing Code
-        //                  03-04 2 Agent Value - For bank use to identify banks branches, multi-location Retailer
-        //                  05-12 8 Unique Retailer identification assigned by the Retailer Bank
-        //                  13-15 3 Spaces
 
+    public void GetDE47_CardSchemeSponsorID() {
+
+
+
+                switch (m_enmTrxType) {
+                    case SADAD_BILL:
+                        //todo Sadad data addition
+                        m_sCardSchemeSponsorID = PosApplication.getApp().oGPosTransaction.card_scheme.m_sCard_Scheme_Acquirer_ID + PosApplication.getApp().oGPosTransaction.card_scheme.m_sCard_Scheme_ID;
+                        break;
+                    default:
+                        m_sCardSchemeSponsorID = PosApplication.getApp().oGPosTransaction.card_scheme.m_sCard_Scheme_Acquirer_ID + PosApplication.getApp().oGPosTransaction.card_scheme.m_sCard_Scheme_ID;
+                        break;
+
+
+                }
     }
+
+
 
 }
 

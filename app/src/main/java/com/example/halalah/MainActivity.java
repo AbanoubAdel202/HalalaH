@@ -1,5 +1,5 @@
 package com.example.halalah;
-
+import com.topwise.cloudpos.aidl.serialport.AidlSerialport;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.os.RemoteException;
 import android.os.SystemClock;
 import android.text.format.DateFormat;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.Menu;
@@ -25,11 +26,14 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.navigation.NavigationView;
 import com.topwise.cloudpos.aidl.emv.AidlPboc;
+import com.topwise.cloudpos.aidl.emv.TerminalParam;
 import com.topwise.cloudpos.aidl.led.AidlLed;
 import com.topwise.cloudpos.aidl.pinpad.AidlPinpad;
 import com.topwise.cloudpos.data.PinpadConstant;
 
 import androidx.activity.OnBackPressedDispatcher;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
@@ -128,9 +132,13 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onBackPressed() {
         PosApplication.getApp().oGPosTransaction.Reset();
-        Intent returnhome = new Intent(this,Fragment_home_Transaction.class);
+       /* Intent returnhome = new Intent(this,MainActivity.class);
 
-        startActivity(returnhome);
+        startActivity(returnhome);*/
+       Toast.makeText(this,"This is Home Screen",Toast.LENGTH_LONG).show();
+
+
+
 
     }
     @Override
@@ -210,6 +218,7 @@ return true;
                             if (line.startsWith("AID")) {
                                 // 更新AID
                                 updateResult = mPbocManager.updateAID(0x01, line.split("=")[1]);
+                                Log.d("update AID:",String.valueOf(updateResult)+"AID data:"+line);
 
                             } else { // 更新RID
                                 updateResult = mPbocManager.updateCAPK(0x01, line.split("=")[1]);
@@ -278,10 +287,21 @@ return true;
     }
     private void Initialize_EMV_Configuration()
     {
-
-
-
         AidlPboc mPbocManager = DeviceTopUsdkServiceManager.getInstance().getPbocManager();
+
+        TerminalParam terminalParam = new TerminalParam();
+        terminalParam.setTerminalType(Byte.parseByte(PosApplication.getApp().oGSama_TMS.retailer_data.m_sEMV_Terminal_Type));
+        terminalParam.setCountryCode(PosApplication.getApp().oGSama_TMS.retailer_data.m_sTerminal_Country_Code.getBytes());
+        terminalParam.setCurrencyCode(PosApplication.getApp().oGSama_TMS.retailer_data.m_sTerminal_Currency_Code.getBytes());
+        terminalParam.setCapability(PosApplication.getApp().oGSama_TMS.retailer_data.m_sTerminal_Capability.getBytes());
+            try {
+                 mPbocManager.setTerminalParam(terminalParam);
+            }
+            catch (RemoteException e)
+            {
+               e.printStackTrace();
+            }
+
 
         try {
             boolean updateResult = false;

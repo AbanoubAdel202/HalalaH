@@ -250,15 +250,18 @@ public class SAMA_TMS implements Serializable
         private static final int MAXCAPK=30;
         private static final int MAXMSG=999;
 
+        public enum  TMS_Download_Type{ Field_record , partial_record , full_download}
 
 
 
-/** for test**/
-int aidindexttest=0;
-int listlength=40;
-AID_Data[] AIDDATAtest = new AID_Data[listlength];
-Public_Key[] publickeystest=new Public_Key[listlength];
-int pkindextest=0;
+
+    /** for test**/
+
+    int aidindexttest=0;
+    int listlength=40;
+    AID_Data[] AIDDATAtest = new AID_Data[listlength];
+    Public_Key[] publickeystest=new Public_Key[listlength];
+    int pkindextest=0;
 
 
 
@@ -275,6 +278,8 @@ int pkindextest=0;
         public Revoked_Certificates revoked_certificates;
         public String NUM_REC;
         public String NUM_REC_DLN;
+
+        public TMS_Download_Type tms_download_type;
 
 
         char GS=''; //group seperator  1D
@@ -679,8 +684,11 @@ int pkindextest=0;
                                         public_keys.CA_Public_Key_Length=Capk_seg1_elements[7];
                                         public_keys.CA_Public_Key_Expiry_Date=Capk_seg1_elements[8];
 
-                                        publickeystest[pkindextest]=public_keys;
-                                        pkindextest++;
+                                        if(PosApplication.testapp) {
+                                            publickeystest[pkindextest] = public_keys;
+                                            pkindextest++;
+                                        }
+//                                        String spk=POS_MAIN.FormatCAKeys(public_keys);
 
                                         // todo Save(public_key)         // save each data on file
                                     }
@@ -963,8 +971,11 @@ int pkindextest=0;
                                     aid_data.Maximum_Target_Percentage_for_Biased_Random_Selection=aidD_seg1_elements[13].trim();
 
                                     //for testing porpose
-                                    AIDDATAtest[aidindexttest]=aid_data;
-                                    aidindexttest++;
+                                    if(PosApplication.testapp) {
+                                        AIDDATAtest[aidindexttest] = aid_data;
+                                        aidindexttest++;
+                                    String said = POS_MAIN.FormatAIDData(aid_data);
+                                    }
                                     //save(AID_data);
                                 }
 

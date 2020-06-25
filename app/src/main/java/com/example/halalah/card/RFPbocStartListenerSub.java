@@ -6,6 +6,7 @@ import android.os.RemoteException;
 import android.util.Log;
 
 import com.example.halalah.DeviceTopUsdkServiceManager;
+import com.example.halalah.POSTransaction;
 import com.example.halalah.POS_MAIN;
 import com.example.halalah.PosApplication;
 import com.example.halalah.Utils;
@@ -154,6 +155,30 @@ public class RFPbocStartListenerSub extends AidlPbocStartListener.Stub {
     public void onRequestOnline() throws RemoteException {
         Log.d(TAG, "onRequestOnline()");
 
+
+        // getting CVM Results
+        byte[] bCVMR;
+        String[] sCVMR_Tag = new String[]{"9F34"};
+        bCVMR= getTlv(sCVMR_Tag);
+        switch(String.valueOf(bCVMR)) {
+            case "01":
+                PosApplication.getApp().oGPosTransaction.m_enmTrxCVM = POSTransaction.CVM.OFFLINE_PIN;
+                break;
+            case "02":
+            case "04":
+                PosApplication.getApp().oGPosTransaction.m_enmTrxCVM = POSTransaction.CVM.ONLINE_PIN;
+                break;
+            case "03":
+            case "05":
+                PosApplication.getApp().oGPosTransaction.m_enmTrxCVM = POSTransaction.CVM.OFFLINE_PIN_SIGNATURE;
+                break;
+            case "1E":
+                PosApplication.getApp().oGPosTransaction.m_enmTrxCVM = POSTransaction.CVM.SIGNATURE;
+            case "1F":
+                PosApplication.getApp().oGPosTransaction.m_enmTrxCVM = POSTransaction.CVM.NO_CVM;
+
+        }
+        // todo TTQ ,CTQ checks
         setTrack2();
         setExpired();
         setSeqNum();

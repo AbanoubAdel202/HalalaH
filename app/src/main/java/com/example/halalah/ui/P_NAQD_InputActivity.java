@@ -5,8 +5,10 @@ import android.annotation.SuppressLint;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
@@ -16,7 +18,9 @@ import com.example.halalah.R;
  * An example full-screen activity that shows and hides the system UI (i.e.
  * status bar and navigation/system bar) with user interaction.
  */
-public class P_NAQD_InputActivity extends AppCompatActivity {
+public class P_NAQD_InputActivity extends AppCompatActivity  {
+
+    private static final String TAG = AmountInputActivity.class.getSimpleName();
     /**
      * Whether or not the system UI should be auto-hidden after
      * {@link #AUTO_HIDE_DELAY_MILLIS} milliseconds.
@@ -97,19 +101,43 @@ public class P_NAQD_InputActivity extends AppCompatActivity {
         mControlsView = findViewById(R.id.fullscreen_content_controls);
         mContentView = findViewById(R.id.fullscreen_content);
 
-
+            // todo UI add NAQD ammount num buttons & text like amount activity
         // Set up the user interaction to manually show or hide the system UI.
         mContentView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+
                 toggle();
+
             }
         });
+
+
 
         // Upon interacting with UI controls, delay any scheduled hide()
         // operations to prevent the jarring behavior of controls going away
         // while interacting with the UI.
         findViewById(R.id.dummy_button).setOnTouchListener(mDelayHideTouchListener);
+
+        findViewById(R.id.dummy_button).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                try {
+                    Intent intent = new Intent(getApplicationContext(), SearchCardActivity.class);
+                    startActivity(intent);
+                } catch (Exception e) {
+                    Log.i(TAG, e.toString());
+                }
+
+
+
+                finish();
+
+                                         }
+             });
+
+
     }
 
     @Override
@@ -164,4 +192,6 @@ public class P_NAQD_InputActivity extends AppCompatActivity {
         mHideHandler.removeCallbacks(mHideRunnable);
         mHideHandler.postDelayed(mHideRunnable, delayMillis);
     }
+
+
 }

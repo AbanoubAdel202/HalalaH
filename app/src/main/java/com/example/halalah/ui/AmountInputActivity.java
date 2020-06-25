@@ -143,14 +143,48 @@ public class AmountInputActivity extends Activity implements View.OnClickListene
 
 
                     PosApplication.getApp().oGPosTransaction.m_sTrxAmount = sAmount;
+            switch (PosApplication.getApp().oGPosTransaction.m_enmTrxType) {
+                case PURCHASE:
+                case PURCHASE_ADVICE:
+                case AUTHORISATION:
+                try {
+                    Intent intent = new Intent(this, SearchCardActivity.class);
+                    startActivity(intent);
+                     } catch (Exception e) {
+                    Log.i(TAG, e.toString());
+                    }
+                break;
 
+
+
+
+
+                /////////////////note : it's not decided yet if all data detail will be input after amount or screens based on transaction type
+                case REFUND:
                     try {
-                        Intent intent = new Intent(this, SearchCardActivity.class);
+                        Intent intent = new Intent(this, Refund_InputActivity.class);
                         startActivity(intent);
                     } catch (Exception e) {
                         Log.i(TAG, e.toString());
                     }
+                    break;
+                case PURCHASE_WITH_NAQD:
+                    try {
+                        Intent intent = new Intent(this, P_NAQD_InputActivity.class);
+                        startActivity(intent);
+                    } catch (Exception e) {
+                        Log.i(TAG, e.toString());
+                    }
+                    break;
+                case SADAD_BILL:
+                    //todo check SADAD flow
+                case CASH_ADVANCE:
+                    //todo check Cash advance flow
+                case AUTHORISATION_EXTENSION:
+                    //todo check authorization extension flow
 
+
+            }
 
 
                     finish();
