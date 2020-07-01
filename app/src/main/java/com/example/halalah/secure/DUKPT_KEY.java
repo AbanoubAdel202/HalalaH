@@ -1,14 +1,18 @@
 package com.example.halalah.secure;
 
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.RemoteException;
+import android.text.TextUtils;
 import android.util.Log;
+import android.view.View;
 
 import com.example.halalah.DeviceTopUsdkServiceManager;
 import com.example.halalah.PosApplication;
 import com.example.halalah.R;
 import com.example.halalah.util.HexUtil;
 import com.topwise.cloudpos.aidl.pinpad.AidlPinpad;
+import com.topwise.cloudpos.aidl.system.AidlSystem;
 import com.topwise.cloudpos.data.PinpadConstant;
 
 public class DUKPT_KEY {
@@ -290,6 +294,20 @@ Load Last Terminal Data from Terminal Operation Data Table
         Log.i(TAG,"CaluclateMACBlock Ended with [ "+iRetRes+" ]");
 
         return strMACBLOCK;
+    }
+
+    public static String getKSN() {
+
+        AidlSystem systemInf=null;
+        try {
+            String ksn = systemInf.getKsn();
+            return ksn;
+        } catch (RemoteException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
+        return null;
     }
 
 

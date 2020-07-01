@@ -260,7 +260,7 @@ public class POSTransaction {
         return "0";
     }
 
-    public String ComposeTerminalRegistrationData()
+    public String ComposeTerminalRegistrationData() // use ComposeNetworkMessage instead
     {
 
 
@@ -352,6 +352,7 @@ public class POSTransaction {
                 //53.Security Related Control Information
                 sMAC.concat(m_sTrxSecurityControl);
                 //55.EMV Data
+                if(m_enmTrxCardType==CardType.ICC|m_enmTrxCardType==CardType.CTLS)
                 sMAC.concat(m_sICCRelatedTags);
                 break;
             case PURCHASE_ADVICE:
@@ -580,12 +581,13 @@ public class POSTransaction {
         //2. Set PAN
 
 
-            m_RequestISOMsg.SetDataElement(2, m_sPAN.getBytes(), m_sPAN.length());
-            Log.i(TAG, "DE 2 [m_sPAN]= " + m_sPAN+"Length ="+m_sPAN.length());
+        m_RequestISOMsg.SetDataElement(2, m_sPAN.getBytes(), m_sPAN.length());
+        Log.i(TAG, "DE 2 [m_sPAN]= " + m_sPAN+"Length ="+m_sPAN.length());
 
 
 
         //3.Set Processing Code
+        GetDE03();
         m_RequestISOMsg.SetDataElement(3, m_sProcessCode.getBytes(), m_sProcessCode.length());
         Log.i(TAG, "DE 3 [m_sProcessCode]= " + m_sProcessCode+"Length ="+m_sProcessCode.length());
 
@@ -596,18 +598,21 @@ public class POSTransaction {
 
 
         //7.local Transaction Date & time
+        m_sTrxDateTime=ExtraUtil.GetDate_Time();
         m_RequestISOMsg.SetDataElement(7, m_sTrxDateTime.getBytes(), m_sTrxDateTime.length());
         Log.i(TAG, "DE 7 [m_sTrxDateTime]= " + m_sTrxDateTime+"Length ="+m_sTrxDateTime.length());
 
 
 
         //11.STAN
+        m_sSTAN=String.valueOf(PosApplication.getApp().oGTerminal_Operation_Data.m_iSTAN++);
         m_RequestISOMsg.SetDataElement(11, m_sSTAN.getBytes(), m_sSTAN.length());
-        Log.i(TAG, "DE 11 [m_sSTAN]= " + m_sTrxAmount+"Length ="+m_sSTAN.length());
+        Log.i(TAG, "DE 11 [m_sSTAN]= " + m_sSTAN+"Length ="+m_sSTAN.length());
 
         //12. Local Transaction time and date
+        m_sLocalTrxDateTime=ExtraUtil.GetDate_Time();
         m_RequestISOMsg.SetDataElement(12, m_sLocalTrxDateTime.getBytes(), m_sLocalTrxDateTime.length());
-        Log.i(TAG, "DE 12 [m_sLocalTrxDateTime]= " + m_sTrxAmount+"Length ="+m_sTrxAmount.length());
+        Log.i(TAG, "DE 12 [m_sLocalTrxDateTime]= " + m_sLocalTrxDateTime+"Length ="+m_sTrxAmount.length());
 
 
         //14. Card Expiry Date
@@ -619,38 +624,34 @@ public class POSTransaction {
         }
 
         //22.Pos Entry Mode
-        if (m_enmTrxCardType == CardType.MAG) {
-
-        } else if (m_enmTrxCardType == CardType.ICC) {
-
-        } else if (m_enmTrxCardType == CardType.CTLS) {
-
-        }
+        GetDE22_POSEntryMode();
         m_RequestISOMsg.SetDataElement(22, m_sPOSEntryMode.getBytes(), m_sPOSEntryMode.length());
         Log.i(TAG, "DE 22 [m_sPOSEntryMode]= " + m_sPOSEntryMode+"Length ="+m_sPOSEntryMode.length());
 
         //23.Card Sequence Number
-        if (m_enmTrxCardType == CardType.ICC) {
+        if (m_enmTrxCardType == CardType.ICC | m_enmTrxCardType == CardType.CTLS ) {
             m_RequestISOMsg.SetDataElement(23, m_sCardSeqNum.getBytes(), m_sCardSeqNum.length());
             Log.i(TAG, "DE 23 [m_sCardSeqNum]= " + m_sCardSeqNum+"Length ="+m_sCardSeqNum.length());
         }
 
         //24. Function Code
+        GetDE24_FunctionCode();
         m_RequestISOMsg.SetDataElement(24, m_sFunctionCode.getBytes(), m_sFunctionCode.length());
         Log.i(TAG, "DE 24 [m_sFunctionCode]= " + m_sFunctionCode+"Length ="+m_sFunctionCode.length());
 
 
         //25. Message reason Code
-        if(m_enmTrxCardType==CardType.FALLBACK) {
-            m_RequestISOMsg.SetDataElement(25, m_sMsgReasonCode.getBytes(), m_sMsgReasonCode.length());
-            Log.i(TAG, "DE 25 [m_sMsgReasonCode]= " + m_sMsgReasonCode + "Length =" + m_sMsgReasonCode.length());
-        }
+        GetDE25_Messagereasoncode();
+        m_RequestISOMsg.SetDataElement(25, m_sMsgReasonCode.getBytes(), m_sMsgReasonCode.length());
+        Log.i(TAG, "DE 25 [m_sMsgReasonCode]= " + m_sMsgReasonCode + "Length =" + m_sMsgReasonCode.length());
 
         //26. Card Acceptor Bussiness Code
+        m_sCardAcceptorBusinessCode=PosApplication.getApp().oGTerminal_Operation_Data.sMerchant_Category_Code;
         m_RequestISOMsg.SetDataElement(26, m_sCardAcceptorBusinessCode.getBytes(), m_sCardAcceptorBusinessCode.length());
         Log.i(TAG, "DE 26 [m_sCardAcceptorBusinessCode]= " + m_sCardAcceptorBusinessCode+"Length ="+m_sCardAcceptorBusinessCode.length());
 
         //32. Acquirer institution ID
+        m_sAquirerInsIDCode=PosApplication.getApp().oGTerminal_Operation_Data.sAcquirer_ID;
         m_RequestISOMsg.SetDataElement(32, m_sAquirerInsIDCode.getBytes(), m_sAquirerInsIDCode.length());
         Log.i(TAG, "DE 32 [m_sAquirerInsIDCode]= " + m_sAquirerInsIDCode+"Length ="+m_sAquirerInsIDCode.length());
 
@@ -662,23 +663,28 @@ public class POSTransaction {
         }
 
         //37. RRN
+        GetDE_37_RRN();
         m_RequestISOMsg.SetDataElement(37, m_sRRNumber.getBytes(), m_sRRNumber.length());
         Log.i(TAG, "DE 37 [m_sRRNumber]= " + m_sRRNumber+"Length ="+m_sRRNumber.length());
 
 
         //41.Terminal ID
+        m_sTerminalID=PosApplication.getApp().oGTerminal_Operation_Data.m_sTerminalID;
         m_RequestISOMsg.SetDataElement(41, m_sTerminalID.getBytes(), m_sTerminalID.length());
         Log.i(TAG, "DE 41 [m_sTerminalID]= " + m_sTerminalID+"Length ="+m_sTerminalID.length());
 
         //42.Merchant ID
+        m_sMerchantID=PosApplication.getApp().oGTerminal_Operation_Data.m_sMerchantID;
         m_RequestISOMsg.SetDataElement(42, m_sMerchantID.getBytes(), m_sMerchantID.length());
         Log.i(TAG, "DE 42 [m_sMerchantID]= " + m_sMerchantID+"Length ="+m_sMerchantID.length());
 
         //47.CardScheme Sponsor ID
+        GetDE47_CardSchemeSponsorID();
         m_RequestISOMsg.SetDataElement(47, m_sCardSchemeSponsorID.getBytes(), m_sCardSchemeSponsorID.length());
         Log.i(TAG, "DE 47 [m_sCardSchemeSponsorID]= " + m_sCardSchemeSponsorID+"Length ="+m_sCardSchemeSponsorID.length());
 
         //49.Currency Code
+        m_sCurrencyCode=PosApplication.getApp().oGTerminal_Operation_Data.m_sCurrencycode;
         m_RequestISOMsg.SetDataElement(49, m_sCurrencyCode.getBytes(), m_sCurrencyCode.length());
         Log.i(TAG, "DE 49 [m_sCurrencyCode]= " + m_sCurrencyCode+"Length ="+m_sCurrencyCode.length());
 
@@ -689,21 +695,24 @@ public class POSTransaction {
 
 
         //53. Transaction Security control
+        m_sTrxSecurityControl=DUKPT_KEY.getKSN();
         m_RequestISOMsg.SetDataElement(53, m_sTrxSecurityControl.getBytes(), m_sTrxSecurityControl.length());
         Log.i(TAG, "DE 53 [m_sTrxSecurityControl]= " + m_sTrxSecurityControl+"Length ="+m_sTrxSecurityControl.length());
 
         //54. Additional amounts
-        m_RequestISOMsg.SetDataElement(54, m_sAdditionalAmount.getBytes(), m_sAdditionalAmount.length());
-        Log.i(TAG, "DE 54 [m_sAdditionalAmount]= " + m_sAdditionalAmount+"Length ="+m_sAdditionalAmount.length());
-
+        if(TrxType==TranscationType.PURCHASE_WITH_NAQD) {
+            m_RequestISOMsg.SetDataElement(54, m_sAdditionalAmount.getBytes(), m_sAdditionalAmount.length());
+            Log.i(TAG, "DE 54 [m_sAdditionalAmount]= " + m_sAdditionalAmount + "Length =" + m_sAdditionalAmount.length());
+        }
         //55. ICC related Data
-        if (m_enmTrxCardType == CardType.ICC)
-        m_RequestISOMsg.SetDataElement(55, m_sICCRelatedTags.getBytes(), m_sICCRelatedTags.length());
-        Log.i(TAG, "DE 55 [m_sICCRelatedTags]= " + m_sICCRelatedTags+"Length ="+m_sICCRelatedTags.length());
-
+        if (m_enmTrxCardType == CardType.ICC | m_enmTrxCardType == CardType.CTLS) {
+            m_RequestISOMsg.SetDataElement(55, m_sICCRelatedTags.getBytes(), m_sICCRelatedTags.length());
+            Log.i(TAG, "DE 55 [m_sICCRelatedTags]= " + m_sICCRelatedTags + "Length =" + m_sICCRelatedTags.length());
+        }
         //56.original Transaction data
-        if(m_enmTrxType==TrxType.REFUND)     // we can check here if refund only
+        if(m_enmTrxType==TrxType.REFUND )
         {
+            GetDE56_Original_TRX_Data();
         m_RequestISOMsg.SetDataElement(56, m_sOriginalTrxData.getBytes(), m_sOriginalTrxData.length());
         Log.i(TAG, "DE 56 [m_sOriginalTrxData]= " + m_sOriginalTrxData+"Length ="+m_sOriginalTrxData.length());
         }
@@ -725,6 +734,9 @@ public class POSTransaction {
 
         return 0;
     }
+
+
+
     /**
      \Function Name: ComposeAuthoriszationMessage
      \Param  : Transaction type
@@ -748,14 +760,15 @@ public class POSTransaction {
 
 
         //2. Set PAN
-        if (m_enmTrxCardType !=CardType.MANUAL ) {
+
 
             m_RequestISOMsg.SetDataElement(2, m_sPAN.getBytes(), m_sPAN.length());
             Log.i(TAG, "DE 2 [m_sPAN]= " + m_sPAN+"Length ="+m_sPAN.length());
 
-        }
+
 
         //3.Set Processing Code
+        GetDE03();
         m_RequestISOMsg.SetDataElement(3, m_sProcessCode.getBytes(), m_sProcessCode.length());
         Log.i(TAG, "DE 3 [m_sProcessCode]= " + m_sProcessCode+"Length ="+m_sProcessCode.length());
 
@@ -771,11 +784,11 @@ public class POSTransaction {
 
 
 
-
+        m_sSTAN=String.valueOf(PosApplication.getApp().oGTerminal_Operation_Data.m_iSTAN++);
         m_RequestISOMsg.SetDataElement(11, m_sSTAN.getBytes(), m_sSTAN.length());
         Log.i(TAG, "DE 11 [m_sSTAN]= " + m_sTrxAmount+"Length ="+m_sSTAN.length());
 
-
+        m_sLocalTrxDateTime=ExtraUtil.GetDate_Time();
         m_RequestISOMsg.SetDataElement(12, m_sLocalTrxDateTime.getBytes(), m_sLocalTrxDateTime.length());
         Log.i(TAG, "DE 12 [m_sLocalTrxDateTime]= " + m_sTrxAmount+"Length ="+m_sTrxAmount.length());
 
@@ -788,13 +801,7 @@ public class POSTransaction {
             }
         }
 
-        if (m_enmTrxCardType == CardType.MAG) {
-
-        } else if (m_enmTrxCardType == CardType.ICC) {
-
-        } else if (m_enmTrxCardType == CardType.CTLS) {
-
-        }
+        GetDE22_POSEntryMode();
         m_RequestISOMsg.SetDataElement(22, m_sPOSEntryMode.getBytes(), m_sPOSEntryMode.length());
         Log.i(TAG, "DE 22 [m_sPOSEntryMode]= " + m_sPOSEntryMode+"Length ="+m_sPOSEntryMode.length());
 
@@ -803,18 +810,20 @@ public class POSTransaction {
             Log.i(TAG, "DE 23 [m_sCardSeqNum]= " + m_sCardSeqNum+"Length ="+m_sCardSeqNum.length());
         }
 
-
+        GetDE24_FunctionCode();
         m_RequestISOMsg.SetDataElement(24, m_sFunctionCode.getBytes(), m_sFunctionCode.length());
         Log.i(TAG, "DE 24 [m_sFunctionCode]= " + m_sFunctionCode+"Length ="+m_sFunctionCode.length());
 
 
-
+        GetDE25_Messagereasoncode();
         m_RequestISOMsg.SetDataElement(25, m_sMsgReasonCode.getBytes(), m_sMsgReasonCode.length());
         Log.i(TAG, "DE 25 [m_sMsgReasonCode]= " + m_sMsgReasonCode+"Length ="+m_sMsgReasonCode.length());
 
+        m_sCardAcceptorBusinessCode=PosApplication.getApp().oGTerminal_Operation_Data.sMerchant_Category_Code;
         m_RequestISOMsg.SetDataElement(26, m_sCardAcceptorBusinessCode.getBytes(), m_sCardAcceptorBusinessCode.length());
         Log.i(TAG, "DE 26 [m_sCardAcceptorBusinessCode]= " + m_sCardAcceptorBusinessCode+"Length ="+m_sCardAcceptorBusinessCode.length());
 
+        m_sAquirerInsIDCode=PosApplication.getApp().oGTerminal_Operation_Data.sAcquirer_ID;
         m_RequestISOMsg.SetDataElement(32, m_sAquirerInsIDCode.getBytes(), m_sAquirerInsIDCode.length());
         Log.i(TAG, "DE 32 [m_sAquirerInsIDCode]= " + m_sAquirerInsIDCode+"Length ="+m_sAquirerInsIDCode.length());
 
@@ -825,24 +834,24 @@ public class POSTransaction {
             Log.i(TAG, "DE 35 [m_sTrack2]= " + m_sTrack2+"Length ="+m_sTrack2.length());
         }
 
-
+        GetDE_37_RRN();
         m_RequestISOMsg.SetDataElement(37, m_sRRNumber.getBytes(), m_sRRNumber.length());
         Log.i(TAG, "DE 37 [m_sRRNumber]= " + m_sRRNumber+"Length ="+m_sRRNumber.length());
 
 
-
+        m_sTerminalID=PosApplication.getApp().oGTerminal_Operation_Data.m_sTerminalID;
         m_RequestISOMsg.SetDataElement(41, m_sTerminalID.getBytes(), m_sTerminalID.length());
         Log.i(TAG, "DE 41 [m_sTerminalID]= " + m_sTerminalID+"Length ="+m_sTerminalID.length());
 
-
+        m_sMerchantID=PosApplication.getApp().oGTerminal_Operation_Data.m_sMerchantID;
         m_RequestISOMsg.SetDataElement(42, m_sMerchantID.getBytes(), m_sMerchantID.length());
         Log.i(TAG, "DE 42 [m_sMerchantID]= " + m_sMerchantID+"Length ="+m_sMerchantID.length());
 
-
+        GetDE47_CardSchemeSponsorID();
         m_RequestISOMsg.SetDataElement(47, m_sCardSchemeSponsorID.getBytes(), m_sCardSchemeSponsorID.length());
         Log.i(TAG, "DE 47 [m_sCardSchemeSponsorID]= " + m_sCardSchemeSponsorID+"Length ="+m_sCardSchemeSponsorID.length());
 
-
+        m_sCurrencyCode=PosApplication.getApp().oGTerminal_Operation_Data.m_sCurrencycode;
         m_RequestISOMsg.SetDataElement(49, m_sCurrencyCode.getBytes(), m_sCurrencyCode.length());
         Log.i(TAG, "DE 49 [m_sCurrencyCode]= " + m_sCurrencyCode+"Length ="+m_sCurrencyCode.length());
 
@@ -852,7 +861,7 @@ public class POSTransaction {
             Log.i(TAG, "DE 52 [m_sTrxPIN]= " + m_sTrxPIN + "Length =" + m_sTrxPIN.length());
         }
 
-
+        m_sTrxSecurityControl=DUKPT_KEY.getKSN();
         m_RequestISOMsg.SetDataElement(53, m_sTrxSecurityControl.getBytes(), m_sTrxSecurityControl.length());
         Log.i(TAG, "DE 53 [m_sTrxSecurityControl]= " + m_sTrxSecurityControl+"Length ="+m_sTrxSecurityControl.length());
 
@@ -869,11 +878,10 @@ public class POSTransaction {
         }
 
 
-        /*if(m_enmTrxType==TrxType.REFUND)     // we can check here if refund only
-        {
+            GetDE56_Original_TRX_Data();
             m_RequestISOMsg.SetDataElement(56, m_sOriginalTrxData.getBytes(), m_sOriginalTrxData.length());
             Log.i(TAG, "DE 56 [m_sOriginalTrxData]= " + m_sOriginalTrxData+"Length ="+m_sOriginalTrxData.length());
-        }*/
+
 
         if( m_sTransportData!=null )
         {
@@ -881,6 +889,7 @@ public class POSTransaction {
             Log.i(TAG, "DE 59 [m_sTransportData]= " + m_sTransportData + "Length =" + m_sTransportData.length());
         }
 
+        ComposeTerminalStatusData();
         m_RequestISOMsg.SetDataElement(62, m_sTerminalStatus.getBytes(), m_sTerminalStatus.length());
         Log.i(TAG, "DE 62 [m_sTerminalStatus]= " + m_sTerminalStatus+"Length ="+m_sTerminalStatus.length());
 
@@ -932,11 +941,13 @@ public class POSTransaction {
 
 
         // Set Transaction STAN
+        m_sSTAN=String.valueOf(PosApplication.getApp().oGTerminal_Operation_Data.m_iSTAN++);
         m_RequestISOMsg.SetDataElement(11, m_sSTAN.getBytes(), m_sSTAN.length());
         Log.i(TAG, " DE 11 [m_sSTAN]= " + m_sSTAN+"Length ="+m_sSTAN.length());
 
 
         // Set Date & Time, Local Transaction
+        m_sLocalTrxDateTime=ExtraUtil.GetDate_Time();
         m_RequestISOMsg.SetDataElement(12, m_sLocalTrxDateTime.getBytes(), m_sLocalTrxDateTime.length());
         Log.i(TAG, " DE 12 [m_sLocalTrxDateTime]= " + m_sLocalTrxDateTime+"Length ="+m_sLocalTrxDateTime.length());
 
@@ -949,6 +960,7 @@ public class POSTransaction {
         }
 
         // Set Point of Service Data Code
+        GetDE22_POSEntryMode();
         m_RequestISOMsg.SetDataElement(22, m_sPOSEntryMode.getBytes(), m_sPOSEntryMode.length());
         Log.i(TAG, " DE 22 [m_sPOSEntryMode]= " + m_sPOSEntryMode+"Length ="+m_sPOSEntryMode.length());
 
@@ -961,27 +973,27 @@ public class POSTransaction {
         }
 
         // Set Function Code (400)
+        GetDE24_FunctionCode();
         m_RequestISOMsg.SetDataElement(24, m_sFunctionCode.getBytes(), m_sFunctionCode.length());
         Log.i(TAG, " DE 24 [m_sFunctionCode]= " + m_sFunctionCode+"Length ="+m_sFunctionCode.length());
 
 
         // Set Message Reason Code
+        GetDE25_Messagereasoncode();
         m_RequestISOMsg.SetDataElement(25, m_sMsgReasonCode.getBytes(), m_sMsgReasonCode.length());
         Log.i(TAG, " DE 25 [m_sMsgReasonCode]= " + m_sMsgReasonCode+"Length ="+m_sMsgReasonCode.length());
 
 
         // Set Card Acceptor Business Code
+        m_sCardAcceptorBusinessCode=PosApplication.getApp().oGTerminal_Operation_Data.sMerchant_Category_Code;
         m_RequestISOMsg.SetDataElement(26, m_sCardAcceptorBusinessCode.getBytes(), m_sCardAcceptorBusinessCode.length());
         Log.i(TAG, " DE 26 [m_sCardAcceptorBusinessCode]= " + m_sCardAcceptorBusinessCode+"Length ="+m_sCardAcceptorBusinessCode.length());
 
-
-        // Set Card Acceptor Business Code
-        m_RequestISOMsg.SetDataElement(26, m_sCardAcceptorBusinessCode.getBytes(), m_sCardAcceptorBusinessCode.length());
-        Log.i(TAG, " DE 26 [m_sCardAcceptorBusinessCode]= " + m_sCardAcceptorBusinessCode+"Length ="+m_sCardAcceptorBusinessCode.length());
 
         /*Checking DE 30 when previus transaction is Authorizaiton */
 
         // Set Acquirer Institution Identification Code
+        m_sAquirerInsIDCode=PosApplication.getApp().oGTerminal_Operation_Data.sAcquirer_ID;
         m_RequestISOMsg.SetDataElement(32, m_sAquirerInsIDCode.getBytes(), m_sAquirerInsIDCode.length());
         Log.i(TAG, " DE 32 [m_sCardAcceptorBusinessCode]= " + m_sAquirerInsIDCode+"Length ="+m_sAquirerInsIDCode.length());
 
@@ -993,6 +1005,7 @@ public class POSTransaction {
         }
 
         // Set Retrieval Reference Number
+        GetDE_37_RRN();
         m_RequestISOMsg.SetDataElement(37, m_sRRNumber.getBytes(), m_sRRNumber.length());
         Log.i(TAG, " DE 37 [m_sCardAcceptorBusinessCode]= " + m_sRRNumber+"Length ="+m_sRRNumber.length());
 
@@ -1004,25 +1017,30 @@ public class POSTransaction {
         }
 
         // Set Terminal Identification
+        m_sTerminalID=PosApplication.getApp().oGTerminal_Operation_Data.m_sTerminalID;
         m_RequestISOMsg.SetDataElement(41, m_sTerminalID.getBytes(), m_sTerminalID.length());
         Log.i(TAG, " DE 41 [m_sTerminalID]= " + m_sTerminalID+"Length ="+m_sTerminalID.length());
 
         // Set Merchant ID
+        m_sMerchantID=PosApplication.getApp().oGTerminal_Operation_Data.m_sMerchantID;
         m_RequestISOMsg.SetDataElement(42, m_sMerchantID.getBytes(), m_sMerchantID.length());
         Log.i(TAG, " DE 42 [m_sMerchantID]= " + m_sMerchantID+"Length ="+m_sMerchantID.length());
 
         // Set Card Scheme ID
+        GetDE47_CardSchemeSponsorID();
         m_RequestISOMsg.SetDataElement(47, m_sCardSchemeSponsorID.getBytes(), m_sCardSchemeSponsorID.length());
         Log.i(TAG, " DE 47 [m_sCardSchemeSponsorID]= " + m_sCardSchemeSponsorID+"Length ="+m_sCardSchemeSponsorID.length());
 
         // Set Card Scheme ID(682)
+        m_sCurrencyCode=PosApplication.getApp().oGTerminal_Operation_Data.m_sCurrencycode;
         m_RequestISOMsg.SetDataElement(49, m_sCurrencyCode.getBytes(), m_sCardSchemeSponsorID.length());
         Log.i(TAG, " DE 49 [m_sCurrencyCode]= " + m_sCurrencyCode+"Length ="+m_sCurrencyCode.length());
 
 
         // Set KSN
-        m_RequestISOMsg.SetDataElement(53, m_sCurrencyCode.getBytes(), m_sTrxSecurityControl.length());
-        Log.i(TAG, " DE 53 [m_sTrxSecurityControl]= " + m_sCurrencyCode+"Length ="+m_sTrxSecurityControl.length());
+        m_sTrxSecurityControl=DUKPT_KEY.getKSN();
+        m_RequestISOMsg.SetDataElement(53, m_sTrxSecurityControl.getBytes(), m_sTrxSecurityControl.length());
+        Log.i(TAG, " DE 53 [m_sTrxSecurityControl]= " + m_sTrxSecurityControl+"Length ="+m_sTrxSecurityControl.length());
 
 
         // Set ICC/CTLS Tag
@@ -1034,10 +1052,12 @@ public class POSTransaction {
         }
 
         // Set Original Data Elements
+        GetDE56_Original_TRX_Data();
         m_RequestISOMsg.SetDataElement(56, m_sOriginalTrxData.getBytes(), m_sOriginalTrxData.length());
         Log.i(TAG, " DE 56 [m_sOriginalTrxData]= " + m_sOriginalTrxData+"Length ="+m_sOriginalTrxData.length());
 
         // Set Terminal Status
+        ComposeTerminalStatusData();
         m_RequestISOMsg.SetDataElement(62, m_sTerminalStatus.getBytes(), m_sTerminalStatus.length());
         Log.i(TAG, " DE 62 [m_sTerminalStatus]= " + m_sTerminalStatus+"Length ="+m_sTerminalStatus.length());
 
@@ -1075,6 +1095,7 @@ public class POSTransaction {
         m_RequestISOMsg.SetMTI(PosApplication.MTI_Terminal_Reconciliation_Advice);
 
         // Set Terminal ID instead of PAN
+        m_sTerminalID=PosApplication.getApp().oGTerminal_Operation_Data.m_sTerminalID;
         m_RequestISOMsg.SetDataElement(2, m_sTerminalID.getBytes(), m_sTerminalID.length());
         Log.i(TAG, "DE 2 [m_sTerminalID]= " + m_sTerminalID+"Length ="+m_sTerminalID.length());
 
@@ -1084,20 +1105,24 @@ public class POSTransaction {
 
 
         // Set Transaction STAN
+        m_sSTAN=String.valueOf(PosApplication.getApp().oGTerminal_Operation_Data.m_iSTAN++);
         m_RequestISOMsg.SetDataElement(11, m_sSTAN.getBytes(), m_sSTAN.length());
         Log.i(TAG, " DE 11 [m_sSTAN]= " + m_sSTAN+"Length ="+m_sSTAN.length());
 
 
         // Set Date & Time, Local Transaction
+        m_sLocalTrxDateTime=ExtraUtil.GetDate_Time();
         m_RequestISOMsg.SetDataElement(12, m_sLocalTrxDateTime.getBytes(), m_sLocalTrxDateTime.length());
         Log.i(TAG, " DE 12 [m_sLocalTrxDateTime]= " + m_sLocalTrxDateTime+"Length ="+m_sLocalTrxDateTime.length());
 
         // Set Function code
+        GetDE24_FunctionCode();
         m_RequestISOMsg.SetDataElement(24, m_sFunctionCode.getBytes(), m_sFunctionCode.length());
         Log.i(TAG, " DE 24 [m_sFunctionCode]= " + m_sFunctionCode+"Length ="+m_sFunctionCode.length());
 
 
         // Set Card Acceptor Business Code
+        m_sCardAcceptorBusinessCode=PosApplication.getApp().oGTerminal_Operation_Data.sMerchant_Category_Code;
         m_RequestISOMsg.SetDataElement(26, m_sCardAcceptorBusinessCode.getBytes(), m_sCardAcceptorBusinessCode.length());
         Log.i(TAG, " DE 26 [m_sCardAcceptorBusinessCode]= " + m_sCardAcceptorBusinessCode+"Length ="+m_sCardAcceptorBusinessCode.length());
 
@@ -1108,15 +1133,18 @@ public class POSTransaction {
 
 
         // Set Acquirer Institution Identification Code
+        m_sAquirerInsIDCode=PosApplication.getApp().oGTerminal_Operation_Data.sAcquirer_ID;
         m_RequestISOMsg.SetDataElement(32, m_sAquirerInsIDCode.getBytes(), m_sAquirerInsIDCode.length());
         Log.i(TAG, " DE 32 [m_sCardAcceptorBusinessCode]= " + m_sAquirerInsIDCode+"Length ="+m_sAquirerInsIDCode.length());
 
 
         // Set Terminal Identification
+        m_sTerminalID=PosApplication.getApp().oGTerminal_Operation_Data.m_sTerminalID;
         m_RequestISOMsg.SetDataElement(41, m_sTerminalID.getBytes(), m_sTerminalID.length());
         Log.i(TAG, " DE 41 [m_sTerminalID]= " + m_sTerminalID+"Length ="+m_sTerminalID.length());
 
         // Set Merchant ID
+        m_sMerchantID=PosApplication.getApp().oGTerminal_Operation_Data.m_sMerchantID;
         m_RequestISOMsg.SetDataElement(42, m_sMerchantID.getBytes(), m_sMerchantID.length());
         Log.i(TAG, " DE 42 [m_sMerchantID]= " + m_sMerchantID+"Length ="+m_sMerchantID.length());
 
@@ -1126,11 +1154,13 @@ public class POSTransaction {
 
 
         // Set KSN
-        m_RequestISOMsg.SetDataElement(53, m_sCurrencyCode.getBytes(), m_sTrxSecurityControl.length());
-        Log.i(TAG, " DE 53 [m_sTrxSecurityControl]= " + m_sCurrencyCode+"Length ="+m_sTrxSecurityControl.length());
+        m_sTrxSecurityControl=DUKPT_KEY.getKSN();
+        m_RequestISOMsg.SetDataElement(53, m_sTrxSecurityControl.getBytes(), m_sTrxSecurityControl.length());
+        Log.i(TAG, " DE 53 [m_sTrxSecurityControl]= " + m_sTrxSecurityControl+"Length ="+m_sTrxSecurityControl.length());
 
 
         // Set Terminal Status
+        ComposeTerminalStatusData();
         m_RequestISOMsg.SetDataElement(62, m_sTerminalStatus.getBytes(), m_sTerminalStatus.length());
         Log.i(TAG, " DE 62 [m_sTerminalStatus]= " + m_sTerminalStatus+"Length ="+m_sTerminalStatus.length());
 
@@ -1174,15 +1204,18 @@ public class POSTransaction {
 
 
         // Set Transaction STAN
+        m_sSTAN=String.valueOf(PosApplication.getApp().oGTerminal_Operation_Data.m_iSTAN++);
         m_RequestISOMsg.SetDataElement(11, m_sSTAN.getBytes(), m_sSTAN.length());
         Log.i(TAG, " DE 11 [m_sSTAN]= " + m_sSTAN+"Length ="+m_sSTAN.length());
 
 
         // Set Date & Time, Local Transaction
+        m_sLocalTrxDateTime=ExtraUtil.GetDate_Time();
         m_RequestISOMsg.SetDataElement(12, m_sLocalTrxDateTime.getBytes(), m_sLocalTrxDateTime.length());
         Log.i(TAG, " DE 12 [m_sLocalTrxDateTime]= " + m_sLocalTrxDateTime+"Length ="+m_sLocalTrxDateTime.length());
 
         // Set Function code
+        GetDE24_FunctionCode();
         m_RequestISOMsg.SetDataElement(24, m_sFunctionCode.getBytes(), m_sFunctionCode.length());
         Log.i(TAG, " DE 24 [m_sFunctionCode]= " + m_sFunctionCode+"Length ="+m_sFunctionCode.length());
 
@@ -1211,6 +1244,7 @@ public class POSTransaction {
         Log.i(TAG, " DE 48 [m_sHostData_DE48]= " + m_sHostData_DE48+"Length ="+m_sHostData_DE48.length());
 
         // Set Terminal Status
+        ComposeTerminalStatusData();
         m_RequestISOMsg.SetDataElement(62, m_sTerminalStatus.getBytes(), m_sTerminalStatus.length());
         Log.i(TAG, " DE 62 [m_sTerminalStatus]= " + m_sTerminalStatus+"Length ="+m_sTerminalStatus.length());
 
@@ -1244,7 +1278,7 @@ public class POSTransaction {
 
 
         // Set Transaction STAN
-        m_sSTAN=String.valueOf(PosApplication.getApp().oGTerminal_Operation_Data.m_iSTAN);
+        m_sSTAN=String.valueOf(PosApplication.getApp().oGTerminal_Operation_Data.m_iSTAN++);
         m_RequestISOMsg.SetDataElement(11, m_sSTAN.getBytes(), m_sSTAN.length());
         Log.i(TAG, " DE 11 [m_sSTAN]= " + m_sSTAN+"Length ="+m_sSTAN.length());
 
@@ -1255,11 +1289,13 @@ public class POSTransaction {
         Log.i(TAG, " DE 12 [m_sLocalTrxDateTime]= " + m_sLocalTrxDateTime+"Length ="+m_sLocalTrxDateTime.length());
 
         // Set Function code
+        GetDE24_FunctionCode();
         m_RequestISOMsg.SetDataElement(24, m_sFunctionCode.getBytes(), m_sFunctionCode.length());
         Log.i(TAG, " DE 24 [m_sFunctionCode]= " + m_sFunctionCode+"Length ="+m_sFunctionCode.length());
 
 
         // Set Acquirer Institution Identification Code
+        m_sAquirerInsIDCode=PosApplication.getApp().oGTerminal_Operation_Data.sAcquirer_ID;
         m_RequestISOMsg.SetDataElement(32, m_sAquirerInsIDCode.getBytes(), m_sAquirerInsIDCode.length());
         Log.i(TAG, " DE 32 [m_sAquirerInsIDCode]= " + m_sAquirerInsIDCode+"Length ="+m_sAquirerInsIDCode.length());
 
@@ -1269,19 +1305,23 @@ public class POSTransaction {
 
 
         // Set Terminal Identification
+        m_sTerminalID=PosApplication.getApp().oGTerminal_Operation_Data.m_sTerminalID;
         m_RequestISOMsg.SetDataElement(41, m_sTerminalID.getBytes(), m_sTerminalID.length());
         Log.i(TAG, " DE 41 [m_sTerminalID]= " + m_sTerminalID+"Length ="+m_sTerminalID.length());
 
         // Set Merchant ID
+        m_sTerminalID=PosApplication.getApp().oGTerminal_Operation_Data.m_sTerminalID;
         m_RequestISOMsg.SetDataElement(42, m_sMerchantID.getBytes(), m_sMerchantID.length());
         Log.i(TAG, " DE 42 [m_sMerchantID]= " + m_sMerchantID+"Length ="+m_sMerchantID.length());
 
         // Set KSN
-        m_RequestISOMsg.SetDataElement(53, m_sCurrencyCode.getBytes(), m_sTrxSecurityControl.length());
-        Log.i(TAG, " DE 53 [m_sTrxSecurityControl]= " + m_sCurrencyCode+"Length ="+m_sTrxSecurityControl.length());
+        m_sTrxSecurityControl=DUKPT_KEY.getKSN();
+        m_RequestISOMsg.SetDataElement(53, m_sTrxSecurityControl.getBytes(), m_sTrxSecurityControl.length());
+        Log.i(TAG, " DE 53 [m_sTrxSecurityControl]= " + m_sTrxSecurityControl+"Length ="+m_sTrxSecurityControl.length());
 
 
         // Set Terminal Status
+        ComposeTerminalStatusData();
         m_RequestISOMsg.SetDataElement(62, m_sTerminalStatus.getBytes(), m_sTerminalStatus.length());
         Log.i(TAG, " DE 62 [m_sTerminalStatus]= " + m_sTerminalStatus+"Length ="+m_sTerminalStatus.length());
 
@@ -1322,22 +1362,27 @@ public class POSTransaction {
 
 
         // Set Transaction STAN
+        m_sSTAN=String.valueOf(PosApplication.getApp().oGTerminal_Operation_Data.m_iSTAN++);
         m_RequestISOMsg.SetDataElement(11, m_sSTAN.getBytes(), m_sSTAN.length());
         Log.i(TAG, " DE 11 [m_sSTAN]= " + m_sSTAN+"Length ="+m_sSTAN.length());
 
 
         // Set Date & Time, Local Transaction
+        m_sLocalTrxDateTime=ExtraUtil.GetDate_Time();
         m_RequestISOMsg.SetDataElement(12, m_sLocalTrxDateTime.getBytes(), m_sLocalTrxDateTime.length());
         Log.i(TAG, " DE 12 [m_sLocalTrxDateTime]= " + m_sLocalTrxDateTime+"Length ="+m_sLocalTrxDateTime.length());
 
         // Set Function code
+        GetDE24_FunctionCode();
         m_RequestISOMsg.SetDataElement(24, m_sFunctionCode.getBytes(), m_sFunctionCode.length());
         Log.i(TAG, " DE 24 [m_sFunctionCode]= " + m_sFunctionCode+"Length ="+m_sFunctionCode.length());
 
 
 
         // Set Acquirer Institution Identification Code
+        m_sAquirerInsIDCode=PosApplication.getApp().oGTerminal_Operation_Data.sAcquirer_ID;
         if(m_sAquirerInsIDCode!=null) {
+
             m_RequestISOMsg.SetDataElement(32, m_sAquirerInsIDCode.getBytes(), m_sAquirerInsIDCode.length());
             Log.i(TAG, " DE 32 [m_sCardAcceptorBusinessCode]= " + m_sAquirerInsIDCode + "Length =" + m_sAquirerInsIDCode.length());
         }
@@ -1349,11 +1394,13 @@ public class POSTransaction {
             Log.i(TAG, " DE 39 [m_sActionCode]= " + m_sActionCode+"Length ="+m_sActionCode.length());
         }
         // Set Terminal Identification
+        m_sTerminalID=PosApplication.getApp().oGTerminal_Operation_Data.m_sTerminalID;
         if(m_sTerminalID!=null) {
             m_RequestISOMsg.SetDataElement(41, m_sTerminalID.getBytes(), m_sTerminalID.length());
             Log.i(TAG, " DE 41 [m_sTerminalID]= " + m_sTerminalID + "Length =" + m_sTerminalID.length());
         }
         // Set Merchant ID
+        m_sMerchantID=PosApplication.getApp().oGTerminal_Operation_Data.m_sMerchantID;
         if(m_sMerchantID!=null) {
             m_RequestISOMsg.SetDataElement(42, m_sMerchantID.getBytes(), m_sMerchantID.length());
             Log.i(TAG, " DE 42 [m_sMerchantID]= " + m_sMerchantID + "Length =" + m_sMerchantID.length());
@@ -1384,13 +1431,12 @@ public class POSTransaction {
 
 
         //2. Set PAN
-        if (m_enmTrxCardType !=CardType.MANUAL ) {
-
-            m_RequestISOMsg.SetDataElement(2, m_sPAN.getBytes(), m_sPAN.length());
+           m_RequestISOMsg.SetDataElement(2, m_sPAN.getBytes(), m_sPAN.length());
             Log.i(TAG, "DE 2 [m_sPAN]= " + m_sPAN+"Length ="+m_sPAN.length());
-        }
+
 
         //3.Set Processing Code
+        GetDE03();
         m_RequestISOMsg.SetDataElement(3, m_sProcessCode.getBytes(), m_sProcessCode.length());
         Log.i(TAG, "DE 3 [m_sProcessCode]= " + m_sProcessCode+"Length ="+m_sProcessCode.length());
 
@@ -1401,16 +1447,19 @@ public class POSTransaction {
 
 
         //7.local Transaction Date & time
+        m_sTrxDateTime=ExtraUtil.GetDate_Time();
         m_RequestISOMsg.SetDataElement(7, m_sTrxDateTime.getBytes(), m_sTrxDateTime.length());
         Log.i(TAG, "DE 7 [m_sTrxDateTime]= " + m_sTrxDateTime+"Length ="+m_sTrxDateTime.length());
 
 
 
         //11.STAN
+        m_sSTAN=String.valueOf(PosApplication.getApp().oGTerminal_Operation_Data.m_iSTAN++);
         m_RequestISOMsg.SetDataElement(11, m_sSTAN.getBytes(), m_sSTAN.length());
         Log.i(TAG, "DE 11 [m_sSTAN]= " + m_sTrxAmount+"Length ="+m_sSTAN.length());
 
         //12. Local Transaction time and date
+        m_sLocalTrxDateTime=ExtraUtil.GetDate_Time();
         m_RequestISOMsg.SetDataElement(12, m_sLocalTrxDateTime.getBytes(), m_sLocalTrxDateTime.length());
         Log.i(TAG, "DE 12 [m_sLocalTrxDateTime]= " + m_sTrxAmount+"Length ="+m_sTrxAmount.length());
 
@@ -1424,13 +1473,7 @@ public class POSTransaction {
         }
 
         //22.Pos Entry Mode
-        if (m_enmTrxCardType == CardType.MAG) {
-
-        } else if (m_enmTrxCardType == CardType.ICC) {
-
-        } else if (m_enmTrxCardType == CardType.CTLS) {
-
-        }
+        GetDE22_POSEntryMode();
         m_RequestISOMsg.SetDataElement(22, m_sPOSEntryMode.getBytes(), m_sPOSEntryMode.length());
         Log.i(TAG, "DE 22 [m_sPOSEntryMode]= " + m_sPOSEntryMode+"Length ="+m_sPOSEntryMode.length());
 
@@ -1441,16 +1484,19 @@ public class POSTransaction {
         }
 
         //24. Function Code
+        GetDE24_FunctionCode();
         m_RequestISOMsg.SetDataElement(24, m_sFunctionCode.getBytes(), m_sFunctionCode.length());
         Log.i(TAG, "DE 24 [m_sFunctionCode]= " + m_sFunctionCode+"Length ="+m_sFunctionCode.length());
 
 
         //25. Message reason Code
+        GetDE25_Messagereasoncode();
         m_RequestISOMsg.SetDataElement(25, m_sMsgReasonCode.getBytes(), m_sMsgReasonCode.length());
         Log.i(TAG, "DE 25 [m_sMsgReasonCode]= " + m_sMsgReasonCode+"Length ="+m_sMsgReasonCode.length());
 
 
         //26. Card Acceptor Bussiness Code
+        m_sCardAcceptorBusinessCode=PosApplication.getApp().oGTerminal_Operation_Data.sMerchant_Category_Code;
         m_RequestISOMsg.SetDataElement(26, m_sCardAcceptorBusinessCode.getBytes(), m_sCardAcceptorBusinessCode.length());
         Log.i(TAG, "DE 26 [m_sCardAcceptorBusinessCode]= " + m_sCardAcceptorBusinessCode+"Length ="+m_sCardAcceptorBusinessCode.length());
 
@@ -1462,6 +1508,7 @@ public class POSTransaction {
 
         }
         //32. Acquirer institution ID
+        m_sAquirerInsIDCode=PosApplication.getApp().oGTerminal_Operation_Data.sAcquirer_ID;
         m_RequestISOMsg.SetDataElement(32, m_sAquirerInsIDCode.getBytes(), m_sAquirerInsIDCode.length());
         Log.i(TAG, "DE 32 [m_sAquirerInsIDCode]= " + m_sAquirerInsIDCode+"Length ="+m_sAquirerInsIDCode.length());
 
@@ -1473,6 +1520,7 @@ public class POSTransaction {
         }
 
         //37. RRN
+        GetDE_37_RRN();
         m_RequestISOMsg.SetDataElement(37, m_sRRNumber.getBytes(), m_sRRNumber.length());
         Log.i(TAG, "DE 37 [m_sRRNumber]= " + m_sRRNumber+"Length ="+m_sRRNumber.length());
 
@@ -1483,18 +1531,22 @@ public class POSTransaction {
 
 
         //41.Terminal ID
+        m_sTerminalID=PosApplication.getApp().oGTerminal_Operation_Data.m_sTerminalID;
         m_RequestISOMsg.SetDataElement(41, m_sTerminalID.getBytes(), m_sTerminalID.length());
         Log.i(TAG, "DE 41 [m_sTerminalID]= " + m_sTerminalID+"Length ="+m_sTerminalID.length());
 
         //42.Merchant ID
+        m_sMerchantID=PosApplication.getApp().oGTerminal_Operation_Data.m_sMerchantID;
         m_RequestISOMsg.SetDataElement(42, m_sMerchantID.getBytes(), m_sMerchantID.length());
         Log.i(TAG, "DE 42 [m_sMerchantID]= " + m_sMerchantID+"Length ="+m_sMerchantID.length());
 
         //47.CardScheme Sponsor ID
+        GetDE47_CardSchemeSponsorID();
         m_RequestISOMsg.SetDataElement(47, m_sCardSchemeSponsorID.getBytes(), m_sCardSchemeSponsorID.length());
         Log.i(TAG, "DE 47 [m_sCardSchemeSponsorID]= " + m_sCardSchemeSponsorID+"Length ="+m_sCardSchemeSponsorID.length());
 
         //49.Currency Code
+        m_sCurrencyCode=PosApplication.getApp().oGTerminal_Operation_Data.m_sCurrencycode;
         m_RequestISOMsg.SetDataElement(49, m_sCurrencyCode.getBytes(), m_sCurrencyCode.length());
         Log.i(TAG, "DE 49 [m_sCurrencyCode]= " + m_sCurrencyCode+"Length ="+m_sCurrencyCode.length());
 
@@ -1506,6 +1558,7 @@ public class POSTransaction {
         }
 
         //53. Transaction Security control
+        m_sTrxSecurityControl=DUKPT_KEY.getKSN();
         m_RequestISOMsg.SetDataElement(53, m_sTrxSecurityControl.getBytes(), m_sTrxSecurityControl.length());
         Log.i(TAG, "DE 53 [m_sTrxSecurityControl]= " + m_sTrxSecurityControl+"Length ="+m_sTrxSecurityControl.length());
 
@@ -1519,8 +1572,9 @@ public class POSTransaction {
         Log.i(TAG, "DE 55 [m_sICCRelatedTags]= " + m_sICCRelatedTags+"Length ="+m_sICCRelatedTags.length());
 
         //56.original Transaction data
-        if(m_enmTrxType==TrxType.REFUND ||m_enmTrxType==TrxType.PURCHASE_ADVICE)     // we can check here if refund only
+        if(m_enmTrxType==TrxType.REFUND ||m_enmTrxType==TrxType.PURCHASE_ADVICE)
         {
+            GetDE56_Original_TRX_Data();
             m_RequestISOMsg.SetDataElement(56, m_sOriginalTrxData.getBytes(), m_sOriginalTrxData.length());
             Log.i(TAG, "DE 56 [m_sOriginalTrxData]= " + m_sOriginalTrxData+"Length ="+m_sOriginalTrxData.length());
         }
@@ -1530,6 +1584,7 @@ public class POSTransaction {
         Log.i(TAG, "DE 59 [m_sTransportData]= " + m_sTransportData+"Length ="+m_sTransportData.length());
 
         //62.Terminal Status
+        ComposeTerminalStatusData();
         m_RequestISOMsg.SetDataElement(62, m_sTerminalStatus.getBytes(), m_sTerminalStatus.length());
         Log.i(TAG, "DE 62 [m_sTerminalStatus]= " + m_sTerminalStatus+"Length ="+m_sTerminalStatus.length());
 
@@ -1570,6 +1625,7 @@ public class POSTransaction {
         }
 
         //3.Set Processing Code
+        GetDE03();
         m_RequestISOMsg.SetDataElement(3, m_sProcessCode.getBytes(), m_sProcessCode.length());
         Log.i(TAG, "DE 3 [m_sProcessCode]= " + m_sProcessCode+"Length ="+m_sProcessCode.length());
 
@@ -1586,10 +1642,12 @@ public class POSTransaction {
 
 
         //11.STAN
+        m_sSTAN=String.valueOf(PosApplication.getApp().oGTerminal_Operation_Data.m_iSTAN++);
         m_RequestISOMsg.SetDataElement(11, m_sSTAN.getBytes(), m_sSTAN.length());
         Log.i(TAG, "DE 11 [m_sSTAN]= " + m_sTrxAmount+"Length ="+m_sSTAN.length());
 
         //12. Local Transaction time and date
+        m_sLocalTrxDateTime=ExtraUtil.GetDate_Time();
         m_RequestISOMsg.SetDataElement(12, m_sLocalTrxDateTime.getBytes(), m_sLocalTrxDateTime.length());
         Log.i(TAG, "DE 12 [m_sLocalTrxDateTime]= " + m_sTrxAmount+"Length ="+m_sTrxAmount.length());
 
@@ -1603,13 +1661,7 @@ public class POSTransaction {
         }
 
         //22.Pos Entry Mode
-        if (m_enmTrxCardType == CardType.MAG) {
-
-        } else if (m_enmTrxCardType == CardType.ICC) {
-
-        } else if (m_enmTrxCardType == CardType.CTLS) {
-
-        }
+        GetDE22_POSEntryMode();
         m_RequestISOMsg.SetDataElement(22, m_sPOSEntryMode.getBytes(), m_sPOSEntryMode.length());
         Log.i(TAG, "DE 22 [m_sPOSEntryMode]= " + m_sPOSEntryMode+"Length ="+m_sPOSEntryMode.length());
 
@@ -1620,16 +1672,19 @@ public class POSTransaction {
         }
 
         //24. Function Code
+        GetDE24_FunctionCode();
         m_RequestISOMsg.SetDataElement(24, m_sFunctionCode.getBytes(), m_sFunctionCode.length());
         Log.i(TAG, "DE 24 [m_sFunctionCode]= " + m_sFunctionCode+"Length ="+m_sFunctionCode.length());
 
 
         //25. Message reason Code
+        GetDE25_Messagereasoncode();
         m_RequestISOMsg.SetDataElement(25, m_sMsgReasonCode.getBytes(), m_sMsgReasonCode.length());
         Log.i(TAG, "DE 25 [m_sMsgReasonCode]= " + m_sMsgReasonCode+"Length ="+m_sMsgReasonCode.length());
 
 
         //26. Card Acceptor Bussiness Code
+        m_sCardAcceptorBusinessCode=PosApplication.getApp().oGTerminal_Operation_Data.sMerchant_Category_Code;
         m_RequestISOMsg.SetDataElement(26, m_sCardAcceptorBusinessCode.getBytes(), m_sCardAcceptorBusinessCode.length());
         Log.i(TAG, "DE 26 [m_sCardAcceptorBusinessCode]= " + m_sCardAcceptorBusinessCode+"Length ="+m_sCardAcceptorBusinessCode.length());
 
@@ -1641,6 +1696,7 @@ public class POSTransaction {
 
         }
         //32. Acquirer institution ID
+        m_sAquirerInsIDCode=PosApplication.getApp().oGTerminal_Operation_Data.sAcquirer_ID;
         m_RequestISOMsg.SetDataElement(32, m_sAquirerInsIDCode.getBytes(), m_sAquirerInsIDCode.length());
         Log.i(TAG, "DE 32 [m_sAquirerInsIDCode]= " + m_sAquirerInsIDCode+"Length ="+m_sAquirerInsIDCode.length());
 
@@ -1652,6 +1708,7 @@ public class POSTransaction {
         }
 
         //37. RRN
+        GetDE_37_RRN();
         m_RequestISOMsg.SetDataElement(37, m_sRRNumber.getBytes(), m_sRRNumber.length());
         Log.i(TAG, "DE 37 [m_sRRNumber]= " + m_sRRNumber+"Length ="+m_sRRNumber.length());
 
@@ -1662,18 +1719,22 @@ public class POSTransaction {
 
 
         //41.Terminal ID
+        m_sTerminalID=PosApplication.getApp().oGTerminal_Operation_Data.m_sTerminalID;
         m_RequestISOMsg.SetDataElement(41, m_sTerminalID.getBytes(), m_sTerminalID.length());
         Log.i(TAG, "DE 41 [m_sTerminalID]= " + m_sTerminalID+"Length ="+m_sTerminalID.length());
 
         //42.Merchant ID
+        m_sMerchantID=PosApplication.getApp().oGTerminal_Operation_Data.m_sMerchantID;
         m_RequestISOMsg.SetDataElement(42, m_sMerchantID.getBytes(), m_sMerchantID.length());
         Log.i(TAG, "DE 42 [m_sMerchantID]= " + m_sMerchantID+"Length ="+m_sMerchantID.length());
 
         //47.CardScheme Sponsor ID
+        GetDE47_CardSchemeSponsorID();
         m_RequestISOMsg.SetDataElement(47, m_sCardSchemeSponsorID.getBytes(), m_sCardSchemeSponsorID.length());
         Log.i(TAG, "DE 47 [m_sCardSchemeSponsorID]= " + m_sCardSchemeSponsorID+"Length ="+m_sCardSchemeSponsorID.length());
 
         //49.Currency Code
+        m_sCurrencyCode=PosApplication.getApp().oGTerminal_Operation_Data.m_sCurrencycode;
         m_RequestISOMsg.SetDataElement(49, m_sCurrencyCode.getBytes(), m_sCurrencyCode.length());
         Log.i(TAG, "DE 49 [m_sCurrencyCode]= " + m_sCurrencyCode+"Length ="+m_sCurrencyCode.length());
 
@@ -1685,6 +1746,7 @@ public class POSTransaction {
         }
 
         //53. Transaction Security control
+        m_sTrxSecurityControl=DUKPT_KEY.getKSN();
         m_RequestISOMsg.SetDataElement(53, m_sTrxSecurityControl.getBytes(), m_sTrxSecurityControl.length());
         Log.i(TAG, "DE 53 [m_sTrxSecurityControl]= " + m_sTrxSecurityControl+"Length ="+m_sTrxSecurityControl.length());
 
@@ -1695,6 +1757,7 @@ public class POSTransaction {
         Log.i(TAG, "DE 55 [m_sICCRelatedTags]= " + m_sICCRelatedTags+"Length ="+m_sICCRelatedTags.length());
 
         //56.original Transaction data
+        GetDE56_Original_TRX_Data();
         m_RequestISOMsg.SetDataElement(56, m_sOriginalTrxData.getBytes(), m_sOriginalTrxData.length());
         Log.i(TAG, "DE 56 [m_sOriginalTrxData]= " + m_sOriginalTrxData+"Length ="+m_sOriginalTrxData.length());
 
@@ -1704,6 +1767,7 @@ public class POSTransaction {
         Log.i(TAG, "DE 59 [m_sTransportData]= " + m_sTransportData+"Length ="+m_sTransportData.length());
 
         //62.Terminal Status
+        ComposeTerminalStatusData();
         m_RequestISOMsg.SetDataElement(62, m_sTerminalStatus.getBytes(), m_sTerminalStatus.length());
         Log.i(TAG, "DE 62 [m_sTerminalStatus]= " + m_sTerminalStatus+"Length ="+m_sTerminalStatus.length());
 
@@ -2690,7 +2754,7 @@ public class POSTransaction {
                                                 mrc= Message_reason_code.Fallback_from_chip_to_magnetic_stripe;//1776
                                                 break;
                                             case MANUAL:
-
+                                                mrc=Message_reason_code.Terminal_processed;
                                                 break;
                                         }
 
@@ -2714,7 +2778,7 @@ public class POSTransaction {
                                       break;
 
                                   case MANUAL:
-
+                                      mrc=Message_reason_code.Terminal_processed;
                                       break;
                               }
                               break;
@@ -2740,7 +2804,7 @@ public class POSTransaction {
                                 mrc= Message_reason_code.Fallback_from_chip_to_magnetic_stripe;//1776
                                 break;
                             case MANUAL:
-
+                                mrc=Message_reason_code.Terminal_processed;
                                 break;
                         }
 
@@ -2764,7 +2828,7 @@ public class POSTransaction {
                                 break;
 
                             case MANUAL:
-
+                                mrc=Message_reason_code.Terminal_processed;
                                 break;
                         }
                         break;
@@ -3229,10 +3293,22 @@ public class POSTransaction {
 
     }
 
+
+
+    /**
+     * \Function Name: GetDE_37_RRN
+     * \Param  : void
+     * \Return : Error codes
+     * \Author : Mostafa Hussiny
+     * \DT		: 6/xx/2020
+     * \Des    : for getting RRN
+     */
+
     public void GetDE_37_RRN()
     {
         m_sRRNumber= m_sSTAN+m_sLocalTrxDateTime;
     }
+
 
     public void GetDE47_CardSchemeSponsorID() {
 
@@ -3249,6 +3325,72 @@ public class POSTransaction {
 
 
                 }
+    }
+
+    /**
+     * \Function Name: GetDE56_Original_TRX_Data
+     * \Param  : void
+     * \Return : Error codes
+     * \Author : Mostafa Hussiny
+     * \DT		: 6/xx/2020
+     * \Des    : for getting original transaction data incase of refund or reversal . etc.....
+     */
+
+    private void GetDE56_Original_TRX_Data() {
+
+
+  //        Reversals (mada, GCCNet & ICS cards) / Completions (ICS cards) / Refunds (GCCNet & ICS cards)
+  //      DE 56 contains 6 data elements from the original transaction (1100/1200) to be refunded, completed or reversed.
+       /* Original Message Type Identifier (n 4);
+        Original DE 11 Systems Trace Audit Number (n 6);Default "000000".
+        Original DE 7 Transmission Date and Time (n 10);Default "0000000000"
+        Original DE 12 Date and Time Local Transaction (n 12);Default "000000000000"
+        Original DE 32 Acquirer Institution Identification Code(n..11); Default "00".
+        441Original DE 33 Forwarding Institution Identification Code(n..11); Default "00".*/
+
+        /*Note: For EFTPOS transactions where Original DE 7
+        Transmission Date and Time, Original DE 11 Systems Trace
+        Audit Number, Original DE 12 Date and Time Local Transaction
+        and Original DE 37 Retrieval Reference Number are not
+        available (e.g. Voice Authorisation Advice), these sub-fields may
+        be populated with default values consisting of all zeros. If
+        Original DE 32 Acquirer Institution Identification Code or Original
+        DE 33 Forwarding Institution Identification Code are not
+        available, the length of these sub-fields is set to zero.*/
+
+        if((card_scheme.m_sCard_Scheme_ID!="P1" & m_enmTrxType==TranscationType.REFUND)  |  m_enmTrxType==TranscationType.REVERSAL | (card_scheme.m_sCard_Scheme_ID!="P1" & m_enmTrxType==TranscationType.AUTHORISATION_ADVICE)) {
+
+            if (m_sOrigSTAN == null)
+                m_sOrigSTAN="000000";
+            if(m_sOrigTrxDateTime==null)
+                m_sOrigTrxDateTime="0000000000";
+            if(m_sOrigLocalTrxDateTime==null)
+                m_sOrigLocalTrxDateTime="000000000000";
+            if(m_sOrigAquirerInsIDCode==null)
+                m_sOrigAquirerInsIDCode="00";
+            if(m_sOrigFWAquirerInsIDCode==null)
+                m_sOrigFWAquirerInsIDCode="00";
+
+
+            m_sOriginalTrxData = m_sOrigMTI + m_sOrigSTAN + m_sOrigTrxDateTime + m_sOrigLocalTrxDateTime + m_sOrigAquirerInsIDCode + m_sOrigFWAquirerInsIDCode;
+        }
+
+
+                //mada Cards Refunds, Completions, Voids & Pre-Auth Extensions
+
+        /*Original Message Type Identifier – the message type identifying the original transaction. length 4
+           DE 37 Retrieval Reference Number of the original transaction as keyed by the Retailer.length 12
+          Original local transaction date from original transaction receipt. Default value of ‘000000’ if unavailable. length 6
+         */
+        if (card_scheme.m_sCard_Scheme_ID =="P1" & (m_enmTrxType==TranscationType.REFUND |m_enmTrxType==TranscationType.AUTHORISATION_EXTENSION|m_enmTrxType==TranscationType.AUTHORISATION_ADVICE|m_enmTrxType==TranscationType.AUTHORISATION_VOID))
+        {
+            if(m_sOrigLocalTrxDate==null)
+                m_sOrigLocalTrxDate="000000";
+            m_sOriginalTrxData= m_sOrigMTI+m_sOrigRRNumber+m_sOrigLocalTrxDate;
+        }
+
+        //todo check DE65 page 103 in manaual entry IBCS will be 3 sub fields not 6 subfields
+
     }
 
 

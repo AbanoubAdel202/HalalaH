@@ -244,16 +244,31 @@ public class POS_MAIN {
                 return true;
                 break;
             case AUTHORISATION_EXTENSION://AUTHORISATION_EXTENSION                       offset 7
-                if ("1".equals(PosApplication.getApp().oGPosTransaction.card_scheme.m_sTransactions_Allowed.charAt(7)))
-                return true;
+                if ("1".equals(PosApplication.getApp().oGPosTransaction.card_scheme.m_sTransactions_Allowed.charAt(7))) {
+                    return true;
+                }else if(PosApplication.getApp().oGPosTransaction.card_scheme.m_sCard_Scheme_ID=="P1")
+                {
+
+                    return true;
+                }
                 break;
             case AUTHORISATION_VOID://AUTHORISATION_VOID:                                offset 8
                 if ("1".equals(PosApplication.getApp().oGPosTransaction.card_scheme.m_sTransactions_Allowed.charAt(8)))
                 return true;
+                else if(PosApplication.getApp().oGPosTransaction.card_scheme.m_sCard_Scheme_ID=="P1")
+                {
+
+                    return true;
+                }
                 break;
             case SADAD_BILL://SADAD_BILL:                                                offset 9
                 if ("1".equals(PosApplication.getApp().oGPosTransaction.card_scheme.m_sTransactions_Allowed.charAt(9)))
                 return true;
+                else if(PosApplication.getApp().oGPosTransaction.card_scheme.m_sCard_Scheme_ID=="P1")
+                {
+
+                    return true;
+                }
                 break;
 
 
@@ -511,6 +526,12 @@ DF03 Check Sum                                [20]   >> 4410C6D51C2F83ADFD92528F
 
     }
 
+
+    public static int ValidateHostResponse()
+    {
+        //todo get recieved buffer and do validation using specific DE on business logic
+        return 0;
+    }
 
 
 }

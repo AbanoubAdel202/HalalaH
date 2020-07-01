@@ -32,7 +32,7 @@ public class PinpadActivity extends Activity {
 
     //private AidlPinpad mPinpadManager;
     private AidlPinpad mPinpad;
-    private int mCardType = ConsumeData.CARD_TYPE_MAG;
+    private POSTransaction.CardType mCardType = POSTransaction.CardType.MAG;
 
     private byte[] mPinBlock = null;
     private String mPinInput;
@@ -79,7 +79,7 @@ public class PinpadActivity extends Activity {
         //mPinpadManager = DeviceServiceManager.getInstance().getPinpadManager(0);
         mPinpad=DeviceTopUsdkServiceManager.getInstance().getPinpadManager(0);
 
-        mCardType = PosApplication.getApp().oGPosTransaction.m_iCardType;
+        mCardType = PosApplication.getApp().oGPosTransaction.m_enmTrxCardType;
         CardManager.getInstance().finishPreActivity();
 
         showPinpadActivity(PosApplication.getApp().oGPosTransaction.m_sPAN, PosApplication.getApp().oGPosTransaction.m_sTrxAmount);
@@ -255,7 +255,7 @@ public class PinpadActivity extends Activity {
         @Override
         public void onError(int errorCode) throws RemoteException {
             Log.i(TAG, "onError(), errorCode = " + errorCode);
-            if (ConsumeData.CARD_TYPE_MAG != mCardType) {
+            if (POSTransaction.CardType.MAG != mCardType) {
                 CardManager.getInstance().setImportPin("");
             } else {
                 showResult(getString(R.string.search_card_trans_result_stop));
@@ -283,17 +283,28 @@ public class PinpadActivity extends Activity {
                 //socket通信
                 Bundle bundle = new Bundle();
                 bundle.putInt(PacketProcessUtils.PACKET_PROCESS_TYPE, PacketProcessUtils.PACKET_PROCESS_PURCHASE);
+                if(POSTransaction.CardType.MANUAL == mCardType) {
+                    PosApplication.getApp().oGPosTransaction.m_enmTrxCVM = POSTransaction.CVM.ONLINE_PIN;
+                }
 
                 CardManager.getInstance().startActivity(PinpadActivity.this, bundle, PacketProcessActivity.class);
                 /*byte[] sendData = PosApplication.getApp().mConsumeData.getICData();
                 Log.d(TAG, BCDASCII.bytesToHexString(sendData));
                 JsonAndHttpsUtils.sendJsonData(mContext, BCDASCII.bytesToHexString(sendData));*/
             } else {
-                if (ConsumeData.CARD_TYPE_MAG == mCardType) {
+                if (POSTransaction.CardType.MAG == mCardType) {
                     Intent intent = new Intent(PinpadActivity.this, PacketProcessActivity.class);
                     intent.putExtra(PacketProcessUtils.PACKET_PROCESS_TYPE, PacketProcessUtils.PACKET_PROCESS_PURCHASE);
                     startActivity(intent);
-                } else {
+                }
+                else if(POSTransaction.CardType.MANUAL == mCardType){
+                    PosApplication.getApp().oGPosTransaction.m_enmTrxCVM= POSTransaction.CVM.ONLINE_PIN;
+                    Intent intent = new Intent(PinpadActivity.this, PacketProcessActivity.class);
+                    intent.putExtra(PacketProcessUtils.PACKET_PROCESS_TYPE, PacketProcessUtils.PACKET_PROCESS_PURCHASE);
+                    startActivity(intent);
+                }
+
+                else {
                     if (pin == null) {
                         CardManager.getInstance().setImportPin("000000");
                     } else {
@@ -307,7 +318,7 @@ public class PinpadActivity extends Activity {
         public void onCancelKeyPress() throws RemoteException {
             Log.i(TAG, "onCancelKeyPress()");
             mIsCancleInputKey = true;
-            if (ConsumeData.CARD_TYPE_MAG != mCardType) {
+            if (POSTransaction.CardType.MAG != mCardType) {
                 CardManager.getInstance().setImportPin("");
             }
             CardManager.getInstance().stopCardDealService(PinpadActivity.this);
@@ -317,7 +328,7 @@ public class PinpadActivity extends Activity {
         @Override
         public void onStopGetPin() throws RemoteException {
             Log.i(TAG, "onStopGetPin()");
-            if (ConsumeData.CARD_TYPE_MAG != mCardType) {
+            if (POSTransaction.CardType.MAG != mCardType) {
                 CardManager.getInstance().setImportPin("");
             }
             CardManager.getInstance().stopCardDealService(PinpadActivity.this);

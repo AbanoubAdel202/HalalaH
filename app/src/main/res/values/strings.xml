@@ -326,6 +326,8 @@
     <string name="Authorization">Authorization</string>
     <string name="Purchase_with_naqd">Purchase with NAQD</string>
     <string name="Admin">Admin</string>
+    <string name="MANUAL">Manual</string>
+    <string name="Pan_input_tip">PAN</string>
 
 
 </resources>
