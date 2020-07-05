@@ -11,10 +11,8 @@ import com.example.halalah.POS_MAIN;
 import com.example.halalah.PosApplication;
 import com.example.halalah.Utils;
 
-import com.example.halalah.ui.CardConfirmActivity;
 import com.example.halalah.ui.PacketProcessActivity;
 import com.example.halalah.ui.PinpadActivity;
-import com.example.halalah.cache.ConsumeData;
 import com.example.halalah.iso8583.BCDASCII;
 import com.example.halalah.util.PacketProcessUtils;
 import com.topwise.cloudpos.aidl.emv.AidlPboc;
@@ -133,7 +131,7 @@ public class ICPbocStartListenerSub extends AidlPbocStartListener.Stub {
 
 
 
-        PosApplication.getApp().oGPosTransaction.m_iCardType=ConsumeData.CARD_TYPE_IC;
+
         PosApplication.getApp().oGPosTransaction.m_sPAN=cardno;
         //CardManager.getInstance().startActivity(mContext, null, CardConfirmActivity.class);
         CardManager.getInstance().setConfirmCardInfo(true);

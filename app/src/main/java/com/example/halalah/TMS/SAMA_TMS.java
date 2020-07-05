@@ -1094,12 +1094,45 @@ public class SAMA_TMS implements Serializable
         public static int Get_card_scheme_BY_AID(String AID)
         {
             // todo get Card scheme by ID form database
-            return 0;
+            int istate=-1;
+
+
+            if(istate==0) {
+
+                // todo PosApplication.getApp().oGPosTransaction.card_scheme=card scheme here
+
+                if (PosApplication.getApp().oGPosTransaction.card_scheme.m_sCard_Scheme_ID =="P1")
+                    PosApplication.getApp().oGPosTransaction.is_mada=true;
+                else
+                    PosApplication.getApp().oGPosTransaction.is_mada=false;
+
+                return 0;
+            }
+            else
+                return -1;
+
         }
         public static int Get_card_scheme_BY_PAN(String PAN)
-        {
+        {   int istate=-1;
             //todo get card scheme by pan from database
-            return 0;
+
+
+            if(istate==0) {
+
+                // todo PosApplication.getApp().oGPosTransaction.card_scheme=card scheme here
+
+                if (PosApplication.getApp().oGPosTransaction.card_scheme.m_sCard_Scheme_ID =="P1")
+                    PosApplication.getApp().oGPosTransaction.is_mada=true;
+                else
+                    PosApplication.getApp().oGPosTransaction.is_mada=false;
+
+                return 0;
+            }
+            else
+                return -1;
+
+
+
         }
 
         public Card_Scheme getCard_scheme() {
@@ -1120,7 +1153,7 @@ public class SAMA_TMS implements Serializable
 
 
 
-       public  Public_Key[] get_all_CAPK()
+       public  Public_Key[] Get_all_CAPK()
        {    AID_List aid_list = Get_AID_LIST_PARAM();
            Public_Key[] public_keys=new Public_Key[aid_list.AID.length];
        //todo get all public keys

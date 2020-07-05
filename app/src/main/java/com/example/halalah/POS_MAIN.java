@@ -183,17 +183,21 @@ public class POS_MAIN {
      \Pre    :
      \Post   :
      \Author	: Mostafa Hussiny
-     \DT		: 4/28/2020
+     \DT		: 4/28/2020  modified 1/7/2020
      \Des    : will get the card AID and check if this card is MAda based on AID or PAN
      */
     public static int Recognise_card(){
+           int istate=-1;
             if(PosApplication.getApp().oGPosTransaction.m_enmTrxCardType==POSTransaction.CardType.MANUAL || PosApplication.getApp().oGPosTransaction.m_enmTrxCardType==POSTransaction.CardType.MAG )
             {
-                SAMA_TMS.Get_card_scheme_BY_PAN(PosApplication.getApp().oGPosTransaction.m_sPAN);
-            }
-               SAMA_TMS.Get_card_scheme_BY_AID(PosApplication.getApp().oGPosTransaction.m_sAID);
+                istate= SAMA_TMS.Get_card_scheme_BY_PAN(PosApplication.getApp().oGPosTransaction.m_sPAN);
 
-           return 0;
+
+            }
+            else
+                istate=SAMA_TMS.Get_card_scheme_BY_AID(PosApplication.getApp().oGPosTransaction.m_sAID);
+
+           return istate;
 
     }
 
@@ -300,10 +304,10 @@ public class POS_MAIN {
       //  if()
         return true;
     }
-    public static boolean supervisor_pass_required(){
+    public static void supervisor_pass_required(){
 
         //todo dialog which ask for password
-        return true;
+
     }
 
 

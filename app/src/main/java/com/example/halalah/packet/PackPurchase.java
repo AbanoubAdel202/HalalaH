@@ -1,18 +1,12 @@
 package com.example.halalah.packet;
 
-import android.content.Context;
-import android.text.format.Time;
 import android.util.Log;
 
 import com.example.halalah.POSTransaction;
 import com.example.halalah.PosApplication;
 import com.example.halalah.Utils;
-import com.example.halalah.cache.ConsumeData;
 import com.example.halalah.iso8583.BCDASCII;
 import com.example.halalah.iso8583.ISO8583;
-import com.example.halalah.iso8583.ISO8583Util;
-
-import com.example.halalah.storage.ConsumeFieldUtils;
 
 /** Header POSTransaction
  \Class Name: POSTransaction

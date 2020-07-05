@@ -46,26 +46,6 @@ public class PanInputActivity extends Activity implements View.OnClickListener{
         mBtnConfirm.setText(R.string.amount_input_search_card);
         mHandle.sendEmptyMessage(MSG_TIME_UPDATE);
 
-        /*if( PosApplication.getApp().oGPosTransaction.m_enmTrxType== POSTransaction.TranscationType.PURCHASE
-                ||PosApplication.getApp().oGPosTransaction.m_enmTrxType== POSTransaction.TranscationType.AUTHORISATION
-                ||PosApplication.getApp().oGPosTransaction.m_enmTrxType==POSTransaction.TranscationType.AUTHORISATION_ADVICE
-                ||PosApplication.getApp().oGPosTransaction.m_enmTrxType==POSTransaction.TranscationType.PURCHASE_ADVICE) {
-
-
-        }
-         else if (PosApplication.getApp().oGPosTransaction.m_enmTrxType== POSTransaction.TranscationType.PURCHASE_WITH_NAQD)
-        {
-           // todo show naqd amount
-
-
-        }
-        else if (PosApplication.getApp().oGPosTransaction.m_enmTrxType== POSTransaction.TranscationType.REFUND) {
-
-            //TODO show RRN and other DATA activity
-        }
-        else if(PosApplication.getApp().oGPosTransaction.m_enmTrxType== POSTransaction.TranscationType.AUTHORISATION_EXTENSION) {
-
-        }*/
     }
 
     private Handler mHandle = new Handler() {
@@ -137,8 +117,13 @@ public class PanInputActivity extends Activity implements View.OnClickListener{
 
 
 
-                    PosApplication.getApp().oGPosTransaction.m_sPAN = mPAN.toString();;
-            Intent Pinpadact=new Intent(getApplicationContext(), PinpadActivity.class);
+                    PosApplication.getApp().oGPosTransaction.m_sPAN = mPAN.toString();
+                POS_MAIN.Recognise_card();
+                POS_MAIN.Check_transaction_allowed(PosApplication.getApp().oGPosTransaction.m_enmTrxType);
+                POS_MAIN.Check_transaction_limits();
+                POS_MAIN.supervisor_pass_required();
+
+                Intent Pinpadact=new Intent(getApplicationContext(), PinpadActivity.class);
             startActivity(Pinpadact);
                     finish();
 
