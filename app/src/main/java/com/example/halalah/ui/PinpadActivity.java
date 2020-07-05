@@ -1,6 +1,5 @@
 package com.example.halalah.ui;
 
-import android.app.ActionBar;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
@@ -15,9 +14,7 @@ import com.example.halalah.DeviceTopUsdkServiceManager;
 import com.example.halalah.POSTransaction;
 import com.example.halalah.PosApplication;
 import com.example.halalah.R;
-import com.example.halalah.Terminal_Operation_Data;
 import com.example.halalah.Utils;
-import com.example.halalah.cache.ConsumeData;
 import com.example.halalah.card.CardManager;
 import com.example.halalah.iso8583.BCDASCII;
 import com.example.halalah.util.CardSearchErrorUtil;
@@ -25,7 +22,6 @@ import com.example.halalah.util.HexUtil;
 import com.example.halalah.util.PacketProcessUtils;
 import com.topwise.cloudpos.aidl.pinpad.AidlPinpad;
 import com.topwise.cloudpos.aidl.pinpad.GetPinListener;
-import com.topwise.cloudpos.data.PinpadConstant;
 
 public class PinpadActivity extends Activity {
     private static final String TAG = Utils.TAGPUBLIC + PinpadActivity.class.getSimpleName();
@@ -280,7 +276,7 @@ public class PinpadActivity extends Activity {
                 PosApplication.getApp().oGPosTransaction.m_sTrxPIN = new String(pin);
             }
             if (isOnline) {
-                //socket通信
+                //socket connection
                 Bundle bundle = new Bundle();
                 bundle.putInt(PacketProcessUtils.PACKET_PROCESS_TYPE, PacketProcessUtils.PACKET_PROCESS_PURCHASE);
                 if(POSTransaction.CardType.MANUAL == mCardType) {

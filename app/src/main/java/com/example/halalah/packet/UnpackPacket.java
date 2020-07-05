@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.os.RemoteException;
 import android.util.Log;
 
+import com.example.halalah.PosApplication;
 import com.example.halalah.ui.PacketProcessActivity;
 import com.example.halalah.DeviceTopUsdkServiceManager;
 import com.example.halalah.R;
@@ -59,6 +60,15 @@ public class UnpackPacket {
         Log.i(TAG, "procRecePacket(), mProcType" + mProcType);
         mRecePacket = recePacket;
 
+        if (mProcType == PacketProcessUtils.PACKET_PROCESS_PURCHASE) {
+            UnpackPurchase unpackpurchase = new UnpackPurchase(mRecePacket, mRecePacket.length);
+            mResponse = unpackpurchase.getResponse();
+            mResponseDetail = unpackpurchase.getResponseDetail();
+
+
+        }
+            ///////////////////////Test//////////////////////////////////
+            if (PosApplication.testapp) {
  /*if (mProcType == PacketProcessUtils.PACKET_PROCESS_PARAM_TRANS) {
             UnpackParaTrans unpackParaTrans = new UnpackParaTrans(context, mRecePacket, mRecePacket.length);
             mResponse = unpackParaTrans.getResponse();
@@ -69,14 +79,17 @@ public class UnpackPacket {
             mResponse = unpackDefault.getResponse();
             mResponseDetail = unpackDefault.getResponseDetail();
 
-        } else */if (mProcType == PacketProcessUtils.PACKET_PROCESS_PURCHASE) {
-            UnpackPurchase unpackpurchase = new UnpackPurchase(mRecePacket, mRecePacket.length);
-            mResponse = unpackpurchase.getResponse();
-            mResponseDetail = unpackpurchase.getResponseDetail();
-            mField47 = unpackpurchase.getField47();
+        } else */
+                if (mProcType == PacketProcessUtils.PACKET_PROCESS_PURCHASE) {
+                    UnpackPurchase unpackpurchase = new UnpackPurchase(mRecePacket, mRecePacket.length);
+                    mResponse = unpackpurchase.getResponse();
+                    mResponseDetail = unpackpurchase.getResponseDetail();
+                    mField47 = unpackpurchase.getField47();
+                    ////////////////////////////////////////////////////////////
 
+                }
+            }
         }
-    }
 
     public String getResponse() {
         return mResponse;

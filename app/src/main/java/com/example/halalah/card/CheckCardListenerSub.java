@@ -11,7 +11,6 @@ import com.example.halalah.POS_MAIN;
 import com.example.halalah.PosApplication;
 import com.example.halalah.Utils;
 //import com.example.halalah.activity.CardConfirmActivity;
-import com.example.halalah.cache.ConsumeData;
 import com.example.halalah.ui.PinpadActivity;
 import com.topwise.cloudpos.aidl.emv.AidlCheckCardListener;
 import com.topwise.cloudpos.aidl.emv.AidlPboc;
@@ -50,7 +49,7 @@ public class CheckCardListenerSub extends AidlCheckCardListener.Stub {
             CardManager.getInstance().callBackError(CARD_SEARCH_ERROR_REASON_MAG_EMV);
         } else {
             PosApplication.getApp().oGPosTransaction.m_enmTrxCardType= POSTransaction.CardType.MAG;
-            PosApplication.getApp().oGPosTransaction.m_iCardType=ConsumeData.CARD_TYPE_MAG;
+
             PosApplication.getApp().oGPosTransaction.m_sPAN=cardNo;
             PosApplication.getApp().oGPosTransaction.m_sCardExpDate=data.getExpiryDate();
             track2 = track2.replace("=", "D");
@@ -96,7 +95,7 @@ public class CheckCardListenerSub extends AidlCheckCardListener.Stub {
     public void onFindRFCard() throws RemoteException {
         Log.i(TAG, "onFindRFCard()");
 
-        PosApplication.getApp().oGPosTransaction.m_iCardType=ConsumeData.CARD_TYPE_RF;
+
         boolean result =  mPbocManager.setEmvKernelType(2);
         Log.d(TAG, "setEmvKernelType: " + result);
         EmvTransDataSub emvTransDataSub = new EmvTransDataSub();

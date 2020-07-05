@@ -6,7 +6,7 @@ import com.example.halalah.TMS.Card_Scheme;
 import com.example.halalah.TMS.SAMA_TMS;
 import com.example.halalah.iso8583.BCDASCII;
 import com.example.halalah.iso8583.ISO8583;
-import com.example.halalah.packet.PackPurchase;
+
 import com.example.halalah.packet.PackUtils;
 import com.example.halalah.secure.DUKPT_KEY;
 import com.example.halalah.util.ExtraUtil;
@@ -27,9 +27,10 @@ public class POSTransaction {
     private static final String TAG = Utils.TAGPUBLIC + POSTransaction.class.getSimpleName();
 
 
-    // Card Type
-    public int m_iCardType;
 
+
+    public boolean is_mada;
+    public boolean is_final;
 
 
     public enum CardType{
@@ -75,6 +76,8 @@ public class POSTransaction {
     // Constractur
     public POSTransaction()
     {
+            is_mada=false;
+            is_final=false;
         // Transaction Data Elements as per SP Terminal interface specification document 6.0.9
         	m_sPAN=null;								/* DE2   – Primary account Number -Size 19  –Reconcilation value would be Terminal ID as is present in DE 41*/
         	m_sProcessCode=null;	    				/* DE3   – Process Code  –Size 6 */
@@ -1503,7 +1506,7 @@ public class POSTransaction {
         //30.Original amount
         if(m_sOrigAmount!=null)
         {
-            m_RequestISOMsg.SetDataElement(26, m_sOrigAmount.getBytes(), m_sOrigAmount.length());
+            m_RequestISOMsg.SetDataElement(30, m_sOrigAmount.getBytes(), m_sOrigAmount.length());
             Log.i(TAG, "DE 30 [m_sOrigAmount]= " + m_sOrigAmount+"Length ="+m_sOrigAmount.length());
 
         }
@@ -1526,9 +1529,15 @@ public class POSTransaction {
 
 
         //38.Approval code
-        m_RequestISOMsg.SetDataElement(38, m_sApprovalCode.getBytes(), m_sApprovalCode.length());
-        Log.i(TAG, "DE 38 [m_sApprovalCode]= " + m_sApprovalCode+"Length ="+m_sApprovalCode.length());
+        if(m_enmTrxType!=TrxType.REFUND) //todo other transactions if not exist
+        {
+            m_RequestISOMsg.SetDataElement(38, m_sApprovalCode.getBytes(), m_sApprovalCode.length());
+            Log.i(TAG, "DE 38 [m_sApprovalCode]= " + m_sApprovalCode + "Length =" + m_sApprovalCode.length());
+        }
+        //39.action code
 
+        m_RequestISOMsg.SetDataElement(39, m_sActionCode.getBytes(), m_sActionCode.length());
+        Log.i(TAG, "DE 41 [m_sTerminalID]= " + m_sActionCode+"Length ="+m_sActionCode.length());
 
         //41.Terminal ID
         m_sTerminalID=PosApplication.getApp().oGTerminal_Operation_Data.m_sTerminalID;
@@ -1717,6 +1726,11 @@ public class POSTransaction {
         m_RequestISOMsg.SetDataElement(38, m_sApprovalCode.getBytes(), m_sApprovalCode.length());
         Log.i(TAG, "DE 38 [m_sApprovalCode]= " + m_sApprovalCode+"Length ="+m_sApprovalCode.length());
 
+        //39.action code
+        GetDE39_Actioncode();
+        m_RequestISOMsg.SetDataElement(39, m_sActionCode.getBytes(), m_sActionCode.length());
+        Log.i(TAG, "DE 41 [m_sTerminalID]= " + m_sActionCode+"Length ="+m_sActionCode.length());
+
 
         //41.Terminal ID
         m_sTerminalID=PosApplication.getApp().oGTerminal_Operation_Data.m_sTerminalID;
@@ -1779,6 +1793,8 @@ public class POSTransaction {
 
         return 0;
     }
+
+
 
     /**
      * \Function Name: ComposeTerminalStatus
@@ -2520,7 +2536,7 @@ public class POSTransaction {
         Device_authentication
     }
     public void GetDE24_FunctionCode(){
-        Function_Code fc=null;
+       Function_Code fc=null;
 
         switch(m_enmTrxType)
         {
@@ -2538,18 +2554,35 @@ public class POSTransaction {
                 }*/
                 break;
             case PURCHASE_ADVICE:
-                fc=Function_Code.Previously_approved_authorisation_amount_same;
-            case AUTHORISATION:
-
-            case AUTHORISATION_VOID:
-                switch(card_scheme.m_sCard_Scheme_ID) {
-                    case "P1":  //MADA
-                        fc = Function_Code.Original_authorisation_amount_estimated;  // Original authorisation – amount estimated (used for mada preauthorizations and mada pre-authorization full or partial voids)
-                        break;
-                    default:
-                        fc = Function_Code.Original_authorisation_amount_accurate;
+                if(is_mada & (m_enmTrxCardType==CardType.CTLS|m_enmTrxCardType==CardType.MAG|m_enmTrxCardType==CardType.ICC|m_enmTrxCardType==CardType.MANUAL)) //MADA  if fallback is not exist will remove all entries and it will be for allmada
+                {
+                    if (is_final)
+                    fc = Function_Code.Previously_approved_authorisation_amount_same;
+                    else
+                    fc = Function_Code.Previously_approved_authorisation_amount_differs;
+                }
+                else  //ICS
+                {
+                    if (m_enmTrxCardType==CardType.MANUAL) {
+                        if (is_final)
+                            fc = Function_Code.Previously_approved_authorisation_amount_same;
+                        else
+                            fc = Function_Code.Previously_approved_authorisation_amount_differs;
+                    }
 
                 }
+
+            case AUTHORISATION:
+                if(is_mada & (m_enmTrxCardType==CardType.CTLS|m_enmTrxCardType==CardType.MAG|m_enmTrxCardType==CardType.ICC)) //MADA
+                fc=Function_Code.Original_authorisation_amount_estimated;//101
+                else //ICS
+                fc=Function_Code.Original_authorisation_amount_accurate;
+            case AUTHORISATION_VOID:
+                if(is_mada) //MADA
+                        fc = Function_Code.Original_authorisation_amount_estimated;  // Original authorisation – amount estimated (used for mada preauthorizations and mada pre-authorization full or partial voids)
+                 else
+                        fc = Function_Code.Original_authorisation_amount_accurate;
+
                 break;
 
 
@@ -2569,13 +2602,11 @@ public class POSTransaction {
 
                 break;
             case SADAD_BILL:
-                switch(card_scheme.m_sCard_Scheme_ID) {
-                case "P1":  //MADA
+                if(is_mada)
                     fc = Function_Code.Original_financial_request_advice_Bill_Payment;  // todo check fees also
-                    break;
-                default:   //ICS
+                else   //ICS
                     fc = Function_Code.Original_authorisation_Bill_Payment;
-                }
+
             case RECONCILIATION:
                 if(!POS_MAIN.isforced)
                     fc=Function_Code.Terminal_reconciliation;
@@ -3100,7 +3131,7 @@ public class POSTransaction {
                             case ICC:
                             case CTLS:
                             case MAG:
-                                mrc=Message_reason_code.mada_Preauthorization_Void_or_Partial_Void;
+                                mrc=Message_reason_code.mada_Preauthorization_Void_or_Partial_Void; //1151
                                 break;
                             case FALLBACK:
                                 mrc= Message_reason_code.Fallback_from_chip_to_magnetic_stripe;//1776
@@ -3114,16 +3145,11 @@ public class POSTransaction {
                         break;
 
 
-                    default:       // For IBCS
+                    default:       // For ICS
                         switch (m_enmTrxCardType) {
                             case ICC:
-
-                                break;
                             case CTLS:
-
-                                break;
                             case MAG:
-
                                 break;
 
                             case FALLBACK:
@@ -3147,7 +3173,7 @@ public class POSTransaction {
                             case ICC:
                             case CTLS:
                             case MAG:
-                                mrc=Message_reason_code.mada_Preauthorization_Extension;
+                                mrc=Message_reason_code.mada_Preauthorization_Extension;  //1152
                                 break;
                             case FALLBACK:
                                 mrc= Message_reason_code.Fallback_from_chip_to_magnetic_stripe;//1776
@@ -3164,13 +3190,9 @@ public class POSTransaction {
                     default:       // For IBCS
                         switch (m_enmTrxCardType) {
                             case ICC:
-
-                                break;
                             case CTLS:
-
-                                break;
                             case MAG:
-
+                                mrc=Message_reason_code.mada_Preauthorization_Extension; //1152
                                 break;
                             case FALLBACK:
                                 mrc= Message_reason_code.Fallback_from_chip_to_magnetic_stripe;//1776
@@ -3309,7 +3331,17 @@ public class POSTransaction {
         m_sRRNumber= m_sSTAN+m_sLocalTrxDateTime;
     }
 
+    public void GetDE39_Actioncode() {
 
+        if(m_enmTrxType==TranscationType.PURCHASE_ADVICE | m_enmTrxType==TranscationType.AUTHORISATION_VOID | m_enmTrxType==TranscationType.AUTHORISATION_EXTENSION)
+        m_sActionCode="107";
+        else if(PosApplication.getApp().oGTerminal_Operation_Data.TerminalType==35)
+        {
+                m_sActionCode="000";
+        }
+
+
+    }
     public void GetDE47_CardSchemeSponsorID() {
 
 

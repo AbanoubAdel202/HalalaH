@@ -21,7 +21,9 @@ public class Terminal_Operation_Data {
                 sAcquirer_ID="AAIB";
                 m_sCurrencycode="0628";
                 m_sCountrycode="0628";
+                TerminalType=22;
         }
+        public int TerminalType;
         public  boolean m_bregistered;
         public  int m_iSTAN;
         public int m_iTransactionCounter;

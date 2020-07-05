@@ -1,6 +1,5 @@
 package com.example.halalah.ui;
 
-import android.app.ActionBar;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
@@ -8,10 +7,10 @@ import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
+import com.example.halalah.POSTransaction;
 import com.example.halalah.PosApplication;
 import com.example.halalah.R;
 import com.example.halalah.Utils;
-import com.example.halalah.cache.ConsumeData;
 import com.example.halalah.card.CardManager;
 import com.example.halalah.util.CardSearchErrorUtil;
 import com.example.halalah.util.PacketProcessUtils;
@@ -22,7 +21,7 @@ public class CardConfirmActivity extends Activity implements View.OnClickListene
     private TextView mTextCardNo;
     private String mCardNo;
     private String mAmount;
-    private int mCardType = ConsumeData.CARD_TYPE_MAG;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,7 +38,7 @@ public class CardConfirmActivity extends Activity implements View.OnClickListene
 
         mTextCardNo = (TextView) findViewById(R.id.card_num);
         mTextCardNo.setText(mCardNo);
-        mCardType = PosApplication.getApp().oGPosTransaction.m_iCardType;
+
         CardManager.getInstance().finishPreActivity();
         CardManager.getInstance().initCardExceptionCallBack(mCallBack);
 
@@ -49,12 +48,12 @@ public class CardConfirmActivity extends Activity implements View.OnClickListene
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.btn_cancle:
-                if (ConsumeData.CARD_TYPE_MAG != mCardType)
+                if (PosApplication.getApp().oGPosTransaction.m_enmTrxCardType != POSTransaction.CardType.MAG)
                     CardManager.getInstance().setConfirmCardInfo(false);
                 finish();
                 break;
             case R.id.btn_ok:
-                if (ConsumeData.CARD_TYPE_MAG == mCardType) {
+                if (PosApplication.getApp().oGPosTransaction.m_enmTrxCardType == POSTransaction.CardType.MAG) {
                     Intent intent = new Intent(this, PinpadActivity.class);
                     startActivity(intent);
                 } else {
@@ -69,7 +68,7 @@ public class CardConfirmActivity extends Activity implements View.OnClickListene
     @Override
     public void onBackPressed() {
         super.onBackPressed();
-        if (ConsumeData.CARD_TYPE_MAG != mCardType) {
+        if (PosApplication.getApp().oGPosTransaction.m_enmTrxCardType != POSTransaction.CardType.MAG) {
             CardManager.getInstance().setConfirmCardInfo(false);
         }
     }

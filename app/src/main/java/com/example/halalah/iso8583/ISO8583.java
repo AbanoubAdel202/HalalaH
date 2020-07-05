@@ -190,7 +190,7 @@ public class ISO8583 {
         if(TextUtils.isEmpty(MTI) || MTI.length()!=4){
             return  -1;
         }
-        SetDataElement(0, MTI.getBytes(), PackUtils.MSGTYPEID_Financial_Request.length());
+        SetDataElement(0, MTI.getBytes(), MTI.length());
         System.arraycopy(MTI.getBytes(),0,mMessageId,0,4);
         return 0;
     }

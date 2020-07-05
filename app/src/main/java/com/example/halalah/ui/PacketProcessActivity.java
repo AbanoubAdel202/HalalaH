@@ -10,11 +10,10 @@ import android.os.Message;
 import android.util.Log;
 import android.widget.TextView;
 
-import com.example.halalah.MainActivity;
+import com.example.halalah.POSTransaction;
 import com.example.halalah.PosApplication;
 import com.example.halalah.R;
 import com.example.halalah.Utils;
-import com.example.halalah.cache.ConsumeData;
 import com.example.halalah.card.CardManager;
 import com.example.halalah.connect.SocketProcessTask;
 import com.example.halalah.iso8583.BCDASCII;
@@ -64,7 +63,7 @@ public class PacketProcessActivity extends Activity {
         mBundle = getIntent().getExtras();
         mProcType = mBundle.getInt(PacketProcessUtils.PACKET_PROCESS_TYPE);
         Log.i(TAG, "mProcType = "+mProcType);
-       // setActionBarText();   //todo mostafa fix actionbar issue (getactionbar() getsupportactionbar()) style issue
+       // setActionBarText();   //todo mohamed fix actionbar issue (getactionbar() getsupportactionbar()) style issue
 
         mCommunicationInfo = new CommunicationInfo(this);
 
@@ -73,7 +72,7 @@ public class PacketProcessActivity extends Activity {
 
 
 
-        getPacketAndSend(mBundle);
+        getPacketAndSend();
         CardManager.getInstance().finishPreActivity();
     }
 
@@ -95,10 +94,10 @@ public class PacketProcessActivity extends Activity {
         }
     }
 
-    private void getPacketAndSend(Bundle data) {
+    private void getPacketAndSend() {
 
 
-        mSendPacket = mPackPacket.getSendPacket(mProcType, data);
+        mSendPacket = mPackPacket.getSendPacket();
         mSocketProcessTask = new SocketProcessTask(this, mProcType);
         mSocketProcessTask.execute(mSendPacket);
     }
@@ -187,7 +186,7 @@ public class PacketProcessActivity extends Activity {
                 if (temp != null && temp.equals("01")) {
                     showResult(mResponse, mResponseDetail, errReason);
                 } else {
-                    getPacketAndSend(data);
+                    getPacketAndSend();
                 }
             }  else if (mProcType == PacketProcessUtils.PACKET_PROCESS_PURCHASE && (mResponse != null) && (mResponse.equals("00"))) {
                 byte[] field47 = mUnpackPacket.getField47();
@@ -224,7 +223,7 @@ public class PacketProcessActivity extends Activity {
     private void showConsumeSuccResult(String response, String resDetail, byte[] printDetail) {
         Log.i(TAG, "showSuccessResult(), response = "+response+", resDetail = "+resDetail+", printDetail = "+printDetail);
         if (mProcType == PacketProcessUtils.PACKET_PROCESS_PURCHASE &&
-                PosApplication.getApp().oGPosTransaction.m_iCardType != ConsumeData.CARD_TYPE_MAG) {
+                PosApplication.getApp().oGPosTransaction.m_enmTrxCardType != POSTransaction.CardType.MAG) {
             CardManager.getInstance().setRequestOnline(true, mResponse, PosApplication.getApp().oGPosTransaction.m_sICCRelatedTags);
         }
         mHandle.removeMessages(MSG_TIME_UPDATE);
@@ -239,7 +238,7 @@ public class PacketProcessActivity extends Activity {
     private void showScanSuccResult(String response, String resDetail, byte[] printDetail) {
         Log.i(TAG, "showSuccessResult(), response = "+response+", resDetail = "+resDetail+", printDetail = "+printDetail);
         if (mProcType == PacketProcessUtils.PACKET_PROCESS_PURCHASE &&
-                PosApplication.getApp().oGPosTransaction.m_iCardType != ConsumeData.CARD_TYPE_MAG) {
+                PosApplication.getApp().oGPosTransaction.m_enmTrxCardType != POSTransaction.CardType.MAG) {
             CardManager.getInstance().setRequestOnline(true, mResponse, PosApplication.getApp().oGPosTransaction.m_sICCRelatedTags);
         }
         mHandle.removeMessages(MSG_TIME_UPDATE);
@@ -254,7 +253,7 @@ public class PacketProcessActivity extends Activity {
     private void showResult(String response, String resDetail, int errReason) {
         Log.i(TAG, "showResult(), response = "+response+", resDetail = "+resDetail+", errReason = "+errReason);
         if (mProcType == PacketProcessUtils.PACKET_PROCESS_PURCHASE &&
-                PosApplication.getApp().oGPosTransaction.m_iCardType!= ConsumeData.CARD_TYPE_MAG) {
+                PosApplication.getApp().oGPosTransaction.m_enmTrxCardType != POSTransaction.CardType.MAG) {
             CardManager.getInstance().setRequestOnline(true, mResponse, PosApplication.getApp().oGPosTransaction.m_sICCRelatedTags);
         }
         mHandle.removeMessages(MSG_TIME_UPDATE);
