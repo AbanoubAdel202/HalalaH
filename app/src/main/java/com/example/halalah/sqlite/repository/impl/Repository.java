@@ -99,7 +99,7 @@ public class Repository<T extends SqliteGenericObject> implements IRepository<T>
             values = convertObject(object);
         } catch (NoSuchFieldException e) {
             values = new ContentValues();
-        } catch (IllegalAccessException e){
+        } catch (IllegalAccessException e) {
             values = new ContentValues();
         }
 
@@ -116,7 +116,7 @@ public class Repository<T extends SqliteGenericObject> implements IRepository<T>
             values = convertObject(object, properties);
         } catch (NoSuchFieldException e) {
             values = new ContentValues();
-        } catch (IllegalAccessException e){
+        } catch (IllegalAccessException e) {
             values = new ContentValues();
         }
         values.put(schema.getColumnId(), object.getId());
@@ -146,6 +146,10 @@ public class Repository<T extends SqliteGenericObject> implements IRepository<T>
     public T queryById(T object) {
         String whereClause = schema.getColumnId() + " = ?";
         String[] whereArgs = {object.getId()};
+
+        if (whereArgs == null || whereArgs.length == 0 || whereArgs[0] == null) {
+            return null;
+        }
 
         Cursor cursor = database.query(schema.getTableName(),
                 null,
@@ -179,7 +183,7 @@ public class Repository<T extends SqliteGenericObject> implements IRepository<T>
                 field.setAccessible(true);
                 whereArgs[i] = field.get(object) + "";
             } catch (NoSuchFieldException ignored) {
-            } catch (IllegalAccessException ignored){
+            } catch (IllegalAccessException ignored) {
             }
         }
 
@@ -271,7 +275,7 @@ public class Repository<T extends SqliteGenericObject> implements IRepository<T>
             return instance;
         } catch (InstantiationException e) {
             return null;
-        } catch (IllegalAccessException e){
+        } catch (IllegalAccessException e) {
             return null;
         }
     }
