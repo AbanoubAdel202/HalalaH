@@ -104,6 +104,7 @@ public class SocketProcessTask extends AsyncTask<byte[], Integer, Void> {
             publishProgress(SOCKET_STATUS_SEND);
             if (mSendPacket != null && mCommSocket.send(mSendPacket) <= 0) {
                 Log.e(TAG, "send packet failed.");
+
                 mErrorReson = PacketProcessUtils.SOCKET_PROC_ERROR_REASON_SEND;
                 return null;
             }

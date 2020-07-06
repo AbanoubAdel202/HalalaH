@@ -2,15 +2,15 @@ package com.example.halalah;
 
 import android.content.Context;
 import android.content.Intent;
+import android.util.Log;
 
 import com.example.halalah.TMS.AID_Data;
 import com.example.halalah.TMS.Public_Key;
 import com.example.halalah.TMS.SAMA_TMS;
-import com.example.halalah.iso8583.BCDASCII;
+
 import com.example.halalah.ui.AmountInputActivity;
 import com.example.halalah.ui.P_NAQD_InputActivity;
 import com.example.halalah.ui.Refund_InputActivity;
-import com.example.halalah.util.HexUtil;
 
 import java.util.Locale;
 
@@ -28,11 +28,13 @@ public class POS_MAIN {
     private static final String TAG = POS_MAIN.class.getSimpleName();
     public static boolean isforced;
 
+
     public Context mcontext;
         public POS_MAIN()
         {
 
         }
+
 
 
 
@@ -191,6 +193,11 @@ public class POS_MAIN {
             if(PosApplication.getApp().oGPosTransaction.m_enmTrxCardType==POSTransaction.CardType.MANUAL || PosApplication.getApp().oGPosTransaction.m_enmTrxCardType==POSTransaction.CardType.MAG )
             {
                 istate= SAMA_TMS.Get_card_scheme_BY_PAN(PosApplication.getApp().oGPosTransaction.m_sPAN);
+                            if (Check_MADA_Card())
+                              PosApplication.getApp().oGPosTransaction.is_mada=true;
+                            else
+                                PosApplication.getApp().oGPosTransaction.is_mada=false;
+
 
 
             }
@@ -300,9 +307,10 @@ public class POS_MAIN {
 
     public static boolean Check_MADA_Card()
     {
-        //todo check mada card
-      //  if()
+        if(PosApplication.getApp().oGPosTransaction.card_scheme.m_sCard_Scheme_ID=="P1")
         return true;
+
+        return false;
     }
     public static void supervisor_pass_required(){
 
@@ -310,6 +318,67 @@ public class POS_MAIN {
 
     }
 
+    public static void Check_Servicecode(String track2) {
+        Log.i(TAG, "isEmvCard: track2: " + track2);
+        if ((track2 != null) && (track2.length() > 0)) {
+            int index = track2.indexOf("=");
+            String subTrack2 = track2.substring(index);
+
+            switch (subTrack2.charAt(7))
+            {
+
+                case 0: //No restrictions, PIN required
+                case 5: //Goods and services only (no cash), PIN required
+                case 6: //No restrictions, use PIN where feasible
+                case 7: //Goods and services only (no cash), use PIN where feasible
+                    PosApplication.getApp().oGPosTransaction.m_enmTrxCVM= POSTransaction.CVM.ONLINE_PIN;
+                    break;
+                case 1: //No restrictions
+                case 2: //Goods and services only (no cash)
+                case 3: //ATM only, PIN required
+                case 4: //Cash only
+                    PosApplication.getApp().oGPosTransaction.m_enmTrxCVM= POSTransaction.CVM.NO_CVM;
+                 break;
+
+
+            }
+        }
+        Log.i(TAG, "Check_Servicecode: "+PosApplication.getApp().oGPosTransaction.m_enmTrxCVM);
+
+    }
+    public static int Check_CVM(POSTransaction.TranscationType Trxtype) {
+
+        switch (Trxtype) {
+            case PURCHASE://purchase  offset 0
+
+                return Integer.parseInt(String.valueOf(PosApplication.getApp().oGPosTransaction.card_scheme.m_sCardholder_Authentication.charAt(0)));
+
+            case PURCHASE_WITH_NAQD://PURCHASE_WITH_NAQD                                 offset 1
+                return Integer.parseInt(String.valueOf(PosApplication.getApp().oGPosTransaction.card_scheme.m_sCardholder_Authentication.charAt(1)));
+
+            case PURCHASE_ADVICE://PURCHASE_ADVICE:                                      offset 2
+            case AUTHORISATION_ADVICE://AUTHORISATION_ADVICE:
+                return Integer.parseInt(String.valueOf(PosApplication.getApp().oGPosTransaction.card_scheme.m_sCardholder_Authentication.charAt(2)));
+
+            case REFUND://REFUND                                                         offset 3
+                return Integer.parseInt(String.valueOf(PosApplication.getApp().oGPosTransaction.card_scheme.m_sCardholder_Authentication.charAt(3)));
+
+            case AUTHORISATION://AUTHORISATION:                                          offset 4
+                return Integer.parseInt(String.valueOf(PosApplication.getApp().oGPosTransaction.card_scheme.m_sCardholder_Authentication.charAt(4)));
+            case CASH_ADVANCE://CASH_ADVANCE:                                            offset 5
+                return Integer.parseInt(String.valueOf(PosApplication.getApp().oGPosTransaction.card_scheme.m_sCardholder_Authentication.charAt(5)));
+            case REVERSAL://REVERSAL:                                                    offset 6
+                return Integer.parseInt(String.valueOf(PosApplication.getApp().oGPosTransaction.card_scheme.m_sCardholder_Authentication.charAt(6)));
+            case AUTHORISATION_EXTENSION://AUTHORISATION_EXTENSION                       offset 7
+                return Integer.parseInt(String.valueOf(PosApplication.getApp().oGPosTransaction.card_scheme.m_sCardholder_Authentication.charAt(7)));
+            case AUTHORISATION_VOID://AUTHORISATION_VOID:                                offset 8
+                return Integer.parseInt(String.valueOf(PosApplication.getApp().oGPosTransaction.card_scheme.m_sCardholder_Authentication.charAt(8)));
+            case SADAD_BILL://SADAD_BILL:                                                offset 9
+                return Integer.parseInt(String.valueOf(PosApplication.getApp().oGPosTransaction.card_scheme.m_sCardholder_Authentication.charAt(9)));
+
+        }
+        return -1;
+    }
 
 /********************************************************************************
     // Topwise Tags

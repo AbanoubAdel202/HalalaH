@@ -36,26 +36,25 @@ public class CheckCardListenerSub extends AidlCheckCardListener.Stub {
     public void onFindMagCard(TrackData data) throws RemoteException {
         Log.i(TAG, "onFindMagCard()");
 
-        String cardNo = data.getCardno();
-        String track2 = data.getSecondTrackData();
+        String scardNo = data.getCardno();
+        String strack2 = data.getSecondTrackData();
        // String track3 = data.getThirdTrackData();
 
-        Log.d(TAG, "onFindMagCard cardNo : " + cardNo + " track2 : " + track2);
-        if (cardNo == null || isTrack2Error(track2)) {
+        Log.d(TAG, "onFindMagCard cardNo : " + scardNo + " track2 : " + strack2);
+        if (scardNo == null || isTrack2Error(strack2)) {
             cancelCheckCard();
             CardManager.getInstance().callBackError(CARD_SEARCH_ERROR_REASON_MAG_READ);
-        } else if (isEmvCard(track2)) {
+        } else if (isEmvCard(strack2)) {
             cancelCheckCard();
             CardManager.getInstance().callBackError(CARD_SEARCH_ERROR_REASON_MAG_EMV);
         } else {
             PosApplication.getApp().oGPosTransaction.m_enmTrxCardType= POSTransaction.CardType.MAG;
 
-            PosApplication.getApp().oGPosTransaction.m_sPAN=cardNo;
+            PosApplication.getApp().oGPosTransaction.m_sPAN=scardNo;
             PosApplication.getApp().oGPosTransaction.m_sCardExpDate=data.getExpiryDate();
-            track2 = track2.replace("=", "D");
-            PosApplication.getApp().oGPosTransaction.m_sTrack2=track2;
 
-            //todo service code check
+
+
             /*if (track3 != null) {
                 track3 = track3.replace("=", "D");
                 PosApplication.getApp().mConsumeData.setThirdTrackData(track3);
@@ -63,12 +62,36 @@ public class CheckCardListenerSub extends AidlCheckCardListener.Stub {
             //CardManager.getInstance().startActivity(mContext, null, CardConfirmActivity.class);
             POS_MAIN.Recognise_card();
             POS_MAIN.Check_transaction_allowed(PosApplication.getApp().oGPosTransaction.m_enmTrxType);
+
             POS_MAIN.Check_transaction_limits();
             POS_MAIN.supervisor_pass_required();
             CardManager.getInstance().setConfirmCardInfo(true);
             Intent intent = new Intent(mContext, PinpadActivity.class);
-            mContext.startActivity(intent);
+            if(PosApplication.getApp().oGPosTransaction.card_scheme.m_sCheck_Service_Code=="1")  //if service code check is enabled so it's higher priority than TMS cardholder Authentication
+            {
+                POS_MAIN.Check_Servicecode(strack2);
+            }
+            else {
+                switch (POS_MAIN.Check_CVM(PosApplication.getApp().oGPosTransaction.m_enmTrxType)) {
+                    case 0: //none
+                        PosApplication.getApp().oGPosTransaction.m_enmTrxCVM = POSTransaction.CVM.NO_CVM;
+                    case 1: //signature
+                        PosApplication.getApp().oGPosTransaction.m_enmTrxCVM = POSTransaction.CVM.SIGNATURE;
+                        break;
+                    case 2: //pin
+                        PosApplication.getApp().oGPosTransaction.m_enmTrxCVM = POSTransaction.CVM.ONLINE_PIN;
+                        mContext.startActivity(intent);
+                        break;
+                    case 3: //both pin and signature
+                        PosApplication.getApp().oGPosTransaction.m_enmTrxCVM = POSTransaction.CVM.ONLINE_PIN_SIGNATURE;
 
+                        mContext.startActivity(intent);
+                        break;
+                }
+            }
+
+            if(strack2.contains("="))
+              PosApplication.getApp().oGPosTransaction.m_sTrack2=strack2.replace("=", "D");
         }
     }
 

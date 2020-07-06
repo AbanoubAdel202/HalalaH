@@ -70,6 +70,7 @@ public class POSTransaction {
         NO_CVM,
         CDCVM,
         OFFLINE_PIN_SIGNATURE,
+        ONLINE_PIN_SIGNATURE
 
     }
 
@@ -452,7 +453,7 @@ public class POSTransaction {
             break;
             case PURCHASE_ADVICE:
             {
-                ComposePurchaseAdviseMessage(TrxType);
+                ComposeFinancialAdviseMessage(TrxType);
             }
             break;
             case REVERSAL:
@@ -1422,7 +1423,7 @@ public class POSTransaction {
      * \DT		: 5/18/2020
      * \Des    : for building Purchase ADVICE messages and ready to be coverted to str for sending (MTI+DEs)
      */
-    public int    ComposePurchaseAdviseMessage(TranscationType TrxType)
+    public int    ComposeFinancialAdviseMessage(TranscationType TrxType)
     {
 
         //Clear  Message
@@ -1918,7 +1919,7 @@ public class POSTransaction {
                     break;
                 case AUTHORISATION:
                 case AUTHORISATION_EXTENSION:
-                    PosApplication.getApp().oGPosTransaction.m_sProcessCode="900000";
+                    PosApplication.getApp().oGPosTransaction.m_sProcessCode="900000"; //check credit account
                     break;
                 case AUTHORISATION_VOID:
                     PosApplication.getApp().oGPosTransaction.m_sProcessCode="220000";
@@ -1934,7 +1935,7 @@ public class POSTransaction {
                     switch(card_scheme.m_sCard_Scheme_ID)
                     {
                         case"P1":
-
+                            PosApplication.getApp().oGPosTransaction.m_sProcessCode="010000";
                             break;
                         default:
                     }
@@ -1964,6 +1965,8 @@ public class POSTransaction {
                     // PosApplication.getApp().oGPosTransaction.m_sProcessCode="903000";
                     break;
                 case AUTHORISATION_EXTENSION:
+                    PosApplication.getApp().oGPosTransaction.m_sProcessCode="900000";
+                    break;
                 case AUTHORISATION_ADVICE:
                 case AUTHORISATION_VOID:
                 case REVERSAL:
@@ -2945,13 +2948,14 @@ public class POSTransaction {
                         break;
 
 
-                    default:       // For IBCS
+                    default:       // For ICS
                         switch (m_enmTrxCardType) {
                             case ICC:
-                                mrc=Message_reason_code.Terminal_processed;
-                                break;
                             case CTLS:
+                                if(PosApplication.getApp().oGPosTransaction.card_scheme.m_sOffline_Refund_PreAuthorization_Capture_Service_Indicator=="1")
                                 mrc=Message_reason_code.Terminal_processed;
+                                else
+                                    mrc=Message_reason_code.ICC_or_contactless_application_processed;
                                 break;
                             case MAG:
                                 mrc=Message_reason_code.Terminal_processed;

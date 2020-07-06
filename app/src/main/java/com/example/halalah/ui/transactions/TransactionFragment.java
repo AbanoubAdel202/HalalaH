@@ -100,7 +100,7 @@ public class TransactionFragment extends Fragment implements View.OnClickListene
                 PosApplication.getApp().oGPosTransaction.m_enmTrxType=POSTransaction.TranscationType.REFUND;
                 oPos_main.Start_Transaction(oPostransaction,POSTransaction.TranscationType.REFUND);
                 break;
-
+            
 
         }
 

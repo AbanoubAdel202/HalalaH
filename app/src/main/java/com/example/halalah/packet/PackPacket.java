@@ -7,6 +7,7 @@ import android.util.Log;
 import com.example.halalah.POSTransaction;
 import com.example.halalah.POS_MAIN;
 import com.example.halalah.PosApplication;
+import com.example.halalah.SAF_Info;
 import com.example.halalah.Utils;
 import com.example.halalah.iso8583.ISO8583;
 import com.example.halalah.secure.DUKPT_KEY;
@@ -51,7 +52,7 @@ public class PackPacket {
                     PosApplication.getApp().oGPosTransaction.ComposeFinancialMessage(POSTransaction.TranscationType.PURCHASE);
                     return PosApplication.getApp().oGPosTransaction.m_RequestISOMsg.isotostr();
                 case PURCHASE_ADVICE:
-                     PosApplication.getApp().oGPosTransaction.ComposePurchaseAdviseMessage(POSTransaction.TranscationType.PURCHASE_ADVICE);
+                     PosApplication.getApp().oGPosTransaction.ComposeFinancialAdviseMessage(POSTransaction.TranscationType.PURCHASE_ADVICE);
                     return PosApplication.getApp().oGPosTransaction.m_RequestISOMsg.isotostr();
 
                 case PURCHASE_WITH_NAQD:
@@ -119,7 +120,7 @@ public class PackPacket {
 
             }
         }
-        else
+        else //ICS
         {
             switch (PosApplication.getApp().oGPosTransaction.m_enmTrxType) {
 
@@ -127,10 +128,10 @@ public class PackPacket {
                  * we can use BuildISO8583Message(TranscationType TrxType) for automatic compose function selection
                  */
                 case PURCHASE:
-                    PosApplication.getApp().oGPosTransaction.ComposeFinancialMessage(POSTransaction.TranscationType.PURCHASE);
+                    PosApplication.getApp().oGPosTransaction.ComposeAuthoriszationMessage(POSTransaction.TranscationType.AUTHORISATION);
                     return PosApplication.getApp().oGPosTransaction.m_RequestISOMsg.isotostr();
                 case PURCHASE_ADVICE:
-                    PosApplication.getApp().oGPosTransaction.ComposePurchaseAdviseMessage(POSTransaction.TranscationType.PURCHASE_ADVICE);
+                    PosApplication.getApp().oGPosTransaction.ComposeFinancialAdviseMessage(POSTransaction.TranscationType.PURCHASE_ADVICE);
                     return PosApplication.getApp().oGPosTransaction.m_RequestISOMsg.isotostr();
 
                 case PURCHASE_WITH_NAQD:
@@ -140,6 +141,7 @@ public class PackPacket {
                 case AUTHORISATION:
 
                     PosApplication.getApp().oGPosTransaction.ComposeAuthoriszationMessage(POSTransaction.TranscationType.AUTHORISATION);
+
                     return PosApplication.getApp().oGPosTransaction.m_RequestISOMsg.isotostr();
 
                 case AUTHORISATION_ADVICE:
@@ -158,8 +160,8 @@ public class PackPacket {
                     return PosApplication.getApp().oGPosTransaction.m_RequestISOMsg.isotostr();
 
                 case REFUND:
-
-                    PosApplication.getApp().oGPosTransaction.ComposeFinancialMessage(POSTransaction.TranscationType.REFUND);
+                        //1220-1230   online not supported for visa and master
+                    PosApplication.getApp().oGPosTransaction.ComposeFinancialAdviseMessage(POSTransaction.TranscationType.REFUND);
                     return PosApplication.getApp().oGPosTransaction.m_RequestISOMsg.isotostr();
 
                 case SADAD_BILL:

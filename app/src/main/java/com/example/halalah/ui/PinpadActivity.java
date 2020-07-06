@@ -14,6 +14,7 @@ import com.example.halalah.DeviceTopUsdkServiceManager;
 import com.example.halalah.POSTransaction;
 import com.example.halalah.PosApplication;
 import com.example.halalah.R;
+import com.example.halalah.SAF_Info;
 import com.example.halalah.Utils;
 import com.example.halalah.card.CardManager;
 import com.example.halalah.iso8583.BCDASCII;
@@ -278,16 +279,50 @@ public class PinpadActivity extends Activity {
             if (isOnline) {
                 //socket connection
                 Bundle bundle = new Bundle();
-                bundle.putInt(PacketProcessUtils.PACKET_PROCESS_TYPE, PacketProcessUtils.PACKET_PROCESS_PURCHASE);
-                if(POSTransaction.CardType.MANUAL == mCardType) {
-                    PosApplication.getApp().oGPosTransaction.m_enmTrxCVM = POSTransaction.CVM.ONLINE_PIN;
-                }
+                if(PosApplication.getApp().oGPosTransaction.is_mada) //MADA
+                {
+                    switch (PosApplication.getApp().oGPosTransaction.m_enmTrxType) {
 
-                CardManager.getInstance().startActivity(PinpadActivity.this, bundle, PacketProcessActivity.class);
+                        case PURCHASE:
+
+                            bundle.putInt(PacketProcessUtils.PACKET_PROCESS_TYPE, PacketProcessUtils.PACKET_PROCESS_PURCHASE);
+                            if (POSTransaction.CardType.MANUAL == mCardType) {
+                                PosApplication.getApp().oGPosTransaction.m_enmTrxCVM = POSTransaction.CVM.ONLINE_PIN;
+                            }
+
+                            CardManager.getInstance().startActivity(PinpadActivity.this, bundle, PacketProcessActivity.class);
+
+                    }
+                }else //ICS
+                    {
+                        switch (PosApplication.getApp().oGPosTransaction.m_enmTrxType) {
+
+                            case PURCHASE:
+
+                                bundle.putInt(PacketProcessUtils.PACKET_PROCESS_TYPE, PacketProcessUtils.PACKET_PROCESS_PURCHASE);
+                                if (POSTransaction.CardType.MANUAL == mCardType) {
+                                    PosApplication.getApp().oGPosTransaction.m_enmTrxCVM = POSTransaction.CVM.ONLINE_PIN;
+                                }
+
+                                CardManager.getInstance().startActivity(PinpadActivity.this, bundle, PacketProcessActivity.class);
+
+                            case REFUND:
+
+                                bundle.putInt(PacketProcessUtils.PACKET_PROCESS_TYPE, PacketProcessUtils.PACKET_PROCESS_REFUND);
+                                if(PosApplication.getApp().oGPosTransaction.card_scheme.m_sOffline_Refund_PreAuthorization_Capture_Service_Indicator=="1") {
+                                    SAF_Info.SAVE_IN_SAF(PosApplication.getApp().oGPosTransaction);
+                                    CardManager.getInstance().startActivity(PinpadActivity.this, bundle, ShowResultActivity.class);
+                                }
+                        }
+
+
+                }
                 /*byte[] sendData = PosApplication.getApp().mConsumeData.getICData();
                 Log.d(TAG, BCDASCII.bytesToHexString(sendData));
                 JsonAndHttpsUtils.sendJsonData(mContext, BCDASCII.bytesToHexString(sendData));*/
             } else {
+
+
                 if (POSTransaction.CardType.MAG == mCardType) {
                     Intent intent = new Intent(PinpadActivity.this, PacketProcessActivity.class);
                     intent.putExtra(PacketProcessUtils.PACKET_PROCESS_TYPE, PacketProcessUtils.PACKET_PROCESS_PURCHASE);

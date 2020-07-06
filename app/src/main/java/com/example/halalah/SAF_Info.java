@@ -1,6 +1,8 @@
 package com.example.halalah;
 
-class SAF_Info {
+import android.widget.Switch;
+
+public class SAF_Info {
 
     int m_iSAF_count;      //number of transaction saved
     int m_iMax_SAF_Depth;  //Max number of transaction
@@ -13,6 +15,37 @@ class SAF_Info {
         m_iMax_SAF_Cumulative_Amount=0;
         m_iSAF_count=0;
     }
+
+    public static void SAVE_IN_SAF(POSTransaction oPostrx)
+    {
+        switch (oPostrx.m_enmTrxType) {
+            case PURCHASE:
+                oPostrx.m_enmTrxType= POSTransaction.TranscationType.PURCHASE_ADVICE;
+                break;
+            case AUTHORISATION:
+            case AUTHORISATION_VOID:
+                oPostrx.m_enmTrxType= POSTransaction.TranscationType.AUTHORISATION_ADVICE;
+                break;
+
+
+
+
+                //todo save postransaction in DB
+        }
+    }
+    public static void SAVE_IN_REV(POSTransaction oPostrax)
+    {
+
+    }
+    public static void Load_from_SAF()
+    {
+
+    }
+    public static void Load_from_reversal()
+    {
+
+    }
+
 
 
 }

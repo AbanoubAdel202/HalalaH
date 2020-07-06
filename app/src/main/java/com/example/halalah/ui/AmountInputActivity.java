@@ -181,7 +181,7 @@ public class AmountInputActivity extends Activity implements View.OnClickListene
                 case CASH_ADVANCE:
                     //todo check Cash advance flow
                 case AUTHORISATION_EXTENSION:
-                    //todo check authorization extension flow
+                    PosApplication.getApp().oGPosTransaction.m_sTrxAmount="0";
 
 
             }

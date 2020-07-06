@@ -13,6 +13,7 @@ import android.widget.TextView;
 import com.example.halalah.POSTransaction;
 import com.example.halalah.PosApplication;
 import com.example.halalah.R;
+import com.example.halalah.SAF_Info;
 import com.example.halalah.Utils;
 import com.example.halalah.card.CardManager;
 import com.example.halalah.connect.SocketProcessTask;
@@ -189,10 +190,21 @@ public class PacketProcessActivity extends Activity {
                     getPacketAndSend();
                 }
             }  else if (mProcType == PacketProcessUtils.PACKET_PROCESS_PURCHASE && (mResponse != null) && (mResponse.equals("00"))) {
+                //todo if comulative limit exeeded host response 196 we need to openpinpad for entering pin and resend transaction again
                 byte[] field47 = mUnpackPacket.getField47();
                 showConsumeSuccResult(mResponse, mResponseDetail, field47);
 
-            }  else {
+                if(!PosApplication.getApp().oGPosTransaction.is_mada)
+                SAF_Info.SAVE_IN_SAF(PosApplication.getApp().oGPosTransaction);
+
+            } else if(mProcType == PacketProcessUtils.PACKET_PROCESS_AUTHORISATION && (mResponse != null) && (mResponse.equals("00")))
+            {
+                if(!PosApplication.getApp().oGPosTransaction.is_mada) {
+                    SAF_Info.SAVE_IN_SAF(PosApplication.getApp().oGPosTransaction);
+                }
+
+            }
+            else {
                 showResult(mResponse, mResponseDetail, errReason);
             }
         } else {

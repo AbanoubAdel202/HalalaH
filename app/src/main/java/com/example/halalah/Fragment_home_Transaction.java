@@ -223,7 +223,7 @@ View root =inflater.inflate(R.layout.fragment_home_transaction, container, false
 
             }
 
-            Public_Key CAPK[] = PosApplication.getApp().oGSama_TMS.get_all_CAPK();
+            Public_Key CAPK[] = PosApplication.getApp().oGSama_TMS.Get_all_CAPK();
 
             for (int index = 0; index<CAPK.length; index++)
             {
