@@ -64,7 +64,7 @@ public class SocketProcessTask extends AsyncTask<byte[], Integer, Void> {
 
         if (mProcType != PacketProcessUtils.PACKET_PROCESS_PURCHASE) {
             mSendPacket = (params[0]);
-            mCommSocket = new CommSocket();
+            mCommSocket = CommSocket.getInstance();
 
             publishProgress(SOCKET_STATUS_CONN);
 
