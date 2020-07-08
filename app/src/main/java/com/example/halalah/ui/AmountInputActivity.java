@@ -1,6 +1,5 @@
 package com.example.halalah.ui;
 
-import android.app.ActionBar;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
@@ -11,15 +10,10 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
-import com.example.halalah.POSTransaction;
-import com.example.halalah.POS_MAIN;
 import com.example.halalah.PosApplication;
 import com.example.halalah.R;
-import com.example.halalah.Utils;
-import com.example.halalah.connect.CommSocket;
-
-import java.io.EOFException;
-import java.io.IOException;
+import com.example.halalah.connect.CommunicationsHandler;
+import com.example.halalah.storage.CommunicationInfo;
 
 public class AmountInputActivity extends Activity implements View.OnClickListener {
     private static final String TAG = AmountInputActivity.class.getSimpleName();
@@ -79,10 +73,8 @@ public class AmountInputActivity extends Activity implements View.OnClickListene
 
     private void preConnect() {
         // open socket to be ready to sending/receiving financial messages
-        CommSocket.getInstance().preConnect("192.168.8.124", "23")
-                .subscribe(isConnected -> {
-                    Log.d(Utils.TAGPUBLIC, "opening socket => " + isConnected);
-                });
+        CommunicationInfo communicationInfo = new CommunicationInfo(this);
+        CommunicationsHandler.getInstance(communicationInfo).preConnect();
     }
 
     private Handler mHandle = new Handler() {

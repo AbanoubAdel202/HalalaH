@@ -1,6 +1,5 @@
 package com.example.halalah.connect;
 
-import android.os.Handler;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -16,56 +15,40 @@ import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
 import java.util.Iterator;
 
+import javax.security.auth.Subject;
+
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.observables.ConnectableObservable;
 import io.reactivex.schedulers.Schedulers;
+import io.reactivex.subjects.BehaviorSubject;
 
-public class CommSocket {
-    private static final String TAG = Utils.TAGPUBLIC + CommSocket.class.getSimpleName();
-    private static final int STATUS_CONNECTED = 1;
-    private static final int STATUS_IN_PROGRESS = 2;
-    private static final int STATUS_DISCONNECTED = 0;
+public class SocketManager {
+    private static final String TAG = Utils.TAGPUBLIC + SocketManager.class.getSimpleName();
+    public static final int CONNECTION_STATUS_CONNECTED = 1;
+    public static final int CONNECTION_STATUS_IN_PROGRESS = 2;
+    public static final int CONNECTION_STATUS_DISCONNECTED = 0;
 
-    private static CommSocket mInstance;
+    private static SocketManager mInstance;
     private SocketChannel mSocketChannel;
     private Selector mSelector;
     private boolean mIsGoOn = true;
 
-    private static int connectionStatus = STATUS_DISCONNECTED;
+    private static int connectionStatus = CONNECTION_STATUS_DISCONNECTED;
+    private static BehaviorSubject<Integer> connectionStatusBS;
+    private static Observable o;
 
-    private static Observable connectionStatusObservable;
-//    private static BehaviorSubject<Integer> connectionStatusBS;
-
-    private CommSocket() {
+    private SocketManager() {
     }
 
     public Observable preConnect(String host, String port) {
-        Log.d(TAG, "ConnectionStatus " + getConnectionStatus());
-        updateConnectionStatus(STATUS_IN_PROGRESS);
-        Log.d(TAG, "ConnectionStatus " + getConnectionStatus());
-//        connectionStatusBS = BehaviorSubject.create();
-        connectionStatusObservable = Observable.fromCallable(() -> open(host, port))
+        connectionStatusBS = BehaviorSubject.create();
+
+        o = Observable.fromCallable(() -> open(host, port))
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread());
-//        connectionStatusObservable.subscribe(connectionStatusBS);
-//        connectionStatusBS.onNext(1);
-        new Handler().postDelayed(() -> {
-            Log.d(TAG, "ConnectionStatus " + getConnectionStatus());
-        }, 1000);
-        new Handler().postDelayed(() -> {
-            Log.d(TAG, "ConnectionStatus " + getConnectionStatus());
-        }, 2000);
-        new Handler().postDelayed(() -> {
-            Log.d(TAG, "ConnectionStatus " + getConnectionStatus());
-        }, 3000);
-        new Handler().postDelayed(() -> {
-            Log.d(TAG, "ConnectionStatus " + getConnectionStatus());
-        }, 4000);
-        new Handler().postDelayed(() -> {
-            Log.d(TAG, "ConnectionStatus " + getConnectionStatus());
-        }, 5000);
-
-        return connectionStatusObservable;
+        o.subscribe(connectionStatusBS);
+        return connectionStatusBS;
     }
 
     private void updateConnectionStatus(int status) {
@@ -76,9 +59,9 @@ public class CommSocket {
         return connectionStatus;
     }
 
-    public static CommSocket getInstance() {
+    public static SocketManager getInstance() {
         if (mInstance == null) {
-            mInstance = new CommSocket();
+            mInstance = new SocketManager();
         }
         return mInstance;
     }
@@ -95,14 +78,15 @@ public class CommSocket {
     }
 
     public boolean open(String host, int port) {
+        updateConnectionStatus(CONNECTION_STATUS_IN_PROGRESS);
         Log.d(TAG, "host=" + host + ", port=" + port);
         if (TextUtils.isEmpty(host) || port <= 0) {
+            updateConnectionStatus(CONNECTION_STATUS_DISCONNECTED);
             Log.e(TAG, "host or port error.");
-
             return false;
         }
         try {
-            Log.d(TAG, "trying to open channel, commSocket hash # ");
+            Log.d(TAG, "trying to open channel, " + host + ":" + port);
             mSocketChannel = SocketChannel.open();
             mSocketChannel.configureBlocking(false);
             long mEndtTime = System.currentTimeMillis() + 5000;
@@ -111,23 +95,25 @@ public class CommSocket {
             while (!mSocketChannel.finishConnect() && (System.currentTimeMillis() <= mEndtTime)) {
             }
             if (System.currentTimeMillis() > mEndtTime) {
-                updateConnectionStatus(STATUS_DISCONNECTED);
+                updateConnectionStatus(CONNECTION_STATUS_DISCONNECTED);
                 return false;
             }
             mSelector = Selector.open();
             mSocketChannel.register(mSelector, SelectionKey.OP_READ | SelectionKey.OP_WRITE);
         } catch (IOException e) {
+            Log.d(TAG, "Couldn't open channel, " + e.getMessage());
             e.printStackTrace();
-            updateConnectionStatus(STATUS_DISCONNECTED);
+            updateConnectionStatus(CONNECTION_STATUS_DISCONNECTED);
             return false;
         }
-        updateConnectionStatus(STATUS_CONNECTED);
+        Log.d(TAG, "Channel opened.");
+        updateConnectionStatus(CONNECTION_STATUS_CONNECTED);
         return true;
     }
 
 
     public int send(byte[] sendPacket) {
-        updateConnectionStatus(STATUS_IN_PROGRESS);
+        updateConnectionStatus(CONNECTION_STATUS_IN_PROGRESS);
         Log.i(TAG, "send = " + BCDASCII.bytesToHexString(sendPacket));
         int count = 0;
         try {
@@ -152,12 +138,12 @@ public class CommSocket {
             e.printStackTrace();
             return -1;
         }
-        updateConnectionStatus(STATUS_CONNECTED);
+        updateConnectionStatus(CONNECTION_STATUS_CONNECTED);
         return count;
     }
 
     public byte[] recv() {
-        updateConnectionStatus(STATUS_IN_PROGRESS);
+        updateConnectionStatus(CONNECTION_STATUS_IN_PROGRESS);
         byte[] receive = null;
         int count = 0;
         try {
@@ -189,7 +175,7 @@ public class CommSocket {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        updateConnectionStatus(STATUS_CONNECTED);
+        updateConnectionStatus(CONNECTION_STATUS_CONNECTED);
         return receive;
     }
 
@@ -199,7 +185,7 @@ public class CommSocket {
                 mSocketChannel.finishConnect();
                 mSelector.close();
                 mSocketChannel.close();
-                updateConnectionStatus(STATUS_DISCONNECTED);
+                updateConnectionStatus(CONNECTION_STATUS_DISCONNECTED);
             }
         } catch (IOException e) {
             e.printStackTrace();

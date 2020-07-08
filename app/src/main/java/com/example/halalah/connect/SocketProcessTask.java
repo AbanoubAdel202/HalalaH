@@ -4,7 +4,6 @@ import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
 
-import com.example.halalah.PosApplication;
 import com.example.halalah.ui.PacketProcessActivity;
 import com.example.halalah.R;
 import com.example.halalah.Utils;
@@ -31,7 +30,7 @@ public class SocketProcessTask extends AsyncTask<byte[], Integer, Void> {
 
     private byte[] mSendPacket;
     private byte[] mRecePacket;
-    private CommSocket mCommSocket;
+    private SocketManager mSocketManager;
     private String mHostIp;
     private String mHostPort;
 
@@ -64,7 +63,7 @@ public class SocketProcessTask extends AsyncTask<byte[], Integer, Void> {
 
         if (mProcType != PacketProcessUtils.PACKET_PROCESS_PURCHASE) {
             mSendPacket = (params[0]);
-            mCommSocket = CommSocket.getInstance();
+            mSocketManager = SocketManager.getInstance();
 
             publishProgress(SOCKET_STATUS_CONN);
 
@@ -86,7 +85,7 @@ public class SocketProcessTask extends AsyncTask<byte[], Integer, Void> {
 
             while (mSendNum < RETRY_MAX_CNT) {
                 Log.e(TAG, "mSendNum:" + mSendNum);
-                if (!mCommSocket.open(mHostIp, mHostPort)) {
+                if (!mSocketManager.open(mHostIp, mHostPort)) {
                     Log.e(TAG, mSendNum + " open failed");
                     mSendNum++;
                 } else {
@@ -102,7 +101,7 @@ public class SocketProcessTask extends AsyncTask<byte[], Integer, Void> {
             Log.e(TAG, "socket open success.");
 
             publishProgress(SOCKET_STATUS_SEND);
-            if (mSendPacket != null && mCommSocket.send(mSendPacket) <= 0) {
+            if (mSendPacket != null && mSocketManager.send(mSendPacket) <= 0) {
                 Log.e(TAG, "send packet failed.");
                 mErrorReson = PacketProcessUtils.SOCKET_PROC_ERROR_REASON_SEND;
                 return null;
@@ -116,7 +115,7 @@ public class SocketProcessTask extends AsyncTask<byte[], Integer, Void> {
 //        }
 
             publishProgress(SOCKET_STATUS_RECE);
-            mRecePacket = mCommSocket.recv();
+            mRecePacket = mSocketManager.recv();
             if ((mRecePacket == null) || (mRecePacket.length <= 0)) {
                 Log.e(TAG, "receive packet failed.");
                 mErrorReson = PacketProcessUtils.SOCKET_PROC_ERROR_REASON_RECE;
@@ -164,14 +163,14 @@ public class SocketProcessTask extends AsyncTask<byte[], Integer, Void> {
         if (mContext != null && mSocketProcEndListener != null) {
             mSocketProcEndListener.onSocketProcEnd(mRecePacket, mErrorReson);
         }
-        if (mCommSocket != null) {
-            mCommSocket.close();
+        if (mSocketManager != null) {
+            mSocketManager.close();
         }
     }
 
     public void setStop() {
-        if (mCommSocket != null) {
-            mCommSocket.setStop();
+        if (mSocketManager != null) {
+            mSocketManager.setStop();
         }
     }
 }
