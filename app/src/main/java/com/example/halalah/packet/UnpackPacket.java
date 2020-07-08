@@ -64,7 +64,7 @@ public class UnpackPacket {
             UnpackPurchase unpackpurchase = new UnpackPurchase(mRecePacket, mRecePacket.length);
             mResponse = unpackpurchase.getResponse();
             mResponseDetail = unpackpurchase.getResponseDetail();
-
+            mField47 = unpackpurchase.getField47();
 
         }
             ///////////////////////Test//////////////////////////////////
