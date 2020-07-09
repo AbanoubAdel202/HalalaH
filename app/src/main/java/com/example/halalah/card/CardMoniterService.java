@@ -7,7 +7,6 @@ import android.os.RemoteException;
 import android.util.Log;
 
 import com.example.halalah.DeviceTopUsdkServiceManager;
-import com.example.halalah.PosApplication;
 import com.example.halalah.Utils;
 import com.topwise.cloudpos.aidl.emv.AidlPboc;
 
@@ -49,7 +48,7 @@ public class CardMoniterService extends Service {
         synchronized (this) {
             try {
                 if(mPbocManager != null){
-                    mPbocManager.checkCard(isMag, isIc, isRf, SEARCH_CARD_TIME, new CheckCardListenerSub(this));
+                    mPbocManager.checkCard(isMag, isIc, isRf, SEARCH_CARD_TIME, new CheckCardListenerSub(this, null));
                 }
             } catch (RemoteException e) {
                 e.printStackTrace();

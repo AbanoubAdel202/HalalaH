@@ -24,4 +24,5 @@ public class PacketProcessUtils {
     public static final int SOCKET_PROC_ERROR_REASON_SEND = 3;
     public static final int SOCKET_PROC_ERROR_REASON_RECE = 4;
     public static final int SOCKET_PROC_ERROR_REASON_RECE_TIME_OUT = 5;
+    public static final int SUCCESS = 0;
 }

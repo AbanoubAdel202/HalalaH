@@ -52,7 +52,7 @@ public class PackPacket {
                     PosApplication.getApp().oGPosTransaction.ComposeFinancialMessage(POSTransaction.TranscationType.PURCHASE);
                     return PosApplication.getApp().oGPosTransaction.m_RequestISOMsg.isotostr();
                 case PURCHASE_ADVICE:
-                     PosApplication.getApp().oGPosTransaction.ComposeFinancialAdviseMessage(POSTransaction.TranscationType.PURCHASE_ADVICE);
+                    PosApplication.getApp().oGPosTransaction.ComposeFinancialAdviseMessage(POSTransaction.TranscationType.PURCHASE_ADVICE);
                     return PosApplication.getApp().oGPosTransaction.m_RequestISOMsg.isotostr();
 
                 case PURCHASE_WITH_NAQD:
@@ -119,6 +119,7 @@ public class PackPacket {
                     return PosApplication.getApp().oGPosTransaction.m_RequestISOMsg.isotostr();
 
             }
+
         }
         else //ICS
         {

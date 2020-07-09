@@ -213,7 +213,6 @@ public class POS_MAIN {
                                 PosApplication.getApp().oGPosTransaction.is_mada=false;
 
 
-
             }
             else
                 istate=SAMA_TMS.Get_card_scheme_BY_AID(PosApplication.getApp().oGPosTransaction.m_sAID);

@@ -1,4 +1,5 @@
 package com.example.halalah;
+import com.example.halalah.storage.CommunicationInfo;
 import com.topwise.cloudpos.aidl.serialport.AidlSerialport;
 import android.app.ProgressDialog;
 import android.content.Context;
@@ -63,6 +64,9 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        CommunicationInfo communicationInfo = new CommunicationInfo(this);
+        communicationInfo.setHostIP("192.168.8.124");
+        communicationInfo.setHostPort("23");
 
         TextView date = findViewById(R.id.Date);
         TextView time =findViewById(R.id.TIME);

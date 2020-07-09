@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.os.RemoteException;
 import android.util.Log;
 
+import com.example.halalah.CardCallback;
 import com.example.halalah.DeviceTopUsdkServiceManager;
 import com.example.halalah.POSTransaction;
 import com.example.halalah.POS_MAIN;
@@ -26,16 +27,20 @@ public class CheckCardListenerSub extends AidlCheckCardListener.Stub {
     private Context mContext;
     private AidlPboc mPbocManager;
     private EmvTransData mEmvTransData;
+    private CardCallback mCardCallBack;
 
-    public CheckCardListenerSub(Context context) {
+    public CheckCardListenerSub(Context context, CardCallback cardCallback) {
         mPbocManager = DeviceTopUsdkServiceManager.getInstance().getPbocManager();
         mContext = context;
+        mCardCallBack = cardCallback;
     }
 
     @Override
     public void onFindMagCard(TrackData data) throws RemoteException {
         Log.i(TAG, "onFindMagCard()");
-
+        if (mCardCallBack != null){
+            mCardCallBack.onFindMagCard(data);
+        }
         String scardNo = data.getCardno();
         String strack2 = data.getSecondTrackData();
        // String track3 = data.getThirdTrackData();
