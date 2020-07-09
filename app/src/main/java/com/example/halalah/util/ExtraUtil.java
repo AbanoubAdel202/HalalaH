@@ -28,6 +28,14 @@ public class ExtraUtil {
 
     }
 
+    public static String Get_Local_Date_Time(){
+        Date d = new Date();
+        CharSequence s  = DateFormat.format("YYMMDDhhmmss", d.getTime());
+
+        return s.toString();
+
+    }
+
 
     public static String getCustomVersionMsg(String originalMsg) {
         StringBuilder version = new StringBuilder();

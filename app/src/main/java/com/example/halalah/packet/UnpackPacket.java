@@ -68,7 +68,7 @@ public class UnpackPacket {
 
         }
             ///////////////////////Test//////////////////////////////////
-            if (PosApplication.testapp) {
+            if (!PosApplication.testapp) {
  /*if (mProcType == PacketProcessUtils.PACKET_PROCESS_PARAM_TRANS) {
             UnpackParaTrans unpackParaTrans = new UnpackParaTrans(context, mRecePacket, mRecePacket.length);
             mResponse = unpackParaTrans.getResponse();

@@ -1,16 +1,26 @@
 package com.example.halalah;
 
+import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
+import android.view.LayoutInflater;
+
+import androidx.appcompat.widget.AlertDialogLayout;
 
 import com.example.halalah.TMS.AID_Data;
 import com.example.halalah.TMS.Public_Key;
 import com.example.halalah.TMS.SAMA_TMS;
 
+import com.example.halalah.card.CardManager;
+import com.example.halalah.card.CheckCardListenerSub;
 import com.example.halalah.ui.AmountInputActivity;
 import com.example.halalah.ui.P_NAQD_InputActivity;
+import com.example.halalah.ui.PacketProcessActivity;
+import com.example.halalah.ui.PinpadActivity;
 import com.example.halalah.ui.Refund_InputActivity;
+import com.example.halalah.util.PacketProcessUtils;
 
 import java.util.Locale;
 
@@ -29,7 +39,8 @@ public class POS_MAIN {
     public static boolean isforced;
 
 
-    public Context mcontext;
+
+    public static Context mcontext;
         public POS_MAIN()
         {
 
@@ -40,6 +51,7 @@ public class POS_MAIN {
 
     public void Start_Transaction(POSTransaction oPos_trans, POSTransaction.TranscationType Trxtype)
     {
+
         oPos_trans.Reset();
         if(Trxtype== POSTransaction.TranscationType.REVERSAL) //reversal
         {
@@ -100,6 +112,7 @@ public class POS_MAIN {
                 //todo PURCHASE_ADVICE
                 AmountACT = new Intent(mcontext, AmountInputActivity.class);
                 AmountACT.putExtra("transaction Type",Trxtype);
+
                 break;
 
             case CASH_ADVANCE://CASH_ADVANCE:
@@ -107,8 +120,9 @@ public class POS_MAIN {
                 AmountACT = new Intent(mcontext, AmountInputActivity.class);
                 AmountACT.putExtra("transaction Type",Trxtype);
                 break;
-            case REVERSAL://REVERSAL:
-                //todo check and do reversal
+            case REVERSAL://REVERSAL
+                //Do_Reversal();
+
 
                 break;
             case SADAD_BILL://SADAD_BILL:
@@ -289,6 +303,7 @@ public class POS_MAIN {
     public static int Check_transaction_limits()
     {
             // todo get transaction limits
+        //todo  issues limit cases
         return 0;
     }
     public boolean Check_manual_allowed()
@@ -314,8 +329,30 @@ public class POS_MAIN {
     }
     public static void supervisor_pass_required(){
 
-        //todo dialog which ask for password
+      if(PosApplication.getApp().oGPosTransaction.card_scheme.m_sSupervisor_Functions=="1") {//todo dialog which ask for password}
 
+          mcontext = PosApplication.getApp().getApplicationContext();
+      /*    AlertDialog.Builder builder = new AlertDialog.Builder(mcontext);
+          // Get the layout inflater
+          LayoutInflater inflater = mcontext.ac`.getLayoutInflater();
+
+          // Inflate and set the layout for the dialog
+          // Pass null as the parent view because its going in the dialog layout
+          builder.setView(inflater.inflate(R.layout.dialog_pass, null))
+                  // Add action buttons
+                  .setPositiveButton(R.string.password, new AlertDialog.OnClickListener() {
+                      @Override
+                      public void onClick(AlertDialog dialog, int id) {
+
+                          // todo check pass if correct
+                      }
+                  })
+                  .setNegativeButton(R.string.dialog_cancle, new AlertDialog.OnClickListener() {
+                      public void onClick(AlertDialog dialog, int id) {
+                          Fragment_home_Transaction.this.getDialog().cancel();
+                      }
+                  });*/
+      }
     }
 
     public static void Check_Servicecode(String track2) {
@@ -379,6 +416,17 @@ public class POS_MAIN {
         }
         return -1;
     }
+
+    public  int Do_Reversal(int iErrorreason){
+
+        SAF_Info.SAVE_IN_REV(PosApplication.getApp().oGPosTransaction);
+       /* Intent intent = new Intent(mcontext, PacketProcessActivity.class);
+        intent.putExtra(PacketProcessUtils.PACKET_PROCESS_TYPE, PacketProcessUtils.PACKET_PROCESS_REVERSAL);
+        mcontext.startActivity(intent);*/
+
+        return 0;
+    }
+
 
 /********************************************************************************
     // Topwise Tags

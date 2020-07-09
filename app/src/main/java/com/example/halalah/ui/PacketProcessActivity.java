@@ -99,6 +99,7 @@ public class PacketProcessActivity extends Activity {
 
 
         mSendPacket = mPackPacket.getSendPacket();
+        Log.i(TAG,"mSendPacket="+BCDASCII.bytesToHexString(mSendPacket));
         mSocketProcessTask = new SocketProcessTask(this, mProcType);
         mSocketProcessTask.execute(mSendPacket);
     }
@@ -197,10 +198,28 @@ public class PacketProcessActivity extends Activity {
                 if(!PosApplication.getApp().oGPosTransaction.is_mada)
                 SAF_Info.SAVE_IN_SAF(PosApplication.getApp().oGPosTransaction);
 
-            } else if(mProcType == PacketProcessUtils.PACKET_PROCESS_AUTHORISATION && (mResponse != null) && (mResponse.equals("00")))
+            }
+            else if(mProcType == PacketProcessUtils.PACKET_PROCESS_AUTHORISATION && (mResponse != null) && (mResponse.equals("00")))
             {
                 if(!PosApplication.getApp().oGPosTransaction.is_mada) {
                     SAF_Info.SAVE_IN_SAF(PosApplication.getApp().oGPosTransaction);
+                }
+                else
+                {
+                    byte[] field47 = mUnpackPacket.getField47();
+                    showConsumeSuccResult(mResponse, mResponseDetail, field47);
+                }
+
+            }
+            else if(mProcType == PacketProcessUtils.PACKET_PROCESS_AUTHORISATION_ADVICE && (mResponse != null) && (mResponse.equals("00")))
+            {
+                if(!PosApplication.getApp().oGPosTransaction.is_mada) {
+                    SAF_Info.SAVE_IN_SAF(PosApplication.getApp().oGPosTransaction);
+                }
+                else
+                {
+                    byte[] field47 = mUnpackPacket.getField47();
+                    showConsumeSuccResult(mResponse, mResponseDetail, field47);
                 }
 
             }

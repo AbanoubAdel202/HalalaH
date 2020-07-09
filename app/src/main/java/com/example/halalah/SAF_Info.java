@@ -43,6 +43,7 @@ public class SAF_Info {
     }
     public static void Load_from_reversal()
     {
+        //todo get data and set it in oGpostransaction
 
     }
 

@@ -17,6 +17,7 @@ import com.example.halalah.TMS.Public_Key;
 import com.example.halalah.TMS.SAMA_TMS;
 import com.example.halalah.secure.DUKPT_KEY;
 import com.example.halalah.ui.AmountInputActivity;
+import com.example.halalah.util.ExtraUtil;
 import com.topwise.cloudpos.aidl.emv.AidlPboc;
 
 
@@ -93,6 +94,7 @@ View root =inflater.inflate(R.layout.fragment_home_transaction, container, false
                  */
 
                 PosApplication.getApp().oGPosTransaction.card_scheme.m_sTransactions_Allowed="111111111";
+                PosApplication.getApp().oGPosTransaction.m_sLocalTrxDateTime= ExtraUtil.Get_Local_Date_Time();
                 /**********************************/
 
                 Toast.makeText(getContext(),"Purshase Transaction",Toast.LENGTH_LONG).show();

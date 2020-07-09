@@ -328,6 +328,7 @@
     <string name="Admin">Admin</string>
     <string name="MANUAL">Manual</string>
     <string name="Pan_input_tip">PAN</string>
+    <string name="password">Supervisour PASS</string>
 
 
 </resources>

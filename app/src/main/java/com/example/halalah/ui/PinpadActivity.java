@@ -311,6 +311,7 @@ public class PinpadActivity extends Activity {
                                 bundle.putInt(PacketProcessUtils.PACKET_PROCESS_TYPE, PacketProcessUtils.PACKET_PROCESS_REFUND);
                                 if(PosApplication.getApp().oGPosTransaction.card_scheme.m_sOffline_Refund_PreAuthorization_Capture_Service_Indicator=="1") {
                                     SAF_Info.SAVE_IN_SAF(PosApplication.getApp().oGPosTransaction);
+
                                     CardManager.getInstance().startActivity(PinpadActivity.this, bundle, ShowResultActivity.class);
                                 }
                         }

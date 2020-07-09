@@ -41,9 +41,16 @@ public class RFPbocStartListenerSub extends AidlPbocStartListener.Stub {
         byte[] bAIDs;
         String[] AIDs = new String[]{"9F06"};
         bAIDs= getTlv(AIDs);
-        POS_MAIN.Recognise_card();
-        POS_MAIN.Check_transaction_allowed(PosApplication.getApp().oGPosTransaction.m_enmTrxType);
+
+        //todo success validation
+        if (POS_MAIN.Recognise_card()!=0)
+            //todo do activity error
+
+        if(!POS_MAIN.Check_transaction_allowed(PosApplication.getApp().oGPosTransaction.m_enmTrxType))
+            //todo do transaction not allowed
+
         POS_MAIN.Check_transaction_limits();
+
         POS_MAIN.supervisor_pass_required();
         mPbocManager.importFinalAidSelectRes(true);
     }

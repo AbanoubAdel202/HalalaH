@@ -213,9 +213,44 @@ public class ICPbocStartListenerSub extends AidlPbocStartListener.Stub {
             CardManager.getInstance().startActivity(mContext, bundle, PinpadActivity.class);
         } else {
             //socket通信
+          //todo will be enhanced communication
             Bundle bundle = new Bundle();
-            bundle.putInt(PacketProcessUtils.PACKET_PROCESS_TYPE, PacketProcessUtils.PACKET_PROCESS_PURCHASE);
-            CardManager.getInstance().startActivity(mContext, bundle, PacketProcessActivity.class);
+            switch(PosApplication.getApp().oGPosTransaction.m_enmTrxType) {
+                case PURCHASE:
+                    bundle.putInt(PacketProcessUtils.PACKET_PROCESS_TYPE, PacketProcessUtils.PACKET_PROCESS_PURCHASE);
+                CardManager.getInstance().startActivity(mContext, bundle, PacketProcessActivity.class);
+                break;
+                case REFUND:
+                    bundle.putInt(PacketProcessUtils.PACKET_PROCESS_TYPE, PacketProcessUtils.PACKET_PROCESS_REFUND);
+                    CardManager.getInstance().startActivity(mContext, bundle, PacketProcessActivity.class);
+                case AUTHORISATION:
+                    bundle.putInt(PacketProcessUtils.PACKET_PROCESS_TYPE, PacketProcessUtils.PACKET_PROCESS_AUTHORISATION);
+                    CardManager.getInstance().startActivity(mContext, bundle, PacketProcessActivity.class);
+
+                case AUTHORISATION_VOID:
+                    bundle.putInt(PacketProcessUtils.PACKET_PROCESS_TYPE, PacketProcessUtils.PACKET_PROCESS_AUTHORISATION_VOID);
+                    CardManager.getInstance().startActivity(mContext, bundle, PacketProcessActivity.class);
+                case AUTHORISATION_ADVICE:
+                    bundle.putInt(PacketProcessUtils.PACKET_PROCESS_TYPE, PacketProcessUtils.PACKET_PROCESS_AUTHORISATION_ADVICE);
+                    CardManager.getInstance().startActivity(mContext, bundle, PacketProcessActivity.class);
+
+                case CASH_ADVANCE:
+                    bundle.putInt(PacketProcessUtils.PACKET_PROCESS_TYPE, PacketProcessUtils.PACKET_PROCESS_CASH_ADVANCE);
+                    CardManager.getInstance().startActivity(mContext, bundle, PacketProcessActivity.class);
+                case SADAD_BILL:
+                    bundle.putInt(PacketProcessUtils.PACKET_PROCESS_TYPE, PacketProcessUtils.PACKET_PROCESS_SADAD_BILL);
+                    CardManager.getInstance().startActivity(mContext, bundle, PacketProcessActivity.class);
+                case AUTHORISATION_EXTENSION:
+                    bundle.putInt(PacketProcessUtils.PACKET_PROCESS_TYPE, PacketProcessUtils.PACKET_PROCESS_AUTHORISATION_EXTENSION);
+                    CardManager.getInstance().startActivity(mContext, bundle, PacketProcessActivity.class);
+
+                case PURCHASE_WITH_NAQD:
+                    bundle.putInt(PacketProcessUtils.PACKET_PROCESS_TYPE, PacketProcessUtils.PACKET_PROCESS_PURCHASE_WITH_NAQD);
+                    CardManager.getInstance().startActivity(mContext, bundle, PacketProcessActivity.class);
+                case PURCHASE_ADVICE:
+                    bundle.putInt(PacketProcessUtils.PACKET_PROCESS_TYPE, PacketProcessUtils.PACKET_PROCESS_PURCHASE_ADVICE);
+                    CardManager.getInstance().startActivity(mContext, bundle, PacketProcessActivity.class);
+            }
         /*byte[] sendData = PosApplication.getApp().mConsumeData.getICData();
         Log.d(TAG, BCDASCII.bytesToHexString(sendData));
         JsonAndHttpsUtils.sendJsonData(mContext, BCDASCII.bytesToHexString(sendData));*/

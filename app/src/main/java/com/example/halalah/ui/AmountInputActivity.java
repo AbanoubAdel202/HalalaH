@@ -154,6 +154,15 @@ public class AmountInputActivity extends Activity implements View.OnClickListene
                     Log.i(TAG, e.toString());
                     }
                 break;
+                case AUTHORISATION_ADVICE:
+
+                    // todo authorization data filling in activity
+                    try {
+                        Intent intent = new Intent(this, SearchCardActivity.class);
+                        startActivity(intent);
+                    } catch (Exception e) {
+                        Log.i(TAG, e.toString());
+                    }
 
 
 
