@@ -15,19 +15,16 @@ import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
 import java.util.Iterator;
 
-import javax.security.auth.Subject;
-
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.observables.ConnectableObservable;
 import io.reactivex.schedulers.Schedulers;
 import io.reactivex.subjects.BehaviorSubject;
 
 public class SocketManager {
     private static final String TAG = Utils.TAGPUBLIC + SocketManager.class.getSimpleName();
     public static final int CONNECTION_STATUS_CONNECTED = 1;
-    public static final int CONNECTION_STATUS_IN_PROGRESS = 2;
-    public static final int CONNECTION_STATUS_DISCONNECTED = 0;
+    public static final int CONNECTION_STATUS_IN_PROGRESS = 0;
+    public static final int CONNECTION_STATUS_DISCONNECTED = -1;
 
     private static SocketManager mInstance;
     private SocketChannel mSocketChannel;

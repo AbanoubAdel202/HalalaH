@@ -3,6 +3,7 @@ package com.example.halalah.connect;
 import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.Message;
 import android.util.Log;
 
 import com.example.halalah.Utils;
@@ -23,10 +24,12 @@ public class CommunicationsHandler {
     public static final int SUCCESS = 0;
 
     private static final int UI_STATUS_CONNECTED = 1;
-    private static final int UI_STATUS_CONNECTING = 1;
     private static final int UI_STATUS_RECONNECTING = 2;
     private static final int UI_STATUS_WAITING = 3;
     private static final int UI_STATUS_FAILED = 4;
+    private static final int UI_STATUS_DISCONNECTED = -1;
+
+    private static final int MSG_CONNECTION_STATUS = 200;
 
     private static CommunicationsHandler mInstance;
     private static CommunicationInfo mCommunicationInfo;
@@ -62,7 +65,7 @@ public class CommunicationsHandler {
         return mInstance;
     }
 
-    public void setSendReceiveListener(SendReceiveListener sendReceiveListener){
+    public void setSendReceiveListener(SendReceiveListener sendReceiveListener) {
         mSendReceiveListener = sendReceiveListener;
     }
 
@@ -199,15 +202,39 @@ public class CommunicationsHandler {
     }
 
     private void publishResult(int resultCode, byte[] receivedPacket) {
-        if (mSendReceiveListener != null){
+        if (mSendReceiveListener != null) {
             mSendReceiveListener.onSocketProcessEnd(receivedPacket, resultCode);
         }
     }
 
     private void updateUI(int uiStatus) {
-//        if (mSendReceiveListener != null){
-//            mSendReceiveListener.showConnectionStatus(uiStatus);
-//        }
+        Message message = mHandle.obtainMessage(MSG_CONNECTION_STATUS, new Integer(uiStatus));
+        message.sendToTarget();
     }
+
+    public void closeConnection() {
+        if (mSocketManager != null) {
+            mSocketManager.close();
+            updateUI(UI_STATUS_DISCONNECTED);
+            Log.d(TAG, "Connection closed");
+
+        }
+    }
+
+    private Handler mHandle = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            switch (msg.what) {
+                case MSG_CONNECTION_STATUS:
+                    if (mSendReceiveListener != null) {
+                        Integer data = (Integer) msg.obj;
+                        mSendReceiveListener.showConnectionStatus(data);
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }
+    };
 
 }
