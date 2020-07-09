@@ -21,7 +21,6 @@ public class CommunicationsHandler {
 
     private static final String TAG = Utils.TAGPUBLIC + CommunicationsHandler.class.getSimpleName();
 
-    public static final int SUCCESS = 0;
 
     private static final int UI_STATUS_CONNECTED = 1;
     private static final int UI_STATUS_RECONNECTING = 2;
@@ -131,7 +130,7 @@ public class CommunicationsHandler {
             return false;
         }
         Log.d(TAG, "receive packet success.");
-        publishResult(SUCCESS, mRecePacket);
+        publishResult(PacketProcessUtils.SUCCESS, mRecePacket);
         return true;
     }
 
@@ -203,7 +202,11 @@ public class CommunicationsHandler {
 
     private void publishResult(int resultCode, byte[] receivedPacket) {
         if (mSendReceiveListener != null) {
-            mSendReceiveListener.onSocketProcessEnd(receivedPacket, resultCode);
+            if (resultCode == 0) {
+                mSendReceiveListener.onSuccess(receivedPacket);
+            } else {
+                mSendReceiveListener.onFailure(resultCode);
+            }
         }
     }
 

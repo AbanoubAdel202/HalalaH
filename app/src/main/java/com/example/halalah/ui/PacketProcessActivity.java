@@ -102,7 +102,7 @@ public class PacketProcessActivity extends Activity implements SendReceiveListen
     }
 
     @Override
-    public void onSocketProcessEnd(byte[] recePacket, int errReason) {
+    public void onSuccess(byte[] receivedPacket) {
         Log.i(TAG, "onSocketProcessEnd");
 
         if (mBundle.getBoolean("is_need_proc", false)) {
@@ -110,8 +110,8 @@ public class PacketProcessActivity extends Activity implements SendReceiveListen
             setResult(1);
             finish();
         } else {
-            if (recePacket != null) {
-                mRecePacket = recePacket;
+            if (receivedPacket != null) {
+                mRecePacket = receivedPacket;
 
                 String isNeedProcString = isNeedProcessReq(mRecePacket);
 
@@ -133,12 +133,17 @@ public class PacketProcessActivity extends Activity implements SendReceiveListen
                     intent.putExtras(bundle);
                     startActivityForResult(intent, 100);
                 } else {
-                    processPacket(errReason);
+                    processPacket(PacketProcessUtils.SUCCESS);
                 }
             } else {
-                showResult(mResponse, mResponseDetail, errReason);
+                showResult(mResponse, mResponseDetail, PacketProcessUtils.SUCCESS);
             }
         }
+    }
+
+    @Override
+    public void onFailure(int errorCode){
+        showResult(mResponse, mResponseDetail, errorCode);
     }
 
     @Override
