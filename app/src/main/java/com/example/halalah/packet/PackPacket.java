@@ -36,12 +36,12 @@ public class PackPacket {
     public byte[] getSendPacket() {
         Log.i(TAG, "getSendPacket()");
         // test dummy data
-        PosApplication.getApp().oGPosTransaction.card_scheme.m_sCard_Scheme_ID="P1";
+        PosApplication.getApp().oGPosTransaction.m_card_scheme.m_sCard_Scheme_ID="P1";
         PosApplication.getApp().oGPosTransaction.m_sTransportData="tdata";
-        PosApplication.getApp().oGPosTransaction.card_scheme.m_sCard_Scheme_Name_English="mada";
+        PosApplication.getApp().oGPosTransaction.m_card_scheme.m_sCard_Scheme_Name_English="mada";
         PosApplication.getApp().oGPosTransaction.m_sAdditionalAmount = "000005500";
         //////////////////////////////////////////////
-        if(PosApplication.getApp().oGPosTransaction.is_mada)
+        if(PosApplication.getApp().oGPosTransaction.m_is_mada)
         {
             switch (PosApplication.getApp().oGPosTransaction.m_enmTrxType) {
 
@@ -94,25 +94,25 @@ public class PackPacket {
                     PosApplication.getApp().oGPosTransaction.ComposeFinancialMessage(POSTransaction.TranscationType.CASH_ADVANCE);
                     return PosApplication.getApp().oGPosTransaction.m_RequestISOMsg.isotostr();
 
-                case RECONCILIATION:
+               /* case RECONCILIATION:
 
                     PosApplication.getApp().oGPosTransaction.CompoaseReconciliationMessage();
-                    return PosApplication.getApp().oGPosTransaction.m_RequestISOMsg.isotostr();
+                    return PosApplication.getApp().oGPosTransaction.m_RequestISOMsg.isotostr();*/
 
-                case TERMINAL_REGISTRATION:
+               /* case TERMINAL_REGISTRATION:
 
                     PosApplication.getApp().oGPosTransaction.ComposeNetworkMessage();
-                    return PosApplication.getApp().oGPosTransaction.m_RequestISOMsg.isotostr();
+                    return PosApplication.getApp().oGPosTransaction.m_RequestISOMsg.isotostr();*/
 
                 case REVERSAL:
 
                     PosApplication.getApp().oGPosTransaction.ComposeReversalMessage();
                     return PosApplication.getApp().oGPosTransaction.m_RequestISOMsg.isotostr();
 
-                case TMS_FILE_DOWNLOAD:
+               /* case TMS_FILE_DOWNLOAD:
                     PosApplication.getApp().oGPosTransaction.ComposeFileDownloadMessage();
                     return PosApplication.getApp().oGPosTransaction.m_RequestISOMsg.isotostr();
-
+*/
                 case ADMIN:
 
                     PosApplication.getApp().oGPosTransaction.ComposeAdministrativeMessage();
@@ -180,20 +180,20 @@ public class PackPacket {
                     PosApplication.getApp().oGPosTransaction.CompoaseReconciliationMessage();
                     return PosApplication.getApp().oGPosTransaction.m_RequestISOMsg.isotostr();
 
-                case TERMINAL_REGISTRATION:
+                /*case TERMINAL_REGISTRATION:
 
                     PosApplication.getApp().oGPosTransaction.ComposeNetworkMessage();
                     return PosApplication.getApp().oGPosTransaction.m_RequestISOMsg.isotostr();
-
+*/
                 case REVERSAL:
 
                     PosApplication.getApp().oGPosTransaction.ComposeReversalMessage();
                     return PosApplication.getApp().oGPosTransaction.m_RequestISOMsg.isotostr();
 
-                case TMS_FILE_DOWNLOAD:
+           /*     case TMS_FILE_DOWNLOAD:
                     PosApplication.getApp().oGPosTransaction.ComposeFileDownloadMessage();
                     return PosApplication.getApp().oGPosTransaction.m_RequestISOMsg.isotostr();
-
+*/
                 case ADMIN:
 
                     PosApplication.getApp().oGPosTransaction.ComposeAdministrativeMessage();

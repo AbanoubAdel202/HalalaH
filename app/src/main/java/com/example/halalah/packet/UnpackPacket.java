@@ -49,15 +49,11 @@ public class UnpackPacket {
 
         mMerchantInfo = new MerchantInfo(context);
         mTermId = mMerchantInfo.getTermId();
-     /*  if (mProcType == PacketProcessUtils.PACKET_PROCESS_IC_CAPK_DOWNLOAD ||
-                mProcType == PacketProcessUtils.PACKET_PROCESS_IC_PARA_DOWNLOAD) {
-            mQueryEmvList = new ArrayList<LinkedHashMap<byte[], byte[]>>();
-            mPobcManager = DeviceTopUsdkServiceManager.getInstance().getPbocManager();
-        }*/
+
     }
 
-    public void procRecePacket(Context context, byte[] recePacket, Bundle data) {
-        Log.i(TAG, "procRecePacket(), mProcType" + mProcType);
+    public void Process_Rece_Packet(Context context, byte[] recePacket, Bundle data) {
+        Log.i(TAG, "Process_Rece_Packet(), mProcType" + mProcType);
         mRecePacket = recePacket;
 
         if (mProcType == PacketProcessUtils.PACKET_PROCESS_PURCHASE) {
@@ -67,29 +63,8 @@ public class UnpackPacket {
 
 
         }
-            ///////////////////////Test//////////////////////////////////
-            if (!PosApplication.testapp) {
- /*if (mProcType == PacketProcessUtils.PACKET_PROCESS_PARAM_TRANS) {
-            UnpackParaTrans unpackParaTrans = new UnpackParaTrans(context, mRecePacket, mRecePacket.length);
-            mResponse = unpackParaTrans.getResponse();
-            mResponseDetail = unpackParaTrans.getResponseDetail();
-        } else if (mProcType == PacketProcessUtils.PACKET_PROCESS_STATUS_UPLOAD ||
-                mProcType == PacketProcessUtils.PACKET_PROCESS_ECHO_TEST ) {
-            UnpackDefault unpackDefault = new UnpackDefault(mRecePacket, mRecePacket.length);
-            mResponse = unpackDefault.getResponse();
-            mResponseDetail = unpackDefault.getResponseDetail();
 
-        } else */
-                if (mProcType == PacketProcessUtils.PACKET_PROCESS_PURCHASE) {
-                    UnpackPurchase unpackpurchase = new UnpackPurchase(mRecePacket, mRecePacket.length);
-                    mResponse = unpackpurchase.getResponse();
-                    mResponseDetail = unpackpurchase.getResponseDetail();
-                    mField47 = unpackpurchase.getField47();
-                    ////////////////////////////////////////////////////////////
-
-                }
-            }
-        }
+   }
 
     public String getResponse() {
         return mResponse;

@@ -1101,10 +1101,10 @@ public class SAMA_TMS implements Serializable
 
                 // todo PosApplication.getApp().oGPosTransaction.card_scheme=card scheme here
 
-                if (PosApplication.getApp().oGPosTransaction.card_scheme.m_sCard_Scheme_ID =="P1")
-                    PosApplication.getApp().oGPosTransaction.is_mada=true;
+                if (PosApplication.getApp().oGPosTransaction.m_card_scheme.m_sCard_Scheme_ID =="P1")
+                    PosApplication.getApp().oGPosTransaction.m_is_mada=true;
                 else
-                    PosApplication.getApp().oGPosTransaction.is_mada=false;
+                    PosApplication.getApp().oGPosTransaction.m_is_mada=false;
 
                 return 0;
             }
@@ -1121,10 +1121,10 @@ public class SAMA_TMS implements Serializable
 
                 // todo PosApplication.getApp().oGPosTransaction.card_scheme=card scheme here
 
-                if (PosApplication.getApp().oGPosTransaction.card_scheme.m_sCard_Scheme_ID =="P1")
-                    PosApplication.getApp().oGPosTransaction.is_mada=true;
+                if (PosApplication.getApp().oGPosTransaction.m_card_scheme.m_sCard_Scheme_ID =="P1")
+                    PosApplication.getApp().oGPosTransaction.m_is_mada=true;
                 else
-                    PosApplication.getApp().oGPosTransaction.is_mada=false;
+                    PosApplication.getApp().oGPosTransaction.m_is_mada=false;
 
                 return 0;
             }

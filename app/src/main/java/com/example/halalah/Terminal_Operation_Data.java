@@ -22,6 +22,8 @@ public class Terminal_Operation_Data {
                 m_sCurrencycode="0628";
                 m_sCountrycode="0628";
                 TerminalType=22;
+                saf_info=new SAF_Info();
+                g_NumberOfCardSchemes = 10;
         }
         public int TerminalType;
         public  boolean m_bregistered;
@@ -40,7 +42,12 @@ public class Terminal_Operation_Data {
         public boolean reversal_flg;
         public boolean Reconsile_flag;   // to force reconciliation
         public int MaxConRetry;   //max connection Retry count
-
+        public  int g_NumberOfCardSchemes;    /* Number of supported card scheme is 10 */
+        public  CardSchemeTotals [] g_TerminalTotals = new CardSchemeTotals[g_NumberOfCardSchemes]; /* Terminal Totals */
+        double    m_dTermReconciliationAmount;  // Adding All approved/accepted transaction amount
+        int       m_iTermApprovedTrxCounter;    // Counter of approved transaction usded to for checking number of approved trx against reconcilation trx limit
 
 
 }
+
+

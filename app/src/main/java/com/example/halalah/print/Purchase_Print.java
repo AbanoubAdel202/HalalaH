@@ -250,7 +250,7 @@ public class Purchase_Print {
         mPrintObjs.add(getPrintItemObjs("Amount:"+PosApplication.getApp().oGPosTransaction.m_sTrxAmount,PrinterConstant.FontSize.LARGE,true,PrintItemObj.ALIGN.LEFT));
         mPrintObjs.add(getPrintItemObjs(PosApplication.getApp().oGPosTransaction.m_sPAN,PrinterConstant.FontSize.LARGE,true,PrintItemObj.ALIGN.CENTER));
         mPrintObjs.add(getPrintItemObjs("RRN:"+PosApplication.getApp().oGPosTransaction.m_sRRNumber,PrinterConstant.FontSize.NORMAL,true,PrintItemObj.ALIGN.LEFT));
-        mPrintObjs.add(getPrintItemObjs(PosApplication.getApp().oGPosTransaction.card_scheme.m_sCard_Scheme_Name_English+"      "+PosApplication.getApp().oGPosTransaction.m_enmTrxCVM.toString() ,PrinterConstant.FontSize.NORMAL,true,PrintItemObj.ALIGN.LEFT));
+        mPrintObjs.add(getPrintItemObjs(PosApplication.getApp().oGPosTransaction.m_card_scheme.m_sCard_Scheme_Name_English+"      "+PosApplication.getApp().oGPosTransaction.m_enmTrxCVM.toString() ,PrinterConstant.FontSize.NORMAL,true,PrintItemObj.ALIGN.LEFT));
 
         mPrintObjs.add(getPrintItemObjs("------------------------------",PrinterConstant.FontSize.NORMAL,true,PrintItemObj.ALIGN.CENTER));
         mPrintObjs.add(getPrintItemObjs("thank you for using Hala",PrinterConstant.FontSize.NORMAL,false,PrintItemObj.ALIGN.CENTER));

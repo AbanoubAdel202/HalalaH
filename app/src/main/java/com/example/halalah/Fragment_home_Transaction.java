@@ -93,7 +93,7 @@ View root =inflater.inflate(R.layout.fragment_home_transaction, container, false
                  * SAMA TMS
                  */
 
-                PosApplication.getApp().oGPosTransaction.card_scheme.m_sTransactions_Allowed="111111111";
+                PosApplication.getApp().oGPosTransaction.m_card_scheme.m_sTransactions_Allowed="111111111";
                 PosApplication.getApp().oGPosTransaction.m_sLocalTrxDateTime= ExtraUtil.Get_Local_Date_Time();
                 /**********************************/
 

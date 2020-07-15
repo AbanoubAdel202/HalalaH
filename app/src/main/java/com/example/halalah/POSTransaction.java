@@ -12,6 +12,7 @@ import com.example.halalah.secure.DUKPT_KEY;
 import com.example.halalah.util.ExtraUtil;
 
 import java.lang.reflect.Array;
+import java.util.Locale;
 
 /** Header POSTransaction
 	\Class Name: POSTransaction
@@ -29,8 +30,9 @@ public class POSTransaction {
 
 
 
-    public boolean is_mada;
-    public boolean is_final;
+    public boolean m_is_mada;
+    public boolean m_is_final;
+    public Boolean m_bIsOfflineTrx;
     private int reversal_status;
 
 
@@ -78,8 +80,8 @@ public class POSTransaction {
     // Constractur
     public POSTransaction()
     {
-            is_mada=false;
-            is_final=false;
+            m_is_mada=false;
+            m_is_final=false;
         // Transaction Data Elements as per SP Terminal interface specification document 6.0.9
         	m_sPAN=null;								/* DE2   – Primary account Number -Size 19  –Reconcilation value would be Terminal ID as is present in DE 41*/
         	m_sProcessCode=null;	    				/* DE3   – Process Code  –Size 6 */
@@ -120,7 +122,7 @@ public class POSTransaction {
 
             m_RequestISOMsg=new ISO8583();                  /* ISO8583 Request message to be sent constractor*/
             m_ResponseISOMsg=new ISO8583();         /* ISO8583 Response message constractor*/
-            card_scheme = new Card_Scheme();                /* card scheme for the card used in this transaction */
+        m_card_scheme = new Card_Scheme();                /* card scheme for the card used in this transaction */
     }
 
 
@@ -181,8 +183,8 @@ public class POSTransaction {
     public TranscationType   m_enum_OrigTRxtype;            /* Original Transaction Type*/
     /*********************************************/
 
-   public Card_Scheme card_scheme;
-       public String m_sAID;                             // AID for the card ICC
+   public Card_Scheme m_card_scheme;
+   public String      m_sAID;                             // AID for the card ICC
 
 
 //    Terminal Status Data (REQUEST), to be used on DE62
@@ -253,12 +255,52 @@ public class POSTransaction {
         return 0;
     }
 
-    public String ComposeReconciliationTotals(int iNumberOfCardScheme , CardSchemeTotals[] TotalsArray )
+    public String ComposeReconciliationTotals(int iNumberOfCardScheme , CardSchemeTotals[] oTotalsArray )
     {
-        //getting Purchase total
+       /**
+        01-02 2 Number of Card Schemes (values from
+        01 to 10)
+        03-98 96 Card Scheme Totals – 01
+        99-194 96 Card Scheme Totals – 02
+        195-290 96 Card Scheme Totals – 03
+        291-386 96 Card Scheme Totals – 04
+        387-482 96 Card Scheme Totals – 05
+        483-578 96 Card Scheme Totals – 06
+        579-674 96 Card Scheme Totals – 07
+        675-770 96 Card Scheme Totals – 08
+        771-866 96 Card Scheme Totals – 09
+        867-962 96 Card Scheme Totals – 10
+        */
+        String stotalsDE124=null;
+
+        stotalsDE124.concat(String.format(Locale.ENGLISH,"%02D",iNumberOfCardScheme));
+       /* if(iNumberOfCardScheme>99)
+            return "number of cards is more than 99";
+        if(iNumberOfCardScheme>9)
+            stotalsDE124.concat(Integer.toString(iNumberOfCardScheme));  // number of cards from 10 to 99
+        else                                                            //number of cards from 0 to 9
+            stotalsDE124.concat("0"+ iNumberOfCardScheme);
+*/
 
 
-        return "0";
+
+        for(int i=0; i<iNumberOfCardScheme;i++) {
+            stotalsDE124.concat(oTotalsArray[i].m_szCardSchmID.toString());            /* Card scheme ID*/
+            stotalsDE124.concat(oTotalsArray[i].m_szCardSchemeAcqID.toString());       /* Card Scheme Acquirer ID*/
+            // Trx Totals
+            String.format(Locale.ENGLISH,"%010D",oTotalsArray[i].m_lDebitCount);
+            stotalsDE124.concat(String.format(Locale.ENGLISH,"%010D",oTotalsArray[i].m_lDebitCount));            /* Debit Count*/
+            stotalsDE124.concat(String.format(Locale.ENGLISH,"%015D",oTotalsArray[i].m_dDebitAmount));           /* Debit Amount*/
+            stotalsDE124.concat(String.format(Locale.ENGLISH,"%010D",oTotalsArray[i].m_lCreditCount));           /* Credit Count*/
+            stotalsDE124.concat(String.format(Locale.ENGLISH,"%015D",oTotalsArray[i].m_dCreditAmount));          /* Credit Amount*/
+            stotalsDE124.concat(String.format(Locale.ENGLISH,"%015D",oTotalsArray[i].m_dCashBackAmount));        /* Cash Back Amount*/
+            stotalsDE124.concat(String.format(Locale.ENGLISH,"%015D",oTotalsArray[i].m_dCashAdvanceAmount));     /* Cash Advance Amount*/
+            stotalsDE124.concat(String.format(Locale.ENGLISH,"%010D",oTotalsArray[i].m_lAuthorisationCount));    /* Authorisation Count*/
+        }
+
+
+
+        return stotalsDE124;
     }
     public String ComposeICCTags(CardType enmCard)
     {
@@ -1149,6 +1191,7 @@ public class POSTransaction {
 
 
         // Set Reconciliation date
+        m_sReconDateTime=ExtraUtil.GetDate_Time();
         m_RequestISOMsg.SetDataElement(28, m_sReconDateTime.getBytes(), m_sReconDateTime.length());
         Log.i(TAG, " DE 28 [m_sReconDateTime]= " + m_sReconDateTime+"Length ="+m_sReconDateTime.length());
 
@@ -1187,6 +1230,7 @@ public class POSTransaction {
         Log.i(TAG, " DE 62 [m_sTerminalStatus]= " + m_sTerminalStatus+"Length ="+m_sTerminalStatus.length());
 
         //Set MADA POS Terminal Reconciliation Totals
+        m_sReconciliationTotals=ComposeReconciliationTotals(PosApplication.getApp().oGTerminal_Operation_Data.g_NumberOfCardSchemes,PosApplication.getApp().oGTerminal_Operation_Data.g_TerminalTotals);
         m_RequestISOMsg.SetDataElement(124, m_sReconciliationTotals.getBytes(), m_sReconciliationTotals.length());
         Log.i(TAG, " DE 124 [m_sReconciliationTotals]= " + m_sReconciliationTotals+"Length ="+m_sReconciliationTotals.length());
 
@@ -1194,7 +1238,6 @@ public class POSTransaction {
         ComposeMACBlockData(m_enmTrxType);
         m_RequestISOMsg.SetDataElement(128, m_sTrxMACBlock.getBytes(), m_sTrxMACBlock.length());
         Log.i(TAG, " DE 124 [m_sTrxMACBlock]= " + m_sTrxMACBlock+"Length ="+m_sTrxMACBlock.length());
-
 
 
         return 0;
@@ -1921,7 +1964,7 @@ public class POSTransaction {
         903000 Authorisation Only from Credit Card Account
 */
 
-        if(card_scheme.m_sCard_Scheme_ID=="P1") {
+        if(m_card_scheme.m_sCard_Scheme_ID=="P1") {
             switch (m_enmTrxType) {
                 case PURCHASE:
                 case PURCHASE_ADVICE:
@@ -1953,7 +1996,7 @@ public class POSTransaction {
                     PosApplication.getApp().oGPosTransaction.m_sProcessCode="500000";
                     break;
                 case CASH_ADVANCE:
-                    switch(card_scheme.m_sCard_Scheme_ID)
+                    switch(m_card_scheme.m_sCard_Scheme_ID)
                     {
                         case"P1":
                             PosApplication.getApp().oGPosTransaction.m_sProcessCode="010000";
@@ -2578,9 +2621,9 @@ public class POSTransaction {
                 }*/
                 break;
             case PURCHASE_ADVICE:
-                if(is_mada & (m_enmTrxCardType==CardType.CTLS|m_enmTrxCardType==CardType.MAG|m_enmTrxCardType==CardType.ICC|m_enmTrxCardType==CardType.MANUAL)) //MADA  if fallback is not exist will remove all entries and it will be for allmada
+                if(m_is_mada & (m_enmTrxCardType==CardType.CTLS|m_enmTrxCardType==CardType.MAG|m_enmTrxCardType==CardType.ICC|m_enmTrxCardType==CardType.MANUAL)) //MADA  if fallback is not exist will remove all entries and it will be for allmada
                 {
-                    if (is_final)
+                    if (m_is_final)
                     fc = Function_Code.Previously_approved_authorisation_amount_same;
                     else
                     fc = Function_Code.Previously_approved_authorisation_amount_differs;
@@ -2588,7 +2631,7 @@ public class POSTransaction {
                 else  //ICS
                 {
                     if (m_enmTrxCardType==CardType.MANUAL) {
-                        if (is_final)
+                        if (m_is_final)
                             fc = Function_Code.Previously_approved_authorisation_amount_same;
                         else
                             fc = Function_Code.Previously_approved_authorisation_amount_differs;
@@ -2597,12 +2640,12 @@ public class POSTransaction {
                 }
 
             case AUTHORISATION:
-                if(is_mada & (m_enmTrxCardType==CardType.CTLS|m_enmTrxCardType==CardType.MAG|m_enmTrxCardType==CardType.ICC)) //MADA
+                if(m_is_mada & (m_enmTrxCardType==CardType.CTLS|m_enmTrxCardType==CardType.MAG|m_enmTrxCardType==CardType.ICC)) //MADA
                 fc=Function_Code.Original_authorisation_amount_estimated;//101
                 else //ICS
                 fc=Function_Code.Original_authorisation_amount_accurate;
             case AUTHORISATION_VOID:
-                if(is_mada) //MADA
+                if(m_is_mada) //MADA
                         fc = Function_Code.Original_authorisation_amount_estimated;  // Original authorisation – amount estimated (used for mada preauthorizations and mada pre-authorization full or partial voids)
                  else
                         fc = Function_Code.Original_authorisation_amount_accurate;
@@ -2626,7 +2669,7 @@ public class POSTransaction {
 
                 break;
             case SADAD_BILL:
-                if(is_mada)
+                if(m_is_mada)
                     fc = Function_Code.Original_financial_request_advice_Bill_Payment;  // todo check fees also
                 else   //ICS
                     fc = Function_Code.Original_authorisation_Bill_Payment;
@@ -2791,7 +2834,7 @@ public class POSTransaction {
         switch(m_enmTrxType)
         {
             case PURCHASE:
-                      switch(card_scheme.m_sCard_Scheme_ID)
+                      switch(m_card_scheme.m_sCard_Scheme_ID)
                       {
                           case "P1":            // For MADA card
 
@@ -2841,7 +2884,7 @@ public class POSTransaction {
                       }
                 break;
             case PURCHASE_ADVICE:
-                switch(card_scheme.m_sCard_Scheme_ID)
+                switch(m_card_scheme.m_sCard_Scheme_ID)
                 {
                     case "P1":            // For MADA card
 
@@ -2892,7 +2935,7 @@ public class POSTransaction {
                 break;
 
             case PURCHASE_WITH_NAQD:
-                switch(card_scheme.m_sCard_Scheme_ID)
+                switch(m_card_scheme.m_sCard_Scheme_ID)
                 {
                     case "P1":            // For MADA card
 
@@ -2943,7 +2986,7 @@ public class POSTransaction {
                 break;
 
             case REFUND:
-                switch(card_scheme.m_sCard_Scheme_ID)
+                switch(m_card_scheme.m_sCard_Scheme_ID)
                 {
                     case "P1":            // For MADA card
 
@@ -2973,7 +3016,7 @@ public class POSTransaction {
                         switch (m_enmTrxCardType) {
                             case ICC:
                             case CTLS:
-                                if(PosApplication.getApp().oGPosTransaction.card_scheme.m_sOffline_Refund_PreAuthorization_Capture_Service_Indicator=="1")
+                                if(PosApplication.getApp().oGPosTransaction.m_card_scheme.m_sOffline_Refund_PreAuthorization_Capture_Service_Indicator=="1")
                                 mrc=Message_reason_code.Terminal_processed;
                                 else
                                     mrc=Message_reason_code.ICC_or_contactless_application_processed;
@@ -2994,7 +3037,7 @@ public class POSTransaction {
                 }
                 break;
             case AUTHORISATION:
-                switch(card_scheme.m_sCard_Scheme_ID)
+                switch(m_card_scheme.m_sCard_Scheme_ID)
                 {
                     case "P1":            // For MADA card
 
@@ -3044,7 +3087,7 @@ public class POSTransaction {
                 }
                 break;
             case SADAD_BILL:
-                switch(card_scheme.m_sCard_Scheme_ID)
+                switch(m_card_scheme.m_sCard_Scheme_ID)
                 {
                     case "P1":            // For MADA card
 
@@ -3135,7 +3178,7 @@ public class POSTransaction {
 
                 break;
             case CASH_ADVANCE:
-                switch(card_scheme.m_sCard_Scheme_ID)
+                switch(m_card_scheme.m_sCard_Scheme_ID)
                 {
                     case "P1":            // For MADA card
 
@@ -3185,7 +3228,7 @@ public class POSTransaction {
                 }
                 break;
             case AUTHORISATION_VOID:
-                switch(card_scheme.m_sCard_Scheme_ID)
+                switch(m_card_scheme.m_sCard_Scheme_ID)
                 {
                     case "P1":            // For MADA card
 
@@ -3227,7 +3270,7 @@ public class POSTransaction {
 
                 break;
             case AUTHORISATION_EXTENSION:
-                switch(card_scheme.m_sCard_Scheme_ID)
+                switch(m_card_scheme.m_sCard_Scheme_ID)
                 {
                     case "P1":            // For MADA card
 
@@ -3412,10 +3455,10 @@ public class POSTransaction {
                 switch (m_enmTrxType) {
                     case SADAD_BILL:
                         //todo Sadad data addition
-                        m_sCardSchemeSponsorID = PosApplication.getApp().oGPosTransaction.card_scheme.m_sCard_Scheme_Acquirer_ID + PosApplication.getApp().oGPosTransaction.card_scheme.m_sCard_Scheme_ID;
+                        m_sCardSchemeSponsorID = PosApplication.getApp().oGPosTransaction.m_card_scheme.m_sCard_Scheme_Acquirer_ID + PosApplication.getApp().oGPosTransaction.m_card_scheme.m_sCard_Scheme_ID;
                         break;
                     default:
-                        m_sCardSchemeSponsorID = PosApplication.getApp().oGPosTransaction.card_scheme.m_sCard_Scheme_Acquirer_ID + PosApplication.getApp().oGPosTransaction.card_scheme.m_sCard_Scheme_ID;
+                        m_sCardSchemeSponsorID = PosApplication.getApp().oGPosTransaction.m_card_scheme.m_sCard_Scheme_Acquirer_ID + PosApplication.getApp().oGPosTransaction.m_card_scheme.m_sCard_Scheme_ID;
                         break;
 
 
@@ -3453,7 +3496,7 @@ public class POSTransaction {
         DE 33 Forwarding Institution Identification Code are not
         available, the length of these sub-fields is set to zero.*/
 
-        if((card_scheme.m_sCard_Scheme_ID!="P1" & m_enmTrxType==TranscationType.REFUND)  |  m_enmTrxType==TranscationType.REVERSAL | (card_scheme.m_sCard_Scheme_ID!="P1" & m_enmTrxType==TranscationType.AUTHORISATION_ADVICE)) {
+        if((m_card_scheme.m_sCard_Scheme_ID!="P1" & m_enmTrxType==TranscationType.REFUND)  |  m_enmTrxType==TranscationType.REVERSAL | (m_card_scheme.m_sCard_Scheme_ID!="P1" & m_enmTrxType==TranscationType.AUTHORISATION_ADVICE)) {
 
             if (m_sOrigSTAN == null)
                 m_sOrigSTAN="000000";
@@ -3477,7 +3520,7 @@ public class POSTransaction {
            DE 37 Retrieval Reference Number of the original transaction as keyed by the Retailer.length 12
           Original local transaction date from original transaction receipt. Default value of ‘000000’ if unavailable. length 6
          */
-        if (card_scheme.m_sCard_Scheme_ID =="P1" & (m_enmTrxType==TranscationType.REFUND |m_enmTrxType==TranscationType.AUTHORISATION_EXTENSION|m_enmTrxType==TranscationType.AUTHORISATION_EXTENSION|m_enmTrxType==TranscationType.AUTHORISATION_ADVICE|m_enmTrxType==TranscationType.AUTHORISATION_VOID))
+        if (m_card_scheme.m_sCard_Scheme_ID =="P1" & (m_enmTrxType==TranscationType.REFUND |m_enmTrxType==TranscationType.AUTHORISATION_EXTENSION|m_enmTrxType==TranscationType.AUTHORISATION_EXTENSION|m_enmTrxType==TranscationType.AUTHORISATION_ADVICE|m_enmTrxType==TranscationType.AUTHORISATION_VOID))
         {
             if(m_sOrigLocalTrxDate==null)
                 m_sOrigLocalTrxDate="000000";

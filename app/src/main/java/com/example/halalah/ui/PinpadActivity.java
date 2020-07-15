@@ -279,7 +279,7 @@ public class PinpadActivity extends Activity {
             if (isOnline) {
                 //socket connection
                 Bundle bundle = new Bundle();
-                if(PosApplication.getApp().oGPosTransaction.is_mada) //MADA
+                if(PosApplication.getApp().oGPosTransaction.m_is_mada) //MADA
                 {
                     switch (PosApplication.getApp().oGPosTransaction.m_enmTrxType) {
 
@@ -309,7 +309,7 @@ public class PinpadActivity extends Activity {
                             case REFUND:
 
                                 bundle.putInt(PacketProcessUtils.PACKET_PROCESS_TYPE, PacketProcessUtils.PACKET_PROCESS_REFUND);
-                                if(PosApplication.getApp().oGPosTransaction.card_scheme.m_sOffline_Refund_PreAuthorization_Capture_Service_Indicator=="1") {
+                                if(PosApplication.getApp().oGPosTransaction.m_card_scheme.m_sOffline_Refund_PreAuthorization_Capture_Service_Indicator=="1") {
                                     SAF_Info.SAVE_IN_SAF(PosApplication.getApp().oGPosTransaction);
 
                                     CardManager.getInstance().startActivity(PinpadActivity.this, bundle, ShowResultActivity.class);

@@ -12,6 +12,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.halalah.POSTransaction;
+import com.example.halalah.POS_MAIN;
 import com.example.halalah.PosApplication;
 import com.example.halalah.R;
 import com.example.halalah.SAF_Info;
@@ -96,54 +97,33 @@ public class PacketProcessActivity extends Activity implements SendReceiveListen
 
     private void getPacketAndSend() {
 
-        mSendPacket = BCDASCII.hexStringToBytes("038460000006038020000000003939303630353035353333363030303030303030303038333030303030303030303030303033303030303030303039393036303530353533333630303030303030303030300210303C04C10EC68813009000000000000008000031153530091949120210000608999900013135333533303230353030323230343030313030303030303030303839393036303530353533333630303000885F573131313137303333373030303030303938363202BDADCEF7C5A9D0C5C1AABACFC9E7202002343832313030303102490230025F5109BDBBD2D7B3C9B9A6025F551530303030303102303030303331023039313902300206118F0382025E10B0E6B1BE3A3134303432390AC9CCBBA7C3FB3ABDF8CFCDC3C5B5EA5FB2E2CAD4330AC9CCBBA7BAC53A3939303630353035353333363030300AD6D5B6CBBAC53A30303030303030382020B2D9D7F7D4B13A30310AB7A2BFA8BBFAB9B93ABDADCEF7C5A9D0C5C1AABACFC9E720200ACAD5B5A5BBFAB9B93A34383231303030310A7EBFA8BAC53A3632323638322A2A2A2A2A2A2A2A2A3732343020537E0A7EBDBBD2D7C0E0D0CD3ACFFBB7D17E0AD3D0D0A7C6DA3A34393132202020C5FAB4CEBAC53A3030303030310AC6BED6A4BAC53A30303030333120CADAC8A8C2EB3A3230343030310ABDBBD2D7B2CEBFBCBAC53A3135333533303230353030320ACAB1BCE43A323031372D30392D31392031353A33353A33300A7EBDF0B6EE3A524D4220302E30387E0A2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D0ABDBBD2D7B5A5BAC53A3131313730333337303030303030393836322020420A2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D0A02117EB3D6BFA8C8CBC7A9C3FB313A7E0A0A0AB1BEC8CBC8B7C8CFD2D4C9CFBDBBD2D72CCDACD2E2BDABC6E4BCC6C8EBB1BED5CBBBA70A0212CDA8C1AABFCDBBA7BAC53A3939303630353035353333363030300A7EB3D6BFA8C8CBC7A9C3FB3A7E0A0A0AB1BEC8CBC8B7C8CFD2D4C9CFBDBBD2D72CCDACD2E2BDABC6E4BCC6C8EBB1BED5CBBBA70A0213CDA8C1AABFCDBBA7BAC53A3939303630353035353333363030300A7EB3D6BFA8C8CBC7A9C3FB3A7E0A0A0AB1BEC8CBC8B7C8CFD2D4C9CFBDBBD2D72CCDACD2E2BDABC6E4BCC6C8EBB1BED5CBBBA70A02313439260000000000000000192200000100050000000000034355504243343337323036");
+       // mSendPacket = BCDASCII.hexStringToBytes("038460000006038020000000003939303630353035353333363030303030303030303038333030303030303030303030303033303030303030303039393036303530353533333630303030303030303030300210303C04C10EC68813009000000000000008000031153530091949120210000608999900013135333533303230353030323230343030313030303030303030303839393036303530353533333630303000885F573131313137303333373030303030303938363202BDADCEF7C5A9D0C5C1AABACFC9E7202002343832313030303102490230025F5109BDBBD2D7B3C9B9A6025F551530303030303102303030303331023039313902300206118F0382025E10B0E6B1BE3A3134303432390AC9CCBBA7C3FB3ABDF8CFCDC3C5B5EA5FB2E2CAD4330AC9CCBBA7BAC53A3939303630353035353333363030300AD6D5B6CBBAC53A30303030303030382020B2D9D7F7D4B13A30310AB7A2BFA8BBFAB9B93ABDADCEF7C5A9D0C5C1AABACFC9E720200ACAD5B5A5BBFAB9B93A34383231303030310A7EBFA8BAC53A3632323638322A2A2A2A2A2A2A2A2A3732343020537E0A7EBDBBD2D7C0E0D0CD3ACFFBB7D17E0AD3D0D0A7C6DA3A34393132202020C5FAB4CEBAC53A3030303030310AC6BED6A4BAC53A30303030333120CADAC8A8C2EB3A3230343030310ABDBBD2D7B2CEBFBCBAC53A3135333533303230353030320ACAB1BCE43A323031372D30392D31392031353A33353A33300A7EBDF0B6EE3A524D4220302E30387E0A2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D0ABDBBD2D7B5A5BAC53A3131313730333337303030303030393836322020420A2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D0A02117EB3D6BFA8C8CBC7A9C3FB313A7E0A0A0AB1BEC8CBC8B7C8CFD2D4C9CFBDBBD2D72CCDACD2E2BDABC6E4BCC6C8EBB1BED5CBBBA70A0212CDA8C1AABFCDBBA7BAC53A3939303630353035353333363030300A7EB3D6BFA8C8CBC7A9C3FB3A7E0A0A0AB1BEC8CBC8B7C8CFD2D4C9CFBDBBD2D72CCDACD2E2BDABC6E4BCC6C8EBB1BED5CBBBA70A0213CDA8C1AABFCDBBA7BAC53A3939303630353035353333363030300A7EB3D6BFA8C8CBC7A9C3FB3A7E0A0A0AB1BEC8CBC8B7C8CFD2D4C9CFBDBBD2D72CCDACD2E2BDABC6E4BCC6C8EBB1BED5CBBBA70A02313439260000000000000000192200000100050000000000034355504243343337323036");
+
+        mSendPacket=mPackPacket.getSendPacket();
         CommunicationsHandler communicationsHandler = CommunicationsHandler.getInstance(new CommunicationInfo(this));
         communicationsHandler.setSendReceiveListener(this);
         communicationsHandler.sendReceive(mSendPacket);
     }
 
     @Override
-    public void onSuccess(byte[] receivedPacket) {
-        Log.i(TAG, "onSocketProcessEnd");
+    public void onSuccess(byte[] receivedPacket)
+    {
+        Log.i(TAG, "onSuccess");
 
-        if (mBundle.getBoolean("is_need_proc", false)) {
-            mHandle.removeMessages(MSG_TIME_UPDATE);
-            setResult(1);
-            finish();
-        } else {
-            if (receivedPacket != null) {
-                mRecePacket = receivedPacket;
+        if (receivedPacket != null)
+        {
+            mRecePacket = receivedPacket;
 
-                String isNeedProcString = isNeedProcessReq(mRecePacket);
+            PerfomTermHostResponseFlow(PacketProcessUtils.SUCCESS);
 
-                if (mProcType != PacketProcessUtils.PACKET_PROCESS_ONLINE_INIT && isNeedProcString != null) {
-                    Intent intent = new Intent(this, PacketProcessActivity.class);
-                    Bundle bundle = new Bundle();
-                    bundle.putBoolean("is_need_proc", true);
-                  /*  if (isNeedProcString.equals("1")) { //下发终端参数
-                        bundle.putInt(PacketProcessUtils.PACKET_PROCESS_TYPE, PacketProcessUtils.PACKET_PROCESS_PARAM_TRANS);
-                    } else if (isNeedProcString.equals("2")) { //上传终端状态信息
-                        bundle.putInt(PacketProcessUtils.PACKET_PROCESS_TYPE, PacketProcessUtils.PACKET_PROCESS_STATUS_UPLOAD);
-                    } else if (isNeedProcString.equals("3")) { //重新签到
-                        bundle.putInt(PacketProcessUtils.PACKET_PROCESS_TYPE, PacketProcessUtils.PACKET_PROCESS_SIGN_UP);
-                    } else if (isNeedProcString.equals("4")) { //公钥下载
-                        bundle.putInt(PacketProcessUtils.PACKET_PROCESS_TYPE, PacketProcessUtils.PACKET_PROCESS_IC_CAPK_DOWNLOAD);
-                    } else if (isNeedProcString.equals("5")) { //参数下载
-                        bundle.putInt(PacketProcessUtils.PACKET_PROCESS_TYPE, PacketProcessUtils.PACKET_PROCESS_IC_PARA_DOWNLOAD);
-                    }*/
-                    intent.putExtras(bundle);
-                    startActivityForResult(intent, 100);
-                } else {
-                    processPacket(PacketProcessUtils.SUCCESS);
-                }
-            } else {
-                showResult(mResponse, mResponseDetail, PacketProcessUtils.SUCCESS);
-            }
         }
+
+
     }
 
     @Override
-    public void onFailure(int errorCode){
+    public void onFailure(int errorCode)
+    {
         showResult(mResponse, mResponseDetail, errorCode);
     }
 
@@ -153,37 +133,18 @@ public class PacketProcessActivity extends Activity implements SendReceiveListen
         Toast.makeText(this, "CONNECTION STATUS " + connectionStatus, Toast.LENGTH_SHORT).show();
     }
 
-    private String isNeedProcessReq(byte[] recPacket) {
 
-        String tempStr = null;
-        if (recPacket != null) {
-            int srcDataLen = recPacket.length;
-            UnpackUtils unpack = new UnpackUtils();
-            ISO8583 mIso = unpack.UnpackFront(recPacket, srcDataLen);
-            if (mIso == null)
-                return null;
 
-            tempStr = BCDASCII.fromBCDToASCIIString(recPacket, 2 + 5 + 2, 2, false);
-            Log.i(TAG, "tempStr: " + tempStr);
-            tempStr = tempStr.substring(1);
-            if (tempStr.equals("0")) {
-                return null;
-            } else if (tempStr.equals("7")) { //The processing center informs the terminal to clear the management statistical data items 0
-                return null;
-            } else if (tempStr.equals("8")) { //The key update request downloaded by the processing center allows the terminal to initiate the key update operation
-                return null;
-            } else if (tempStr.equals("6")) { //Download terminal program
-                return null;
-            }
-        }
-        return tempStr;
-    }
+    private void PerfomTermHostResponseFlow(int errReason) {
 
-    private void processPacket(int errReason) {
+
+        POS_MAIN.PerfomTermHostResponseFlow(mRecePacket,errReason);
+        CommunicationsHandler.getInstance(mCommunicationInfo).closeConnection();
+
+
+        // old flow
         Bundle data = new Bundle();
-
-
-        mUnpackPacket.procRecePacket(this, mRecePacket, data);
+        mUnpackPacket.Process_Rece_Packet(this, mRecePacket, data);
         mResponse = mUnpackPacket.getResponse();
         mResponseDetail = mUnpackPacket.getResponseDetail();
 
@@ -203,33 +164,33 @@ public class PacketProcessActivity extends Activity implements SendReceiveListen
             } else if (mProcType == PacketProcessUtils.PACKET_PROCESS_PURCHASE && (mResponse != null) && (mResponse.equals("00"))) {
                 //todo if comulative limit exeeded host response 196 we need to openpinpad for entering pin and resend transaction again
                 byte[] field47 = mUnpackPacket.getField47();
-                showConsumeSuccResult(mResponse, mResponseDetail, field47);
+                Display_printResult(mResponse, mResponseDetail, field47);
 
-                if(!PosApplication.getApp().oGPosTransaction.is_mada)
+                if(!PosApplication.getApp().oGPosTransaction.m_is_mada)
                 SAF_Info.SAVE_IN_SAF(PosApplication.getApp().oGPosTransaction);
 
             }
             else if(mProcType == PacketProcessUtils.PACKET_PROCESS_AUTHORISATION && (mResponse != null) && (mResponse.equals("00")))
             {
-                if(!PosApplication.getApp().oGPosTransaction.is_mada) {
+                if(!PosApplication.getApp().oGPosTransaction.m_is_mada) {
                     SAF_Info.SAVE_IN_SAF(PosApplication.getApp().oGPosTransaction);
                 }
                 else
                 {
                     byte[] field47 = mUnpackPacket.getField47();
-                    showConsumeSuccResult(mResponse, mResponseDetail, field47);
+                    Display_printResult(mResponse, mResponseDetail, field47);
                 }
 
             }
             else if(mProcType == PacketProcessUtils.PACKET_PROCESS_AUTHORISATION_ADVICE && (mResponse != null) && (mResponse.equals("00")))
             {
-                if(!PosApplication.getApp().oGPosTransaction.is_mada) {
+                if(!PosApplication.getApp().oGPosTransaction.m_is_mada) {
                     SAF_Info.SAVE_IN_SAF(PosApplication.getApp().oGPosTransaction);
                 }
                 else
                 {
                     byte[] field47 = mUnpackPacket.getField47();
-                    showConsumeSuccResult(mResponse, mResponseDetail, field47);
+                    Display_printResult(mResponse, mResponseDetail, field47);
                 }
 
             }
@@ -261,7 +222,7 @@ public class PacketProcessActivity extends Activity implements SendReceiveListen
         }
     };
 
-    private void showConsumeSuccResult(String response, String resDetail, byte[] printDetail) {
+    private void Display_printResult(String response, String resDetail, byte[] printDetail) {
         Log.i(TAG, "showSuccessResult(), response = " + response + ", resDetail = " + resDetail + ", printDetail = " + printDetail);
         if (mProcType == PacketProcessUtils.PACKET_PROCESS_PURCHASE &&
                 PosApplication.getApp().oGPosTransaction.m_enmTrxCardType != POSTransaction.CardType.MAG) {
@@ -276,20 +237,7 @@ public class PacketProcessActivity extends Activity implements SendReceiveListen
         this.finish();
     }
 
-    private void showScanSuccResult(String response, String resDetail, byte[] printDetail) {
-        Log.i(TAG, "showSuccessResult(), response = " + response + ", resDetail = " + resDetail + ", printDetail = " + printDetail);
-        if (mProcType == PacketProcessUtils.PACKET_PROCESS_PURCHASE &&
-                PosApplication.getApp().oGPosTransaction.m_enmTrxCardType != POSTransaction.CardType.MAG) {
-            CardManager.getInstance().setRequestOnline(true, mResponse, PosApplication.getApp().oGPosTransaction.m_sICCRelatedTags);
-        }
-        mHandle.removeMessages(MSG_TIME_UPDATE);
-        /*Intent intent = new Intent(this, ScanSuccessActivity.class);
-        intent.putExtra("result_response", response);
-        intent.putExtra("result_resDetail", resDetail);
-        intent.putExtra("result_field47", printDetail);
-        startActivity(intent);*/
-        this.finish();
-    }
+
 
     private void showResult(String response, String resDetail, int errReason) {
         Log.i(TAG, "showResult(), response = " + response + ", resDetail = " + resDetail + ", errReason = " + errReason);
@@ -310,7 +258,7 @@ public class PacketProcessActivity extends Activity implements SendReceiveListen
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == 100) {
-            processPacket(0);
+            PerfomTermHostResponseFlow(0);
         }
     }
 

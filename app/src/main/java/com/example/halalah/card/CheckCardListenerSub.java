@@ -72,7 +72,7 @@ public class CheckCardListenerSub extends AidlCheckCardListener.Stub {
             POS_MAIN.supervisor_pass_required();
             CardManager.getInstance().setConfirmCardInfo(true);
             Intent intent = new Intent(mContext, PinpadActivity.class);
-            if(PosApplication.getApp().oGPosTransaction.card_scheme.m_sCheck_Service_Code=="1")  //if service code check is enabled so it's higher priority than TMS cardholder Authentication
+            if(PosApplication.getApp().oGPosTransaction.m_card_scheme.m_sCheck_Service_Code=="1")  //if service code check is enabled so it's higher priority than TMS cardholder Authentication
             {
                 POS_MAIN.Check_Servicecode(strack2);
             }
