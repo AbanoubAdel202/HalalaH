@@ -286,12 +286,12 @@ public class PacketProcessActivity extends Activity implements SendReceiveListen
 
     @Override
     protected void onStop() {
-        CommunicationsHandler.getInstance(mCommunicationInfo).closeConnection();
         super.onStop();
     }
 
     @Override
     protected void onDestroy() {
+        CommunicationsHandler.getInstance(mCommunicationInfo).closeConnection();
         super.onDestroy();
     }
 }

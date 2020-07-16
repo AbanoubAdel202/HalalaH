@@ -15,6 +15,8 @@ import com.example.halalah.R;
 import com.example.halalah.connect.CommunicationsHandler;
 import com.example.halalah.storage.CommunicationInfo;
 
+import java.io.InputStream;
+
 public class AmountInputActivity extends Activity implements View.OnClickListener {
     private static final String TAG = AmountInputActivity.class.getSimpleName();
 
@@ -74,7 +76,8 @@ public class AmountInputActivity extends Activity implements View.OnClickListene
     private void preConnect() {
         // open socket to be ready to sending/receiving financial messages
         CommunicationInfo communicationInfo = new CommunicationInfo(this);
-        CommunicationsHandler.getInstance(communicationInfo).preConnect();
+        InputStream caInputStream = getResources().openRawResource(R.raw.bks);
+        CommunicationsHandler.getInstance(communicationInfo, caInputStream).preConnect();
     }
 
     private Handler mHandle = new Handler() {
