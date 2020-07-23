@@ -1,28 +1,20 @@
 package com.example.halalah.TMS;
 
+import androidx.annotation.NonNull;
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
-import com.example.halalah.sqlite.repository.SqliteGenericObject;
-import com.example.halalah.sqlite.repository.annotation.SqliteNotNull;
-import com.example.halalah.sqlite.repository.annotation.SqlitePrimaryKey;
-import com.example.halalah.sqlite.repository.annotation.SqliteTableName;
-
 /**********************************************************************/
 @Entity
-public class AID_List implements SqliteGenericObject {
+public class AID_List {
     /////////////
     //Segment_1_of_AID_List
     //////////////////////
+    @NonNull
     @PrimaryKey
-    public String id;
+    public int pk;
     @ColumnInfo(name = "AID")
     public String[] AID;
-
-    @Override
-    public String getId() {
-        return id == null ? "0" : id;
-    }
 
 }

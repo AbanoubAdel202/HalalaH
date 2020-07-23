@@ -1,34 +1,23 @@
 package com.example.halalah.TMS;
 
-import com.example.halalah.sqlite.repository.SqliteGenericObject;
-import com.example.halalah.sqlite.repository.annotation.SqliteNotNull;
-import com.example.halalah.sqlite.repository.annotation.SqlitePrimaryKey;
-import com.example.halalah.sqlite.repository.annotation.SqliteTableName;
+import androidx.annotation.NonNull;
+import androidx.room.Entity;
+import androidx.room.PrimaryKey;
 
-/**********************************************************************/
-@SqliteTableName("Wifi")
-public class Wifi implements SqliteGenericObject {
+@Entity
+public class Wifi extends Connection {
 
-    @SqlitePrimaryKey
-    @SqliteNotNull
-    public String id;
-    @SqliteNotNull
-    public String Priority;
-    @SqliteNotNull
-    public String Communication_Type; //01=Dialup_;_02=TCP/IP_;03=GPRS;04=wifi;05=GSM
-    @SqliteNotNull
+    @NonNull
+    @PrimaryKey
+    public int pk;
+
     public String Network_IP_Address;
-    @SqliteNotNull
-    public String Network_TCP_Support;
-    @SqliteNotNull
-    public String Count_Access_Retries;
-    @SqliteNotNull
-    public String Response_Time_Out;
-    @SqliteNotNull
-    public String SSL_Certificate_File;
 
-    @Override
-    public String getId() {
-        return id;
-    }
+    public String Network_TCP_Support;
+
+    public String Count_Access_Retries;
+
+    public String Response_Time_Out;
+
+    public String SSL_Certificate_File;
 }

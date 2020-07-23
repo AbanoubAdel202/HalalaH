@@ -1,28 +1,57 @@
 package com.example.halalah.TMS;
 
-import com.example.halalah.sqlite.repository.SqliteGenericObject;
-import com.example.halalah.sqlite.repository.annotation.SqliteNotNull;
-import com.example.halalah.sqlite.repository.annotation.SqlitePrimaryKey;
-import com.example.halalah.sqlite.repository.annotation.SqliteTableName;
+import androidx.annotation.NonNull;
+import androidx.room.Entity;
+import androidx.room.PrimaryKey;
 
-/**********************************************************************/
-@SqliteTableName("Connection_Parameters")
-public class Connection_Parameters implements SqliteGenericObject {
-    @SqlitePrimaryKey
-    @SqliteNotNull
-    public String id;
-    @SqliteNotNull
-    public Conn_Primary conn_primary;
-    @SqliteNotNull
-    public Conn_ٍSecondary conn_secondary;
+@Entity
+public class Connection_Parameters {
+
+    @NonNull
+    @PrimaryKey
+    public int pk;
+
+    private String primaryConnectionType;
+    private String secondaryConnectionType;
+    private Connection conn_primary;
+    private Connection conn_secondary;
 
     public Connection_Parameters() {
-        conn_primary = new Conn_Primary();
-        conn_secondary = new Conn_ٍSecondary();
+        conn_primary = new Connection();
+        conn_secondary = new Connection();
     }
 
-    @Override
-    public String getId() {
-        return id;
+    public Connection getConn_primary() {
+        return conn_primary;
+    }
+
+    public void setConn_primary(Connection conn_primary) {
+        this.conn_primary = conn_primary;
+        this.primaryConnectionType = conn_primary.Communication_Type;
+    }
+
+    public Connection getConn_secondary() {
+        return conn_secondary;
+    }
+
+    public void setConn_secondary(Connection conn_secondary) {
+        this.conn_secondary = conn_secondary;
+        this.secondaryConnectionType = conn_secondary.Communication_Type;
+    }
+
+    public String getPrimaryConnectionType() {
+        return primaryConnectionType;
+    }
+
+    public String getSecondaryConnectionType() {
+        return secondaryConnectionType;
+    }
+
+    public void setPrimaryConnectionType(String primaryConnectionType) {
+        this.primaryConnectionType = primaryConnectionType;
+    }
+
+    public void setSecondaryConnectionType(String secondaryConnectionType) {
+        this.secondaryConnectionType = secondaryConnectionType;
     }
 }
