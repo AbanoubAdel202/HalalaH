@@ -1,0 +1,46 @@
+package com.example.halalah.sqlite.database.dao;
+
+import android.content.Context;
+
+import com.example.halalah.sqlite.database.BaseDaoImpl;
+import com.example.halalah.sqlite.database.table.Dialup;
+import com.example.halalah.sqlite.database.MyDBHelper;
+
+import java.util.List;
+
+public class DialupDaoImpl extends BaseDaoImpl<Dialup> {
+
+    public DialupDaoImpl(Context context) {
+        super(new MyDBHelper(context), Dialup.class);
+    }
+
+    /**
+     * select primary dialup connection from database
+     */
+    public Dialup findPrimary() {
+        return findByPriority("1");
+    }
+
+    /**
+     * select secondary dialup connection from database
+     */
+    public Dialup findSecondary() {
+        return findByPriority("1");
+    }
+
+    /**
+     * select dialup connection from database with its priority
+     *
+     * @param priority connections priority "1" = primary, "2" = secondary
+     */
+    public Dialup findByPriority(String priority) {
+        StringBuffer sb = new StringBuffer("select * from Dialup where Priority='")
+                .append(priority).append("'");
+        List<Dialup> capklist = rawQuery(sb.toString(), null);
+        if (capklist == null || capklist.size() == 0) {
+            return null;
+        }
+        return capklist.get(0);
+    }
+
+}

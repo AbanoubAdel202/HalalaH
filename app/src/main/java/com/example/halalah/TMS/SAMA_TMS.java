@@ -6,8 +6,15 @@ import android.util.Log;
 
 import androidx.room.Room;
 
+import com.example.halalah.sqlite.database.table.Connection;
+import com.example.halalah.sqlite.database.table.Connection_Parameters;
+import com.example.halalah.sqlite.database.DBManager;
+import com.example.halalah.sqlite.database.table.Dialup;
+import com.example.halalah.sqlite.database.table.Gprs;
+import com.example.halalah.sqlite.database.table.Gsm;
+import com.example.halalah.sqlite.database.table.Tcp_IP;
+import com.example.halalah.sqlite.database.table.Wifi;
 import com.example.halalah.sqlite.repository.component.AppDatabase;
-import com.example.halalah.sqlite.storage.TMSManager;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -16,6 +23,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.lang.reflect.Array;
 import java.util.Arrays;
 
 /**
@@ -256,7 +264,7 @@ public class SAMA_TMS implements Serializable {
     public Message_Text[] message_text;
     public Message_Text empty;
     public Public_Key public_keys;
-    public Connection_Parameters connection_parameters;
+    public com.example.halalah.sqlite.database.table.Connection_Parameters connection_parameters;
     public Device_Specific device_specific;
     public AID_List aid_list;
     public AID_Data aid_data;
@@ -674,6 +682,7 @@ public class SAMA_TMS implements Serializable {
 
                 break;
             case DT_Connection_Parameters:
+                String[] arrTest = new String[]{"a","b","c","d","ff","f"};
                 for (int i = 1; i < segments.length; i++) {
                     /////////////////
                     //Segment1
@@ -692,15 +701,12 @@ public class SAMA_TMS implements Serializable {
                         connection_parameters.setConn_secondary(setConnectionsParameters(priority, connection_type, conn_seg1_elements));
                     }
                 }
+                connection_parameters.setArrTest(arrTest);
 
-                TMSManager tmsManager = TMSManager.getInstance();
-                tmsManager.saveConnectionParameters(connection_parameters);
-//                aaasdasdasdasdasdasdasdasdasdasc
-//                        asdasdasda
-//                        asd
-//asdasdasdasdasdasdasdasdasdasdsadsdasdas
-//                        asdasdsad
-//                // save (connection_parameter)
+                DBManager.getInstance().getConnectionParametersDao().insert(connection_parameters);
+                Connection_Parameters parameters = DBManager.getInstance().getConnectionParametersDao().get();
+                Log.d("SAMA_TMS", "" + parameters);
+
                 break;
 
             case DT_Device_Specific:
@@ -863,7 +869,7 @@ public class SAMA_TMS implements Serializable {
         switch (connection_type) {
             case DIAL_UP:
 
-                Dialup dialup = new Dialup();
+                com.example.halalah.sqlite.database.table.Dialup dialup = new Dialup();
 
                 dialup.Priority = priority;
                 dialup.Communication_Type = connection_type; //01=Dialup_;_02=TCP/IP_;03=GPRS;04=wifi;05=GSM
@@ -878,7 +884,7 @@ public class SAMA_TMS implements Serializable {
                 return dialup;
 
             case TCP_IP:
-                Tcp_IP tcp_ip = new Tcp_IP();
+                com.example.halalah.sqlite.database.table.Tcp_IP tcp_ip = new Tcp_IP();
 
                 tcp_ip.Priority = priority;
                 tcp_ip.Communication_Type = connection_type; //01=Dialup_;_02=TCP/IP_;03=GPRS;04=wifi;05=GSM
@@ -890,7 +896,7 @@ public class SAMA_TMS implements Serializable {
                 return tcp_ip;
 
             case GPRS:
-                Gprs gprs = new Gprs();
+                com.example.halalah.sqlite.database.table.Gprs gprs = new Gprs();
 
                 gprs.Priority = priority;
                 gprs.Communication_Type = connection_type; //01=Dialup_;_02=TCP/IP_;03=GPRS;04=wifi;05=GSM
@@ -905,7 +911,7 @@ public class SAMA_TMS implements Serializable {
                 return gprs;
 
             case WIFI:
-                Wifi wifi = new Wifi();
+                com.example.halalah.sqlite.database.table.Wifi wifi = new Wifi();
 
                 wifi.Priority = priority;
                 wifi.Communication_Type = connection_type; //01=Dialup_;_02=TCP/IP_;03=GPRS;04=wifi;05=GSM
@@ -917,7 +923,7 @@ public class SAMA_TMS implements Serializable {
                 return wifi;
 
             case GSM:
-                Gsm gsm = new Gsm();
+                com.example.halalah.sqlite.database.table.Gsm gsm = new Gsm();
 
                 gsm.Priority = priority;
                 gsm.Communication_Type = connection_type; //01=Dialup_;_02=TCP/IP_;03=GPRS;04=wifi;05=GSM

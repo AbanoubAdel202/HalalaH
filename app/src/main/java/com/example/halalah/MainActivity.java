@@ -45,8 +45,7 @@ public class MainActivity extends AppCompatActivity {
         TextView date = findViewById(R.id.Date);
         TextView time = findViewById(R.id.TIME);
         TextView status = findViewById(R.id.Status);
-
-        testTMSManager();
+        date.setOnClickListener(view -> testTMSManager());
     }
 
     private void testTMSManager() {

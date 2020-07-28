@@ -6,7 +6,7 @@ import android.util.Log;
 
 import androidx.room.Room;
 
-import com.example.halalah.TMS.SAMA_TMS;
+import com.example.halalah.sqlite.database.DBManager;
 import com.example.halalah.sqlite.repository.component.AppDatabase;
 
 /** Header PosApplication
@@ -121,6 +121,8 @@ public class PosApplication extends Application{
         mContext = getApplicationContext();
         mPosApplication = this;
         initDatabase();
+        DBManager.getInstance().init(this);
+        mContext = getApplicationContext();
 
     }
 

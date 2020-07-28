@@ -9,8 +9,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 
-import com.example.halalah.sqlite.storage.TMSManager;
-
 
 /**
  * A simple {@link Fragment} subclass.
@@ -22,6 +20,7 @@ public class Fragment_home_Transaction extends Fragment implements View.OnClickL
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
+    private static final String TAG = Utils.TAGPUBLIC + Fragment_home_Transaction.class.getSimpleName();
 
     // TODO: Rename and change types of parameters
     private String mParam1;
@@ -72,7 +71,8 @@ View root =inflater.inflate(R.layout.fragment_home_transaction, container, false
     @Override
     public void onClick(View v) {
 
-       TMSManager tmsManager = TMSManager.getInstance();
-       tmsManager.loadData();
+//       TMSManager tmsManager = TMSManager.getInstance();
+//       tmsManager.loadData();
+
     }
 }

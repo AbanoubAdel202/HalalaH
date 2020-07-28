@@ -18,11 +18,13 @@ import com.example.halalah.sqlite.storage.GSMDao;
 import com.example.halalah.sqlite.storage.GprsDao;
 import com.example.halalah.sqlite.storage.TcpIPDao;
 import com.example.halalah.sqlite.storage.WifiDao;
+import com.example.halalah.sqlite.storage.dao.BaseDao;
 
 @Database(entities = {AID_List.class, Connection_Parameters.class, Gprs.class, Wifi.class, Gsm.class, Tcp_IP.class, Dialup.class}, version = 1)
 @TypeConverters({Converters.class})
 public abstract class AppDatabase extends RoomDatabase {
     public abstract AIDListDao getAidListDao();
+//    public abstract BaseDao getBaseDao();
     public abstract ConnectionParametersDao getConnectionParametersDao();
     public abstract WifiDao getWifiDao();
     public abstract GprsDao getGprsDao();
