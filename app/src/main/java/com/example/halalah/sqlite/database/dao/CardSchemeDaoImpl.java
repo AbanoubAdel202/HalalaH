@@ -2,10 +2,9 @@ package com.example.halalah.sqlite.database.dao;
 
 import android.content.Context;
 
+import com.example.halalah.TMS.Card_Scheme;
 import com.example.halalah.sqlite.database.BaseDaoImpl;
 import com.example.halalah.sqlite.database.MyDBHelper;
-import com.example.halalah.sqlite.database.table.Card_Scheme;
-import com.example.halalah.sqlite.database.table.Connection_Parameters;
 import com.example.halalah.util.AidToCardSchemeMapper;
 
 import java.util.List;

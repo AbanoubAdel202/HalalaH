@@ -2,9 +2,9 @@ package com.example.halalah.sqlite.database.dao;
 
 import android.content.Context;
 
+import com.example.halalah.TMS.Retailer_Data;
 import com.example.halalah.sqlite.database.BaseDaoImpl;
 import com.example.halalah.sqlite.database.MyDBHelper;
-import com.example.halalah.sqlite.database.table.Retailer_Data;
 
 import java.util.List;
 
@@ -18,12 +18,13 @@ public class RetailerDataDaoImpl extends BaseDaoImpl<Retailer_Data> {
      *
      * @return
      */
-    public Retailer_Data getRetailerData() {
+    public Retailer_Data get() {
         StringBuffer sb = new StringBuffer("select * from Retailer_Data");
         List<Retailer_Data> dataList = rawQuery(sb.toString(), null);
         if (dataList == null || dataList.size() == 0) {
             return null;
         }
-        return dataList.get(0);
+        int index = dataList.size() - 1;
+        return dataList.get(index);
     }
 }

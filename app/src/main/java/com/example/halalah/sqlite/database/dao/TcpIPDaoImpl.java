@@ -2,8 +2,8 @@ package com.example.halalah.sqlite.database.dao;
 
 import android.content.Context;
 
+import com.example.halalah.TMS.Tcp_IP;
 import com.example.halalah.sqlite.database.BaseDaoImpl;
-import com.example.halalah.sqlite.database.table.Tcp_IP;
 import com.example.halalah.sqlite.database.MyDBHelper;
 
 import java.util.List;

@@ -4,10 +4,17 @@ import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+
+import com.example.halalah.TMS.Device_Specific;
+import com.example.halalah.TMS.Limits;
+import com.example.halalah.TMS.TMSManager;
+
+import java.util.List;
 
 
 /**
@@ -73,6 +80,11 @@ View root =inflater.inflate(R.layout.fragment_home_transaction, container, false
 
 //       TMSManager tmsManager = TMSManager.getInstance();
 //       tmsManager.loadData();
+
+        List<Device_Specific> deviceSpecifics = TMSManager.getInstance().getAllDeviceSpecifics();
+        Device_Specific deviceSpecific = TMSManager.getInstance().getDeviceSpecific();
+        Limits limits = TMSManager.getInstance().getCTLSLimitsByCardScheme("P1");
+        Log.d(TAG, "QR Enabled ? " + deviceSpecific.m_sQR_Code_Print_Indicator);
 
     }
 }

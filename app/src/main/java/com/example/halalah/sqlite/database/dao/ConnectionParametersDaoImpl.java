@@ -2,9 +2,9 @@ package com.example.halalah.sqlite.database.dao;
 
 import android.content.Context;
 
+import com.example.halalah.TMS.Connection;
+import com.example.halalah.TMS.Connection_Parameters;
 import com.example.halalah.sqlite.database.BaseDaoImpl;
-import com.example.halalah.sqlite.database.table.Connection;
-import com.example.halalah.sqlite.database.table.Connection_Parameters;
 import com.example.halalah.sqlite.database.MyDBHelper;
 
 import java.util.List;
@@ -21,7 +21,7 @@ public class ConnectionParametersDaoImpl extends BaseDaoImpl<Connection_Paramete
      */
 
     public Connection_Parameters get() {
-        StringBuffer sb = new StringBuffer("SELECT * FROM Connection_Parameters LIMIT 1");
+        StringBuffer sb = new StringBuffer("SELECT * FROM Connection_Parameters");
         List<Connection_Parameters> connectionParametersList = rawQuery(sb.toString(), null);
         if (connectionParametersList == null || connectionParametersList.size() == 0) {
             return null;

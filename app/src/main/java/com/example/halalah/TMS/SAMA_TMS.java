@@ -4,17 +4,7 @@ package com.example.halalah.TMS;
 import android.content.Context;
 import android.util.Log;
 
-import androidx.room.Room;
-
-import com.example.halalah.sqlite.database.table.Connection;
-import com.example.halalah.sqlite.database.table.Connection_Parameters;
 import com.example.halalah.sqlite.database.DBManager;
-import com.example.halalah.sqlite.database.table.Dialup;
-import com.example.halalah.sqlite.database.table.Gprs;
-import com.example.halalah.sqlite.database.table.Gsm;
-import com.example.halalah.sqlite.database.table.Tcp_IP;
-import com.example.halalah.sqlite.database.table.Wifi;
-import com.example.halalah.sqlite.repository.component.AppDatabase;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -23,7 +13,6 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
-import java.lang.reflect.Array;
 import java.util.Arrays;
 
 /**
@@ -264,25 +253,18 @@ public class SAMA_TMS implements Serializable {
     public Message_Text[] message_text;
     public Message_Text empty;
     public Public_Key public_keys;
-    public com.example.halalah.sqlite.database.table.Connection_Parameters connection_parameters;
+    public Connection_Parameters connection_parameters;
     public Device_Specific device_specific;
-    public AID_List aid_list;
     public AID_Data aid_data;
     public Revoked_Certificates revoked_certificates;
     public String NUM_REC;
     public String NUM_REC_DLN;
 
-    private static AppDatabase database;
 
     char GS = ''; //group seperator  1D
     char FS = '';// field seperator  1C
 
     public SAMA_TMS(Context context) {
-
-        database = Room.databaseBuilder(context,
-                AppDatabase.class, "database-name")
-                .fallbackToDestructiveMigration()
-                .build();
 
         retailer_data = new Retailer_Data();
         card_scheme = new Card_Scheme();
@@ -293,7 +275,6 @@ public class SAMA_TMS implements Serializable {
         Arrays.fill(message_text, empty);
         connection_parameters = new Connection_Parameters();
         device_specific = new Device_Specific();
-        aid_list = new AID_List();
         aid_data = new AID_Data();
         revoked_certificates = new Revoked_Certificates();
     }
@@ -562,7 +543,7 @@ public class SAMA_TMS implements Serializable {
 
 
                 }
-                //todo save retailer data
+                TMSManager.getInstance().insert(retailer_data);
                 break;
             case DT_Card_Scheme:
 
@@ -624,10 +605,11 @@ public class SAMA_TMS implements Serializable {
                             temp = segments[i].split("\u001C");
                             System.arraycopy(temp, 0, crd_seg3_elements, 0, temp.length);
                             scheme_id = checkcardscheme(crd_seg3_elements[0].substring(3, 5));
-                            card_scheme.cardranges = crd_seg3_elements[1].split("");
+                            card_scheme.setCardRanges(crd_seg3_elements[1].split(""));
                             card_scheme.m_sCard_Prefix_Sequence_Indicator = crd_seg3_elements[2];
                             break;
                     }
+                    TMSManager.getInstance().insert(card_scheme);
                     // append&save(cardscheme);    // card scheme maay be sent in two meesages so we need to add to last one
                 }
 
@@ -650,6 +632,7 @@ public class SAMA_TMS implements Serializable {
                     message_text[i].m_sDisplay_Code = msg_seg1_elements[1];
                     message_text[i].m_sArabic_Message_Text = msg_seg1_elements[2];
                     message_text[i].m_sEnglish_Message_Text = msg_seg1_elements[3];
+                    TMSManager.getInstance().insert(message_text[i]);
                 }
                 //append&Save(message_test)   // note we need to append to the file as new messages will added
                 break;
@@ -676,13 +659,13 @@ public class SAMA_TMS implements Serializable {
                     public_keys.Check_Sum = Capk_seg1_elements[6];
                     public_keys.CA_Public_Key_Length = Capk_seg1_elements[7];
                     public_keys.CA_Public_Key_Expiry_Date = Capk_seg1_elements[8];
+                    TMSManager.getInstance().insert(public_keys);
 
                 }
                 // Save(public_key)         // save each data on file
 
                 break;
             case DT_Connection_Parameters:
-                String[] arrTest = new String[]{"a","b","c","d","ff","f"};
                 for (int i = 1; i < segments.length; i++) {
                     /////////////////
                     //Segment1
@@ -701,11 +684,7 @@ public class SAMA_TMS implements Serializable {
                         connection_parameters.setConn_secondary(setConnectionsParameters(priority, connection_type, conn_seg1_elements));
                     }
                 }
-                connection_parameters.setArrTest(arrTest);
-
-                DBManager.getInstance().getConnectionParametersDao().insert(connection_parameters);
-                Connection_Parameters parameters = DBManager.getInstance().getConnectionParametersDao().get();
-                Log.d("SAMA_TMS", "" + parameters);
+                TMSManager.getInstance().insert(connection_parameters);
 
                 break;
 
@@ -722,42 +701,53 @@ public class SAMA_TMS implements Serializable {
                     if (dspec_seg1_elements[0].length() > 3) {
                         int index = 3;
                         int offset = 2;
-                        device_specific.m_sCard_Scheme_MADA = dspec_seg1_elements[0].substring(index, index + offset);   //length 2//The value configured for the mada scheme (‘P1’) shall apply to all card schemes
+                        
+                        dspec_seg1_elements[0].substring(index, index + offset);   //length 2//The value configured for the mada scheme (‘P1’) shall apply to all card schemes
                         index = index + offset;
                         offset = 5;
-                        device_specific.m_sTerminal_Contactless_Transaction_Limit = dspec_seg1_elements[0].substring(index, index + offset);  //length 5
+                        
+                        Limits p1Limits = new Limits();
+                        p1Limits.setContactlessTransactionLimit(dspec_seg1_elements[0].substring(index, index + offset));  //length 5
                         index = index + offset;
                         offset = 5;
-                        device_specific.m_sTerminal_CVM_Required_Limit = dspec_seg1_elements[0].substring(index, index + offset);             //length 5
+                        p1Limits.setTerminalCVMRequiredLimit(dspec_seg1_elements[0].substring(index, index + offset));             //length 5
                         index = index + offset;
                         offset = 5;
-                        device_specific.m_sTerminal_Contactless_Floor_Limit = dspec_seg1_elements[0].substring(index, index + offset);        //length 5
+                        p1Limits.setTerminalContactlessFloorLimit(dspec_seg1_elements[0].substring(index, index + offset));        //length 5
                         index = index + offset;
                         offset = 2;
-                        device_specific.m_sCard_Scheme_VC = dspec_seg1_elements[0].substring(index, index + offset);                          //length 2
+                        dspec_seg1_elements[0].substring(index, index + offset);                          //length 2
                         index = index + offset;
                         offset = 5;
-                        device_specific.m_sTerminal_Contactless_Transaction_Limit1 = dspec_seg1_elements[0].substring(index, index + offset); //length 5      //zeros as per spec Version 6.0.9
+                        device_specific.setP1Limits(p1Limits);
+                        
+                        Limits vcLimits = new Limits();
+                        vcLimits.setContactlessTransactionLimit(dspec_seg1_elements[0].substring(index, index + offset)); //length 5      //zeros as per spec Version 6.0.9
                         index = index + offset;
                         offset = 5;
-                        device_specific.m_sTerminal_CVM_Required_Limit1 = dspec_seg1_elements[0].substring(index, index + offset);            //length 5              //zeros as per spec Version 6.0.9
+                        vcLimits.setTerminalCVMRequiredLimit(dspec_seg1_elements[0].substring(index, index + offset));            //length 5              //zeros as per spec Version 6.0.9
                         index = index + offset;
                         offset = 5;
-                        device_specific.m_sTerminal_Contactless_Floor_Limit1 = dspec_seg1_elements[0].substring(index, index + offset);       //length 5           //zeros as per spec Version 6.0.9
+                        vcLimits.setTerminalContactlessFloorLimit(dspec_seg1_elements[0].substring(index, index + offset));       //length 5           //zeros as per spec Version 6.0.9
                         index = index + offset;
                         offset = 2;
-                        device_specific.m_sCard_Scheme_MC = dspec_seg1_elements[0].substring(index, index + offset);                          //length 2
+                        dspec_seg1_elements[0].substring(index, index + offset);                          //length 2
                         index = index + offset;
                         offset = 5;
-                        device_specific.m_sTerminal_Contactless_Transaction_Limit2 = dspec_seg1_elements[0].substring(index, index + offset); //length 5      //zeros as per spec Version 6.0.9
+                        device_specific.setVcLimits(vcLimits);
+                        
+                        Limits mcLimits = new Limits();
+                        mcLimits.setContactlessTransactionLimit(dspec_seg1_elements[0].substring(index, index + offset)); //length 5      //zeros as per spec Version 6.0.9
                         index = index + offset;
                         offset = 5;
-                        device_specific.m_sTerminal_CVM_Required_Limit2 = dspec_seg1_elements[0].substring(index, index + offset);            //length 5        //zeros as per spec Version 6.0.9
+                        mcLimits.setTerminalCVMRequiredLimit(dspec_seg1_elements[0].substring(index, index + offset));            //length 5        //zeros as per spec Version 6.0.9
                         index = index + offset;
                         offset = 5;
-                        device_specific.m_sTerminal_Contactless_Floor_Limit2 = dspec_seg1_elements[0].substring(index, index + offset);       //length 5        //zeros as per spec Version 6.0.9
+                        mcLimits.setTerminalContactlessFloorLimit(dspec_seg1_elements[0].substring(index, index + offset));       //length 5        //zeros as per spec Version 6.0.9
                         index = index + offset;
                         offset = 3;
+                        device_specific.setMcLimits(mcLimits);
+                        
                         device_specific.m_sMax_SAF_Depth = dspec_seg1_elements[0].substring(index, index + offset);                           //length 3
                         index = index + offset;
                         offset = 7;
@@ -777,6 +767,8 @@ public class SAMA_TMS implements Serializable {
                     }
 
                 }
+
+                TMSManager.getInstance().insert(device_specific);
                                /* try {
                                     Save(applicationContext);
                                 } catch (IOException e) {
@@ -791,19 +783,19 @@ public class SAMA_TMS implements Serializable {
                     temp = segments[i].split("\u001C");
                     String aidl_seg1_elements[] = new String[temp.length];
                     Arrays.fill(aidl_seg1_elements, "");
-                    aid_list.AID = new String[temp.length];
+                    Aid aid = new Aid();
                     System.arraycopy(temp, 0, aidl_seg1_elements, 0, temp.length);
                     if (aidl_seg1_elements[0].length() > 3) {
                         String aid1 = aidl_seg1_elements[0].substring(3, aidl_seg1_elements[0].length());  //check max length 3
-                        aid_list.AID[0] = aid1;           //AID 1
+                        aid.aidName = aid1;           //AID 1
                     }
                     for (int j = 1; j < temp.length; j++)   //AID 2-10 or more if exist
                     {
-                        aid_list.AID[j] = aidl_seg1_elements[j];
+                        aid.aidName = aidl_seg1_elements[j];
                     }
-
+                    TMSManager.getInstance().insert(aid);
                 }
-                //save(aid_list);
+                //save(aidName);
                 break;
             case DT_AID_Data:
                 for (int i = 1; i < segments.length; i++) {
@@ -834,7 +826,9 @@ public class SAMA_TMS implements Serializable {
                     aid_data.Target_Percentage = aidD_seg1_elements[12];
                     aid_data.Maximum_Target_Percentage_for_Biased_Random_Selection = aidD_seg1_elements[13];
 
+                    TMSManager.getInstance().insert(aid_data);
                 }
+
                 //save(AID_data);
                 break;
             case DT_Revoked_Certificates:
@@ -854,8 +848,7 @@ public class SAMA_TMS implements Serializable {
 
                     revoked_certificates.IDX = rev_seg1_elements[1];
                     revoked_certificates.Cert_serial_number = rev_seg1_elements[2];
-
-
+                    TMSManager.getInstance().insert(revoked_certificates);
                 }
 
                 break;
@@ -869,7 +862,7 @@ public class SAMA_TMS implements Serializable {
         switch (connection_type) {
             case DIAL_UP:
 
-                com.example.halalah.sqlite.database.table.Dialup dialup = new Dialup();
+                Dialup dialup = new Dialup();
 
                 dialup.Priority = priority;
                 dialup.Communication_Type = connection_type; //01=Dialup_;_02=TCP/IP_;03=GPRS;04=wifi;05=GSM
@@ -884,7 +877,7 @@ public class SAMA_TMS implements Serializable {
                 return dialup;
 
             case TCP_IP:
-                com.example.halalah.sqlite.database.table.Tcp_IP tcp_ip = new Tcp_IP();
+                Tcp_IP tcp_ip = new Tcp_IP();
 
                 tcp_ip.Priority = priority;
                 tcp_ip.Communication_Type = connection_type; //01=Dialup_;_02=TCP/IP_;03=GPRS;04=wifi;05=GSM
@@ -896,7 +889,7 @@ public class SAMA_TMS implements Serializable {
                 return tcp_ip;
 
             case GPRS:
-                com.example.halalah.sqlite.database.table.Gprs gprs = new Gprs();
+                Gprs gprs = new Gprs();
 
                 gprs.Priority = priority;
                 gprs.Communication_Type = connection_type; //01=Dialup_;_02=TCP/IP_;03=GPRS;04=wifi;05=GSM
@@ -911,7 +904,7 @@ public class SAMA_TMS implements Serializable {
                 return gprs;
 
             case WIFI:
-                com.example.halalah.sqlite.database.table.Wifi wifi = new Wifi();
+                Wifi wifi = new Wifi();
 
                 wifi.Priority = priority;
                 wifi.Communication_Type = connection_type; //01=Dialup_;_02=TCP/IP_;03=GPRS;04=wifi;05=GSM
@@ -923,7 +916,7 @@ public class SAMA_TMS implements Serializable {
                 return wifi;
 
             case GSM:
-                com.example.halalah.sqlite.database.table.Gsm gsm = new Gsm();
+                Gsm gsm = new Gsm();
 
                 gsm.Priority = priority;
                 gsm.Communication_Type = connection_type; //01=Dialup_;_02=TCP/IP_;03=GPRS;04=wifi;05=GSM

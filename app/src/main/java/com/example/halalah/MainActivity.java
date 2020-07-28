@@ -102,7 +102,7 @@ public class MainActivity extends AppCompatActivity {
         for (int i = 0; i < DE72buffer.length; i++) {
             sama_tms.Get_Sama_param(DE72buffer[i]);
         }
-//        tmsManager.insert(sama_tms.aid_list);
+//        tmsManager.insert(sama_tms.aidName);
 //        tmsManager.insert(sama_tms.aid_data);
 //        tmsManager.insert(sama_tms.card_scheme);
 //        tmsManager.insert(sama_tms.connection_parameters);

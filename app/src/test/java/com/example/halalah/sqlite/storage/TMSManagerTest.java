@@ -56,8 +56,8 @@ public class TMSManagerTest {
 
 //        sama_tms.Get_Sama_param(DE72buffer[i],getContext());
 //        TMSManager tmsManager = TMSManager.getInstance(getActivity());
-//        tmsManager.insert(sama_tms.aid_list);
-//        tmsManager.insert(sama_tms.aid_list);
+//        tmsManager.insert(sama_tms.aidName);
+//        tmsManager.insert(sama_tms.aidName);
 //        tmsManager.insert(sama_tms.card_scheme);
 //        tmsManager.insert(sama_tms.connection_parameters);
 //        tmsManager.insert(sama_tms.device_specific);

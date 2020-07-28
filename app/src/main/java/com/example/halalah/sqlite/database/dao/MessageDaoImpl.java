@@ -2,8 +2,8 @@ package com.example.halalah.sqlite.database.dao;
 
 import android.content.Context;
 
+import com.example.halalah.TMS.Message_Text;
 import com.example.halalah.sqlite.database.BaseDaoImpl;
-import com.example.halalah.sqlite.database.table.Message_Text;
 import com.example.halalah.sqlite.database.MyDBHelper;
 
 import java.util.List;

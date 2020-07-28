@@ -3,9 +3,9 @@ package com.example.halalah.sqlite.database.dao;
 import android.content.Context;
 
 
+import com.example.halalah.TMS.Public_Key;
 import com.example.halalah.sqlite.database.BaseDaoImpl;
 import com.example.halalah.sqlite.database.MyDBHelper;
-import com.example.halalah.sqlite.database.table.Public_Key;
 
 import java.util.List;
 
@@ -18,12 +18,13 @@ public class KeyDaoImpl extends BaseDaoImpl<Public_Key> {
      * select capk from database
      *
      * @param rid   the hexstring of rid
-     * @param index index
+//     * @param index index
      * @return
      */
-    public Public_Key findByRid(String rid, byte index) {
+    public Public_Key getByRid(String rid) {
         StringBuffer sb = new StringBuffer("select * from Public_Key where RID='")
-                .append(rid).append("' and Key_Index='").append(index).append("'");
+                .append(rid).append("'");
+//        .append("' and Key_Index='").append(index).append("'");
         List<Public_Key> capklist = rawQuery(sb.toString(), null);
         if (capklist == null || capklist.size() == 0) {
             return null;
@@ -36,7 +37,7 @@ public class KeyDaoImpl extends BaseDaoImpl<Public_Key> {
      *
      * @return
      */
-    public List<Public_Key> findAll() {
+    public List<Public_Key> getAll() {
         StringBuffer sb = new StringBuffer("select * from Public_Key");
         List<Public_Key> capklist = rawQuery(sb.toString(), null);
         return capklist;

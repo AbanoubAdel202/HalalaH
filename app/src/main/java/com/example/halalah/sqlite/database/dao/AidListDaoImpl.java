@@ -2,24 +2,24 @@ package com.example.halalah.sqlite.database.dao;
 
 import android.content.Context;
 
+import com.example.halalah.TMS.Aid;
 import com.example.halalah.sqlite.database.BaseDaoImpl;
-import com.example.halalah.sqlite.database.table.AID_List;
 import com.example.halalah.sqlite.database.MyDBHelper;
 
 import java.util.List;
 
-public class AidListDaoImpl extends BaseDaoImpl<AID_List> {
+public class AidListDaoImpl extends BaseDaoImpl<Aid> {
     public AidListDaoImpl(Context context) {
-        super(new MyDBHelper(context),AID_List.class);
+        super(new MyDBHelper(context), Aid.class);
     }
 
     /**
      * select all aid from database
      * @return
      */
-    public List<AID_List> getAll(){
-        StringBuffer sb = new StringBuffer("select * from AID_List");
-        List<AID_List> aidlist = rawQuery(sb.toString(), null);
+    public List<Aid> getAll(){
+        StringBuffer sb = new StringBuffer("select * from Aid");
+        List<Aid> aidlist = rawQuery(sb.toString(), null);
         return aidlist;
     }
 
@@ -28,10 +28,10 @@ public class AidListDaoImpl extends BaseDaoImpl<AID_List> {
      * @param aid	the hexstring of aid
      * @return
      */
-    public AID_List get(String aid){
-        StringBuffer sb = new StringBuffer("select * from AID_List where AID='")
+    public Aid get(String aid){
+        StringBuffer sb = new StringBuffer("select * from Aid where aidName='")
                 .append(aid).append("'");
-        List<AID_List> aidlist = rawQuery(sb.toString(), null);
+        List<Aid> aidlist = rawQuery(sb.toString(), null);
         if(aidlist==null||aidlist.size()==0){
             return null;
         }

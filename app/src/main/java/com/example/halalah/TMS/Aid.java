@@ -1,4 +1,4 @@
-package com.example.halalah.sqlite.database.table;
+package com.example.halalah.TMS;
 
 import androidx.annotation.NonNull;
 import androidx.room.ColumnInfo;
@@ -10,13 +10,17 @@ import com.example.halalah.sqlite.database.Column;
 import com.example.halalah.sqlite.database.Table;
 
 /**********************************************************************/
-@Table(name = "AID_List")
-public class AID_List extends BaseModel {
+@Table(name = "Aid")
+public class Aid extends BaseModel {
     /////////////
     //Segment_1_of_AID_List
     //////////////////////
 
-    @Column(name = "AID")
-    public String[] AID;
+    @Column(name = "aidName", unique = true)
+    public String aidName;
+
+    public Aid(){
+        
+    }
 
 }

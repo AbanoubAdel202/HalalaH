@@ -7,7 +7,6 @@ import android.util.Log;
 import androidx.room.Room;
 
 import com.example.halalah.sqlite.database.DBManager;
-import com.example.halalah.sqlite.repository.component.AppDatabase;
 
 /** Header PosApplication
  \Class Name: POSTransaction
@@ -24,8 +23,6 @@ public class PosApplication extends Application{
 
     private Context mContext;
     private static PosApplication mPosApplication=new PosApplication();
-
-    private static AppDatabase mAppDatabase;
 
     /*******************
      *   Message types *
@@ -120,21 +117,10 @@ public class PosApplication extends Application{
         Log.i(TAG, "onCreate");
         mContext = getApplicationContext();
         mPosApplication = this;
-        initDatabase();
+
         DBManager.getInstance().init(this);
         mContext = getApplicationContext();
 
-    }
-
-    private void initDatabase() {
-        mAppDatabase = Room.databaseBuilder(getApplicationContext(),
-                AppDatabase .class, "database-name")
-                .fallbackToDestructiveMigration()
-                .build();
-    }
-
-    public static AppDatabase getAppDatabase(){
-        return mAppDatabase;
     }
 
     public static PosApplication getApp() {
