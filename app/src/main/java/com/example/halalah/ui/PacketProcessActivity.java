@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.os.Parcelable;
 import android.util.Log;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -113,8 +114,8 @@ public class PacketProcessActivity extends Activity implements SendReceiveListen
         if (receivedPacket != null)
         {
             mRecePacket = receivedPacket;
-
-            PerfomTermHostResponseFlow(PacketProcessUtils.SUCCESS);
+            PosApplication.getApp().oGPOS_MAIN.PerfomTermHostResponseFlow(mRecePacket,0);
+            //PerfomTermHostResponseFlow(PacketProcessUtils.SUCCESS); //old flow
 
         }
 
@@ -138,11 +139,11 @@ public class PacketProcessActivity extends Activity implements SendReceiveListen
     private void PerfomTermHostResponseFlow(int errReason) {
 
 
-        POS_MAIN.PerfomTermHostResponseFlow(mRecePacket,errReason);
+        PosApplication.getApp().oGPOS_MAIN.PerfomTermHostResponseFlow(mRecePacket,errReason);
         CommunicationsHandler.getInstance(mCommunicationInfo).closeConnection();
 
 
-        // old flow
+    /*    // old flow
         Bundle data = new Bundle();
         mUnpackPacket.Process_Rece_Packet(this, mRecePacket, data);
         mResponse = mUnpackPacket.getResponse();
@@ -164,7 +165,7 @@ public class PacketProcessActivity extends Activity implements SendReceiveListen
             } else if (mProcType == PacketProcessUtils.PACKET_PROCESS_PURCHASE && (mResponse != null) && (mResponse.equals("00"))) {
                 //todo if comulative limit exeeded host response 196 we need to openpinpad for entering pin and resend transaction again
                 byte[] field47 = mUnpackPacket.getField47();
-                Display_printResult(mResponse, mResponseDetail, field47);
+             //   Display_printResult(mResponse, mResponseDetail, field47);
 
                 if(!PosApplication.getApp().oGPosTransaction.m_is_mada)
                 SAF_Info.SAVE_IN_SAF(PosApplication.getApp().oGPosTransaction);
@@ -178,7 +179,7 @@ public class PacketProcessActivity extends Activity implements SendReceiveListen
                 else
                 {
                     byte[] field47 = mUnpackPacket.getField47();
-                    Display_printResult(mResponse, mResponseDetail, field47);
+              //      Display_printResult(mResponse, mResponseDetail, field47);
                 }
 
             }
@@ -190,7 +191,7 @@ public class PacketProcessActivity extends Activity implements SendReceiveListen
                 else
                 {
                     byte[] field47 = mUnpackPacket.getField47();
-                    Display_printResult(mResponse, mResponseDetail, field47);
+                 //   Display_printResult(mResponse, mResponseDetail, field47);
                 }
 
             }
@@ -199,7 +200,7 @@ public class PacketProcessActivity extends Activity implements SendReceiveListen
             }
         } else {
             showResult(mResponse, mResponseDetail, errReason);
-        }
+        }*/
     }
 
     private Handler mHandle = new Handler() {
@@ -222,17 +223,17 @@ public class PacketProcessActivity extends Activity implements SendReceiveListen
         }
     };
 
-    private void Display_printResult(String response, String resDetail, byte[] printDetail) {
-        Log.i(TAG, "showSuccessResult(), response = " + response + ", resDetail = " + resDetail + ", printDetail = " + printDetail);
+    private void Display_printResult(String response, String resDetail, POSTransaction POStrx) {
+        Log.i(TAG, "showSuccessResult(), response = " + response + ", resDetail = " + resDetail + ", printDetail = " + POStrx);
         if (mProcType == PacketProcessUtils.PACKET_PROCESS_PURCHASE &&
                 PosApplication.getApp().oGPosTransaction.m_enmTrxCardType != POSTransaction.CardType.MAG) {
             CardManager.getInstance().setRequestOnline(true, mResponse, PosApplication.getApp().oGPosTransaction.m_sICCRelatedTags);
         }
         mHandle.removeMessages(MSG_TIME_UPDATE);
-        Intent intent = new Intent(this, ConsumeSuccessActivity.class);
+        Intent intent = new Intent(this, Display_PrintActivity.class);
         intent.putExtra("result_response", response);
         intent.putExtra("result_resDetail", resDetail);
-        intent.putExtra("result_field47", printDetail);
+        intent.putExtra("POSTransaction", (Parcelable) POStrx);
         startActivity(intent);
         this.finish();
     }
@@ -258,7 +259,8 @@ public class PacketProcessActivity extends Activity implements SendReceiveListen
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == 100) {
-            PerfomTermHostResponseFlow(0);
+           // PerfomTermHostResponseFlow(0);old flow
+            PosApplication.getApp().oGPOS_MAIN.PerfomTermHostResponseFlow(mRecePacket,0);
         }
     }
 

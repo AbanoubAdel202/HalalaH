@@ -13,7 +13,8 @@ import com.example.halalah.DeviceTopUsdkServiceManager;
 import com.example.halalah.PosApplication;
 import com.example.halalah.R;
 import com.example.halalah.Utils;
-import com.example.halalah.ui.ConsumeSuccessActivity;
+import com.example.halalah.ui.Display_PrintActivity;
+import com.example.halalah.ui.Display_PrintActivity;
 import com.topwise.cloudpos.aidl.printer.AidlPrinter;
 import com.topwise.cloudpos.aidl.printer.AidlPrinterListener;
 import com.topwise.cloudpos.aidl.printer.Align;
@@ -41,33 +42,29 @@ public class Purchase_Print {
 
     private boolean isHolder = false;
 
-    private ConsumeSuccessActivity mConsumeSuccessActivity;
+    private Display_PrintActivity mDisplay_PrintActivity;
     private Context mContext;
 
     public String curTime;
 
-    public Purchase_Print(ConsumeSuccessActivity consumeSuccessActivity) {
+    public Purchase_Print(Display_PrintActivity display_PrintActivity) {
         mPrinterManager = DeviceTopUsdkServiceManager.getInstance().getPrintManager();
         mPrintObjs = new ArrayList<PrintItemObj>();
 
-        mConsumeSuccessActivity = consumeSuccessActivity;
+        mDisplay_PrintActivity = display_PrintActivity;
         /*mScanSuccessActivity = scanSuccessActivity;*/
     }
 
     public void printDetail(String printMsg) {
         Log.i(TAG, "printDetail, printMsg = "+printMsg);
 
-        if (mConsumeSuccessActivity != null) {
-            mContext = mConsumeSuccessActivity;
+        if (mDisplay_PrintActivity != null) {
+            mContext = mDisplay_PrintActivity;
             getPurchase_PrintString(printMsg);
-            //getPurchase_PrintFakeString();
+
         }
 
-       /* if (mScanSuccessActivity != null) {
-            mContext = mScanSuccessActivity;
-            //getScanPrintString(printMsg);
-            getScanPrintFakeString();
-        }*/
+
 
         Log.i(TAG, "startPrint ");
         try {
@@ -122,8 +119,8 @@ public class Purchase_Print {
                     Log.i(TAG,"onPrintFinish");
 
 //                    if (isHolder) {
-//                        if (mConsumeSuccessActivity != null) {
-//                            mConsumeSuccessActivity.mHandle.sendEmptyMessage(MSG_TASK_PRINT);
+//                        if (mDisplay_PrintActivity != null) {
+//                            mDisplay_PrintActivity.mHandle.sendEmptyMessage(MSG_TASK_PRINT);
 //                        }
 //                        if (mScanSuccessActivity != null) {
 //                            mScanSuccessActivity.mHandle.sendEmptyMessage(MSG_TASK_PRINT);
@@ -134,8 +131,8 @@ public class Purchase_Print {
 //                        Bundle data = new Bundle();
 //                        data.putString("message", mContext.getString(R.string.result_print_success));
 //                        message.setData(data);
-//                        if (mConsumeSuccessActivity != null) {
-//                            mConsumeSuccessActivity.mHandle.sendMessage(message);
+//                        if (mDisplay_PrintActivity != null) {
+//                            mDisplay_PrintActivity.mHandle.sendMessage(message);
 //                        }
 //                        if (mScanSuccessActivity != null) {
 //                            mScanSuccessActivity.mHandle.sendMessage(message);
@@ -143,36 +140,7 @@ public class Purchase_Print {
 //                    }
                 }
 
-               /* @Override
-                public void onError(int errorCode) throws RemoteException {
-                    Log.i(TAG,"onError:"+errorCode);
 
-                    if (errorCode == PrinterConstant.PrinterState.PRINTER_STATE_NOPAPER) {
-                        Message message = new Message();
-                        message.what = MSG_TASK_SHOW_RESULT;
-                        Bundle data = new Bundle();
-                        data.putString("message", mContext.getString(R.string.result_check_paper));
-                        message.setData(data);
-                        if (mConsumeSuccessActivity != null) {
-                            mConsumeSuccessActivity.mHandle.sendMessage(message);
-                        }
-                        if (mScanSuccessActivity != null) {
-                            mScanSuccessActivity.mHandle.sendMessage(message);
-                        }
-                    } else {
-                        Message message = new Message();
-                        message.what = MSG_TASK_SHOW_RESULT;
-                        Bundle data = new Bundle();
-                        data.putString("message", String.valueOf(errorCode));
-                        message.setData(data);
-                        if (mConsumeSuccessActivity != null) {
-                            mConsumeSuccessActivity.mHandle.sendMessage(message);
-                        }
-                        if (mScanSuccessActivity != null) {
-                            mScanSuccessActivity.mHandle.sendMessage(message);
-                        }
-                    }
-                }*/
             });
         } catch (RemoteException e) {
             e.printStackTrace();
@@ -183,63 +151,7 @@ public class Purchase_Print {
 
     private void getPurchase_PrintString(String printMsg) {
         Log.i(TAG, "getPurchase_PrintString()");
-       /* *//**add by zongli for fake print data *//*
-        String amount = PosApplication.getApp().oGPosTransaction.m_sTrxAmount;
-        String cardNo = PosApplication.getApp().oGPosTransaction.m_sPAN;
-        String firCardNo = null;
-        String mid = null;
-        String lastCardNo = null;
-        if(cardNo != null){
-            int cardLength = cardNo.length();
-            firCardNo = cardNo.substring(0,6);
-            lastCardNo = cardNo.substring(cardLength - 4);
-            mid = "******";
-            cardNo = firCardNo + mid + lastCardNo;
-        }
-        *//**add end *//*
-        String[] print = printMsg.split("\\n");
-        for (int i = 0; i < print.length; i++) {
-            if (print[i].indexOf("~") != -1) {
-                if (print[i].indexOf("Cardholder's signature") != -1) {
-                    mPrintObjs.add(getPrintItemObjs("Cardholder's signature:", PrinterConstant.FontSize.LARGE, PrintItemObj.ALIGN.LEFT));
-                }
-                *//**add by zongli for fake print data *//*
-                else if(print[i].indexOf("card number") != -1){
-                    if(cardNo != null){
-                        mPrintObjs.add(getPrintItemObjs("card number:"+cardNo, PrinterConstant.FontSize.NORMAL, PrintItemObj.ALIGN.LEFT));
-                    }
-                } else if(print[i].indexOf("Amount") != -1){
-                    if(amount != null){
-                        mPrintObjs.add(getPrintItemObjs("Amount:RMB "+amount, PrinterConstant.FontSize.LARGE, PrintItemObj.ALIGN.LEFT));
-                    }
-                }
-                *//**add end *//*
-                else {
-                    mPrintObjs.add(getPrintItemObjs(print[i].replace("~", ""), PrinterConstant.FontSize.LARGE, PrintItemObj.ALIGN.LEFT));
-                }
-            } else if (print[i].indexOf("Signing order") != -1 ||
-                    print[i].indexOf("Transaction voucher") != -1) {
-                if (print[i].indexOf("Transaction voucher") != -1 && print[i].indexOf("Cardholder Union") != -1) {
-                    isHolder = true;
-                } else {
-                    isHolder = false;
-                }
-                mPrintObjs.add(getPrintItemObjs(print[i], PrinterConstant.FontSize.LARGE, PrintItemObj.ALIGN.CENTER));
-            }
-            *//**add by zongli for fake print data *//*
-            else if(print[i].indexOf("time") != -1){
-                if(curTime != null){
-                    mPrintObjs.add(getPrintItemObjs("time:"+curTime, PrinterConstant.FontSize.NORMAL, PrintItemObj.ALIGN.LEFT));
-                }
-            }
-            *//**add end *//*
-            else {
-                mPrintObjs.add(getPrintItemObjs(print[i], PrinterConstant.FontSize.NORMAL, PrintItemObj.ALIGN.LEFT));
-            }
-        }
-        mPrintObjs.add(getPrintItemObjs("\n\n\n\n", PrinterConstant.FontSize.NORMAL, PrintItemObj.ALIGN.LEFT));
 
-*/
 
         mPrintObjs.add(getPrintItemObjs("PURCHASE Transaction", PrinterConstant.FontSize.LARGE,true, PrintItemObj.ALIGN.CENTER));
         mPrintObjs.add(getPrintItemObjs("Hala Merchant", PrinterConstant.FontSize.LARGE,true, PrintItemObj.ALIGN.CENTER));
@@ -260,117 +172,6 @@ public class Purchase_Print {
 
     }
 
-    private void getScanPrintString(String printMsg) {
-
-        /**add by zongli for fake print data */
-        String amount ="1000";// PosApplication.getApp().mConsumeData.getAmount();
-        /**add end */
-
-        String[] print = printMsg.split("\\n");
-        for (int i = 0; i < print.length; i++) {
-            if (print[i].indexOf("~") != -1) {
-                if (print[i].indexOf("交易类型") != -1) {
-                    mPrintObjs.add(getPrintItemObjs(print[i].replace("~", ""), PrinterConstant.FontSize.LARGE, true,PrintItemObj.ALIGN.LEFT));
-                }
-                /**add by zongli for fake print data */
-                else if(print[i].indexOf("金额") != -1){
-                    if(amount != null){
-                        mPrintObjs.add(getPrintItemObjs("金额:RMB "+amount, PrinterConstant.FontSize.LARGE, true,PrintItemObj.ALIGN.LEFT));
-                    }
-                }
-                /**add end */
-                else {
-                    mPrintObjs.add(getPrintItemObjs(print[i].replace("~", ""), PrinterConstant.FontSize.NORMAL,true, PrintItemObj.ALIGN.LEFT));
-                }
-            } else if (print[i].indexOf("签购单") != -1 ||
-                    print[i].indexOf("交易凭证") != -1) {
-                if (print[i].indexOf("交易凭证") != -1 && print[i].indexOf("持卡人联") != -1) {
-                    isHolder = true;
-                } else {
-                    isHolder = false;
-                }
-                mPrintObjs.add(getPrintItemObjs(print[i], PrinterConstant.FontSize.LARGE,true, PrintItemObj.ALIGN.CENTER));
-            } /**add by zongli for fake print data */
-            else if(print[i].indexOf("时间") != -1){
-                if(curTime != null){
-                    mPrintObjs.add(getPrintItemObjs("交易时间:"+curTime, PrinterConstant.FontSize.NORMAL,true, PrintItemObj.ALIGN.LEFT));
-                }
-            }
-            /**add end */
-            else {
-                mPrintObjs.add(getPrintItemObjs(print[i], PrinterConstant.FontSize.NORMAL,true, PrintItemObj.ALIGN.LEFT));
-            }
-        }
-        mPrintObjs.add(getPrintItemObjs("\n\n\n\n", PrinterConstant.FontSize.NORMAL,true, PrintItemObj.ALIGN.LEFT));
-    }
-
-    private void getPurchase_PrintFakeString() {
-        Log.i(TAG, "getPurchase_PrintString()");
-        /**add by zongli for fake print data */
-        final String amount ="100"; // PosApplication.getApp().mConsumeData.getAmount();
-        String cardNo = "15000077";//PosApplication.getApp().mConsumeData.getCardno();
-        String firCardNo = null;
-        String mid = null;
-        String lastCardNo = null;
-        if(cardNo != null){
-            int cardLength = cardNo.length();
-            firCardNo = cardNo.substring(0,6);
-            lastCardNo = cardNo.substring(cardLength - 4);
-            mid = "******";
-            cardNo = firCardNo + mid + lastCardNo;
-        }
-        /**add end */
-        final String finalCardNo = cardNo;
-        mPrintObjs = new ArrayList<PrintItemObj>() {
-            {
-                add(new PrintItemObj(mContext.getString(R.string.print_purchase_order), 16, true, PrintItemObj.ALIGN.CENTER));
-                add(new PrintItemObj(mContext.getString(R.string.print_transaction_documents), 16, true, PrintItemObj.ALIGN.LEFT));
-                add(new PrintItemObj(mContext.getString(R.string.print_version), 8, true, PrintItemObj.ALIGN.LEFT));
-                add(new PrintItemObj(mContext.getString(R.string.print_business_name), 8, true, PrintItemObj.ALIGN.LEFT));
-
-                add(new PrintItemObj(mContext.getString(R.string.print_terminal_number), 8, true, PrintItemObj.ALIGN.LEFT));
-                add(new PrintItemObj(mContext.getString(R.string.print_acquirer), 8, true, PrintItemObj.ALIGN.LEFT));
-                add(new PrintItemObj(mContext.getString(R.string.print_card_number)+ finalCardNo, 8, true, PrintItemObj.ALIGN.LEFT));
-                add(new PrintItemObj(mContext.getString(R.string.print_transaction_type), 16, true, PrintItemObj.ALIGN.LEFT));
-                add(new PrintItemObj(mContext.getString(R.string.print_validity), 8, true, PrintItemObj.ALIGN.LEFT));
-                add(new PrintItemObj(mContext.getString(R.string.print_document_number), 8, true, PrintItemObj.ALIGN.LEFT));
-                add(new PrintItemObj(mContext.getString(R.string.print_reference_no), 8, true, PrintItemObj.ALIGN.LEFT));
-                add(new PrintItemObj(mContext.getString(R.string.print_time)+curTime, 8, true, PrintItemObj.ALIGN.LEFT));
-                add(new PrintItemObj(mContext.getString(R.string.print_amount)+amount, 16, true, PrintItemObj.ALIGN.LEFT));
-                add(new PrintItemObj(mContext.getString(R.string.print_dotted_line), 8, true, PrintItemObj.ALIGN.LEFT));
-                add(new PrintItemObj(mContext.getString(R.string.print_ticket_number), 8, true, PrintItemObj.ALIGN.LEFT));
-                add(new PrintItemObj(mContext.getString(R.string.print_dotted_line), 8, true, PrintItemObj.ALIGN.LEFT));
-                add(new PrintItemObj(mContext.getString(R.string.print_cardholder_signature), 16, true, PrintItemObj.ALIGN.LEFT));
-                add(new PrintItemObj("\n"));
-                add(new PrintItemObj(mContext.getString(R.string.print_confirm_transaction), 8, true, PrintItemObj.ALIGN.LEFT));
-                add(new PrintItemObj("\n\n"));
-            }
-        };
-    }
-
-    private void getScanPrintFakeString() {
-        /*final String amount = PosApplication.getApp().mConsumeData.getAmount();
-
-        mPrintObjs = new ArrayList<PrintItemObj>() {
-            {
-                add(new PrintItemObj(mContext.getString(R.string.print_purchase_order), 16, true, PrintItemObj.ALIGN.CENTER));
-                add(new PrintItemObj(mContext.getString(R.string.print_transaction_documents), 16, true, PrintItemObj.ALIGN.LEFT));
-                add(new PrintItemObj(mContext.getString(R.string.print_version), 8, true, PrintItemObj.ALIGN.LEFT));
-                add(new PrintItemObj(mContext.getString(R.string.print_business_name), 8, true, PrintItemObj.ALIGN.LEFT));
-                add(new PrintItemObj(mContext.getString(R.string.print_business_number), 8, true, PrintItemObj.ALIGN.LEFT));
-                add(new PrintItemObj(mContext.getString(R.string.print_terminal_number), 8, true, PrintItemObj.ALIGN.LEFT));
-                add(new PrintItemObj(mContext.getString(R.string.print_ticket_number_scan), 8, true, PrintItemObj.ALIGN.LEFT));
-                add(new PrintItemObj(mContext.getString(R.string.print_reference_no_scan), 8, true, PrintItemObj.ALIGN.LEFT));
-                add(new PrintItemObj(mContext.getString(R.string.print_transaction_type_scan), 16, true, PrintItemObj.ALIGN.LEFT));
-                add(new PrintItemObj(mContext.getString(R.string.print_amount)+amount, 16, true, PrintItemObj.ALIGN.LEFT));
-                add(new PrintItemObj(mContext.getString(R.string.print_time)+curTime, 8, true, PrintItemObj.ALIGN.LEFT));
-                add(new PrintItemObj(mContext.getString(R.string.print_no_password_scan), 8, true, PrintItemObj.ALIGN.LEFT));
-                add(new PrintItemObj(mContext.getString(R.string.print_notice_scan), 8, true, PrintItemObj.ALIGN.LEFT));
-                add(new PrintItemObj("\n\n"));
-            }
-        };*/
-
-    }
 
     private PrintItemObj getPrintItemObjs(String printText, int fontSize,boolean bold, PrintItemObj.ALIGN align) {
         PrintItemObj printItemObj = new PrintItemObj(printText, fontSize, bold, align);

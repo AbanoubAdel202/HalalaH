@@ -47,7 +47,7 @@ public class ShowResultActivity extends Activity implements View.OnClickListener
         mErrorReson = data.getInt("result_errReason");
         Log.i(TAG, "mResponse = " + mResponse + ", mResponseDetail" + mResponseDetail + ", mErrorReson" + mErrorReson);
 
-//        setActionBarText();
+        setActionBarText();
 
         showResult();
     }
@@ -102,46 +102,14 @@ public class ShowResultActivity extends Activity implements View.OnClickListener
                     mImageResult.setImageDrawable(getDrawable(R.drawable.trans_faild));
                 }
             }
-            /*else if (mProcType == PacketProcessUtils.PACKET_PROCESS_SIGN_UP) {
-                if (mResponse != null && mResponse.equals("00")) {
-                    mResponse = null;
-                    String temp = null;
-                    if (mResponseDetail != null && mResponseDetail.length() > 2) {
-                        temp = mResponseDetail.substring(0, 2);
-                        Log.i(TAG, "temp = " + temp);
-                    }
-                    if (temp != null && temp.equals("01")) {
-                        mResponseDetail = mResponseDetail.substring(2);
-                        mImageResult.setImageDrawable(getDrawable(R.drawable.trans_faild));
-                    } else {
-                        mResponseDetail = getString(R.string.result_sucess_sign_up);
-                        mImageResult.setImageDrawable(getDrawable(R.drawable.trans_success));
-                    }
-                } else {
-                    mResponseDetail = getString(R.string.result_failed_sign_up);
-                    mImageResult.setImageDrawable(getDrawable(R.drawable.trans_faild));
-                }
-            }*/
+
             else {
                 if (mResponse == null || !mResponse.equals("00")) {
                     if (mResponseDetail == null) {
                         mResponseDetail = getString(R.string.result_error_unkown);
                     }
                     mImageResult.setImageDrawable(getDrawable(R.drawable.trans_faild));
-                } /*else {
-                    mResponse = null;
-
-                    if (mProcType == PacketProcessUtils.PACKET_PROCESS_PARAM_TRANS) {
-                        mResponseDetail = getString(R.string.result_sucess_para_trans);
-                    } else if (mProcType == PacketProcessUtils.PACKET_PROCESS_STATUS_UPLOAD) {
-                        mResponseDetail = getString(R.string.result_sucess_status_upload);
-                    }  else {
-                        if (mResponseDetail == null) {
-                            mResponseDetail = getString(R.string.result_sucess);
-                        }
-                    }
-                    mImageResult.setImageDrawable(getDrawable(R.drawable.trans_success));
-                }*/
+                }
             }
         }
 

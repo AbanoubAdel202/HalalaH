@@ -181,7 +181,7 @@ View root =inflater.inflate(R.layout.fragment_home_transaction, container, false
                     };
 
 
-                    PosApplication.getApp().oGSama_TMS.Get_Sama_param(DE72buffer[i],getContext());
+//                    PosApplication.getApp().oGSama_TMS.Get_Sama_param(DE72buffer[i],getContext());
 
 
 

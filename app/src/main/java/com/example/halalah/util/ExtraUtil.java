@@ -30,7 +30,7 @@ public class ExtraUtil {
 
     public static String Get_Local_Date_Time(){
         Date d = new Date();
-        CharSequence s  = DateFormat.format("YYMMDDhhmmss", d.getTime());
+        CharSequence s  = DateFormat.format("YYMMDDHHmmss", d.getTime());
 
         return s.toString();
 

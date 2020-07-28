@@ -44,10 +44,10 @@ public class RFPbocStartListenerSub extends AidlPbocStartListener.Stub {
 
         //todo success validation
         if (POS_MAIN.Recognise_card()!=0)
-            //todo do activity error
+            //todo do activity error CArd not recognised
 
         if(!POS_MAIN.Check_transaction_allowed(PosApplication.getApp().oGPosTransaction.m_enmTrxType))
-            //todo do transaction not allowed
+            //todo do transaction not allowed Activity
 
         POS_MAIN.Check_transaction_limits();
 

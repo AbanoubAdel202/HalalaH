@@ -111,7 +111,7 @@ public class DUKPT_KEY {
         /*******************************************/
 
         // Load and inject DUKPT
-        InitilizeDUKPT(m_BDK, m_KSN.toString());   // todo check ksn to string is correct
+        InitilizeDUKPT(m_BDK, m_KSN.toString());
     }
 
 /*

@@ -57,7 +57,7 @@ public class Terminal_Registeration implements SendReceiveListener {
         mSendPacket=POSTrx.m_RequestISOMsg.isotostr();
         do{
 
-            //todo preconnection android
+
             CommunicationsHandler.getInstance(new CommunicationInfo(PosApplication.getApp().getApplicationContext())).preConnect();
 
             mSendPacket=mPackPacket.getSendPacket();

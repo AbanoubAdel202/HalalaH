@@ -58,6 +58,10 @@ public class PosApplication extends Application{
     public final static int DUKPT_MAK = 12;
     public final static int DUKPT_PEK = 13;
 
+    /**********************
+     * Global Transaction *
+     **********************/
+    public POS_MAIN oGPOS_MAIN = new POS_MAIN();
 
     /**********************
      * Global Transaction *

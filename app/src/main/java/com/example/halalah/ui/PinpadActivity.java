@@ -291,6 +291,38 @@ public class PinpadActivity extends Activity {
                             }
 
                             CardManager.getInstance().startActivity(PinpadActivity.this, bundle, PacketProcessActivity.class);
+                        case REFUND:
+                            bundle.putInt(PacketProcessUtils.PACKET_PROCESS_TYPE, PacketProcessUtils.PACKET_PROCESS_REFUND);
+                            if (POSTransaction.CardType.MANUAL != mCardType) {
+                                CardManager.getInstance().startActivity(PinpadActivity.this, bundle, PacketProcessActivity.class);
+                            }
+
+
+                        case PURCHASE_ADVICE:
+                            bundle.putInt(PacketProcessUtils.PACKET_PROCESS_TYPE, PacketProcessUtils.PACKET_PROCESS_PURCHASE_ADVICE);
+                            //mada preauthcompeletion have to go online and not saved in saf
+                                CardManager.getInstance().startActivity(PinpadActivity.this, bundle, PacketProcessActivity.class);
+
+                        case AUTHORISATION_ADVICE:
+                        case AUTHORISATION:
+                            bundle.putInt(PacketProcessUtils.PACKET_PROCESS_TYPE, PacketProcessUtils.PACKET_PROCESS_AUTHORISATION);
+                            if (POSTransaction.CardType.MANUAL != mCardType) {
+                                CardManager.getInstance().startActivity(PinpadActivity.this, bundle, PacketProcessActivity.class);
+                            }
+
+
+                        case PURCHASE_WITH_NAQD:
+                        case AUTHORISATION_EXTENSION:
+                            bundle.putInt(PacketProcessUtils.PACKET_PROCESS_TYPE, PacketProcessUtils.PACKET_PROCESS_AUTHORISATION);
+                            if (POSTransaction.CardType.MANUAL != mCardType) {
+                                CardManager.getInstance().startActivity(PinpadActivity.this, bundle, PacketProcessActivity.class);
+                            }
+                        case CASH_ADVANCE:
+                            break;
+                        case SADAD_BILL:
+                            if (mCardType==POSTransaction.CardType.ICC ||mCardType==POSTransaction.CardType.CTLS||mCardType==POSTransaction.CardType.MAG) {
+                                CardManager.getInstance().startActivity(PinpadActivity.this, bundle, PacketProcessActivity.class);
+                            }
 
                     }
                 }else //ICS
@@ -314,6 +346,26 @@ public class PinpadActivity extends Activity {
 
                                     CardManager.getInstance().startActivity(PinpadActivity.this, bundle, ShowResultActivity.class);
                                 }
+                                break;
+                            case PURCHASE_ADVICE:
+                                bundle.putInt(PacketProcessUtils.PACKET_PROCESS_TYPE, PacketProcessUtils.PACKET_PROCESS_PURCHASE_ADVICE);
+                                if (POSTransaction.CardType.MANUAL == mCardType ||mCardType==POSTransaction.CardType.ICC ||mCardType==POSTransaction.CardType.CTLS||mCardType==POSTransaction.CardType.MAG)
+                                {                                                                                                                 //Manual Entry Attended POS Preauthorization Completion Transaction
+                                    CardManager.getInstance().startActivity(PinpadActivity.this, bundle, PacketProcessActivity.class);   //for IBCS Scheme Cardsapprove a manual entry attended POS terminal
+                                }                                                                                                                 // preauthorization capture online without storing it in the SAF file locally at the terminal.
+
+                                 break;
+                            case AUTHORISATION_ADVICE:
+                            case AUTHORISATION:
+                                bundle.putInt(PacketProcessUtils.PACKET_PROCESS_TYPE, PacketProcessUtils.PACKET_PROCESS_AUTHORISATION);
+                                if (mCardType== POSTransaction.CardType.MAG ||mCardType==POSTransaction.CardType.CTLS)
+                                {                                                                                                                 //Manual Entry Attended POS Preauthorization Completion Transaction
+                                    CardManager.getInstance().startActivity(PinpadActivity.this, bundle, PacketProcessActivity.class);   //for IBCS Scheme Cardsapprove a manual entry attended POS terminal
+                                }
+
+                            case PURCHASE_WITH_NAQD:
+                            case AUTHORISATION_EXTENSION:
+                            case CASH_ADVANCE:
                         }
 
 

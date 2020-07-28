@@ -32,7 +32,7 @@ public class    UnpackPurchase {
         Log.d(TAG,"field 39 is：" + resMsg);
         resDetail = unpack.processField46(mIso.getDataElement_original(46), resMsg);
 
-        if(resMsg.equals("00")) {  ////todo add more approved response codes other than 00
+        if(resMsg.equals("00")) {  ////
 
 
             Log.d(TAG, "#########37####################");
@@ -66,7 +66,7 @@ public class    UnpackPurchase {
             byte[] field64 = mIso.getDataElement(64);
             String Balance = new String(field64);
             Log.d(TAG, "64" + Balance);
-            //todo MAC validation
+
 
             }*/
             ///////////////////test//////////////////////////////

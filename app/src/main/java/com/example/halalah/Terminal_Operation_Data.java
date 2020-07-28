@@ -13,7 +13,9 @@ package com.example.halalah;
  */
 public class Terminal_Operation_Data {
 
-        public Terminal_Operation_Data(){
+
+
+    public Terminal_Operation_Data(){
                 m_iPinKeyboardMode=1;
                 m_sMerchantID="111111111111111";
                 m_sTerminalID="12345678";
@@ -39,13 +41,18 @@ public class Terminal_Operation_Data {
         public SAF_Info saf_info;
         public String sMerchant_Category_Code;
         public String sAcquirer_ID;
-        public boolean reversal_flg;
-        public boolean Reconsile_flag;   // to force reconciliation
+        public boolean breversal_flg;
+        public boolean breconsile_flag;   // to force reconciliation
+        public boolean bDeSAF_flag;
+        public boolean bTMS_flag;
         public int MaxConRetry;   //max connection Retry count
         public  int g_NumberOfCardSchemes;    /* Number of supported card scheme is 10 */
         public  CardSchemeTotals [] g_TerminalTotals = new CardSchemeTotals[g_NumberOfCardSchemes]; /* Terminal Totals */
         double    m_dTermReconciliationAmount;  // Adding All approved/accepted transaction amount
         int       m_iTermApprovedTrxCounter;    // Counter of approved transaction usded to for checking number of approved trx against reconcilation trx limit
+
+
+
 
 
 }

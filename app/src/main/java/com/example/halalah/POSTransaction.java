@@ -83,6 +83,7 @@ public class POSTransaction {
             m_is_mada=false;
             m_is_final=false;
         // Transaction Data Elements as per SP Terminal interface specification document 6.0.9
+            m_sMTI=null;                                /* MTI*/
         	m_sPAN=null;								/* DE2   – Primary account Number -Size 19  –Reconcilation value would be Terminal ID as is present in DE 41*/
         	m_sProcessCode=null;	    				/* DE3   – Process Code  –Size 6 */
         	m_sTrxAmount=null;						/* DE4   – Transaction Amount – Size 12*/
@@ -127,6 +128,7 @@ public class POSTransaction {
 
 
     // Transaction Data Elements as per SP Terminal interface specification document 6.0.9
+    public String   m_sMTI;                                /* MTI*/
     public String	m_sPAN;								/* DE2   – Primary account Number -Size 19  –Reconcilation value would be Terminal ID as is present in DE 41*/
     public String	m_sProcessCode;	    				/* DE3   – Process Code  –Size 6 */
     public String	m_sTrxAmount;						/* DE4   – Transaction Amount – Size 12*/
@@ -288,7 +290,6 @@ public class POSTransaction {
             stotalsDE124.concat(oTotalsArray[i].m_szCardSchmID.toString());            /* Card scheme ID*/
             stotalsDE124.concat(oTotalsArray[i].m_szCardSchemeAcqID.toString());       /* Card Scheme Acquirer ID*/
             // Trx Totals
-            String.format(Locale.ENGLISH,"%010D",oTotalsArray[i].m_lDebitCount);
             stotalsDE124.concat(String.format(Locale.ENGLISH,"%010D",oTotalsArray[i].m_lDebitCount));            /* Debit Count*/
             stotalsDE124.concat(String.format(Locale.ENGLISH,"%015D",oTotalsArray[i].m_dDebitAmount));           /* Debit Amount*/
             stotalsDE124.concat(String.format(Locale.ENGLISH,"%010D",oTotalsArray[i].m_lCreditCount));           /* Credit Count*/
@@ -297,9 +298,6 @@ public class POSTransaction {
             stotalsDE124.concat(String.format(Locale.ENGLISH,"%015D",oTotalsArray[i].m_dCashAdvanceAmount));     /* Cash Advance Amount*/
             stotalsDE124.concat(String.format(Locale.ENGLISH,"%010D",oTotalsArray[i].m_lAuthorisationCount));    /* Authorisation Count*/
         }
-
-
-
         return stotalsDE124;
     }
     public String ComposeICCTags(CardType enmCard)

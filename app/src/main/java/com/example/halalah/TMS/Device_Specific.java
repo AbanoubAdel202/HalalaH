@@ -1,23 +1,26 @@
 package com.example.halalah.TMS;
 
 /**********************************************************************/
+
+     class ContactlessLimits
+    {
+        public String m_sCard_Scheme_ID;
+        public String m_sTerminal_Contactless_Transaction_Limit;
+        public String m_sTerminal_CVM_Required_Limit;
+        public String m_sTerminal_Contactless_Floor_Limit;
+    }
+
    public class Device_Specific
     {
         ///////////////////
     //Segment_1_of_Device_Specific
     ///////////////////
+
+        // based on moamen request data become objects
         public String m_sCard_Scheme_MADA;                        //The value configured for the mada scheme (‘P1’) shall apply to all card schemes
-        public String m_sTerminal_Contactless_Transaction_Limit;
-        public String m_sTerminal_CVM_Required_Limit;
-        public String m_sTerminal_Contactless_Floor_Limit;
-        public String m_sCard_Scheme_VC;
-        public String m_sTerminal_Contactless_Transaction_Limit1;         //zeros as per spec Version 6.0.9
-        public String m_sTerminal_CVM_Required_Limit1;                    //zeros as per spec Version 6.0.9
-        public String m_sTerminal_Contactless_Floor_Limit1;               //zeros as per spec Version 6.0.9
-        public String m_sCard_Scheme_MC;
-        public String m_sTerminal_Contactless_Transaction_Limit2;         //zeros as per spec Version 6.0.9
-        public String m_sTerminal_CVM_Required_Limit2;                    //zeros as per spec Version 6.0.9
-        public String m_sTerminal_Contactless_Floor_Limit2;               //zeros as per spec Version 6.0.9
+        public ContactlessLimits mada_CTLS_Limits;
+        public ContactlessLimits Visa_CTLS_Limits;
+        public ContactlessLimits Mastercard_CTLS_Limits;
         public String m_sMax_SAF_Depth;
         public String m_sMax_SAF_Cumulative_Amount;
         public String m_sIdle_Time;
