@@ -824,12 +824,13 @@ public class SAMA_TMS implements Serializable {
                     if (aidl_seg1_elements[0].length() > 3) {
                         String aid1 = aidl_seg1_elements[0].substring(3);  //check max length 3
                         aid.aidName = aid1;           //AID 1
+                        TMSManager.getInstance().insert(aid);
                     }
                     for (int j = 1; j < temp.length; j++)   //AID 2-10 or more if exist
                     {
                         aid.aidName = aidl_seg1_elements[j];
+                        TMSManager.getInstance().insert(aid);
                     }
-                    TMSManager.getInstance().insert(aid);
                 }
                 //save(aidName);
                 break;
