@@ -12,9 +12,6 @@ public class ArrayUtils {
         String str = "";
         for (int i = 0; i < array.length; i++) {
             str = str + array[i];
-            if (str.contains("F")) {
-                str = str.replaceAll("F", "");
-            }
             // Do not append comma at the end of last element
             if (i < array.length - 1) {
                 str = str + ",";
