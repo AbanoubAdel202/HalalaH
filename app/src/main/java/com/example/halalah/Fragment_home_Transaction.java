@@ -1,20 +1,16 @@
 package com.example.halalah;
 
 import android.os.Bundle;
-
-import androidx.fragment.app.Fragment;
-
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 
-import com.example.halalah.TMS.Device_Specific;
-import com.example.halalah.TMS.Limits;
-import com.example.halalah.TMS.TMSManager;
+import androidx.fragment.app.Fragment;
 
-import java.util.List;
+import com.example.halalah.TMS.Card_Scheme;
+import com.example.halalah.TMS.TMSManager;
 
 
 /**
@@ -70,7 +66,7 @@ public class Fragment_home_Transaction extends Fragment implements View.OnClickL
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
 View root =inflater.inflate(R.layout.fragment_home_transaction, container, false);
-        Button mada1_btn =(Button) root.findViewById(R.id.Mada1_btn);
+        Button mada1_btn = root.findViewById(R.id.Mada1_btn);
         mada1_btn.setOnClickListener(this);
         return root;
     }
@@ -78,13 +74,30 @@ View root =inflater.inflate(R.layout.fragment_home_transaction, container, false
     @Override
     public void onClick(View v) {
 
-//       TMSManager tmsManager = TMSManager.getInstance();
-//       tmsManager.loadData();
+        TMSManager tmsManager = TMSManager.getInstance();
 
-        List<Device_Specific> deviceSpecifics = TMSManager.getInstance().getAllDeviceSpecifics();
-        Device_Specific deviceSpecific = TMSManager.getInstance().getDeviceSpecific();
-        Limits limits = TMSManager.getInstance().getCTLSLimitsByCardScheme("P1");
-        Log.d(TAG, "QR Enabled ? " + deviceSpecific.m_sQR_Code_Print_Indicator);
+
+        Card_Scheme cardScheme = new Card_Scheme();
+        cardScheme.m_sCard_Scheme_ID = "JC";
+        cardScheme.setCardRangesStr("1,2,3");
+        cardScheme.setCardRanges(new String[]{"1", "2", "3"});
+        tmsManager.insert(cardScheme);
+        Card_Scheme jc = tmsManager.getCardSchemeByID("JC");
+        Log.d(TAG, "" + jc.getCardRangesStr());
+//
+//       Card_Scheme a1 = tmsManager.getCardSchemeByPAN("38");
+//       Log.d(TAG,  "" +a1);
+//       String a2 = tmsManager.getCardSchemeByPAN("588845").m_sCard_Scheme_ID;//P1
+//        Log.d(TAG, a2);
+//       String b1 = tmsManager.getCardSchemeByPAN("01490001").m_sCard_Scheme_ID;//VD
+//        Log.d(TAG, b1);
+//       String b2 = tmsManager.getCardSchemeByPAN("605141").m_sCard_Scheme_ID;//P1
+//        Log.d(TAG, b2);
+//       String c1 = tmsManager.getCardSchemeByPAN("38FFFF").m_sCard_Scheme_ID;//JC
+//        Log.d(TAG, c1);
+//       String d1 = tmsManager.getCardSchemeByPAN("400000").m_sCard_Scheme_ID;//VD
+//        Log.d(TAG, d1);
+
 
     }
 }

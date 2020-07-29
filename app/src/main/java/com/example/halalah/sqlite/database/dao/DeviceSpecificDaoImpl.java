@@ -5,9 +5,7 @@ import android.content.Context;
 import com.example.halalah.TMS.Device_Specific;
 import com.example.halalah.TMS.Limits;
 import com.example.halalah.sqlite.database.BaseDaoImpl;
-
 import com.example.halalah.sqlite.database.MyDBHelper;
-
 
 import java.util.List;
 
@@ -64,6 +62,15 @@ public class DeviceSpecificDaoImpl extends BaseDaoImpl<Device_Specific> {
             return deviceSpecific.getMcLimits();
         }
         return null;
+    }
+
+    @Override
+    public long insert(Device_Specific entity) {
+        // Empty the table first
+        StringBuffer sb = new StringBuffer("DELETE FROM Device_Specific");
+        rawQuery(sb.toString(), null);
+
+        return super.insert(entity);
     }
 
 }

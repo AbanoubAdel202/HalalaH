@@ -81,4 +81,12 @@ public class ConnectionParametersDaoImpl extends BaseDaoImpl<Connection_Paramete
         }
         return capklist.get(0).getSecondaryConnectionType();
     }
+
+    @Override
+    public long insert(Connection_Parameters entity) {
+        // Empty the table first
+        StringBuffer sb = new StringBuffer("DELETE FROM Connection_Parameters");
+        rawQuery(sb.toString(), null);
+        return super.insert(entity);
+    }
 }

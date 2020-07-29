@@ -30,7 +30,7 @@ public interface BaseDao<T> {
 
 	void delete(Integer... ids);
 
-	void update(T entity);
+	int update(T entity);
 
 	T get(int id);
 
@@ -50,8 +50,8 @@ public interface BaseDao<T> {
 	 * @param selectionArgs
 	 * @return The keys in the returned map are all lowercase.
 	 */
-	public List<Map<String, String>> query2MapList(String sql,
-                                                   String[] selectionArgs);
+	List<Map<String, String>> query2MapList(String sql,
+											String[] selectionArgs);
 
 	/**
 	 * execute sql
@@ -59,6 +59,6 @@ public interface BaseDao<T> {
 	 * @param sql
 	 * @param selectionArgs
 	 */
-	public void execSql(String sql, Object[] selectionArgs);
+	void execSql(String sql, Object[] selectionArgs);
 
 }

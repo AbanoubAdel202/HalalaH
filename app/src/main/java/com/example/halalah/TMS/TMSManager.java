@@ -1,17 +1,19 @@
 package com.example.halalah.TMS;
 
+import com.example.halalah.Utils;
 import com.example.halalah.sqlite.database.DBManager;
 
 import java.util.List;
 
 public class TMSManager {
+    private static final String TAG = Utils.TAGPUBLIC + TMSManager.class.getSimpleName();
     private static TMSManager mInstance;
     private static DBManager dbManager;
 
     public static TMSManager getInstance() {
         if (mInstance == null) {
             mInstance = new TMSManager();
-            dbManager = dbManager.getInstance();
+            dbManager = DBManager.getInstance();
         }
         return mInstance;
     }
@@ -25,7 +27,8 @@ public class TMSManager {
     }
 
     public void insert(Card_Scheme cardScheme) {
-        dbManager.getCardSchemeDao().insert(cardScheme);
+//        Log.d(TAG, cardScheme.toString());
+        dbManager.getCardSchemeDao().insertOrUpdate(cardScheme);
     }
 
     public void insert(Connection_Parameters connectionParameters) {

@@ -4,8 +4,6 @@ package com.example.halalah.TMS;
 import android.content.Context;
 import android.util.Log;
 
-import com.example.halalah.sqlite.database.DBManager;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -14,6 +12,8 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * all TMS parameters
@@ -240,7 +240,7 @@ public class SAMA_TMS implements Serializable {
     private static final String DT_Retailer_Data = "01", DT_Card_Scheme = "02", DT_Message_Text = "03", DT_Key = "04",
             DT_Connection_Parameters = "05", DT_Device_Specific = "06", DT_AID_List = "07",
             DT_AID_Data = "08", DT_Revoked_Certificates = "09";
-    private static final String mada = "P1", Visa_Credit = "VC", Visa_Debit = "VD", Master_Card = "MC", Maestro = "DM", AMEX = "AX", UnionPay = "UP", JCB = "JB", Discover = "DC";
+    private static final String mada = "P1", Visa_Credit = "VC", Visa_Debit = "VD", Master_Card = "MC", Maestro = "DM", AMEX = "AX", UnionPay = "UP", JCB = "JC", Discover = "DC";
     private static final String DIAL_UP = "01", TCP_IP = "02", GPRS = "03", WIFI = "04", GSM = "05";
     private static final int MAXBUFFERLEN = 2048;
     private static final int MAXSCHEMES = 10;
@@ -249,7 +249,7 @@ public class SAMA_TMS implements Serializable {
 
 
     public Retailer_Data retailer_data;
-    public Card_Scheme card_scheme;
+    public Map<String, Card_Scheme> cardSchemeMap;
     public Message_Text[] message_text;
     public Message_Text empty;
     public Public_Key public_keys;
@@ -267,7 +267,7 @@ public class SAMA_TMS implements Serializable {
     public SAMA_TMS(Context context) {
 
         retailer_data = new Retailer_Data();
-        card_scheme = new Card_Scheme();
+        cardSchemeMap = new HashMap<>();
         //public_keys = new Public_Key[MAXCAPK];
         public_keys = new Public_Key();
         message_text = new Message_Text[MAXMSG];
@@ -487,7 +487,7 @@ public class SAMA_TMS implements Serializable {
                             retailer_data.m_sEnglish_Receipt_2 = ret_seg1_elements[14];
                             break;
                         case "2":
-                            String ret_seg2_elements[] = new String[2];
+                            String[] ret_seg2_elements = new String[2];
                             Arrays.fill(ret_seg2_elements, "");
                             temp = segments[i].split("\u001C");
                             System.arraycopy(temp, 0, ret_seg2_elements, 0, temp.length);
@@ -496,14 +496,14 @@ public class SAMA_TMS implements Serializable {
                             //Segment2
                             ////////////////
                             if (ret_seg2_elements[0].length() > 3) {
-                                String address = ret_seg2_elements[0].substring(3, ret_seg2_elements[0].length());
+                                String address = ret_seg2_elements[0].substring(3);
                                 retailer_data.m_sRetailer_Address_1_Arabic = address;
                             }
 
                             retailer_data.m_sRetailer_Address_1_English = ret_seg2_elements[1];
                             break;
                         case "3":
-                            String ret_seg3_elements[] = new String[2];
+                            String[] ret_seg3_elements = new String[2];
                             Arrays.fill(ret_seg3_elements, "");
                             temp = segments[i].split("\u001C");
                             System.arraycopy(temp, 0, ret_seg3_elements, 0, temp.length);
@@ -511,7 +511,7 @@ public class SAMA_TMS implements Serializable {
                             //Segment3
                             ////////////////
                             if (ret_seg3_elements[0].length() > 3) {
-                                String address = ret_seg3_elements[0].substring(3, ret_seg3_elements[0].length());  //check max length 12 or 13
+                                String address = ret_seg3_elements[0].substring(3);  //check max length 12 or 13
                                 retailer_data.m_sRetailer_Address_2_Arabic = address;
                             }
 
@@ -528,7 +528,7 @@ public class SAMA_TMS implements Serializable {
                             //Segment4
                             ////////////////
                             if (ret_seg4_elements[0].length() > 3) {
-                                String address = ret_seg4_elements[0].substring(3, ret_seg4_elements[0].length());  //getting terminal cap
+                                String address = ret_seg4_elements[0].substring(3);  //getting terminal cap
                                 retailer_data.m_sTerminal_Capability = address;
                             }
                             retailer_data.m_sAdditional_Terminal_Capabilities = ret_seg4_elements[1];
@@ -546,7 +546,8 @@ public class SAMA_TMS implements Serializable {
                 TMSManager.getInstance().insert(retailer_data);
                 break;
             case DT_Card_Scheme:
-
+                Card_Scheme cardScheme = new Card_Scheme();
+                String m_sCard_Scheme_ID;
                 //card scheme
                 for (int i = 1; i < segments.length; i++) {
                     int scheme_id = -1;
@@ -556,61 +557,96 @@ public class SAMA_TMS implements Serializable {
                             /////////////////
                             //Segment1   mada="P1", Visa_Credit="VC" , Visa_Debit="VD", Master_Card="MC", Maestro="DM", AMEX="AX", UnionPay="UP", JCB="JB", Discover="DC"
                             ////////////////
-                            String crd_seg1_elements[] = new String[10];
+                            String[] crd_seg1_elements = new String[10];
                             Arrays.fill(crd_seg1_elements, "");
                             temp = segments[i].split("\u001C");
                             System.arraycopy(temp, 0, crd_seg1_elements, 0, temp.length);
                             scheme_id = checkcardscheme(crd_seg1_elements[0].substring(3, 5));
 
-                            card_scheme.m_sCard_Scheme_ID = crd_seg1_elements[0].substring(3, 5);
-                            card_scheme.m_sCard_Scheme_Name_Arabic = crd_seg1_elements[1];
-                            card_scheme.m_sCard_Scheme_Name_English = crd_seg1_elements[2];
-                            card_scheme.m_sCard_Scheme_Acquirer_ID = crd_seg1_elements[3];
-                            card_scheme.m_sMerchant_Category_Code = crd_seg1_elements[4];
-                            card_scheme.m_sMerchant_ID = crd_seg1_elements[5];
-                            card_scheme.m_sTerminal_ID = crd_seg1_elements[6];
-                            card_scheme.m_sEnable_EMV = crd_seg1_elements[7];
-                            card_scheme.m_sCheck_Service_Code = crd_seg1_elements[8];
-                            card_scheme.m_sOffline_Refund_PreAuthorization_Capture_Service_Indicator = crd_seg1_elements[9];
+                            m_sCard_Scheme_ID = crd_seg1_elements[0].substring(3, 5);
+                            cardScheme = cardSchemeMap.get(m_sCard_Scheme_ID);
+                            if (cardScheme == null) {
+                                cardScheme = new Card_Scheme();
+                                cardScheme.m_sCard_Scheme_ID = m_sCard_Scheme_ID;
+                            }
+
+                            cardScheme.m_sCard_Scheme_Name_Arabic = crd_seg1_elements[1];
+                            cardScheme.m_sCard_Scheme_Name_English = crd_seg1_elements[2];
+                            cardScheme.m_sCard_Scheme_Acquirer_ID = crd_seg1_elements[3];
+                            cardScheme.m_sMerchant_Category_Code = crd_seg1_elements[4];
+                            cardScheme.m_sMerchant_ID = crd_seg1_elements[5];
+                            cardScheme.m_sTerminal_ID = crd_seg1_elements[6];
+                            cardScheme.m_sEnable_EMV = crd_seg1_elements[7];
+                            cardScheme.m_sCheck_Service_Code = crd_seg1_elements[8];
+                            cardScheme.m_sOffline_Refund_PreAuthorization_Capture_Service_Indicator = crd_seg1_elements[9];
+
+                            cardSchemeMap.put(m_sCard_Scheme_ID, cardScheme);
+
                             break;
                         case "2":
                             /////////////////
                             //Segment2
                             ////////////////
-                            String crd_seg2_elements[] = new String[14];
+                            String[] crd_seg2_elements = new String[14];
                             Arrays.fill(crd_seg2_elements, "");
                             temp = segments[i].split("\u001C");
                             System.arraycopy(temp, 0, crd_seg2_elements, 0, temp.length);
                             scheme_id = checkcardscheme(crd_seg2_elements[0].substring(3, 5));
-                            card_scheme.m_sTransactions_Allowed = crd_seg2_elements[1];
-                            card_scheme.m_sCardholder_Authentication = crd_seg2_elements[2];
-                            card_scheme.m_sSupervisor_Functions = crd_seg2_elements[3];
-                            card_scheme.m_sManual_entry_allowed = crd_seg2_elements[4];
-                            card_scheme.m_sFloor_Limit_Indicator = crd_seg2_elements[5];
-                            card_scheme.m_sTerminal_Floor_Limit = crd_seg2_elements[6];
-                            card_scheme.m_sTerminal_Floor_Limit_Fallback = crd_seg2_elements[7];
-                            card_scheme.m_sMaximum_Cash_back = crd_seg2_elements[8];
-                            card_scheme.m_sMaximum_transaction_amount_indicator = crd_seg2_elements[9];
-                            card_scheme.m_sMaximum_amount_allowed = crd_seg2_elements[10];
-                            card_scheme.m_sLuhn_Check = crd_seg2_elements[11];
-                            card_scheme.m_sExpiry_Date_Position = crd_seg2_elements[12];
-                            card_scheme.m_sDelay_Call_Set_up = crd_seg2_elements[13];
+
+                            m_sCard_Scheme_ID = crd_seg2_elements[0].substring(3, 5);
+                            cardScheme = cardSchemeMap.get(m_sCard_Scheme_ID);
+                            if (cardScheme == null) {
+                                cardScheme = new Card_Scheme();
+                                cardScheme.m_sCard_Scheme_ID = m_sCard_Scheme_ID;
+                            }
+
+                            cardScheme.m_sTransactions_Allowed = crd_seg2_elements[1];
+                            cardScheme.m_sCardholder_Authentication = crd_seg2_elements[2];
+                            cardScheme.m_sSupervisor_Functions = crd_seg2_elements[3];
+                            cardScheme.m_sManual_entry_allowed = crd_seg2_elements[4];
+                            cardScheme.m_sFloor_Limit_Indicator = crd_seg2_elements[5];
+                            cardScheme.m_sTerminal_Floor_Limit = crd_seg2_elements[6];
+                            cardScheme.m_sTerminal_Floor_Limit_Fallback = crd_seg2_elements[7];
+                            cardScheme.m_sMaximum_Cash_back = crd_seg2_elements[8];
+                            cardScheme.m_sMaximum_transaction_amount_indicator = crd_seg2_elements[9];
+                            cardScheme.m_sMaximum_amount_allowed = crd_seg2_elements[10];
+                            cardScheme.m_sLuhn_Check = crd_seg2_elements[11];
+                            cardScheme.m_sExpiry_Date_Position = crd_seg2_elements[12];
+                            cardScheme.m_sDelay_Call_Set_up = crd_seg2_elements[13];
+
+                            cardSchemeMap.put(m_sCard_Scheme_ID, cardScheme);
+
                             break;
                         case "3":
                             /////////////////
                             //Segment3
                             ////////////////
-                            String crd_seg3_elements[] = new String[3];
+                            String[] crd_seg3_elements = new String[3];
                             Arrays.fill(crd_seg3_elements, "");
                             temp = segments[i].split("\u001C");
                             System.arraycopy(temp, 0, crd_seg3_elements, 0, temp.length);
                             scheme_id = checkcardscheme(crd_seg3_elements[0].substring(3, 5));
-                            card_scheme.setCardRanges(crd_seg3_elements[1].split(""));
-                            card_scheme.m_sCard_Prefix_Sequence_Indicator = crd_seg3_elements[2];
+
+                            m_sCard_Scheme_ID = crd_seg3_elements[0].substring(3, 5);
+                            cardScheme = cardSchemeMap.get(m_sCard_Scheme_ID);
+                            if (cardScheme == null) {
+                                cardScheme = new Card_Scheme();
+                                cardScheme.m_sCard_Scheme_ID = m_sCard_Scheme_ID;
+                            }
+
+                            cardScheme.setCardRanges(crd_seg3_elements[1].split("\\|"));
+                            cardScheme.m_sCard_Prefix_Sequence_Indicator = crd_seg3_elements[2];
+
+                            cardSchemeMap.put(m_sCard_Scheme_ID, cardScheme);
+
                             break;
                     }
-                    TMSManager.getInstance().insert(card_scheme);
+
                     // append&save(cardscheme);    // card scheme maay be sent in two meesages so we need to add to last one
+                }
+
+                for (Card_Scheme scheme : cardSchemeMap.values()) {
+                    TMSManager.getInstance().insert(scheme);
                 }
 
                 break;
@@ -620,12 +656,12 @@ public class SAMA_TMS implements Serializable {
                     /////////////////
                     //Segment1
                     ////////////////
-                    String msg_seg1_elements[] = new String[4];
+                    String[] msg_seg1_elements = new String[4];
                     Arrays.fill(msg_seg1_elements, "");
                     temp = segments[i].split("\u001C");
                     System.arraycopy(temp, 0, msg_seg1_elements, 0, temp.length);
                     if (msg_seg1_elements[0].length() > 3) {
-                        String m_sMessage_Code = msg_seg1_elements[0].substring(3, msg_seg1_elements[0].length());  //check max length 3
+                        String m_sMessage_Code = msg_seg1_elements[0].substring(3);  //check max length 3
                         message_text[i].m_sMessage_Code = m_sMessage_Code;
                     }
 
@@ -641,13 +677,13 @@ public class SAMA_TMS implements Serializable {
                     /////////////////
                     //Segment1
                     ////////////////
-                    String Capk_seg1_elements[] = new String[9];
+                    String[] Capk_seg1_elements = new String[9];
                     Arrays.fill(Capk_seg1_elements, "");
 
                     temp = segments[i].split("\u001C");
                     System.arraycopy(temp, 0, Capk_seg1_elements, 0, temp.length);
                     if (Capk_seg1_elements[0].length() > 3 || Capk_seg1_elements[0].length() == 13) {
-                        String CAPK = Capk_seg1_elements[0].substring(3, Capk_seg1_elements[0].length());  //check max length 3
+                        String CAPK = Capk_seg1_elements[0].substring(3);  //check max length 3
                         public_keys.RID = CAPK;
 
                     }
@@ -670,13 +706,13 @@ public class SAMA_TMS implements Serializable {
                     /////////////////
                     //Segment1
                     ////////////////
-                    String conn_seg1_elements[] = new String[10];
+                    String[] conn_seg1_elements = new String[10];
                     Arrays.fill(conn_seg1_elements, "");
 
                     temp = segments[i].split("\u001C");
                     System.arraycopy(temp, 0, conn_seg1_elements, 0, temp.length);
 
-                    String priority = conn_seg1_elements[0].substring(3, conn_seg1_elements[0].length());  //check max length 3
+                    String priority = conn_seg1_elements[0].substring(3);  //check max length 3
                     String connection_type = conn_seg1_elements[1]; // checking communication type
                     if (priority.equals("1")) {
                         connection_parameters.setConn_primary(setConnectionsParameters(priority, connection_type, conn_seg1_elements));
@@ -693,7 +729,7 @@ public class SAMA_TMS implements Serializable {
                     /////////////////
                     //Segment1              // Data length variable 256
                     ////////////////  // impelmentation of array and segment will be over head but for systematic work and incase future device spec become segments
-                    String dspec_seg1_elements[] = new String[2];
+                    String[] dspec_seg1_elements = new String[2];
                     Arrays.fill(dspec_seg1_elements, "");
 
                     temp = segments[i].split("\u001C");
@@ -781,12 +817,12 @@ public class SAMA_TMS implements Serializable {
                     //Segment1
                     ////////////////
                     temp = segments[i].split("\u001C");
-                    String aidl_seg1_elements[] = new String[temp.length];
+                    String[] aidl_seg1_elements = new String[temp.length];
                     Arrays.fill(aidl_seg1_elements, "");
                     Aid aid = new Aid();
                     System.arraycopy(temp, 0, aidl_seg1_elements, 0, temp.length);
                     if (aidl_seg1_elements[0].length() > 3) {
-                        String aid1 = aidl_seg1_elements[0].substring(3, aidl_seg1_elements[0].length());  //check max length 3
+                        String aid1 = aidl_seg1_elements[0].substring(3);  //check max length 3
                         aid.aidName = aid1;           //AID 1
                     }
                     for (int j = 1; j < temp.length; j++)   //AID 2-10 or more if exist
@@ -802,13 +838,13 @@ public class SAMA_TMS implements Serializable {
                     /////////////////
                     //Segment1
                     ////////////////
-                    String aidD_seg1_elements[] = new String[14];
+                    String[] aidD_seg1_elements = new String[14];
                     Arrays.fill(aidD_seg1_elements, "");
 
                     temp = segments[i].split("\u001C");
                     System.arraycopy(temp, 0, aidD_seg1_elements, 0, temp.length);
                     if (aidD_seg1_elements[0].length() > 3) {
-                        String aid = aidD_seg1_elements[0].substring(3, aidD_seg1_elements[0].length());  //check max length 3
+                        String aid = aidD_seg1_elements[0].substring(3);  //check max length 3
                         aid_data.AID = aid;
                     }
 
@@ -836,13 +872,13 @@ public class SAMA_TMS implements Serializable {
                     /////////////////
                     //Segment1
                     ////////////////
-                    String rev_seg1_elements[] = new String[3];
+                    String[] rev_seg1_elements = new String[3];
                     Arrays.fill(rev_seg1_elements, "");
 
                     temp = segments[i].split("\u001C");
                     System.arraycopy(temp, 0, rev_seg1_elements, 0, temp.length);
                     if (rev_seg1_elements[0].length() > 3) {
-                        String rid_revoked_cert = rev_seg1_elements[0].substring(3, rev_seg1_elements[0].length());  //check max length 3
+                        String rid_revoked_cert = rev_seg1_elements[0].substring(3);  //check max length 3
                         revoked_certificates.RID_Revoked_Certificate = rid_revoked_cert;
                     }
 

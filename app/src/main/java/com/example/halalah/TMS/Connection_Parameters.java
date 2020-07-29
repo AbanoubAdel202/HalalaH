@@ -1,12 +1,8 @@
 package com.example.halalah.TMS;
 
-import androidx.annotation.NonNull;
-import androidx.room.PrimaryKey;
-
 import com.example.halalah.sqlite.database.BaseModel;
 import com.example.halalah.sqlite.database.Column;
 import com.example.halalah.sqlite.database.Table;
-import com.example.halalah.util.ArrayUtils;
 
 @Table(name = "Connection_Parameters")
 public class Connection_Parameters extends BaseModel {
@@ -18,10 +14,6 @@ public class Connection_Parameters extends BaseModel {
     private Connection conn_primary;
     @Column(name = "conn_secondary")
     private Connection conn_secondary;
-    @Column(name = "arr_test_str")
-    private String arrTestStr;
-
-    private String[] arrTest;
 
     public Connection_Parameters() {
         conn_primary = new Connection();
@@ -60,17 +52,5 @@ public class Connection_Parameters extends BaseModel {
 
     public void setSecondaryConnectionType(String secondaryConnectionType) {
         this.secondaryConnectionType = secondaryConnectionType;
-    }
-
-    public String[] getArrTest() {
-        if (arrTest == null && arrTestStr != null){
-            arrTest = ArrayUtils.convertStringToArray(arrTestStr);
-        }
-        return arrTest;
-    }
-
-    public void setArrTest(String[] arrTest) {
-        this.arrTest = arrTest;
-        this.arrTestStr = ArrayUtils.convertArrayToString(arrTest);
     }
 }

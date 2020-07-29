@@ -5,6 +5,9 @@ import com.example.halalah.sqlite.database.Column;
 import com.example.halalah.sqlite.database.Table;
 import com.example.halalah.util.ArrayUtils;
 
+import java.util.ArrayList;
+import java.util.List;
+
 
 /**********************************************************************/
 @Table(name = "Card_Scheme")
@@ -12,7 +15,7 @@ public class Card_Scheme extends BaseModel {
     /////////////////
     //Segment1
     ////////////////
-    @Column(name = "m_sCard_Scheme_ID")
+    @Column(name = "m_sCard_Scheme_ID", unique = true)
     public String m_sCard_Scheme_ID;
 
     @Column(name = "m_sCard_Scheme_Name_Arabic")
@@ -84,13 +87,11 @@ public class Card_Scheme extends BaseModel {
     @Column(name = "m_sDelay_Call_Set_up")
     public String m_sDelay_Call_Set_up;
 
-    @Column(name = "pan")
-    private String pan;
     /////////////////
     //Segment3
     ////////////////
 
-    private String[] cardRanges;
+    private List<String> cardRanges = new ArrayList<>();
     @Column(name = "cardRangesStr")
     private String cardRangesStr;
 
@@ -131,6 +132,8 @@ public class Card_Scheme extends BaseModel {
         ////////////////
         //cardranges[];
         m_sCard_Prefix_Sequence_Indicator = "";
+        cardRanges = new ArrayList<>();
+        cardRangesStr = "";
 
     }
 
@@ -139,23 +142,17 @@ public class Card_Scheme extends BaseModel {
 
     }
 
-    public String getPan() {
-        return pan;
-    }
-
-    public void setPan(String pan) {
-        this.pan = pan;
-    }
-
-    public String[] getCardRanges() {
-        if (cardRanges == null && cardRangesStr != null){
-            cardRanges = ArrayUtils.convertStringToArray(cardRangesStr);
+    public List<String> getCardRanges() {
+        if (cardRanges == null && cardRangesStr != null) {
+            cardRanges = ArrayUtils.convertStringToList(cardRangesStr);
         }
         return cardRanges;
     }
 
     public void setCardRanges(String[] cardRanges) {
-        this.cardRanges = cardRanges;
+        for (int i = 0; i < cardRanges.length; i++) {
+            this.cardRanges.add(cardRanges[i]);
+        }
         this.cardRangesStr = ArrayUtils.convertArrayToString(cardRanges);
     }
 
@@ -165,5 +162,11 @@ public class Card_Scheme extends BaseModel {
 
     public void setCardRangesStr(String cardRangesStr) {
         this.cardRangesStr = cardRangesStr;
+    }
+
+    @Override
+    public String toString() {
+        return "=>\n" + m_sCard_Scheme_ID + ", \n" +
+                "RangesArray=[" + ArrayUtils.convertListToString(cardRanges) + "], \n\n";
     }
 }

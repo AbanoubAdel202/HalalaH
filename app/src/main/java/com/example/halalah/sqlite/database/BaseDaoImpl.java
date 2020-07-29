@@ -38,7 +38,7 @@ public class BaseDaoImpl<T> implements BaseDao<T> {
 		}
 
 		if (this.clazz.isAnnotationPresent(Table.class)) {
-			Table table = (Table) this.clazz.getAnnotation(Table.class);
+			Table table = this.clazz.getAnnotation(Table.class);
 			this.tableName = table.name();
 		}
 
@@ -49,7 +49,7 @@ public class BaseDaoImpl<T> implements BaseDao<T> {
 		// 找到主键
 		for (Field field : this.allFields) {
 			if (field.isAnnotationPresent(Id.class)) {
-				Column column = (Column) field.getAnnotation(Column.class);
+				Column column = field.getAnnotation(Column.class);
 				this.idColumn = column.name();
 				break;
 			}
@@ -75,7 +75,7 @@ public class BaseDaoImpl<T> implements BaseDao<T> {
 		List<T> list = find(null, selection, selectionArgs, null, null, null,
 				null);
 		if ((list != null) && (list.size() > 0)) {
-			return (T) list.get(0);
+			return list.get(0);
 		}
 		return null;
 	}
@@ -88,6 +88,7 @@ public class BaseDaoImpl<T> implements BaseDao<T> {
 		Cursor cursor = null;
 		try {
 			db = this.dbHelper.getReadableDatabase();
+
 			cursor = db.rawQuery(sql, selectionArgs);
 
 			getListFromCursor(list, cursor);
@@ -172,7 +173,7 @@ public class BaseDaoImpl<T> implements BaseDao<T> {
 			for (Field field : this.allFields) {
 				Column column = null;
 				if (field.isAnnotationPresent(Column.class)) {
-					column = (Column) field.getAnnotation(Column.class);
+					column = field.getAnnotation(Column.class);
 
 					field.setAccessible(true);
 					Class<?> fieldType = field.getType();
@@ -215,7 +216,7 @@ public class BaseDaoImpl<T> implements BaseDao<T> {
 				}
 			}
 
-			list.add((T) entity);
+			list.add(entity);
 		}
 	}
 
@@ -283,18 +284,18 @@ public class BaseDaoImpl<T> implements BaseDao<T> {
 
 			Log.d(TAG, "[delete]: " + getLogSql(sql, ids));
 
-			db.execSQL(sql, (Object[]) ids);
+			db.execSQL(sql, ids);
 			db.close();
 		}
 	}
 
-	public void update(T entity) {
+	public int update(T entity) {
 		try {
 			((BaseModel)entity).check();
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			Log.e(TAG, e.getMessage());
-			return;
+			return -1;
 		}
 		SQLiteDatabase db = null;
 		try {
@@ -312,7 +313,7 @@ public class BaseDaoImpl<T> implements BaseDao<T> {
 					+ " where " + where.replace("?", String.valueOf(id)));
 
 			String[] whereValue = { Integer.toString(id) };
-			db.update(this.tableName, cv, where, whereValue);
+			return db.update(this.tableName, cv, where, whereValue);
 		} catch (Exception e) {
 			Log.d(this.TAG, "[update] DB Exception.");
 			e.printStackTrace();
@@ -320,6 +321,7 @@ public class BaseDaoImpl<T> implements BaseDao<T> {
 			if (db != null)
 				db.close();
 		}
+		return -1;
 	}
 
 	private String setContentValues(T entity, ContentValues cv, int type,
@@ -331,7 +333,7 @@ public class BaseDaoImpl<T> implements BaseDao<T> {
 			if (!field.isAnnotationPresent(Column.class)) {
 				continue;
 			}
-			Column column = (Column) field.getAnnotation(Column.class);
+			Column column = field.getAnnotation(Column.class);
 
 			field.setAccessible(true);
 			Object fieldValue = field.get(entity);
@@ -474,7 +476,7 @@ public class BaseDaoImpl<T> implements BaseDao<T> {
 			return sql;
 		}
 		for (int i = 0; i < args.length; i++) {
-			sql = sql.replaceFirst("\\?", "'" + String.valueOf(args[i]) + "'");
+			sql = sql.replaceFirst("\\?", "'" + args[i] + "'");
 		}
 		return sql;
 	}

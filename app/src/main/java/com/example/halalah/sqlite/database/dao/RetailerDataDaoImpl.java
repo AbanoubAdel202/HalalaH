@@ -27,4 +27,13 @@ public class RetailerDataDaoImpl extends BaseDaoImpl<Retailer_Data> {
         int index = dataList.size() - 1;
         return dataList.get(index);
     }
+
+    @Override
+    public long insert(Retailer_Data entity) {
+        // Empty the table first
+        StringBuffer sb = new StringBuffer("DELETE FROM Retailer_Data");
+        rawQuery(sb.toString(), null);
+
+        return super.insert(entity);
+    }
 }
