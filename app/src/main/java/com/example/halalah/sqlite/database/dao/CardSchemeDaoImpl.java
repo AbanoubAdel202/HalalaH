@@ -55,6 +55,9 @@ public class CardSchemeDaoImpl extends BaseDaoImpl<Card_Scheme> {
 
     public Card_Scheme getByAid(String aid) {
         String cardSchemeId = AidToCardSchemeMapper.getCardSchemeByAID(aid);
+        if (cardSchemeId == null) {
+            return null;
+        }
         StringBuffer sb = new StringBuffer("select * from Card_Scheme where m_sCard_Scheme_ID='")
                 .append(cardSchemeId).append("'");
         List<Card_Scheme> aidlist = rawQuery(sb.toString(), null);
@@ -66,7 +69,7 @@ public class CardSchemeDaoImpl extends BaseDaoImpl<Card_Scheme> {
 
     public Card_Scheme getByPAN(String pan) {
 
-        if (pan.length() < 6) {
+        if (pan == null || pan.length() < 6) {
             return null;
         }
         if (pan.length() > 6) {
@@ -105,10 +108,10 @@ public class CardSchemeDaoImpl extends BaseDaoImpl<Card_Scheme> {
                     String range = ranges.get(i);
                     if (range != null && !range.isEmpty()) {
 
-                        if (range.contains(":")) {
+                        if (range.contains("-")) {
                             String[] boundaries = range.split("-");
-                            Long min = Long.parseLong(boundaries[0]);
-                            Long max = Long.parseLong(boundaries[1]);
+                            Long max = Long.parseLong(boundaries[0]);
+                            Long min = Long.parseLong(boundaries[1]);
                             Long panLong = Long.parseLong(pan);
                             if (panLong >= min && panLong <= max) {
                                 return true;
