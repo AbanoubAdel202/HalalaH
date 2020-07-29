@@ -25,7 +25,7 @@ public class DialupDaoImpl extends BaseDaoImpl<Dialup> {
      * select secondary dialup connection from database
      */
     public Dialup findSecondary() {
-        return findByPriority("1");
+        return findByPriority("2");
     }
 
     /**
@@ -36,11 +36,11 @@ public class DialupDaoImpl extends BaseDaoImpl<Dialup> {
     public Dialup findByPriority(String priority) {
         StringBuffer sb = new StringBuffer("select * from Dialup where Priority='")
                 .append(priority).append("'");
-        List<Dialup> capklist = rawQuery(sb.toString(), null);
-        if (capklist == null || capklist.size() == 0) {
+        List<Dialup> list = rawQuery(sb.toString(), null);
+        if (list == null || list.size() == 0) {
             return null;
         }
-        return capklist.get(0);
+        return list.get(0);
     }
 
 }

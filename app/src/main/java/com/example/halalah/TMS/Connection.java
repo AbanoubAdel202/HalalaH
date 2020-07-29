@@ -5,15 +5,9 @@ import com.example.halalah.sqlite.database.Column;
 
 public class Connection extends BaseModel {
 
-    public static final String DIALUP = "01";
-    public static final String TCPIP = "_02";
-    public static final String GPRS = "03";
-    public static final String WIFI = "04";
-    public static final String GSM = "05";
-
-    @Column(name = "AID")
+    @Column(name = "Priority")
     public String Priority;
-    @Column(name = "Communication_Type")
+    @Column(name = "Communication_Type", unique = true)
     public String Communication_Type; //01=Dialup_;_02=TCP/IP_;03=GPRS;04=wifi;05=GSM
 
     public Connection() {

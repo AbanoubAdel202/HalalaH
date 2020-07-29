@@ -9,8 +9,17 @@ import android.widget.Button;
 
 import androidx.fragment.app.Fragment;
 
+import com.example.halalah.TMS.AID_Data;
+import com.example.halalah.TMS.Aid;
 import com.example.halalah.TMS.Card_Scheme;
+import com.example.halalah.TMS.Connection_Parameters;
+import com.example.halalah.TMS.Device_Specific;
+import com.example.halalah.TMS.Message_Text;
+import com.example.halalah.TMS.Public_Key;
+import com.example.halalah.TMS.Retailer_Data;
 import com.example.halalah.TMS.TMSManager;
+
+import java.util.List;
 
 
 /**
@@ -77,27 +86,44 @@ View root =inflater.inflate(R.layout.fragment_home_transaction, container, false
         TMSManager tmsManager = TMSManager.getInstance();
 
 
-        Card_Scheme cardScheme = new Card_Scheme();
-        cardScheme.m_sCard_Scheme_ID = "JC";
-        cardScheme.setCardRangesStr("1,2,3");
-        cardScheme.setCardRanges(new String[]{"1", "2", "3"});
-        tmsManager.insert(cardScheme);
-        Card_Scheme jc = tmsManager.getCardSchemeByID("JC");
-        Log.d(TAG, "" + jc.getCardRangesStr());
-//
-//       Card_Scheme a1 = tmsManager.getCardSchemeByPAN("38");
-//       Log.d(TAG,  "" +a1);
-//       String a2 = tmsManager.getCardSchemeByPAN("588845").m_sCard_Scheme_ID;//P1
-//        Log.d(TAG, a2);
-//       String b1 = tmsManager.getCardSchemeByPAN("01490001").m_sCard_Scheme_ID;//VD
-//        Log.d(TAG, b1);
-//       String b2 = tmsManager.getCardSchemeByPAN("605141").m_sCard_Scheme_ID;//P1
-//        Log.d(TAG, b2);
-//       String c1 = tmsManager.getCardSchemeByPAN("38FFFF").m_sCard_Scheme_ID;//JC
-//        Log.d(TAG, c1);
-//       String d1 = tmsManager.getCardSchemeByPAN("400000").m_sCard_Scheme_ID;//VD
-//        Log.d(TAG, d1);
+        Retailer_Data retailer_data = tmsManager.getRetailerData();
+        Log.d(TAG, retailer_data.toString());
 
+        List<Card_Scheme> cardSchemaList = tmsManager.getAllCardScheme();
+        Log.d(TAG, "cardSchemaList size = " + cardSchemaList.size());
+        for (Card_Scheme data : cardSchemaList) {
+            Log.d(TAG, data.toString());
+        }
+
+        List<Aid> aidList = tmsManager.getAidList();
+        Log.d(TAG, "aid List size = " + aidList.size());
+        for (Aid data : aidList) {
+            Log.d(TAG, data.toString());
+        }
+
+        List<AID_Data> aidData = tmsManager.getAidDataList();
+        Log.d(TAG, "AidData List size = " + aidData.size());
+        for (AID_Data data : aidData) {
+            Log.d(TAG, data.toString());
+        }
+
+        List<Public_Key> publicKeyList = tmsManager.getAllPublicKeys();
+        Log.d(TAG, "publicKey List size = " + publicKeyList.size());
+        for (Public_Key data : publicKeyList) {
+            Log.d(TAG, data.toString());
+        }
+
+        Connection_Parameters connectionParameters = tmsManager.getConnectionParameters();
+        Log.d(TAG, connectionParameters.toString());
+
+        Device_Specific deviceSpecific = tmsManager.getDeviceSpecific();
+        Log.d(TAG, deviceSpecific.toString());
+
+        List<Message_Text> messagesList = tmsManager.getAllMessages();
+        Log.d(TAG, "messages List size = " + messagesList.size());
+        for (Message_Text data : messagesList) {
+            Log.d(TAG, data.toString());
+        }
 
     }
 }

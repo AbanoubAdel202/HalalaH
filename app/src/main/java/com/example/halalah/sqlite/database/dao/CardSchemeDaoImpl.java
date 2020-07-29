@@ -22,8 +22,16 @@ public class CardSchemeDaoImpl extends BaseDaoImpl<Card_Scheme> {
      */
     public List<Card_Scheme> getAll() {
         StringBuffer sb = new StringBuffer("select * from Card_Scheme");
-        List<Card_Scheme> aidlist = rawQuery(sb.toString(), null);
-        return aidlist;
+        List<Card_Scheme> list = rawQuery(sb.toString(), null);
+        if (list == null || list.size() == 0) {
+            return null;
+        }
+        for (int i = 0; i < list.size(); i++) {
+            Card_Scheme s = list.get(i);
+            s.getCardRanges();
+            list.set(i, s);
+        }
+        return list;
     }
 
     /**
@@ -35,11 +43,14 @@ public class CardSchemeDaoImpl extends BaseDaoImpl<Card_Scheme> {
     public Card_Scheme getById(String id) {
         StringBuffer sb = new StringBuffer("select * from Card_Scheme where m_sCard_Scheme_ID='")
                 .append(id).append("'");
-        List<Card_Scheme> aidlist = rawQuery(sb.toString(), null);
-        if (aidlist == null || aidlist.size() == 0) {
+        List<Card_Scheme> list = rawQuery(sb.toString(), null);
+        if (list == null || list.size() == 0) {
             return null;
         }
-        return aidlist.get(0);
+        Card_Scheme s = list.get(0);
+        s.getCardRanges();
+
+        return s;
     }
 
     public Card_Scheme getByAid(String aid) {
@@ -65,6 +76,7 @@ public class CardSchemeDaoImpl extends BaseDaoImpl<Card_Scheme> {
         // Search in Mada first
         Card_Scheme madaScheme = getById("P1");
         if (schemaHasPAN(pan, madaScheme)) {
+            madaScheme.getCardRanges();
             return madaScheme;
         }
 
@@ -77,6 +89,7 @@ public class CardSchemeDaoImpl extends BaseDaoImpl<Card_Scheme> {
         if (pan != null && cardSchemeList != null) {
             for (Card_Scheme scheme : cardSchemeList) {
                 if (schemaHasPAN(pan, scheme)) {
+                    scheme.getCardRanges();
                     return scheme;
                 }
             }
@@ -93,7 +106,7 @@ public class CardSchemeDaoImpl extends BaseDaoImpl<Card_Scheme> {
                     if (range != null && !range.isEmpty()) {
 
                         if (range.contains(":")) {
-                            String[] boundaries = range.split(":");
+                            String[] boundaries = range.split("-");
                             Long min = Long.parseLong(boundaries[0]);
                             Long max = Long.parseLong(boundaries[1]);
                             Long panLong = Long.parseLong(pan);

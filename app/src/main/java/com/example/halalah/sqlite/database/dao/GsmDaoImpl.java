@@ -25,7 +25,7 @@ public class GsmDaoImpl extends BaseDaoImpl<Gsm> {
      * select secondary Gsm connection from database
      */
     public Gsm findSecondary() {
-        return findByPriority("1");
+        return findByPriority("2");
     }
 
     /**
@@ -36,11 +36,11 @@ public class GsmDaoImpl extends BaseDaoImpl<Gsm> {
     public Gsm findByPriority(String priority) {
         StringBuffer sb = new StringBuffer("select * from Gsm where Priority='")
                 .append(priority).append("'");
-        List<Gsm> capklist = rawQuery(sb.toString(), null);
-        if (capklist == null || capklist.size() == 0) {
+        List<Gsm> list = rawQuery(sb.toString(), null);
+        if (list == null || list.size() == 0) {
             return null;
         }
-        return capklist.get(0);
+        return list.get(0);
     }
 
 }

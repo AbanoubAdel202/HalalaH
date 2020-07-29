@@ -25,7 +25,7 @@ public class TcpIPDaoImpl extends BaseDaoImpl<Tcp_IP> {
      * select secondary Tcp_IP connection from database
      */
     public Tcp_IP findSecondary() {
-        return findByPriority("1");
+        return findByPriority("2");
     }
 
     /**
@@ -36,11 +36,11 @@ public class TcpIPDaoImpl extends BaseDaoImpl<Tcp_IP> {
     public Tcp_IP findByPriority(String priority) {
         StringBuffer sb = new StringBuffer("select * from Tcp_IP where Priority='")
                 .append(priority).append("'");
-        List<Tcp_IP> capklist = rawQuery(sb.toString(), null);
-        if (capklist == null || capklist.size() == 0) {
+        List<Tcp_IP> list = rawQuery(sb.toString(), null);
+        if (list == null || list.size() == 0) {
             return null;
         }
-        return capklist.get(0);
+        return list.get(0);
     }
 
 }

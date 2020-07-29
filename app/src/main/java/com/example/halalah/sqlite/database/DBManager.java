@@ -2,16 +2,20 @@ package com.example.halalah.sqlite.database;
 
 import android.content.Context;
 
-
 import com.example.halalah.sqlite.database.dao.AidDaoImpl;
 import com.example.halalah.sqlite.database.dao.AidListDaoImpl;
 import com.example.halalah.sqlite.database.dao.CardSchemeDaoImpl;
 import com.example.halalah.sqlite.database.dao.ConnectionParametersDaoImpl;
 import com.example.halalah.sqlite.database.dao.DeviceSpecificDaoImpl;
+import com.example.halalah.sqlite.database.dao.DialupDaoImpl;
+import com.example.halalah.sqlite.database.dao.GprsDaoImpl;
+import com.example.halalah.sqlite.database.dao.GsmDaoImpl;
 import com.example.halalah.sqlite.database.dao.KeyDaoImpl;
 import com.example.halalah.sqlite.database.dao.MessageDaoImpl;
 import com.example.halalah.sqlite.database.dao.RetailerDataDaoImpl;
 import com.example.halalah.sqlite.database.dao.RevokedCertificateDaoImpl;
+import com.example.halalah.sqlite.database.dao.TcpIPDaoImpl;
+import com.example.halalah.sqlite.database.dao.WifiDaoImpl;
 
 
 public final class DBManager {
@@ -25,6 +29,11 @@ public final class DBManager {
 	private KeyDaoImpl publicKeyDao = null;
 	private RetailerDataDaoImpl retailerDataDao = null;
 	private RevokedCertificateDaoImpl revokedCertificateDao = null;
+	private DialupDaoImpl dialUpDao = null;
+	private GprsDaoImpl gprsDao = null;
+	private GsmDaoImpl gsmDao = null;
+	private TcpIPDaoImpl tcpIPDao = null;
+	private WifiDaoImpl wifiDao = null;
 
 	private boolean hasinit = false;
 	
@@ -52,6 +61,11 @@ public final class DBManager {
 		setPublicKeyDao(new KeyDaoImpl(context));
 		setRetailerDataDao(new RetailerDataDaoImpl(context));
 		setRevokedCertificateDao(new RevokedCertificateDaoImpl(context));
+		setDialUpDao(new DialupDaoImpl(context));
+		setGprsDao(new GprsDaoImpl(context));
+		setGsmDao(new GsmDaoImpl(context));
+		setTcpIPDao(new TcpIPDaoImpl(context));
+		setWifiDao(new WifiDaoImpl(context));
 	}
 
 	public AidDaoImpl getAidDao() {
@@ -124,5 +138,45 @@ public final class DBManager {
 
 	private void setRevokedCertificateDao(RevokedCertificateDaoImpl revokedCertificateDao) {
 		this.revokedCertificateDao = revokedCertificateDao;
+	}
+
+	public DialupDaoImpl getDialUpDao() {
+		return dialUpDao;
+	}
+
+	private void setDialUpDao(DialupDaoImpl dialUpDao) {
+		this.dialUpDao = dialUpDao;
+	}
+
+	public GprsDaoImpl getGprsDao() {
+		return gprsDao;
+	}
+
+	private void setGprsDao(GprsDaoImpl gprsDao) {
+		this.gprsDao = gprsDao;
+	}
+
+	public GsmDaoImpl getGsmDao() {
+		return gsmDao;
+	}
+
+	private void setGsmDao(GsmDaoImpl gsmDao) {
+		this.gsmDao = gsmDao;
+	}
+
+	public TcpIPDaoImpl getTcpIPDao() {
+		return tcpIPDao;
+	}
+
+	private void setTcpIPDao(TcpIPDaoImpl tcpIPDao) {
+		this.tcpIPDao = tcpIPDao;
+	}
+
+	public WifiDaoImpl getWifiDao() {
+		return wifiDao;
+	}
+
+	private void setWifiDao(WifiDaoImpl wifiDao) {
+		this.wifiDao = wifiDao;
 	}
 }

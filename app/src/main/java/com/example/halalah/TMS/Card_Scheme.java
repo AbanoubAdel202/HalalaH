@@ -91,7 +91,7 @@ public class Card_Scheme extends BaseModel {
     //Segment3
     ////////////////
 
-    private List<String> cardRanges = new ArrayList<>();
+    private List<String> cardRanges;
     @Column(name = "cardRangesStr")
     private String cardRangesStr;
 
@@ -143,13 +143,13 @@ public class Card_Scheme extends BaseModel {
     }
 
     public List<String> getCardRanges() {
-        if (cardRanges == null && cardRangesStr != null) {
+        if (cardRanges.isEmpty() && cardRangesStr != null) {
             cardRanges = ArrayUtils.convertStringToList(cardRangesStr);
         }
         return cardRanges;
     }
 
-    public void setCardRanges(String[] cardRanges) {
+    public void addCardRanges(String[] cardRanges) {
         for (int i = 0; i < cardRanges.length; i++) {
             this.cardRanges.add(cardRanges[i]);
         }
@@ -162,11 +162,5 @@ public class Card_Scheme extends BaseModel {
 
     public void setCardRangesStr(String cardRangesStr) {
         this.cardRangesStr = cardRangesStr;
-    }
-
-    @Override
-    public String toString() {
-        return "=>\n" + m_sCard_Scheme_ID + ", \n" +
-                "RangesArray=[" + ArrayUtils.convertListToString(cardRanges) + "], \n\n";
     }
 }

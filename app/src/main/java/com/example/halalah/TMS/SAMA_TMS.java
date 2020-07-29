@@ -634,7 +634,7 @@ public class SAMA_TMS implements Serializable {
                                 cardScheme.m_sCard_Scheme_ID = m_sCard_Scheme_ID;
                             }
 
-                            cardScheme.setCardRanges(crd_seg3_elements[1].split("\\|"));
+                            cardScheme.addCardRanges(crd_seg3_elements[1].split("\\|"));
                             cardScheme.m_sCard_Prefix_Sequence_Indicator = crd_seg3_elements[2];
 
                             cardSchemeMap.put(m_sCard_Scheme_ID, cardScheme);

@@ -5,6 +5,12 @@ import com.example.halalah.sqlite.database.DBManager;
 
 import java.util.List;
 
+import static com.example.halalah.Utils.CONNECTION_TYPE_DIALUP;
+import static com.example.halalah.Utils.CONNECTION_TYPE_GPRS;
+import static com.example.halalah.Utils.CONNECTION_TYPE_GSM;
+import static com.example.halalah.Utils.CONNECTION_TYPE_TCPIP;
+import static com.example.halalah.Utils.CONNECTION_TYPE_WIFI;
+
 public class TMSManager {
     private static final String TAG = Utils.TAGPUBLIC + TMSManager.class.getSimpleName();
     private static TMSManager mInstance;
@@ -32,6 +38,8 @@ public class TMSManager {
     }
 
     public void insert(Connection_Parameters connectionParameters) {
+        insertConnection(connectionParameters.getPrimaryConnectionType(), connectionParameters.getConn_primary());
+        insertConnection(connectionParameters.getSecondaryConnectionType(), connectionParameters.getConn_secondary());
         dbManager.getConnectionParametersDao().insert(connectionParameters);
     }
 
@@ -88,10 +96,15 @@ public class TMSManager {
     }
 
     public Connection_Parameters getConnectionParameters(){
-        return dbManager.getConnectionParametersDao().get();
+
+        Connection_Parameters connectionParameters = dbManager.getConnectionParametersDao().get();
+        connectionParameters.setConn_primary(getConnection(connectionParameters.getPrimaryConnectionType(), "1"));
+        connectionParameters.setConn_secondary(getConnection(connectionParameters.getSecondaryConnectionType(), "2"));
+        return connectionParameters;
     }
 
-    public Connection getPrimaryConnection(){
+
+    public Connection getPrimaryConnection(String primaryConnectionType) {
         return dbManager.getConnectionParametersDao().getPrimaryConnection();
     }
 
@@ -133,5 +146,43 @@ public class TMSManager {
 
     public List<Revoked_Certificates> getAllRevokedCertificates(){
         return dbManager.getRevokedCertificateDao().getAll();
+    }
+
+    private void insertConnection(String connectionType, Connection connection) {
+        switch (connectionType) {
+            case CONNECTION_TYPE_DIALUP:
+                dbManager.getDialUpDao().insert((Dialup) connection);
+                break;
+            case CONNECTION_TYPE_TCPIP:
+                dbManager.getTcpIPDao().insert((Tcp_IP) connection);
+                break;
+            case CONNECTION_TYPE_GPRS:
+                dbManager.getGprsDao().insert((Gprs) connection);
+                break;
+            case CONNECTION_TYPE_GSM:
+                dbManager.getGsmDao().insert((Gsm) connection);
+                break;
+            case CONNECTION_TYPE_WIFI:
+                dbManager.getWifiDao().insert((Wifi) connection);
+                break;
+
+
+        }
+    }
+
+    private Connection getConnection(String connectionType, String priority) {
+        switch (connectionType) {
+            case CONNECTION_TYPE_DIALUP:
+                return dbManager.getDialUpDao().findByPriority(priority);
+            case CONNECTION_TYPE_TCPIP:
+                return dbManager.getTcpIPDao().findByPriority(priority);
+            case CONNECTION_TYPE_GPRS:
+                return dbManager.getGprsDao().findByPriority(priority);
+            case CONNECTION_TYPE_GSM:
+                return dbManager.getGsmDao().findByPriority(priority);
+            case CONNECTION_TYPE_WIFI:
+                return dbManager.getWifiDao().findByPriority(priority);
+        }
+        return null;
     }
 }

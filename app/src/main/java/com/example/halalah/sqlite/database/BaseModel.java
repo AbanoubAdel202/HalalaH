@@ -22,14 +22,14 @@ public class BaseModel extends BaseStruct {
 	}
 	
 	public void check() throws Exception {
-		Table table = (Table) getClass().getAnnotation(Table.class);
+		Table table = getClass().getAnnotation(Table.class);
 		String tableName = table.name();
 		for (Field field :getClass().getDeclaredFields()) {
 			field.setAccessible(true);
 			if (!field.isAnnotationPresent(Column.class)) {
 				continue;
 			}
-			Column column = (Column) field.getAnnotation(Column.class);
+			Column column = field.getAnnotation(Column.class);
 			String style = column.style();
 			if("".equals(style)||"-,+".equals(style)){
 				return;
@@ -39,7 +39,7 @@ public class BaseModel extends BaseStruct {
 			if(!Pattern.compile("(\\-)?(\\d+(\\.\\d+)?)?\\,((\\+)|((\\-)?\\d+(\\.\\d+)?)?)").matcher(style).matches()){
 				throw new Exception("The style format of the "+field.getName()+" field in the "+tableName+" table does not conform to \"min,max\"");
 			}
-			String sa[] = style.split(",");
+			String[] sa = style.split(",");
 			if(!sa[0].equals("-")){
 				hasmin = true;
 				min = Double.parseDouble(sa[0]);
@@ -88,6 +88,40 @@ public class BaseModel extends BaseStruct {
 				}
 			}
 		}
+	}
+
+	@Override
+	public String toString() {
+		StringBuilder result = new StringBuilder();
+		String newLine = System.getProperty("line.separator");
+
+		result.append(this.getClass().getName());
+		result.append(" Object {");
+		result.append(newLine);
+
+		//determine fields declared in this class only (no fields of superclass)
+		Field[] fields = this.getClass().getDeclaredFields();
+
+		//print field names paired with their values
+		for (Field field : fields) {
+			if (field.getName().endsWith("Str")) {
+				continue;
+			}
+			result.append("  ");
+			try {
+				field.setAccessible(true);
+				result.append(field.getName());
+				result.append(": ");
+				//requires access to private field:
+				result.append(field.get(this));
+			} catch (IllegalAccessException ex) {
+				System.out.println(ex);
+			}
+			result.append(newLine);
+		}
+		result.append("}");
+
+		return result.toString();
 	}
 	
 }
