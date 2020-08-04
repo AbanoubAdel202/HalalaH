@@ -42,7 +42,7 @@ public class AmountInputActivity extends Activity implements View.OnClickListene
         actionBar.setTitle(R.string.title_consume);*/
         mBtnConfirm = (Button) findViewById(R.id.btn_search_card);
         mTextAmount = (TextView) findViewById(R.id.edit_amount);
-        mTextAmount2 = (TextView) findViewById(R.id.edit_naqd_amount);
+      //  mTextAmount2 = (TextView) findViewById(R.id.edit_naqd_amount);
 
         mAmountBuilder = new StringBuilder("R");
 

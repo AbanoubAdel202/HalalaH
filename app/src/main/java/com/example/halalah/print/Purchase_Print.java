@@ -17,11 +17,11 @@ import com.example.halalah.ui.Display_PrintActivity;
 import com.example.halalah.ui.Display_PrintActivity;
 import com.topwise.cloudpos.aidl.printer.AidlPrinter;
 import com.topwise.cloudpos.aidl.printer.AidlPrinterListener;
-import com.topwise.cloudpos.aidl.printer.Align;
-import com.topwise.cloudpos.aidl.printer.ImageUnit;
+//import com.topwise.cloudpos.aidl.printer.Align;
+//import com.topwise.cloudpos.aidl.printer.ImageUnit;
 import com.topwise.cloudpos.aidl.printer.PrintItemObj;
-import com.topwise.cloudpos.aidl.printer.PrintTemplate;
-import com.topwise.cloudpos.aidl.printer.TextUnit;
+//import com.topwise.cloudpos.aidl.printer.PrintTemplate;
+//import com.topwise.cloudpos.aidl.printer.TextUnit;
 import com.topwise.cloudpos.data.PrinterConstant;
 
 import java.util.ArrayList;
@@ -71,11 +71,11 @@ public class Purchase_Print {
             Typeface typeface = Typeface.createFromAsset(mContext.getAssets(),"hwzs.ttf");
             String startTime = getCurTime();
 
-            PrintTemplate template = new PrintTemplate(mContext,typeface);
+            //PrintTemplate template = new PrintTemplate(mContext,typeface);
             //template.setStrokeWidth(0.1f);
-            int textSize = TextUnit.TextSize.NORMAL;
+         //   int textSize = TextUnit.TextSize.NORMAL;
 
-          template.add(new TextUnit("هلا للمدفوعات",24,Align.CENTER).setLineSpacing(10));
+        //  template.add(new TextUnit("هلا للمدفوعات",24,Align.CENTER).setLineSpacing(10));
 
             try {
                 Bitmap bitmap = BitmapFactory.decodeResource(mContext.getResources(), R.drawable.halalah);
@@ -88,7 +88,7 @@ public class Purchase_Print {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
             }
-            mPrinterManager.addRuiImage(template.getPrintBitmap(),0);
+         //   mPrinterManager.addRuiImage(template.getPrintBitmap(),0);
             mPrinterManager.printRuiQueue(new AidlPrinterListener.Stub() {
                 @Override
                 public void onError(int i) throws RemoteException {

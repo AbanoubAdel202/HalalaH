@@ -15,21 +15,21 @@ import com.example.halalah.ui.PacketProcessActivity;
 import com.example.halalah.ui.PinpadActivity;
 import com.example.halalah.iso8583.BCDASCII;
 import com.example.halalah.util.PacketProcessUtils;
-import com.topwise.cloudpos.aidl.emv.AidlPboc;
-import com.topwise.cloudpos.aidl.emv.AidlPbocStartListener;
+import com.example.halalah.emv.EmvManager;
+import com.example.halalah.emv.OnEmvProcessListener;
 import com.topwise.cloudpos.aidl.emv.CardInfo;
 import com.topwise.cloudpos.aidl.emv.PCardLoadLog;
 import com.topwise.cloudpos.aidl.emv.PCardTransLog;
 
-public class RFPbocStartListenerSub extends AidlPbocStartListener.Stub {
+public class RFPbocStartListenerSub implements OnEmvProcessListener {
     private static final String TAG = Utils.TAGPUBLIC + RFPbocStartListenerSub.class.getSimpleName();
     private Context mContext;
-    private AidlPboc mPbocManager;
+    private EmvManager emvManager;
     private boolean isOnline = false;
 
     public RFPbocStartListenerSub(Context context) {
         mContext = context;
-        mPbocManager = DeviceTopUsdkServiceManager.getInstance().getPbocManager();
+        emvManager = EmvManager.getInstance();
         CardManager.getInstance().initCardResultCallBack(callBack);
     }
 
@@ -52,7 +52,10 @@ public class RFPbocStartListenerSub extends AidlPbocStartListener.Stub {
         POS_MAIN.Check_transaction_limits();
 
         POS_MAIN.supervisor_pass_required();
-        mPbocManager.importFinalAidSelectRes(true);
+
+        if(Integer.parseInt(PosApplication.getApp().oGPosTransaction.m_sTrxAmount.replace(".",""))<5000)
+        PosApplication.getApp().oGPosTransaction.m_enmTrxCVM= POSTransaction.CVM.NO_CVM;
+        emvManager.importFinalAidSelectRes(true);
     }
 
     /**
@@ -66,7 +69,7 @@ public class RFPbocStartListenerSub extends AidlPbocStartListener.Stub {
         mPbocManager.setTlv("9F1A", BCDASCII.hexStringToBytes(s));
         mPbocManager.setTlv("5F2A", BCDASCII.hexStringToBytes(s));*/
 
-        boolean isSuccess = mPbocManager.importAmount(PosApplication.getApp().oGPosTransaction.m_sTrxAmount);
+        boolean isSuccess = emvManager.importAmount(PosApplication.getApp().oGPosTransaction.m_sTrxAmount);
         Log.d(TAG, "isSuccess() : " + isSuccess);
     }
 
@@ -102,7 +105,7 @@ public class RFPbocStartListenerSub extends AidlPbocStartListener.Stub {
             //todo AID ACtivity selection and return AID selected index or it's value
             iAID_Index=0;
         }
-        boolean isSuccess = mPbocManager.importAidSelectRes(iAID_Index);
+        boolean isSuccess = emvManager.importAidSelectRes(iAID_Index);
         Log.d(TAG, "isSuccess() : " + isSuccess);
     }
 
@@ -113,7 +116,7 @@ public class RFPbocStartListenerSub extends AidlPbocStartListener.Stub {
     public void requestEcashTipsConfirm() throws RemoteException {
         Log.d(TAG, "requestEcashTipsConfirm()");
 
-        boolean isSuccess = mPbocManager.importECashTipConfirmRes(false);
+        boolean isSuccess = emvManager.importECashTipConfirmRes(false);
         Log.d(TAG, "isSuccess() : " + isSuccess);
     }
 
@@ -121,9 +124,8 @@ public class RFPbocStartListenerSub extends AidlPbocStartListener.Stub {
      * 请求确认卡信息
      */
     @Override
-    public void onConfirmCardInfo(CardInfo cardInfo) throws RemoteException {
-        String cardno = cardInfo.getCardno();
-        Log.d(TAG, "onConfirmCardInfo(), cardno: " + cardno);
+    public void onConfirmCardInfo(String cardNo) throws RemoteException {
+        Log.d(TAG, "onConfirmCardInfo(), cardNo: " + cardNo);
 
         isEcCard();
 
@@ -151,7 +153,7 @@ public class RFPbocStartListenerSub extends AidlPbocStartListener.Stub {
     public void requestUserAuth(int certype, String certnumber) throws RemoteException {
         Log.d(TAG, "requestUserAuth(), certype: " + certype + "; certnumber: " + certnumber);
 
-        boolean isSuccess = mPbocManager.importUserAuthRes(true);
+        boolean isSuccess = emvManager.importUserAuthRes(true);
         Log.d(TAG, "isSuccess() : " + isSuccess);
     }
 
@@ -256,9 +258,9 @@ public class RFPbocStartListenerSub extends AidlPbocStartListener.Stub {
         @Override
         public void consumeAmount(String amount) {
             Log.d(TAG, "consumeAmount amount : " + amount);
-            if (null != mPbocManager) {
+            if (null != emvManager) {
                 try {
-                    mPbocManager.importAmount(amount);
+                    emvManager.importAmount(amount);
                 } catch (RemoteException e) {
                     e.printStackTrace();
                 }
@@ -268,9 +270,9 @@ public class RFPbocStartListenerSub extends AidlPbocStartListener.Stub {
         @Override
         public void aidSelect(int index) {
             Log.d(TAG, "aidSelect index : " + index);
-            if (null != mPbocManager) {
+            if (null != emvManager) {
                 try {
-                    mPbocManager.importAidSelectRes(index);
+                    emvManager.importAidSelectRes(index);
                 } catch (RemoteException e) {
                     e.printStackTrace();
                 }
@@ -280,9 +282,9 @@ public class RFPbocStartListenerSub extends AidlPbocStartListener.Stub {
         @Override
         public void eCashTipsConfirm(boolean confirm) {
             Log.d(TAG, "eCashTipsConfirm confirm : " + confirm);
-            if (null != mPbocManager) {
+            if (null != emvManager) {
                 try {
-                    mPbocManager.importECashTipConfirmRes(confirm);
+                    emvManager.importECashTipConfirmRes(confirm);
                 } catch (RemoteException e) {
                     e.printStackTrace();
                 }
@@ -292,9 +294,9 @@ public class RFPbocStartListenerSub extends AidlPbocStartListener.Stub {
         @Override
         public void confirmCardInfo(boolean confirm) {
             Log.d(TAG, "confirmCardInfo confirm : " + confirm);
-            if (null != mPbocManager) {
+            if (null != emvManager) {
                 try {
-                    mPbocManager.importConfirmCardInfoRes(confirm);
+                    emvManager.importConfirmCardInfoRes(confirm);
                 } catch (RemoteException e) {
                     e.printStackTrace();
                 }
@@ -304,9 +306,9 @@ public class RFPbocStartListenerSub extends AidlPbocStartListener.Stub {
         @Override
         public void importPin(String pin) {
             Log.d(TAG, "importPin pin : " + pin);
-            if (null != mPbocManager) {
+            if (null != emvManager) {
                 try {
-                    mPbocManager.importPin(pin);
+                    emvManager.importPin(pin);
                 } catch (RemoteException e) {
                     e.printStackTrace();
                 }
@@ -316,9 +318,9 @@ public class RFPbocStartListenerSub extends AidlPbocStartListener.Stub {
         @Override
         public void userAuth(boolean auth) {
             Log.d(TAG, "userAuth auth : " + auth);
-            if (null != mPbocManager) {
+            if (null != emvManager) {
                 try {
-                    mPbocManager.importUserAuthRes(auth);
+                    emvManager.importUserAuthRes(auth);
                 } catch (RemoteException e) {
                     e.printStackTrace();
                 }
@@ -328,9 +330,9 @@ public class RFPbocStartListenerSub extends AidlPbocStartListener.Stub {
         @Override
         public void requestOnline(boolean online, String respCode, String icc55) {
             Log.d(TAG, "requestOnline online : " + online + " respCode : " + respCode + " icc55 : " + icc55);
-            if (null != mPbocManager) {
+            if (null != emvManager) {
                 try {
-                    mPbocManager.importOnlineResp(online, respCode, icc55);
+                    emvManager.importOnlineResp(online, respCode, icc55);
                 } catch (RemoteException e) {
                     e.printStackTrace();
                 }
@@ -433,7 +435,7 @@ public class RFPbocStartListenerSub extends AidlPbocStartListener.Stub {
                 Log.d(TAG, "temp: " + BCDASCII.bytesToHexString(tempByte));
             }*/
 
-            int result = mPbocManager.readKernelData(tags, tempList);
+            int result = emvManager.readKernelData(tags, tempList);
             Log.i(TAG, "result: " + result);
 
             if (result <= 0) {

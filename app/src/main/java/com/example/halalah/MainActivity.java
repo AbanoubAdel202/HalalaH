@@ -26,7 +26,7 @@ import com.example.halalah.secure.DUKPT_KEY;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.navigation.NavigationView;
-import com.topwise.cloudpos.aidl.emv.AidlPboc;
+
 import com.topwise.cloudpos.aidl.emv.TerminalParam;
 import com.topwise.cloudpos.aidl.led.AidlLed;
 import com.topwise.cloudpos.aidl.pinpad.AidlPinpad;
@@ -177,7 +177,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void run() {
                 SystemClock.sleep(1000);
-                downLoadParM();
+                //downLoadParM();
                 downLoadKeys();
 
                 runOnUiThread(new Runnable() {
@@ -197,7 +197,7 @@ return true;
 
 
     }
-    private boolean downLoadParM(){
+   /* private boolean downLoadParM(){
       AidlPboc mPbocManager = DeviceTopUsdkServiceManager.getInstance().getPbocManager();
         try {
             //Read the IC card parameter configuration file under assert and load the relevant parameters into the EMV kernel
@@ -238,7 +238,7 @@ return true;
         }
 
         return true;
-    }
+    }*/
 
 
     private boolean downLoadKeys(){
@@ -270,7 +270,7 @@ return true;
         boolean bRegistered=PosApplication.getApp().oGTerminal_Operation_Data.m_bregistered;
         Initialize_Security();
         if(bRegistered==true) {
-            Initialize_EMV_Configuration();
+            //Initialize_EMV_Configuration();
             Initialize_CTLS_configuration();
         }
         else{
@@ -289,7 +289,7 @@ return true;
 
         //todo initialize security parameter
     }
-    private void Initialize_EMV_Configuration()
+ /*   private void Initialize_EMV_Configuration()
     {
         AidlPboc mPbocManager = DeviceTopUsdkServiceManager.getInstance().getPbocManager();
 
@@ -345,7 +345,7 @@ return true;
         ///////////////////////////
 
 
-    }
+    }*/
     private void Initialize_CTLS_configuration()
     {
         //todo initialize contactless parameters

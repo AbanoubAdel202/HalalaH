@@ -13,9 +13,10 @@ import com.example.halalah.PosApplication;
 import com.example.halalah.Utils;
 //import com.example.halalah.activity.CardConfirmActivity;
 import com.example.halalah.ui.PinpadActivity;
+import com.example.halalah.emv.EmvManager;
+import com.example.halalah.iso8583.BCDASCII;
 import com.topwise.cloudpos.aidl.emv.AidlCheckCardListener;
-import com.topwise.cloudpos.aidl.emv.AidlPboc;
-import com.topwise.cloudpos.aidl.emv.EmvTransData;
+import com.topwise.cloudpos.aidl.emv.level2.AidlEmvL2;
 import com.topwise.cloudpos.aidl.magcard.TrackData;
 
 import static com.example.halalah.util.CardSearchErrorUtil.CARD_SEARCH_ERROR_REASON_MAG_EMV;
@@ -25,14 +26,14 @@ public class CheckCardListenerSub extends AidlCheckCardListener.Stub {
     private static final String TAG = Utils.TAGPUBLIC + CheckCardListenerSub.class.getSimpleName();
 
     private Context mContext;
-    private AidlPboc mPbocManager;
+    private EmvManager mEmvManager;
     private EmvTransData mEmvTransData;
+    private AidlEmvL2 emv = DeviceTopUsdkServiceManager.getInstance().getEmvL2();
     private CardCallback mCardCallBack;
 
-    public CheckCardListenerSub(Context context, CardCallback cardCallback) {
-        mPbocManager = DeviceTopUsdkServiceManager.getInstance().getPbocManager();
+    public CheckCardListenerSub(Context context) {
+        mEmvManager = EmvManager.getInstance();
         mContext = context;
-        mCardCallBack = cardCallback;
     }
 
     @Override
@@ -111,12 +112,12 @@ public class CheckCardListenerSub extends AidlCheckCardListener.Stub {
     public void onFindICCard() throws RemoteException {
         Log.i(TAG, "onFindICCard()");
 
-        boolean result = mPbocManager.setEmvKernelType(1);
-        Log.d(TAG, "setEmvKernelType: " + result);
+//        boolean result = mEmvManager.setEmvKernelType(1);
+//        Log.d(TAG, "setEmvKernelType: " + result);
         EmvTransDataSub emvTransDataSub = new EmvTransDataSub();
         mEmvTransData = emvTransDataSub.getEmvTransData(true);
         PosApplication.getApp().oGPosTransaction.m_enmTrxCardType= POSTransaction.CardType.ICC;
-        mPbocManager.processPBOC(mEmvTransData, new ICPbocStartListenerSub(mContext));
+        mEmvManager.startEmvProcess(mEmvTransData, new ICPbocStartListenerSub(mContext));
     }
 
     @Override
@@ -124,12 +125,12 @@ public class CheckCardListenerSub extends AidlCheckCardListener.Stub {
         Log.i(TAG, "onFindRFCard()");
 
 
-        boolean result =  mPbocManager.setEmvKernelType(2);
-        Log.d(TAG, "setEmvKernelType: " + result);
+//        boolean result =  mPbocManager.setEmvKernelType(2);
+//        Log.d(TAG, "setEmvKernelType: " + result);
         EmvTransDataSub emvTransDataSub = new EmvTransDataSub();
         mEmvTransData = emvTransDataSub.getEmvTransData(false);
         PosApplication.getApp().oGPosTransaction.m_enmTrxCardType= POSTransaction.CardType.CTLS;
-        mPbocManager.processPBOC(mEmvTransData, new RFPbocStartListenerSub(mContext));
+        mEmvManager.startEmvProcess(mEmvTransData, new RFPbocStartListenerSub(mContext));
     }
 
     @Override
@@ -183,7 +184,7 @@ public class CheckCardListenerSub extends AidlCheckCardListener.Stub {
     private void cancelCheckCard() {
         Log.i(TAG, "cancelCheckCard()");
         try {
-            mPbocManager.cancelCheckCard();
+            emv.cancelCheckCard();
         } catch (RemoteException e) {
             e.printStackTrace();
         }

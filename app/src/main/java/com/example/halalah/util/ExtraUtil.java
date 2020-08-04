@@ -3,7 +3,7 @@ package com.example.halalah.util;
 import android.text.format.DateFormat;
 import android.util.Log;
 
-//import com.standard.app.PosApplication;
+//import com.example.halalah.PosApplication;
 
 import java.io.BufferedReader;
 import java.io.IOException;

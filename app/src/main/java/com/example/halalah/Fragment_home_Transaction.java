@@ -15,10 +15,11 @@ import android.widget.Toast;
 import com.example.halalah.TMS.AID_Data;
 import com.example.halalah.TMS.Public_Key;
 import com.example.halalah.TMS.SAMA_TMS;
+import com.example.halalah.emv.EmvManager;
 import com.example.halalah.secure.DUKPT_KEY;
 import com.example.halalah.ui.AmountInputActivity;
 import com.example.halalah.util.ExtraUtil;
-import com.topwise.cloudpos.aidl.emv.AidlPboc;
+
 
 
 /**
@@ -202,17 +203,19 @@ View root =inflater.inflate(R.layout.fragment_home_transaction, container, false
 
 
 
-        AidlPboc mPbocManager = DeviceTopUsdkServiceManager.getInstance().getPbocManager();
+        EmvManager mEMVManager = EmvManager.getInstance();
 
-        try {
-            boolean updateResult = false;
+       /*  try {
+
+            //TODO update AIDs
+           boolean updateResult = false;
             boolean flag = true;
 
             String success = "";
             String fail = "";
             // Get IC card parameter information
-            mPbocManager.updateAID(0x03, null);
-            mPbocManager.updateCAPK(0x03, null);
+            mEMVManager.updateAID(0x03, null);
+            mEMVManager.updateCAPK(0x03, null);
 
             AID_Data AIDdata[] = PosApplication.getApp().oGSama_TMS.GET_AID_Data_PARAM();
 
@@ -237,7 +240,7 @@ View root =inflater.inflate(R.layout.fragment_home_transaction, container, false
 
         } catch (RemoteException e) {
             e.printStackTrace();
-        }
+        }*/
 
 
         ///////////////////////////

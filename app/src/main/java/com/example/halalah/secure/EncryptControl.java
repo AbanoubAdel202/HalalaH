@@ -77,6 +77,10 @@ public class EncryptControl {
             }
 
             Log.i(TAG, "outputdata : "+BCDASCII.bytesToHexString(outputdata));
+            if(inputdata.length<size)
+                size = inputdata.length;
+            if(outputdata.length<size)
+                size = outputdata.length;
             System.arraycopy(outputdata, 0, outputdata, 0, size);
         } catch (RemoteException e) {
             e.printStackTrace();

@@ -127,10 +127,11 @@ public class PackPacket {
                  * we can use BuildISO8583Message(TranscationType TrxType) for automatic compose function selection
                  */
                 case PURCHASE:
-                    if(PosApplication.getApp().oGPosTransaction.m_enmTrxCardType== POSTransaction.CardType.ICC)
+                    if(PosApplication.getApp().oGPosTransaction.m_enmTrxCardType== POSTransaction.CardType.ICC || PosApplication.getApp().oGPosTransaction.m_enmTrxCardType== POSTransaction.CardType.CTLS)
                     PosApplication.getApp().oGPosTransaction.ComposeAuthoriszationMessage(POSTransaction.TranscationType.AUTHORISATION);
                     else if(PosApplication.getApp().oGPosTransaction.m_enmTrxCardType== POSTransaction.CardType.MAG)
                     PosApplication.getApp().oGPosTransaction.ComposeAuthoriszationMessage(POSTransaction.TranscationType.PURCHASE);
+
                     return PosApplication.getApp().oGPosTransaction.m_RequestISOMsg.isotostr();
                 case AUTHORISATION:
 
