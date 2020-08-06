@@ -15,18 +15,7 @@ public class Terminal_Operation_Data {
 
 
 
-    public Terminal_Operation_Data(){
-                m_iPinKeyboardMode=1;
-                m_sMerchantID="111111111111111";
-                m_sTerminalID="12345678";
-                sMerchant_Category_Code="1234";
-                sAcquirer_ID="AAIB";
-                m_sCurrencycode="0628";
-                m_sCountrycode="0628";
-                TerminalType=22;
-                saf_info=new SAF_Info();
-                g_NumberOfCardSchemes = 10;
-        }
+
         public int TerminalType;
         public  boolean m_bregistered;
         public  int m_iSTAN;
@@ -48,11 +37,24 @@ public class Terminal_Operation_Data {
         public int MaxConRetry;   //max connection Retry count
         public  int g_NumberOfCardSchemes;    /* Number of supported card scheme is 10 */
         public  CardSchemeTotals [] g_TerminalTotals = new CardSchemeTotals[g_NumberOfCardSchemes]; /* Terminal Totals */
-        double    m_dTermReconciliationAmount;  // Adding All approved/accepted transaction amount
-        int       m_iTermApprovedTrxCounter;    // Counter of approved transaction usded to for checking number of approved trx against reconcilation trx limit
+        public double    m_dTermReconciliationAmount;  // Adding All approved/accepted transaction amount
+        public int       m_iTermApprovedTrxCounter;    // Counter of approved transaction usded to for checking number of approved trx against reconcilation trx limit
+        public String m_sTerminal_Contactless_Floor_Limit;
+        public String m_sTerminal_Contactless_Transaction_Limit;
+        public String m_sTerminal_CVM_Required_Limit;
 
-
-
+    public Terminal_Operation_Data(){
+        m_iPinKeyboardMode=1;
+        m_sMerchantID="111111111111111";
+        m_sTerminalID="12345678";
+        sMerchant_Category_Code="1234";
+        sAcquirer_ID="HALA";
+        m_sCurrencycode="0628";
+        m_sCountrycode="0628";
+        TerminalType=22;
+        saf_info=new SAF_Info();
+        g_NumberOfCardSchemes = 10;
+    }
 
 
 }

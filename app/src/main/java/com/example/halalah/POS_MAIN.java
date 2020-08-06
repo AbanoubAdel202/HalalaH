@@ -26,6 +26,7 @@ import com.example.halalah.ui.PacketProcessActivity;
 import com.example.halalah.ui.Refund_InputActivity;
 import com.example.halalah.ui.ShowResultActivity;
 import com.example.halalah.util.PacketProcessUtils;
+import com.topwise.cloudpos.struct.BytesUtil;
 
 import java.util.Locale;
 
@@ -43,6 +44,7 @@ public class POS_MAIN implements SendReceiveListener {
     private static final String TAG = POS_MAIN.class.getSimpleName();
     public static boolean isforced;
     private static boolean cont;
+
 
 
 
@@ -537,7 +539,7 @@ public class POS_MAIN implements SendReceiveListener {
 
         // Adding AID
         if (AIDObj.AID.length() > 0)
-            strFormatedAIDData.append("9f06" +String.format(Locale.ENGLISH,"%02d",AIDObj.AID.length()/2)+AIDObj.AID.toString());
+            strFormatedAIDData.append("9f06" +String.format(Locale.ENGLISH,"%02d",AIDObj.AID.length()/2)+AIDObj.AID);
 
         // Adding ApplicationSelectionIndicator(0:PartMatch,1:ExactMatch)
         strFormatedAIDData.append("df010100");
@@ -548,35 +550,52 @@ public class POS_MAIN implements SendReceiveListener {
 
         // Adding Default_action_code
         if (AIDObj.Denial_action_code.length() > 0)
-            strFormatedAIDData.append("df11" +String.format(Locale.ENGLISH,"%02d",AIDObj.Default_action_code.length()/2)+AIDObj.Default_action_code.toString());
+            strFormatedAIDData.append("df11" +String.format(Locale.ENGLISH,"%02d",AIDObj.Default_action_code.length()/2)+AIDObj.Default_action_code);
 
 
         // Adding Online_action_code
         if (AIDObj.Denial_action_code.length() > 0)
-            strFormatedAIDData.append("df12" +String.format(Locale.ENGLISH,"%02d",AIDObj.Online_action_code.length()/2)+AIDObj.Online_action_code.toString());
+            strFormatedAIDData.append("df12" +String.format(Locale.ENGLISH,"%02d",AIDObj.Online_action_code.length()/2)+AIDObj.Online_action_code);
 
 
         // Adding Denial_action_code
         if (AIDObj.Denial_action_code.length() > 0)
-            strFormatedAIDData.append("df13" +String.format(Locale.ENGLISH,"%02d",AIDObj.Denial_action_code.length()/2)+AIDObj.Denial_action_code.toString());
+            strFormatedAIDData.append("df13" +String.format(Locale.ENGLISH,"%02d",AIDObj.Denial_action_code.length()/2)+AIDObj.Denial_action_code);
 
             strFormatedAIDData.append("9f1b"+String.format(Locale.ENGLISH,"%02d","00000000".length()/2)+"00000000");
 
         // Adding ThresholdValueforBiasedRandomSelection
         if (AIDObj.Threshold_Value_for_Biased_Random_Selection.length() > 0)
-            strFormatedAIDData.append("df15" +String.format(Locale.ENGLISH,"%02d",AIDObj.Threshold_Value_for_Biased_Random_Selection.length()/2)+AIDObj.Threshold_Value_for_Biased_Random_Selection.toString());
+            strFormatedAIDData.append("df15" +String.format(Locale.ENGLISH,"%02d",AIDObj.Threshold_Value_for_Biased_Random_Selection.length()/2)+AIDObj.Threshold_Value_for_Biased_Random_Selection);
 
         // Adding Maximum_Target_Percentage_for_Biased_Random_Selection
         if (AIDObj.Maximum_Target_Percentage_for_Biased_Random_Selection.length() > 0)
-            strFormatedAIDData.append("df16" +String.format(Locale.ENGLISH,"%02d",AIDObj.Maximum_Target_Percentage_for_Biased_Random_Selection.length()/2)+AIDObj.Maximum_Target_Percentage_for_Biased_Random_Selection.toString());
+            strFormatedAIDData.append("df16" +String.format(Locale.ENGLISH,"%02d",AIDObj.Maximum_Target_Percentage_for_Biased_Random_Selection.length()/2)+AIDObj.Maximum_Target_Percentage_for_Biased_Random_Selection);
 
         // Adding Target_Percentage
         if (AIDObj.Target_Percentage.length() > 0)
-            strFormatedAIDData.append("df17" +String.format(Locale.ENGLISH,"%02d",AIDObj.Target_Percentage.length()/2)+AIDObj.Target_Percentage.toString());
+            strFormatedAIDData.append("df17" +String.format(Locale.ENGLISH,"%02d",AIDObj.Target_Percentage.length()/2)+AIDObj.Target_Percentage);
 
-        // Adding Default_TDOL
+        // Adding Default_DDOL
         if (AIDObj.Default_DDOL.length() > 0)
-            strFormatedAIDData.append("df14" +String.format(Locale.ENGLISH,"%02d",AIDObj.Default_DDOL.length()/2)+AIDObj.Default_DDOL.toString());
+            strFormatedAIDData.append("df14" +String.format(Locale.ENGLISH,"%02d",AIDObj.Default_DDOL.length()/2)+AIDObj.Default_DDOL);
+        // Adding Default_TDOL
+        if (AIDObj.Default_TDOL.length() > 0)
+            strFormatedAIDData.append("df8102" +String.format(Locale.ENGLISH,"%02d",AIDObj.Default_TDOL.length()/2)+AIDObj.Default_TDOL);
+
+        // Adding Contactless floor limit
+        //"DF19" ClssFloorLimit
+        if(PosApplication.getApp().oGTerminal_Operation_Data.m_sTerminal_Contactless_Floor_Limit.length()>0)
+        strFormatedAIDData.append("DF19"+String.format(Locale.ENGLISH,"%02d",PosApplication.getApp().oGTerminal_Operation_Data.m_sTerminal_Contactless_Floor_Limit.length()/2)+PosApplication.getApp().oGTerminal_Operation_Data.m_sTerminal_Contactless_Floor_Limit);
+        //adding Contactless Transaction limit
+        //"DF20" ClssTxnLimit
+        if(PosApplication.getApp().oGTerminal_Operation_Data.m_sTerminal_Contactless_Transaction_Limit.length()>0)
+        strFormatedAIDData.append("DF20"+String.format(Locale.ENGLISH,"%02d",PosApplication.getApp().oGTerminal_Operation_Data.m_sTerminal_Contactless_Transaction_Limit.length()/2)+PosApplication.getApp().oGTerminal_Operation_Data.m_sTerminal_Contactless_Transaction_Limit);
+        //adding Contactless CVM limit
+        //"DF21" ClssCVMLimit
+        if(PosApplication.getApp().oGTerminal_Operation_Data.m_sTerminal_CVM_Required_Limit.length()>0)
+        strFormatedAIDData.append("DF21"+String.format(Locale.ENGLISH,"%02d",PosApplication.getApp().oGTerminal_Operation_Data.m_sTerminal_CVM_Required_Limit.length()/2)+PosApplication.getApp().oGTerminal_Operation_Data.m_sTerminal_CVM_Required_Limit);
+
 
 	/*
 				>>>>>>>>>>>>>>>>>>>>>>>>>> NOTES <<<<<<<<<<<<<<<<<<<<<<<
@@ -1482,6 +1501,25 @@ DF03 Check Sum                                [20]   >> 4410C6D51C2F83ADFD92528F
         // Todo Log Endmessage with  return value
 
         return dAmount;
+    }
+
+
+    /**
+     \Function Name: load_Terminal_configuration_file
+     \Param  : POSTransaction POSTrx
+     \Return : double
+     \Pre    :
+     \Post   :
+     \Author	: mostafa hussiny
+     \DT		: 00/08/2020
+     \Des    : loading Terminal operation data from saved file of terminal configuration data
+     */
+    public static void load_Terminal_configuration_file() {
+
+        //todo load file
+        //todo copy data to oGSama_TMS in PosApplication
+
+
     }
 }
 

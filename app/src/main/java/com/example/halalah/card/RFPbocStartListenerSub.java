@@ -183,8 +183,10 @@ public class RFPbocStartListenerSub implements OnEmvProcessListener {
                 break;
             case "1E":
                 PosApplication.getApp().oGPosTransaction.m_enmTrxCVM = POSTransaction.CVM.SIGNATURE;
+                break;
             case "1F":
                 PosApplication.getApp().oGPosTransaction.m_enmTrxCVM = POSTransaction.CVM.NO_CVM;
+                break;
 
         }
         // todo TTQ ,CTQ checks

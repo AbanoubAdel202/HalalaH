@@ -1,16 +1,6 @@
 package com.example.halalah.TMS;
 
-/**********************************************************************/
-
-     class ContactlessLimits
-    {
-        public String m_sCard_Scheme_ID;
-        public String m_sTerminal_Contactless_Transaction_Limit;
-        public String m_sTerminal_CVM_Required_Limit;
-        public String m_sTerminal_Contactless_Floor_Limit;
-    }
-
-   public class Device_Specific
+public class Device_Specific
     {
         ///////////////////
     //Segment_1_of_Device_Specific

@@ -190,9 +190,11 @@ public class ICPbocStartListenerSub implements OnEmvProcessListener {
             case 0x1E:
             case 0x5E:
                 PosApplication.getApp().oGPosTransaction.m_enmTrxCVM = POSTransaction.CVM.SIGNATURE;
+                break;
             case 0x1F:
             case 0x5F:
                 PosApplication.getApp().oGPosTransaction.m_enmTrxCVM = POSTransaction.CVM.NO_CVM;
+                break;
 
 
 

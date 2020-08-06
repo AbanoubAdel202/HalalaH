@@ -390,7 +390,7 @@ public class PinpadActivity extends Activity {
 
                 else {
                     if (pin == null) {
-                        CardManager.getInstance().setImportPin("000000");
+                        CardManager.getInstance().setImportPin("bypass");
                     } else {
                         CardManager.getInstance().setImportPin(BCDASCII.bytesToHexString(pin));
                     }

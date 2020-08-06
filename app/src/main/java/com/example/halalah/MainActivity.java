@@ -171,13 +171,13 @@ public class MainActivity extends AppCompatActivity {
 
         // todo Terminal initialization
                 //check hardware();
-                // load Terminal configuration file(); //TMS parameter
+                 POS_MAIN.load_Terminal_configuration_file(); //TMS parameter
 
         new Thread(new Runnable() {
             @Override
             public void run() {
                 SystemClock.sleep(1000);
-                //downLoadParM();
+                //downLoadParM(); removed added init() in oncreate application // DBManager.getInstance().init(this);
                 downLoadKeys();
 
                 runOnUiThread(new Runnable() {

@@ -258,7 +258,7 @@ public class SAMA_TMS implements Serializable
     /** for test**/
 
     int aidindexttest=0;
-    int listlength=40;
+    int listlength=1;
     AID_Data[] AIDDATAtest = new AID_Data[listlength];
     Public_Key[] publickeystest=new Public_Key[listlength];
     int pkindextest=0;
@@ -1163,7 +1163,7 @@ public class SAMA_TMS implements Serializable
         public  AID_Data[] GET_AID_Data_PARAM()
         {
 
-            AID_List aid_list = Get_AID_LIST_PARAM();
+           // AID_List aid_list = Get_AID_LIST_PARAM();
             // todo get AID array from database
            // AID_Data[] aiddata = new AID_Data[aid_list.AID.length];
 

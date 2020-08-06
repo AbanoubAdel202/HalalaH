@@ -621,6 +621,8 @@ public class ClsCardProcess {
                 byte kernelId = aid.getKernelType();
                 if(aid.getAid().equals("A0000002282010"))
                     kernelId=0x03;
+                else if(aid.getAid().equals("A0000002281010"))
+                    kernelId=0x02;
                 combination.setAucKernelID(new byte[]{kernelId});
                 if (aid.isFloorLimitFlg()) {
                     combination.setUcTermFLmtFlg(PayDataUtil.CLSS_TAG_EXIST_WITHVAL);

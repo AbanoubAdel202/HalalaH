@@ -96,8 +96,9 @@ abstract class BasePayProcess {
         SDKLog.d(TAG, "getCurrentCapk index: " + BytesUtil.bytes2HexString(index));
 
         Capk capk = db.getCapkDao().findByRidIndex(BytesUtil.bytes2HexString(rid),index[0]);
-        SDKLog.d(TAG, "capk: " + capk.toString());
+
         if (capk != null) {
+            SDKLog.d(TAG, "capk: " + capk.toString());
             EmvCapk emvCapk = new EmvCapk();
             emvCapk.setRID(rid);
             emvCapk.setKeyID(index[0]);

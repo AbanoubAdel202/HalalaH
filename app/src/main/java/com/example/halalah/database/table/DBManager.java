@@ -2,6 +2,10 @@ package com.example.halalah.database.table;
 
 import android.content.Context;
 
+import com.example.halalah.POS_MAIN;
+import com.example.halalah.PosApplication;
+import com.example.halalah.TMS.AID_Data;
+import com.example.halalah.TMS.Public_Key;
 import com.example.halalah.qrcode.utils.SDKLog;
 import com.topwise.cloudpos.struct.BytesUtil;
 import com.topwise.cloudpos.struct.TlvList;
@@ -18,7 +22,18 @@ public final class DBManager {
 	public static DBManager getInstance() {
 		return instance;
 	}
-	
+
+	/** function init
+	 \function Name: init
+	 \Param  : Context
+	 \Return : void
+	 \Pre    :
+	 \Post   :
+	 \Author	: Mostafa Hussiny
+	 \DT		: 8/00/2020
+	 \Des    : initiate and save aid and capk data
+	 */
+
 	public void init(Context context) {
 		if (hasinit)
 			return;
@@ -93,6 +108,21 @@ public final class DBManager {
 		list.fromHex("9F0608A000000333010106DF0101009F08020030DF1105D84000A800DF1205D84004F800DF130500100000009F1B0400000000DF150400000000DF160199DF170199DF14039F3704DF1801019F7B06000000100000DF1906000000100000DF2006000000100000DF2106000000100000");
 		aid.fromTlvList(list);
 		aidDao.insert(aid);
+
+//todo remove comment when TMS is enabled
+		/*AID_Data AIDdata[] = PosApplication.getApp().oGSama_TMS.GET_AID_Data_PARAM();
+		if(AIDdata.length>0)
+		{
+			for (int i = 0; i < AIDdata.length; i++) {
+				String sAIDdata = POS_MAIN.FormatAIDData(AIDdata[i]);
+				aid = new Aid((byte) 0x00);
+				list = new TlvList();
+				list.fromHex(sAIDdata);
+				aid.fromTlvList(list);
+				aidDao.insert(aid);
+
+			}
+		}*/
 
 
 		Capk capk = new Capk();
@@ -205,6 +235,22 @@ public final class DBManager {
 		list.fromHex("9F0605A0000000049F2201F6DF05083230303931323331DF060101DF070101DF0281E0A25A6BD783A5EF6B8FB6F83055C260F5F99EA16678F3B9053E0F6498E82C3F5D1E8C38F13588017E2B12B3D8FF6F50167F46442910729E9E4D1B3739E5067C0AC7A1F4487E35F675BC16E233315165CB142BFDB25E301A632A54A3371EBAB6572DEEBAF370F337F057EE73B4AE46D1A8BC4DA853EC3CC12C8CBC2DA18322D68530C70B22BDAC351DD36068AE321E11ABF264F4D3569BB71214545005558DE26083C735DB776368172FE8C2F5C85E8B5B890CC682911D2DE71FA626B8817FCCC08922B703869F3BAEAC1459D77CD85376BC36182F4238314D6C4212FBDD7F23D3DF040103DF0314502909ED545E3C8DBD00EA582D0617FEE9F6F684");
 		capk.fromTlvList(list);
 		capkDao.insert(capk);
+
+//todo remove comment when TMS is enabled
+/*
+		Public_Key CAPK[] = PosApplication.getApp().oGSama_TMS.Get_all_CAPK();
+	if(CAPK.length>0) {
+		for (int i = 0; i < CAPK.length; i++)
+			{
+				String sCAPK = POS_MAIN.FormatCAKeys(CAPK[i]);
+				capk = new Capk();
+				list = new TlvList();
+				list.fromHex(sCAPK);
+				capk.fromTlvList(list);
+				capkDao.insert(capk);
+			}
+		}*/
+
 	}
 	
 	public void initDaoImpl(Context context){

@@ -3,7 +3,9 @@ package com.example.halalah.emv;
 import android.content.Intent;
 import android.os.RemoteException;
 import android.util.Log;
+import android.widget.Toast;
 
+import com.example.halalah.PosApplication;
 import com.example.halalah.util.CommonFunction;
 import com.example.halalah.util.TLVDecode;
 import com.topwise.cloudpos.aidl.emv.level2.AidlEmvL2;
@@ -141,8 +143,8 @@ public class ContactCardProcess {
             if (importPinStr == null) {
                 return 0;
             }
-
-            if (importPinStr.equals("")) {
+            Log.d(TAG, "cGetOnlinePin: import pin str:"+importPinStr );
+            if (importPinStr.equals("bypass")) {
                 booleans[0] = true;
             } else {
                 booleans[0] = false;
@@ -172,10 +174,10 @@ public class ContactCardProcess {
                 return 0;
             }
 
-            if (importPinStr.equals("")) {
+            if (importPinStr.equals("bypass")) {
                 booleans[0] = true;
             } else {
-                booleans[0] = false;
+                booleans[0] = false;          
             }
 
             byte[] pinBlock = getOfflinePinBlock(importPinStr);
@@ -194,6 +196,10 @@ public class ContactCardProcess {
         public int cDisplayPinVerifyStatus(int i) throws RemoteException {
             Log.d(TAG, CommonFunction._FILE_LINE_FUN_() + "cDisplayPinVerifyStatus");
             Log.d(TAG, "The number of remaining PIN tries: " + i);
+            if(i==2) {
+                Toast.makeText(PosApplication.getApp().getApplicationContext(),"last try",Toast.LENGTH_LONG).show();
+            }
+
             return 0;
         }
 
