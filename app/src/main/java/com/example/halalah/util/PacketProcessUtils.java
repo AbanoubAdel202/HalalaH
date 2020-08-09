@@ -19,10 +19,12 @@ public class PacketProcessUtils {
     public static final int PACKET_PROCESS_AUTHORISATION_ADVICE = 18;
     public static final int PACKET_PROCESS_ONLINE_INIT = 19;
 
-    public static final int SOCKET_PROC_ERROR_REASON_IP_PORT = 1;
-    public static final int SOCKET_PROC_ERROR_REASON_CONNE = 2;
-    public static final int SOCKET_PROC_ERROR_REASON_SEND = 3;
-    public static final int SOCKET_PROC_ERROR_REASON_RECE = 4;
-    public static final int SOCKET_PROC_ERROR_REASON_RECE_TIME_OUT = 5;
+
+    public static final int SOCKET_PROC_ERROR_REASON_IP_PORT = -1;
+    public static final int SOCKET_PROC_ERROR_REASON_CONNE = -2;
+    public static final int SOCKET_PROC_ERROR_REASON_SEND = -3;
+    public static final int SOCKET_PROC_ERROR_REASON_RECE = -4;
+    public static final int SOCKET_PROC_ERROR_REASON_RECE_TIME_OUT = -5;
+
     public static final int SUCCESS = 0;
 }
