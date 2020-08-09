@@ -1870,51 +1870,51 @@ public class POSTransaction {
     public void ComposeTerminalStatusData()
     {
         //Terminal Dial Indicator 01   1-F
-            m_sTerminalStatus="01"+PosApplication.terminal_dial_indicator; // '1'-9', 'A' - 'F' (i.e. total range is '1'-'F').
+            m_sTerminalStatus="01"+PosApplication.getApp().oGTerminal_Operation_Data.terminal_dial_indicator; // '1'-9', 'A' - 'F' (i.e. total range is '1'-'F').
         //Printer Status
-            m_sTerminalStatus.concat("02"+PosApplication.Printer_Status);  //'0' = No printer. '1' = Out of paper. '2' = Plain paper receipt.
+            m_sTerminalStatus.concat("02"+PosApplication.getApp().oGTerminal_Operation_Data.Printer_Status);  //'0' = No printer. '1' = Out of paper. '2' = Plain paper receipt.
         //Idle Time
-            m_sTerminalStatus.concat("03"+PosApplication.Idle_Time);  //hhmmss
+            m_sTerminalStatus.concat("03"+PosApplication.getApp().oGTerminal_Operation_Data.Idle_Time);  //hhmmss
         //Magnetic Reader Status
-            m_sTerminalStatus.concat("04"+PosApplication.Magnetic_Reader_Status);// '0'=Okay. '1' = Out of order.
+            m_sTerminalStatus.concat("04"+PosApplication.getApp().oGTerminal_Operation_Data.Magnetic_Reader_Status);// '0'=Okay. '1' = Out of order.
         //Chip Card Reader Status
-            m_sTerminalStatus.concat("05"+PosApplication.Chip_Card_Reader_Status);// '0'=Okay. '1' = Out of order.
+            m_sTerminalStatus.concat("05"+PosApplication.getApp().oGTerminal_Operation_Data.Chip_Card_Reader_Status);// '0'=Okay. '1' = Out of order.
 
         //GPS Location Coordinates
-            m_sTerminalStatus.concat("07"+PosApplication.GPS_Location_Coordinates);// ANNNNNNANNNNNNN e.g. N402646W0795856 Which represents, N 40° 26′ 46″ W 079° 58′ 56″
+            m_sTerminalStatus.concat("07"+PosApplication.getApp().oGTerminal_Operation_Data.GPS_Location_Coordinates);// ANNNNNNANNNNNNN e.g. N402646W0795856 Which represents, N 40° 26′ 46″ W 079° 58′ 56″
 
         //Contactless Reader Status
-            m_sTerminalStatus.concat("09"+PosApplication.Contactless_Reader_Status);// '0'=Okay. '1' = Out of order. '9' = Not supported.
+            m_sTerminalStatus.concat("09"+PosApplication.getApp().oGTerminal_Operation_Data.Contactless_Reader_Status);// '0'=Okay. '1' = Out of order. '9' = Not supported.
 
         //Connection Start Time
-            m_sTerminalStatus.concat("10"+PosApplication.Connection_Start_Time); //HHMMSSsss As 24 hour clock
+            m_sTerminalStatus.concat("10"+PosApplication.getApp().oGTerminal_Operation_Data.Connection_Start_Time); //HHMMSSsss As 24 hour clock
 
         //Connection End Time
-            m_sTerminalStatus.concat("11"+PosApplication.Connection_End_Time ); //HHMMSSsss As 24 hour clock
+            m_sTerminalStatus.concat("11"+PosApplication.getApp().oGTerminal_Operation_Data.Connection_End_Time ); //HHMMSSsss As 24 hour clock
 
         //Request Sent Time
-            m_sTerminalStatus.concat("12"+PosApplication.Request_Sent_Time ); //HHMMSSsss As 24 hour clock
+            m_sTerminalStatus.concat("12"+PosApplication.getApp().oGTerminal_Operation_Data.Request_Sent_Time ); //HHMMSSsss As 24 hour clock
 
         //Response Received Time
-            m_sTerminalStatus.concat("13"+PosApplication.Response_Received_Time ); //HHMMSSsss As 24 hour clock
+            m_sTerminalStatus.concat("13"+PosApplication.getApp().oGTerminal_Operation_Data.Response_Received_Time ); //HHMMSSsss As 24 hour clock
         //Performance Timers Reference
-            m_sTerminalStatus.concat("14"+PosApplication.Performance_Timers_Reference); //original RRN for the online authorization or financial message for which the timers refer to.
+            m_sTerminalStatus.concat("14"+PosApplication.getApp().oGTerminal_Operation_Data.Performance_Timers_Reference); //original RRN for the online authorization or financial message for which the timers refer to.
         //mada EFTPOS specification release version
             //todo getversion details
             //getversion()
-            m_sTerminalStatus.concat("15"+PosApplication.mada_EFTPOS_specification_release_version ); //The POS should send the version number without dots, and with 2 digits each with a leading zero, if applicable, for the Major, Minor and Patch specification version numbers i.e. Version 6.0.3 should be expressed as 060003 and Version 10.2.0 should be expressed as 100200
+            m_sTerminalStatus.concat("15"+PosApplication.getApp().oGTerminal_Operation_Data.mada_EFTPOS_specification_release_version ); //The POS should send the version number without dots, and with 2 digits each with a leading zero, if applicable, for the Major, Minor and Patch specification version numbers i.e. Version 6.0.3 should be expressed as 060003 and Version 10.2.0 should be expressed as 100200
         //Connection Details
             //todo getting connection detail
             //getconnectiondetail()
-            m_sTerminalStatus.concat("16"+PosApplication.Connection_Details); //Connection Priority ‘01’ Primary ‘02’ Secondary,   Network Service Provider (NSP) ‘01’ iNET ‘02’ Mobily ‘03’ Zain ‘04’ Sky Band ‘05’ Geidea ,   Provider ‘01’ STC ‘02’ Mobily ‘03’ Zain ‘04’ Sky Band  , Connection Method ‘01’ Dial-up ‘02’ SIM ‘03’ TCP/IP ‘04’ VSAT ‘05’ DSL ‘06’ WiFi
+            m_sTerminalStatus.concat("16"+PosApplication.getApp().oGTerminal_Operation_Data.Connection_Details); //Connection Priority ‘01’ Primary ‘02’ Secondary,   Network Service Provider (NSP) ‘01’ iNET ‘02’ Mobily ‘03’ Zain ‘04’ Sky Band ‘05’ Geidea ,   Provider ‘01’ STC ‘02’ Mobily ‘03’ Zain ‘04’ Sky Band  , Connection Method ‘01’ Dial-up ‘02’ SIM ‘03’ TCP/IP ‘04’ VSAT ‘05’ DSL ‘06’ WiFi
 
 
 /*
         ///for response
         //Terminal Online Flag
-            m_sTerminalStatus.concat("06"+PosApplication.Terminal_Online_Flag); // '0'=No action. '1' = Go on-line.
+            m_sTerminalStatus.concat("06"+PosApplication.getApp().oGTerminal_Operation_Data.Terminal_Online_Flag); // '0'=No action. '1' = Go on-line.
         //Force Reconciliation Flag
-            m_sTerminalStatus.concat("08"+PosApplication.Force_Reconciliation_Flag);// '0'=No action. '1' = Go on-line.*/
+            m_sTerminalStatus.concat("08"+PosApplication.getApp().oGTerminal_Operation_Data.Force_Reconciliation_Flag);// '0'=No action. '1' = Go on-line.*/
 
     }
 

@@ -2,6 +2,9 @@ package com.example.halalah;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.os.IBinder;
+import android.os.RemoteException;
 import android.util.Log;
 import android.widget.Switch;
 
@@ -26,8 +29,13 @@ import com.example.halalah.ui.PacketProcessActivity;
 import com.example.halalah.ui.Refund_InputActivity;
 import com.example.halalah.ui.ShowResultActivity;
 import com.example.halalah.util.PacketProcessUtils;
+import com.topwise.cloudpos.aidl.printer.AidlPrinter;
+import com.topwise.cloudpos.aidl.printer.AidlPrinterListener;
+import com.topwise.cloudpos.aidl.printer.PrintItemEnhancedObj;
+import com.topwise.cloudpos.aidl.printer.PrintItemObj;
 import com.topwise.cloudpos.struct.BytesUtil;
 
+import java.util.List;
 import java.util.Locale;
 
 /** Header POS Main
@@ -1521,6 +1529,41 @@ DF03 Check Sum                                [20]   >> 4410C6D51C2F83ADFD92528F
 
 
     }
+
+    /**
+     \Function Name: check_hardware
+     \Param  : POSTransaction POSTrx
+     \Return : double
+     \Pre    :
+     \Post   :
+     \Author	: mostafa hussiny
+     \DT		: 00/08/2020
+     \Des    : check_hardware printer contactless reader , chip , mag ,...etc
+     */
+
+    public static void check_hardware() {
+
+        AidlPrinter mPrinterManager;
+        mPrinterManager = DeviceTopUsdkServiceManager.getInstance().getPrintManager();
+        int printState=-1;
+                try {
+                           printState = mPrinterManager.getPrinterState();
+                          Log.i(TAG, "printState = " + printState);
+                    }
+                     catch (Exception e)
+                    {
+                          e.printStackTrace();
+                    }
+
+                switch (printState) {
+                    case 0://PRINTER_STATE_Normal             // for mada '0' = No printer. '1' = Out of paper. '2' = Plain paper receipt.
+                    break;
+                    case 1://PRINTER_STATE_NOPAPER
+                           PosApplication.getApp().oGTerminal_Operation_Data.Printer_Status = "1";
+                    case 2:
+                }
+        }
+
 }
 
 

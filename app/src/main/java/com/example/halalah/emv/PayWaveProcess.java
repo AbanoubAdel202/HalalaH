@@ -30,7 +30,7 @@ public class PayWaveProcess extends BasePayProcess {
     public void startPay(Bundle param, TransResultListener listener){
         SDKLog.d(TAG, "startPaywave");
         try {
-            paywave.initialize();
+            paywave.initialize();  // init Paywave kernel
             byte[] data = param.getByteArray(PayDataUtil.CardCode.FINAL_SELECT_DATA);
             int len = param.getInt(PayDataUtil.CardCode.FINAL_SELECT_LEN);
             int res = paywave.setFinalSelectData(data, len);

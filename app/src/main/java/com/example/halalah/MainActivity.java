@@ -1,10 +1,19 @@
 package com.example.halalah;
+
 import com.example.halalah.storage.CommunicationInfo;
 import com.topwise.cloudpos.aidl.serialport.AidlSerialport;
+
+import android.Manifest;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.location.Address;
+import android.location.Geocoder;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.RemoteException;
 import android.os.SystemClock;
@@ -33,6 +42,7 @@ import com.topwise.cloudpos.aidl.pinpad.AidlPinpad;
 import com.topwise.cloudpos.data.PinpadConstant;
 
 import androidx.activity.OnBackPressedDispatcher;
+import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.navigation.NavController;
@@ -51,6 +61,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.sql.Time;
 import java.util.Date;
+import java.util.List;
+import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -66,17 +78,17 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         CommunicationInfo communicationInfo = new CommunicationInfo(this);
         //communicationInfo.setHostIP("192.168.8.124");
-       // communicationInfo.setHostPort("23");
+        // communicationInfo.setHostPort("23");
 
         TextView date = findViewById(R.id.Date);
-        TextView time =findViewById(R.id.TIME);
+        TextView time = findViewById(R.id.TIME);
         TextView status = findViewById(R.id.Status);
         context = getApplicationContext();
         // Mostafa 21/4/2020 added to time and date for action bar
         Date d = new Date();
-        CharSequence s  = DateFormat.format("MMMM d, yyyy ", d.getTime());
+        CharSequence s = DateFormat.format("MMMM d, yyyy ", d.getTime());
         date.setText(s);
-        CharSequence t = DateFormat.format("HH:MM",d.getTime());
+        CharSequence t = DateFormat.format("HH:MM", d.getTime());
         time.setText(t);
 
         PosApplication.getApp().getDeviceManager();
@@ -97,7 +109,7 @@ public class MainActivity extends AppCompatActivity {
         // Passing each menu ID as a set of Ids because each
         // menu should be considered as top level destinations.
         mAppBarConfiguration = new AppBarConfiguration.Builder(
-                R.id.nav_transaction, R.id.nav_Merchant, R.id.nav_totals,R.id.nav_reports,R.id.nav_setting)
+                R.id.nav_transaction, R.id.nav_Merchant, R.id.nav_totals, R.id.nav_reports, R.id.nav_setting)
                 .setDrawerLayout(drawer)
                 .build();
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
@@ -113,8 +125,7 @@ public class MainActivity extends AppCompatActivity {
 
         Terminal_Initialization();
 
-       // StartMADA_APP();
-
+        // StartMADA_APP();
 
 
     }
@@ -139,14 +150,13 @@ public class MainActivity extends AppCompatActivity {
        /* Intent returnhome = new Intent(this,MainActivity.class);
 
         startActivity(returnhome);*/
-       Toast.makeText(this,"This is Home Screen",Toast.LENGTH_LONG).show();
-
-
+        Toast.makeText(this, "This is Home Screen", Toast.LENGTH_LONG).show();
 
 
     }
+
     @Override
-    public void onUserInteraction(){
+    public void onUserInteraction() {
 
         // if we need to do someting if user interacting
         //listen for user action
@@ -159,19 +169,21 @@ public class MainActivity extends AppCompatActivity {
         PosApplication.getApp().oGPosTransaction.Reset();
         AidlLed mAidlLed = DeviceTopUsdkServiceManager.getInstance().getLedManager();
         try {
-            if(mAidlLed != null){
-                mAidlLed.setLed(0 , false);
+            if (mAidlLed != null) {
+                mAidlLed.setLed(0, false);
             }
         } catch (RemoteException e) {
             e.printStackTrace();
         }
     }
 
-    private boolean Terminal_Initialization(){
+    private boolean Terminal_Initialization() {
 
         // todo Terminal initialization
-                //check hardware();
-                 POS_MAIN.load_Terminal_configuration_file(); //TMS parameter
+        POS_MAIN.check_hardware();
+        POS_MAIN.load_Terminal_configuration_file(); //TMS parameter
+
+        Getlocation();
 
         new Thread(new Runnable() {
             @Override
@@ -183,7 +195,7 @@ public class MainActivity extends AppCompatActivity {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        if(mProgressDialog!= null && mProgressDialog.isShowing()){
+                        if (mProgressDialog != null && mProgressDialog.isShowing()) {
                             mProgressDialog.dismiss();
                         }
 
@@ -192,7 +204,73 @@ public class MainActivity extends AppCompatActivity {
             }
         }).start();
 
-return true;
+        return true;
+
+
+    }
+
+    private void Getlocation() {
+
+        LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+
+        boolean GpsStatus = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
+        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 10, new LocationListener() {
+            @Override
+            public void onLocationChanged(Location loc) {
+
+                Toast.makeText(
+                        getBaseContext(),
+                        "Location changed: Lat: " + loc.getLatitude() + " Lng: "
+                                + loc.getLongitude(), Toast.LENGTH_SHORT).show();
+                String longitude = "Longitude: " + loc.getLongitude();
+                Log.d("longitude", longitude);
+                String latitude = "Latitude: " + loc.getLatitude();
+                Log.v("latitude", latitude);
+
+                /*------- To get city name from coordinates -------- */
+                String cityName = null;
+                Geocoder gcd = new Geocoder(getBaseContext(), Locale.ENGLISH);
+                List<Address> addresses;
+                try {
+                    addresses = gcd.getFromLocation(loc.getLatitude(), loc.getLongitude(), 1);
+                    if (addresses.size() > 0) {
+                        System.out.println(addresses.get(0).getLocality());
+                        cityName = addresses.get(0).getLocality();
+                    }
+                }
+                catch (IOException e) {
+                    e.printStackTrace();
+                }
+                String s = longitude + "\n" + latitude + "\n\nMy Current City is: "
+                        + cityName;
+
+            }
+
+            @Override
+            public void onStatusChanged(String provider, int status, Bundle extras) {
+
+            }
+
+            @Override
+            public void onProviderEnabled(String provider) {
+
+            }
+
+            @Override
+            public void onProviderDisabled(String provider) {
+
+            }
+        });
 
 
 

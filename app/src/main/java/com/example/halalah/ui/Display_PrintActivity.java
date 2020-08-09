@@ -51,7 +51,7 @@ public class Display_PrintActivity extends Activity implements View.OnClickListe
     private String mPrintMerchant;
     private String mPrintBank;
 
-    private Purchase_Print mConsumePrint;
+    private Purchase_Print mPurchasePrint;
     private AlertDialog.Builder mAlertDialog;
 
     private int mTime = 31;
@@ -89,8 +89,8 @@ public class Display_PrintActivity extends Activity implements View.OnClickListe
             mKsnValue.setText("null");
         }
 
-        mConsumePrint = new Purchase_Print(this);
-        mConsumePrint.setCurTime(getCurTime());
+        mPurchasePrint = new Purchase_Print(this);
+        mPurchasePrint.setCurTime(getCurTime());
         mBundle = this.getIntent().getExtras();
 
 
@@ -126,13 +126,13 @@ public class Display_PrintActivity extends Activity implements View.OnClickListe
                 break;
             case R.id.btn_print:
                 try {
-                    int printState = mConsumePrint.mPrinterManager.getPrinterState();
+                    int printState = mPurchasePrint.mPrinterManager.getPrinterState();
                     Log.i(TAG, "printState = " + printState);
 
                     if (printState == PrinterConstant.PrinterState.PRINTER_STATE_NOPAPER) {
                         showDialog(null, getString(R.string.result_need_paper));
                     } else {
-                        mConsumePrint.printDetail(mPrintHolder);
+                        mPurchasePrint.printDetail(mPrintHolder);
                     }
                 } catch (RemoteException e) {
                     e.printStackTrace();
@@ -338,8 +338,8 @@ public class Display_PrintActivity extends Activity implements View.OnClickListe
                 mRRN.setText(data);
             } else if (print[i].indexOf("时间") != -1) {
                 data = print[i].replace("时间:", "");
-                if (mConsumePrint != null && mConsumePrint.getCurTime() != null) {
-                    mTransactiontime.setText(mConsumePrint.getCurTime());
+                if (mPurchasePrint != null && mPurchasePrint.getCurTime() != null) {
+                    mTransactiontime.setText(mPurchasePrint.getCurTime());
                 } else {
                     mTransactiontime.setText(data);
                 }
@@ -378,13 +378,13 @@ public class Display_PrintActivity extends Activity implements View.OnClickListe
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
                     try {
-                        int printState = mConsumePrint.mPrinterManager.getPrinterState();
+                        int printState = mPurchasePrint.mPrinterManager.getPrinterState();
                         Log.i(TAG, "printState = " + printState);
 
                         if (printState == PrinterConstant.PrinterState.PRINTER_STATE_NOPAPER) {
                             showDialog(null, getString(R.string.result_need_paper));
                         } else {
-                            mConsumePrint.printDetail(mPrintMerchant + mPrintBank);
+                            mPurchasePrint.printDetail(mPrintMerchant + mPrintBank);
                         }
                     } catch (RemoteException e) {
                         e.printStackTrace();

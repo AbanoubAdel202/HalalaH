@@ -63,7 +63,7 @@ public class ShowResultActivity extends Activity implements View.OnClickListener
             actionBar.setTitle(getString(R.string.text_ic_para_download));
         }*/
         else if (mProcType == PacketProcessUtils.PACKET_PROCESS_PURCHASE) {
-            actionBar.setTitle(getString(R.string.Purchase));
+          //  actionBar.setTitle(getString(R.string.Purchase));
         }
     }
 

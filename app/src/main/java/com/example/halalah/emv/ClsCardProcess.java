@@ -793,7 +793,7 @@ public class ClsCardProcess {
         if (!TextUtils.isEmpty(data)) {
             list.addTlv("DF8123",data);
         } else {
-            list.addTlv("DF8123","000000030000");
+            list.addTlv("DF8123","000000030000");  //todo update default
         }
         //非接交易限额（卡的）
         data = null;
@@ -803,10 +803,10 @@ public class ClsCardProcess {
         if (!TextUtils.isEmpty(data)) {
             list.addTlv("DF8124",data);
         } else {
-            list.addTlv("DF8124","000000030000");
+            list.addTlv("DF8124","000000030000"); //todo update default
         }
         //非接交易限额（手机pay的）
-        list.addTlv("DF8125","000000050000");
+        list.addTlv("DF8125","000000050000");//todo update default
         //非接免密限额
         data = null;
         if(aidList.getTlv("DF21")!=null)
@@ -815,7 +815,7 @@ public class ClsCardProcess {
         if (!TextUtils.isEmpty(data)) {
             list.addTlv("DF8126",data);
         } else {
-            list.addTlv("DF8126","000000005000");
+            list.addTlv("DF8126","000000005000");//todo update default
         }
         //终端操作代码–默认
         data = null;
