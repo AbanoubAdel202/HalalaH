@@ -6,14 +6,13 @@ import android.os.RemoteException;
 import android.util.Log;
 
 import com.example.halalah.DeviceTopUsdkServiceManager;
+import com.example.halalah.POSTransaction;
 import com.example.halalah.POS_MAIN;
 import com.example.halalah.PosApplication;
 import com.example.halalah.Utils;
 
-import com.example.halalah.ui.CardConfirmActivity;
 import com.example.halalah.ui.PacketProcessActivity;
 import com.example.halalah.ui.PinpadActivity;
-import com.example.halalah.cache.ConsumeData;
 import com.example.halalah.iso8583.BCDASCII;
 import com.example.halalah.util.PacketProcessUtils;
 import com.topwise.cloudpos.aidl.emv.AidlPboc;
@@ -53,7 +52,7 @@ public class ICPbocStartListenerSub extends AidlPbocStartListener.Stub {
         POS_MAIN.Recognise_card();
         POS_MAIN.Check_transaction_allowed(PosApplication.getApp().oGPosTransaction.m_enmTrxType);
         POS_MAIN.Check_transaction_limits();
-
+        POS_MAIN.supervisor_pass_required();
 
 
         mPbocManager.importFinalAidSelectRes(true);
@@ -132,7 +131,7 @@ public class ICPbocStartListenerSub extends AidlPbocStartListener.Stub {
 
 
 
-        PosApplication.getApp().oGPosTransaction.m_iCardType=ConsumeData.CARD_TYPE_IC;
+
         PosApplication.getApp().oGPosTransaction.m_sPAN=cardno;
         //CardManager.getInstance().startActivity(mContext, null, CardConfirmActivity.class);
         CardManager.getInstance().setConfirmCardInfo(true);
@@ -147,6 +146,7 @@ public class ICPbocStartListenerSub extends AidlPbocStartListener.Stub {
         isGetPin = true;
         Bundle param = new Bundle();
         param.putInt("type", type);
+
         CardManager.getInstance().startActivity(mContext, param, PinpadActivity.class);
     }
 
@@ -167,6 +167,38 @@ public class ICPbocStartListenerSub extends AidlPbocStartListener.Stub {
     @Override
     public void onRequestOnline() throws RemoteException {
         Log.d(TAG, "onRequestOnline()");
+
+        // getting CVM Results
+        byte[] bCVMR;
+        String[] sCVMR_Tag = new String[]{"9F34"};
+        bCVMR= getTlv(sCVMR_Tag);
+        switch(bCVMR[3]) {
+            case 0x01:
+            case 0x41:
+                PosApplication.getApp().oGPosTransaction.m_enmTrxCVM = POSTransaction.CVM.OFFLINE_PIN;
+                break;
+            case 0x02:
+            case 0x42:
+                PosApplication.getApp().oGPosTransaction.m_enmTrxCVM = POSTransaction.CVM.ONLINE_PIN;
+                break;
+            case 0x03:
+            case 0x43:
+            case 0x05:
+            case 0x45:
+                PosApplication.getApp().oGPosTransaction.m_enmTrxCVM = POSTransaction.CVM.OFFLINE_PIN_SIGNATURE;
+                break;
+            case 0x1E:
+            case 0x5E:
+                PosApplication.getApp().oGPosTransaction.m_enmTrxCVM = POSTransaction.CVM.SIGNATURE;
+            case 0x1F:
+            case 0x5F:
+                PosApplication.getApp().oGPosTransaction.m_enmTrxCVM = POSTransaction.CVM.NO_CVM;
+
+
+
+
+        }
+
 
         setExpired();
         setSeqNum();
@@ -403,13 +435,10 @@ public class ICPbocStartListenerSub extends AidlPbocStartListener.Stub {
 
     private void setDE55() {
         Log.i(TAG, "getDE55()");
-        /*String[] consume55Tag = new String[]{"9F26", "9F27", "9F10", "9F37", "9F36", "95", "9A", "9C", "9F02", "5F2A",
-                "82", "9F1A", "9F03", "9F33", "9F34", "9F35", "9F1E", "84", "9F09",
-                "91", "71", "72", "DF32", "DF33", "DF34"};*/
-        String[] DE55Tag = new String[]{"4F", "82", "95", "9A", "9B", "9C", "5F24",
-                "5F2A", "9F02", "9F03", "9F06", "9F10", "9F12", "9F1A", "9F1C", "9F26",
-                "9F27", "9F33", "9F34", "9F36", "9F37", "C2", "CD", "CE", "C0", "C4",
-                "C7", "C8"};
+
+        String[] DE55Tag = new String[]{"82","9F02","9F03","4F","50","9F12","9F36","9F6C","9F26","9F27","9F34",
+                                        "84","9F6E","9F10","9F1E","5A","9F24","57","9F33","9F66","9F35","95",
+                                        "9F1A","5F2A","9A","9C","9F37","9F19","9F25"};
         byte[] DE55TlvList = getTlv(DE55Tag);
         Log.d(TAG, "setDE55 DE55TlvList : " + BCDASCII.bytesToHexString(DE55TlvList));
         PosApplication.getApp().oGPosTransaction.m_sICCRelatedTags=BCDASCII.bytesToHexString(DE55TlvList);

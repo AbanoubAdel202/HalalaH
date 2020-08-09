@@ -247,6 +247,7 @@ public class SAMA_TMS implements Serializable {
     private static final int MAXCAPK = 30;
     private static final int MAXMSG = 999;
 
+        public enum  TMS_Download_Type{ Field_record , partial_record , full_download}
 
     public Retailer_Data retailer_data;
     public Map<String, Card_Scheme> cardSchemeMap;
@@ -259,6 +260,8 @@ public class SAMA_TMS implements Serializable {
     public Revoked_Certificates revoked_certificates;
     public String NUM_REC;
     public String NUM_REC_DLN;
+
+        public TMS_Download_Type tms_download_type;
 
 
     char GS = ''; //group seperator  1D
@@ -737,11 +740,11 @@ public class SAMA_TMS implements Serializable {
                     if (dspec_seg1_elements[0].length() > 3) {
                         int index = 3;
                         int offset = 2;
-                        
+
                         dspec_seg1_elements[0].substring(index, index + offset);   //length 2//The value configured for the mada scheme (‘P1’) shall apply to all card schemes
                         index = index + offset;
                         offset = 5;
-                        
+
                         Limits p1Limits = new Limits();
                         p1Limits.setContactlessTransactionLimit(dspec_seg1_elements[0].substring(index, index + offset));  //length 5
                         index = index + offset;
@@ -756,7 +759,7 @@ public class SAMA_TMS implements Serializable {
                         index = index + offset;
                         offset = 5;
                         device_specific.setP1Limits(p1Limits);
-                        
+
                         Limits vcLimits = new Limits();
                         vcLimits.setContactlessTransactionLimit(dspec_seg1_elements[0].substring(index, index + offset)); //length 5      //zeros as per spec Version 6.0.9
                         index = index + offset;
@@ -771,7 +774,7 @@ public class SAMA_TMS implements Serializable {
                         index = index + offset;
                         offset = 5;
                         device_specific.setVcLimits(vcLimits);
-                        
+
                         Limits mcLimits = new Limits();
                         mcLimits.setContactlessTransactionLimit(dspec_seg1_elements[0].substring(index, index + offset)); //length 5      //zeros as per spec Version 6.0.9
                         index = index + offset;
@@ -783,7 +786,7 @@ public class SAMA_TMS implements Serializable {
                         index = index + offset;
                         offset = 3;
                         device_specific.setMcLimits(mcLimits);
-                        
+
                         device_specific.m_sMax_SAF_Depth = dspec_seg1_elements[0].substring(index, index + offset);                           //length 3
                         index = index + offset;
                         offset = 7;

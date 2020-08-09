@@ -3,8 +3,16 @@ package com.example.halalah;
 import android.content.Context;
 import android.content.Intent;
 
+import com.example.halalah.TMS.AID_Data;
+import com.example.halalah.TMS.Public_Key;
 import com.example.halalah.TMS.SAMA_TMS;
+import com.example.halalah.iso8583.BCDASCII;
 import com.example.halalah.ui.AmountInputActivity;
+import com.example.halalah.ui.P_NAQD_InputActivity;
+import com.example.halalah.ui.Refund_InputActivity;
+import com.example.halalah.util.HexUtil;
+
+import java.util.Locale;
 
 /** Header POS Main
  \Class Name: POS_MAIN
@@ -18,6 +26,7 @@ import com.example.halalah.ui.AmountInputActivity;
  */
 public class POS_MAIN {
     private static final String TAG = POS_MAIN.class.getSimpleName();
+    public static boolean isforced;
 
     public Context mcontext;
         public POS_MAIN()
@@ -50,7 +59,7 @@ public class POS_MAIN {
                 break;
             case PURCHASE_WITH_NAQD://PURCHASE_WITH_NAQD
                 //get amount
-                 AmountACT = new Intent(mcontext, AmountInputActivity.class);
+                 AmountACT = new Intent(mcontext, P_NAQD_InputActivity.class);
                  AmountACT.putExtra("transaction Type",Trxtype);
                 mcontext.startActivity(AmountACT);
 
@@ -59,7 +68,9 @@ public class POS_MAIN {
 
                 // TODO check supervisour password
                 // TODO get original transaction Type
-                // TODO Input RRN,other required data
+                AmountACT = new Intent(mcontext, Refund_InputActivity.class);
+                AmountACT.putExtra("transaction Type",Trxtype);
+                mcontext.startActivity(AmountACT);
 
                 break;
             case AUTHORISATION://AUTHORISATION:
@@ -76,15 +87,23 @@ public class POS_MAIN {
                 mcontext.startActivity(AmountACT);
                 break;
             case AUTHORISATION_VOID://AUTHORISATION_VOID:
+                AmountACT = new Intent(mcontext, AmountInputActivity.class);
+                AmountACT.putExtra("transaction Type",Trxtype);
                 break;
             case AUTHORISATION_EXTENSION://AUTHORISATION_EXTENSION
+                AmountACT = new Intent(mcontext, AmountInputActivity.class);
+                AmountACT.putExtra("transaction Type",Trxtype);
                 break;
             case PURCHASE_ADVICE://PURCHASE_ADVICE:
                 //todo PURCHASE_ADVICE
+                AmountACT = new Intent(mcontext, AmountInputActivity.class);
+                AmountACT.putExtra("transaction Type",Trxtype);
                 break;
 
             case CASH_ADVANCE://CASH_ADVANCE:
                 //todo start cash advance
+                AmountACT = new Intent(mcontext, AmountInputActivity.class);
+                AmountACT.putExtra("transaction Type",Trxtype);
                 break;
             case REVERSAL://REVERSAL:
                 //todo check and do reversal
@@ -143,19 +162,42 @@ public class POS_MAIN {
 
     }
 
+    /** Header POS Main
+     \function Name: Perform_reversal
+     \Param  :
+     \Return :
+     \Pre    :
+     \Post   :
+     \Author	: Mostafa Hussiny
+     \DT		: 6/00/2020
+     \Des    : will start collection and performe reversal transaction
+     */
     public boolean perform_reversal(POSTransaction oOriginal_Transaction,POSTransaction oReversal_Transaction)
     {
         return true;
     }
-
+    /** Header recognise card
+     \function Name: recognise card
+     \Param  :
+     \Return :
+     \Pre    :
+     \Post   :
+     \Author	: Mostafa Hussiny
+     \DT		: 4/28/2020  modified 1/7/2020
+     \Des    : will get the card AID and check if this card is MAda based on AID or PAN
+     */
     public static int Recognise_card(){
-            if(PosApplication.getApp().oGPosTransaction.m_enmTrxCardType==POSTransaction.CardType.MANUAL)
+           int istate=-1;
+            if(PosApplication.getApp().oGPosTransaction.m_enmTrxCardType==POSTransaction.CardType.MANUAL || PosApplication.getApp().oGPosTransaction.m_enmTrxCardType==POSTransaction.CardType.MAG )
             {
-                SAMA_TMS.Get_card_scheme_BY_PAN(PosApplication.getApp().oGPosTransaction.m_sPAN);
-            }
-               SAMA_TMS.Get_card_scheme_BY_AID(PosApplication.getApp().oGPosTransaction.m_sAID);
+                istate= SAMA_TMS.Get_card_scheme_BY_PAN(PosApplication.getApp().oGPosTransaction.m_sPAN);
 
-           return 0;
+
+            }
+            else
+                istate=SAMA_TMS.Get_card_scheme_BY_AID(PosApplication.getApp().oGPosTransaction.m_sAID);
+
+           return istate;
 
     }
 
@@ -166,7 +208,7 @@ public class POS_MAIN {
      \Pre    :
      \Post   :
      \Author	: Mostafa Hussiny
-     \DT		: 6/7/2020
+     \DT		: 6/00/2020
      \Des    : check transaction allowed flag for each transaction
      */
     public static boolean Check_transaction_allowed(POSTransaction.TranscationType Trxtype) {
@@ -206,16 +248,31 @@ public class POS_MAIN {
                 return true;
                 break;
             case AUTHORISATION_EXTENSION://AUTHORISATION_EXTENSION                       offset 7
-                if ("1".equals(PosApplication.getApp().oGPosTransaction.card_scheme.m_sTransactions_Allowed.charAt(7)))
-                return true;
+                if ("1".equals(PosApplication.getApp().oGPosTransaction.card_scheme.m_sTransactions_Allowed.charAt(7))) {
+                    return true;
+                }else if(PosApplication.getApp().oGPosTransaction.card_scheme.m_sCard_Scheme_ID=="P1")
+                {
+
+                    return true;
+                }
                 break;
             case AUTHORISATION_VOID://AUTHORISATION_VOID:                                offset 8
                 if ("1".equals(PosApplication.getApp().oGPosTransaction.card_scheme.m_sTransactions_Allowed.charAt(8)))
                 return true;
+                else if(PosApplication.getApp().oGPosTransaction.card_scheme.m_sCard_Scheme_ID=="P1")
+                {
+
+                    return true;
+                }
                 break;
             case SADAD_BILL://SADAD_BILL:                                                offset 9
                 if ("1".equals(PosApplication.getApp().oGPosTransaction.card_scheme.m_sTransactions_Allowed.charAt(9)))
                 return true;
+                else if(PosApplication.getApp().oGPosTransaction.card_scheme.m_sCard_Scheme_ID=="P1")
+                {
+
+                    return true;
+                }
                 break;
 
 
@@ -224,7 +281,7 @@ public class POS_MAIN {
     }
     public static int Check_transaction_limits()
     {
-
+            // todo get transaction limits
         return 0;
     }
     public boolean Check_manual_allowed()
@@ -236,14 +293,250 @@ public class POS_MAIN {
     }
     public int Check_max_cashback(int cashbackamount)
     {
+        //todo get max cash back
+
         return 0;
     }
 
     public static boolean Check_MADA_Card()
     {
+        //todo check mada card
       //  if()
         return true;
     }
+    public static void supervisor_pass_required(){
+
+        //todo dialog which ask for password
+
+    }
+
+
+/********************************************************************************
+    // Topwise Tags
+
+9f06 07 A0000002282010      -->AID
+    df01 01 00                   -->ApplicationSelectionIndicator(0:PartMatch,1:ExactMatch)
+9f09 02 00084                -->ApplicationVersionNumber
+
+    df11 05 BC40BC8000           -->TerminalActionCode-Default
+    df12 05 BC40BC8000		     -->TerminalActionCode-Online
+    df13 05 0010000000           -->TerminalActionCode-Decline
+
+9f1b 04 00000000             -->TerminalFloorLimit
+    df15 04 00000290             -->ThresholdValueforBiasedRandomSelection
+    df16 01 00                   -->MaximumTargetPercentagetobeUsedforBiasedRandomSelection
+    df17 01 00                   -->TargetPercentagetobeUsedforRandomSelection
+    df14 03 9F3704               -->DDOLdefault
+    df19 06 000000000000         -->ContactlessReaderfloorLimit
+    df20 06 000099999999         -->ContactlessReader
+    df21 06 000000010000         -->Contactless Reader CVM Limit
+
+
+
+// Sample formated string for mada AIDs
+9f0607A0000002282010df0101009f09020084df1105BC40BC8000df1205BC40BC8000df130500100000009f1b0400000000df150400000290df160100df170100df14039F3704df1906000000000000df2006000099999999df2106000000010000
+9f0608a0000003330101df0101009f09020020df1105fc78fcf8f0df1205fc78fcf8f0df130500100000009f1b04000186a0df150400000028df160150df170120df14039f3704df2006000099999999df2106000000100000df1906000000030000
+
+*********************************************************************************************/
+
+
+
+
+
+
+    public static String FormatAIDData(AID_Data AIDObj)
+    {
+        int iRetRes = -1;
+        StringBuilder strFormatedAIDData = new StringBuilder();
+
+        if (AIDObj == null)
+        {
+            // log an error message
+            return String.valueOf(iRetRes);
+        }
+
+        // Adding AID
+        if (AIDObj.AID.length() > 0)
+            strFormatedAIDData.append("9f06" +String.format(Locale.ENGLISH,"%02d",AIDObj.AID.length()/2)+AIDObj.AID.toString());
+
+        // Adding ApplicationSelectionIndicator(0:PartMatch,1:ExactMatch)
+        strFormatedAIDData.append("df010100");
+
+        // Adding ApplicationVersionNumber
+        if (AIDObj.Terminal_AID_version_numbers.length() > 0)
+            strFormatedAIDData.append("9f09" +"02"+AIDObj.Terminal_AID_version_numbers.substring(0,4));
+
+        // Adding Default_action_code
+        if (AIDObj.Denial_action_code.length() > 0)
+            strFormatedAIDData.append("df11" +String.format(Locale.ENGLISH,"%02d",AIDObj.Default_action_code.length()/2)+AIDObj.Default_action_code.toString());
+
+
+        // Adding Online_action_code
+        if (AIDObj.Denial_action_code.length() > 0)
+            strFormatedAIDData.append("df12" +String.format(Locale.ENGLISH,"%02d",AIDObj.Online_action_code.length()/2)+AIDObj.Online_action_code.toString());
+
+
+        // Adding Denial_action_code
+        if (AIDObj.Denial_action_code.length() > 0)
+            strFormatedAIDData.append("df13" +String.format(Locale.ENGLISH,"%02d",AIDObj.Denial_action_code.length()/2)+AIDObj.Denial_action_code.toString());
+
+            strFormatedAIDData.append("9f1b"+String.format(Locale.ENGLISH,"%02d","00000000".length()/2)+"00000000");
+
+        // Adding ThresholdValueforBiasedRandomSelection
+        if (AIDObj.Threshold_Value_for_Biased_Random_Selection.length() > 0)
+            strFormatedAIDData.append("df15" +String.format(Locale.ENGLISH,"%02d",AIDObj.Threshold_Value_for_Biased_Random_Selection.length()/2)+AIDObj.Threshold_Value_for_Biased_Random_Selection.toString());
+
+        // Adding Maximum_Target_Percentage_for_Biased_Random_Selection
+        if (AIDObj.Maximum_Target_Percentage_for_Biased_Random_Selection.length() > 0)
+            strFormatedAIDData.append("df16" +String.format(Locale.ENGLISH,"%02d",AIDObj.Maximum_Target_Percentage_for_Biased_Random_Selection.length()/2)+AIDObj.Maximum_Target_Percentage_for_Biased_Random_Selection.toString());
+
+        // Adding Target_Percentage
+        if (AIDObj.Target_Percentage.length() > 0)
+            strFormatedAIDData.append("df17" +String.format(Locale.ENGLISH,"%02d",AIDObj.Target_Percentage.length()/2)+AIDObj.Target_Percentage.toString());
+
+        // Adding Default_TDOL
+        if (AIDObj.Default_DDOL.length() > 0)
+            strFormatedAIDData.append("df14" +String.format(Locale.ENGLISH,"%02d",AIDObj.Default_DDOL.length()/2)+AIDObj.Default_DDOL.toString());
+
+	/*
+				>>>>>>>>>>>>>>>>>>>>>>>>>> NOTES <<<<<<<<<<<<<<<<<<<<<<<
+
+		 - Floor limits Value = Cardschema floor limits
+		 - Contactless Limits (CVM , FLoor,Reader) would be mada for all card schemes and AIDs
+	*/
+
+        // Log AID formated message
+
+        return strFormatedAIDData.toString();
+
+    }
+
+
+
+    /*
+Topwise Sample formated string
+------------------------------
+
+PUBLICKEY=9F0605A0000000659F220109DF05083230303931323331DF060101DF070101DF028180B72A8FEF5B27F2B550398FDCC256F714BAD497FF56094B7408328CB626AA6F0E6A9DF8388EB9887BC930170BCC1213E90FC070D52C8DCD0FF9E10FAD36801FE93FC998A721705091F18BC7C98241CADC15A2B9DA7FB963142C0AB640D5D0135E77EBAE95AF1B4FEFADCF9C012366BDDA0455C1564A68810D7127676D493890BDDF040103DF03144410C6D51C2F83ADFD92528FA6E38A32DF048D0A
+
+
+
+
+9F06 RID                                      [5]    >> A000000065
+9F22 Certification Authority Public Key Index [1]    >> 09
+DF05 CA Public Key Expiry Date                [8]    >> 3230303931323331 // Length should be 4
+DF06 Hash ID                                  [1]    >> 01
+DF07 Digital Signature ID                     [1]    >> 01
+DF02 Public Key Value                         [Var]  >> B72A8FEF5B27F2B550398FDCC256F714BAD497FF56094B7408328CB626AA6F0E6A9DF8388EB9887BC930170BCC1213E90FC070D52C8DCD0FF9E10FAD36801FE93FC998A721705091F18BC7C98241CADC15A2B9DA7FB963142C0AB640D5D0135E77EBAE95AF1B4FEFADCF9C012366BDDA0455C1564A68810D7127676D493890BD
+DF04 Exponent                                 [01]   >> 03
+DF03 Check Sum                                [20]   >> 4410C6D51C2F83ADFD92528FA6E38A32DF048D0A
+
+*/
+
+
+
+
+    public static String FormatCAKeys(Public_Key CAKeyObj)
+    {
+        int iRetRes = 0;
+        StringBuilder strFormatedCAKey = new StringBuilder();
+
+        if (CAKeyObj == null)
+        {
+            // log an error message
+            return String.valueOf(iRetRes);
+        }
+
+        // Adding RID
+        if (CAKeyObj.RID.length() > 0)
+            strFormatedCAKey.append("9F06" +String.format(Locale.ENGLISH,"%02d",CAKeyObj.RID.length()/2)+CAKeyObj.RID.toString());
+        else
+        {
+            //Todo Log message showing can not format sent key due to incorrect length of RID
+            return String.valueOf(iRetRes) ;
+        }
+
+
+        // Adding Key_Index
+        if (CAKeyObj.Key_Index.length() > 0)
+            strFormatedCAKey.append("9F22" +String.format(Locale.ENGLISH,"%02d",CAKeyObj.Key_Index.length()/2)+CAKeyObj.Key_Index.toString());
+        else
+        {
+            //Todo Log message showing can not format sent key due to incorrect length of Key_Index
+            return String.valueOf(iRetRes);
+        }
+
+        // Adding CA_Public_Key_Expiry_Date
+        if (CAKeyObj.CA_Public_Key_Expiry_Date.length() > 0)
+            strFormatedCAKey.append("DF05" +/*String.format(Locale.ENGLISH,"%02d",CAKeyObj.CA_Public_Key_Expiry_Date.length()/2)*/"0420"+CAKeyObj.CA_Public_Key_Expiry_Date.toString());
+        else
+        {
+            //Todo Log message showing can not format sent key due to incorrect length of CA_Public_Key_Expiry_Date
+            return String.valueOf(iRetRes);
+        }
+        // Adding Hash_ID
+        if (CAKeyObj.Hash_ID.length() > 0)
+            strFormatedCAKey.append("DF06" +String.format(Locale.ENGLISH,"%02d",CAKeyObj.Hash_ID.length()/2)+CAKeyObj.Hash_ID.toString());
+        else
+        {
+            //Todo Log message showing can not format sent key due to incorrect length of Hash_ID
+            return String.valueOf(iRetRes);
+        }
+
+
+        // Adding Digital_Signature_ID
+        if (CAKeyObj.Digital_Signature_ID.length() > 0)
+            strFormatedCAKey.append("DF07" +String.format(Locale.ENGLISH,"%02d",CAKeyObj.Digital_Signature_ID.length()/2)+CAKeyObj.Digital_Signature_ID.toString());
+        else
+        {
+            //Todo Log message showing can not format sent key due to incorrect length of Digital_Signature_ID
+            return String.valueOf(iRetRes);
+        }
+
+
+        // formating  Public Key Value  and Public_Key length
+        if (CAKeyObj.Public_Key.length() > 0 && CAKeyObj.CA_Public_Key_Length.length() > 0 )
+            strFormatedCAKey.append("DF0281" + Integer.toHexString(CAKeyObj.Public_Key.toString().length()/2)+CAKeyObj.Public_Key.toString());
+        else
+        {
+            //Todo Log message showing can not format sent key due to incorrect length of Public_Key
+            return String.valueOf(iRetRes);
+        }
+
+        // Adding Exponent
+        if (CAKeyObj.Exponent.length() > 0)
+            strFormatedCAKey.append("DF04" +String.format(Locale.ENGLISH,"%02d",CAKeyObj.Exponent.length()/2)+CAKeyObj.Exponent.toString());
+        else
+        {
+            //Todo Log message showing can not format sent key due to incorrect length of Exponent
+            return String.valueOf(iRetRes);
+        }
+
+        // Adding Check_Sum
+        if (CAKeyObj.Check_Sum.length() > 0)
+            strFormatedCAKey.append("DF03" +Integer.toHexString(CAKeyObj.Check_Sum.toString().length()/2)/*String.format(Locale.ENGLISH,"%02d",CAKeyObj.Check_Sum.length()/2)*/+CAKeyObj.Check_Sum.toString());
+        else
+        {
+            //Todo Log message showing can not format sent key due to incorrect length of Check_Sum
+            return String.valueOf(iRetRes);
+        }
+
+
+
+
+        // Todo log Formated string for debugging
+
+        return strFormatedCAKey.toString();
+
+    }
+
+
+    public static int ValidateHostResponse()
+    {
+        //todo get recieved buffer and do validation using specific DE on business logic
+        return 0;
+    }
+
 
 }
 

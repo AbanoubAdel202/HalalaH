@@ -3,6 +3,11 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="com.example.halalah">
 
+    <uses-permission android:name="android.permission.WRITE_APN_SETTINGS" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" /> <!-- 1、设置打印机权限 -->
@@ -31,38 +36,47 @@
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.INTERNET" /> <!-- 往SDCard写入数据权限 -->
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" /> <!-- 在SDCard中创建与删除文件权限 -->
-    <uses-permission android:name="android.permission.MOUNT_UNMOUNT_FILESYSTEMS"
+    <uses-permission
+        android:name="android.permission.MOUNT_UNMOUNT_FILESYSTEMS"
         tools:ignore="ProtectedPermissions" />
-
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 
     <application
+        android:name=".PosApplication"
         android:allowBackup="false"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
+        android:launchMode="singleTask"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/AppTheme"
-        android:name=".PosApplication"
-        android:launchMode="singleTask"
-        >
+        android:theme="@style/AppTheme">
+        <activity
+            android:name=".ui.Refund_InputActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:label="@string/title_activity_refund__input"
+            android:theme="@style/FullscreenTheme"></activity>
+        <activity
+            android:name=".ui.P_NAQD_InputActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:label="@string/title_activity_p__n_a_q_d__input"
+            android:theme="@style/FullscreenTheme" />
         <activity
             android:name=".network_settings"
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:label="@string/title_activity_network_settings"
-            android:theme="@style/FullscreenTheme"></activity>
+            android:theme="@style/FullscreenTheme" />
         <activity
-            android:name=".snapshot"
+            android:name=".ui.totals.snapshot"
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:label="@string/title_activity_snapshot"
             android:theme="@style/FullscreenTheme" />
         <activity
-            android:name=".running_totals"
+            android:name=".ui.totals.running_totals"
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:label="@string/title_activity_running_totals"
             android:theme="@style/FullscreenTheme" />
         <activity
-            android:name=".reconciliation"
+            android:name=".ui.totals.reconciliation"
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:label="@string/title_activity_reconciliation"
             android:theme="@style/FullscreenTheme" />
@@ -107,13 +121,14 @@
         <activity android:name=".ui.SearchCardActivity" />
         <activity android:name=".ui.PinpadActivity" />
         <activity android:name=".ui.PacketProcessActivity" />
-        <activity android:name=".ui.ConsumeSuccessActivity"/>
+        <activity android:name=".ui.ConsumeSuccessActivity" />
         <activity android:name=".ui.CardConfirmActivity" />
-        <activity android:name=".ui.admin_settings.SuperAdminActivity"/>
-        <activity android:name=".ui.admin_settings.OthersSettingActivity"/>
-        <activity android:name=".ui.admin_settings.CommunicationSettingActivity"/>
-        <activity android:name=".ui.admin_settings.ImportKeyActivity"/>
-        
+        <activity android:name=".ui.admin_settings.SuperAdminActivity" />
+        <activity android:name=".ui.admin_settings.OthersSettingActivity" />
+        <activity android:name=".ui.admin_settings.CommunicationSettingActivity" />
+        <activity android:name=".ui.admin_settings.ImportKeyActivity" />
+        <activity android:name=".ui.ShowResultActivity"/>
+        <activity android:name=".PanInputActivity"/>
         <activity
             android:name=".MainActivity"
             android:label="@string/app_name"
@@ -135,6 +150,18 @@
             android:name=".card.CardMoniterService"
             android:enabled="true" />
 
+        <receiver
+            android:name=".DeviceOwnerReceiver"
+            android:description="@string/app_name"
+            android:label="@string/app_name"
+            android:permission="android.permission.BIND_DEVICE_ADMIN">
+            <meta-data
+                android:name="android.app.device_admin"
+                android:resource="@xml/device_owner_receiver"/>
+            <intent-filter>
+                <action android:name="android.app.action.ACTION_DEVICE_ADMIN_ENABLED"/>
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>

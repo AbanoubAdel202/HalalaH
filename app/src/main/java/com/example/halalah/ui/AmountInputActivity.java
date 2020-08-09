@@ -1,6 +1,5 @@
 package com.example.halalah.ui;
 
-import android.app.ActionBar;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
@@ -11,15 +10,14 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
-import com.example.halalah.POSTransaction;
-import com.example.halalah.POS_MAIN;
 import com.example.halalah.PosApplication;
 import com.example.halalah.R;
+import com.example.halalah.connect.CommunicationsHandler;
+import com.example.halalah.storage.CommunicationInfo;
 
-import java.io.EOFException;
-import java.io.IOException;
+import java.io.InputStream;
 
-public class AmountInputActivity extends Activity implements View.OnClickListener{
+public class AmountInputActivity extends Activity implements View.OnClickListener {
     private static final String TAG = AmountInputActivity.class.getSimpleName();
 
     private static final int MSG_TIME_UPDATE = 100;
@@ -40,6 +38,8 @@ public class AmountInputActivity extends Activity implements View.OnClickListene
         Log.i(TAG, "onCreate()");
         setContentView(R.layout.activity_amount_input);
 
+        preConnect();
+
         /*ActionBar actionBar = this.getActionBar();
         actionBar.setTitle(R.string.title_consume);*/
         mBtnConfirm = (Button) findViewById(R.id.btn_search_card);
@@ -51,7 +51,7 @@ public class AmountInputActivity extends Activity implements View.OnClickListene
         mBtnConfirm.setText(R.string.amount_input_search_card);
         mHandle.sendEmptyMessage(MSG_TIME_UPDATE);
 
-        if( PosApplication.getApp().oGPosTransaction.m_enmTrxType== POSTransaction.TranscationType.PURCHASE
+        /*if( PosApplication.getApp().oGPosTransaction.m_enmTrxType== POSTransaction.TranscationType.PURCHASE
                 ||PosApplication.getApp().oGPosTransaction.m_enmTrxType== POSTransaction.TranscationType.AUTHORISATION
                 ||PosApplication.getApp().oGPosTransaction.m_enmTrxType==POSTransaction.TranscationType.AUTHORISATION_ADVICE
                 ||PosApplication.getApp().oGPosTransaction.m_enmTrxType==POSTransaction.TranscationType.PURCHASE_ADVICE) {
@@ -68,9 +68,16 @@ public class AmountInputActivity extends Activity implements View.OnClickListene
 
             //TODO show RRN and other DATA activity
         }
-        else{
+        else if(PosApplication.getApp().oGPosTransaction.m_enmTrxType== POSTransaction.TranscationType.AUTHORISATION_EXTENSION) {
 
-        }
+        }*/
+    }
+
+    private void preConnect() {
+        // open socket to be ready to sending/receiving financial messages
+        CommunicationInfo communicationInfo = new CommunicationInfo(this);
+        InputStream caInputStream = getResources().openRawResource(R.raw.bks);
+        CommunicationsHandler.getInstance(communicationInfo, caInputStream).preConnect();
     }
 
     private Handler mHandle = new Handler() {
@@ -139,21 +146,52 @@ public class AmountInputActivity extends Activity implements View.OnClickListene
                 break;
             case R.id.btn_search_card:
 
-                String sAmount=mAmount.substring(1);
+                String sAmount = mAmount.substring(1);
 
 
-                    PosApplication.getApp().oGPosTransaction.m_sTrxAmount = sAmount;
+                PosApplication.getApp().oGPosTransaction.m_sTrxAmount = sAmount;
+                switch (PosApplication.getApp().oGPosTransaction.m_enmTrxType) {
+                    case PURCHASE:
+                    case PURCHASE_ADVICE:
+                    case AUTHORISATION:
+                        try {
+                            Intent intent = new Intent(this, SearchCardActivity.class);
+                            startActivity(intent);
+                        } catch (Exception e) {
+                            Log.i(TAG, e.toString());
+                        }
+                        break;
 
-                    try {
-                        Intent intent = new Intent(this, SearchCardActivity.class);
-                        startActivity(intent);
-                    } catch (Exception e) {
-                        Log.i(TAG, e.toString());
-                    }
+
+                    /////////////////note : it's not decided yet if all data detail will be input after amount or screens based on transaction type
+                    case REFUND:
+                        try {
+                            Intent intent = new Intent(this, Refund_InputActivity.class);
+                            startActivity(intent);
+                        } catch (Exception e) {
+                            Log.i(TAG, e.toString());
+                        }
+                        break;
+                    case PURCHASE_WITH_NAQD:
+                        try {
+                            Intent intent = new Intent(this, P_NAQD_InputActivity.class);
+                            startActivity(intent);
+                        } catch (Exception e) {
+                            Log.i(TAG, e.toString());
+                        }
+                        break;
+                    case SADAD_BILL:
+                        //todo check SADAD flow
+                    case CASH_ADVANCE:
+                        //todo check Cash advance flow
+                    case AUTHORISATION_EXTENSION:
+                        //todo check authorization extension flow
 
 
+                }
 
-                    finish();
+
+                finish();
 
             default:
                 break;
@@ -162,7 +200,7 @@ public class AmountInputActivity extends Activity implements View.OnClickListene
 
     private void setText(String charNum) {
         String temp = mAmountBuilder.toString();
-        Log.i(TAG, "temp = "+temp);
+        Log.i(TAG, "temp = " + temp);
 
         if (temp.length() > 12) {
             return;
@@ -173,23 +211,23 @@ public class AmountInputActivity extends Activity implements View.OnClickListene
         }
 
         temp = mAmountBuilder.toString();
-        Log.i(TAG, "temp = "+temp);
+        Log.i(TAG, "temp = " + temp);
 
         if (temp.equals("R 0")) {
             temp = "R";
             mAmountBuilder.delete(1, 2);
         }
         mAmount = new StringBuilder(temp);
-        Log.i(TAG, "mAmount before = "+mAmount);
-        for (int i = 0 ; i < 4 - mAmountBuilder.length(); i++) {
+        Log.i(TAG, "mAmount before = " + mAmount);
+        for (int i = 0; i < 4 - mAmountBuilder.length(); i++) {
             mAmount.insert(1, "0");
         }
-        Log.i(TAG, "mAmount = "+mAmount);
-        mAmount.insert(mAmount.length()-2, ".");
+        Log.i(TAG, "mAmount = " + mAmount);
+        mAmount.insert(mAmount.length() - 2, ".");
         mTextAmount.setText(mAmount);
 
         temp = temp.substring(1);
-        Log.i(TAG, "temp.isEmpty() = "+temp.isEmpty());
+        Log.i(TAG, "temp.isEmpty() = " + temp.isEmpty());
         if (temp.isEmpty() || Long.parseLong(temp) == 0) {
             Log.i(TAG, "false");
             mBtnConfirm.setEnabled(false);

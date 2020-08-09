@@ -9,6 +9,17 @@
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin">
 
+    <Button
+        android:id="@+id/manual_card_btn"
+        android:layout_width="128dp"
+        android:layout_height="61dp"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginStart="267dp"
+        android:layout_marginTop="45dp"
+        android:background="@android:drawable/ic_dialog_dialer"
+        android:text="@string/MANUAL" />
+
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="80dp"
@@ -62,6 +73,7 @@
                 android:paddingRight="0dp"
                 android:textSize="20sp"
                 android:text="@string/search_card_rf"/>
+
         </RelativeLayout>
 
         <RelativeLayout

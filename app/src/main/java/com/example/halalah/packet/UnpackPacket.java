@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.os.RemoteException;
 import android.util.Log;
 
+import com.example.halalah.PosApplication;
 import com.example.halalah.ui.PacketProcessActivity;
 import com.example.halalah.DeviceTopUsdkServiceManager;
 import com.example.halalah.R;
@@ -48,35 +49,47 @@ public class UnpackPacket {
 
         mMerchantInfo = new MerchantInfo(context);
         mTermId = mMerchantInfo.getTermId();
-       if (mProcType == PacketProcessUtils.PACKET_PROCESS_IC_CAPK_DOWNLOAD ||
+     /*  if (mProcType == PacketProcessUtils.PACKET_PROCESS_IC_CAPK_DOWNLOAD ||
                 mProcType == PacketProcessUtils.PACKET_PROCESS_IC_PARA_DOWNLOAD) {
             mQueryEmvList = new ArrayList<LinkedHashMap<byte[], byte[]>>();
             mPobcManager = DeviceTopUsdkServiceManager.getInstance().getPbocManager();
-        }
+        }*/
     }
 
     public void procRecePacket(Context context, byte[] recePacket, Bundle data) {
         Log.i(TAG, "procRecePacket(), mProcType" + mProcType);
         mRecePacket = recePacket;
 
- if (mProcType == PacketProcessUtils.PACKET_PROCESS_PARAM_TRANS) {
+        if (mProcType == PacketProcessUtils.PACKET_PROCESS_PURCHASE) {
+            UnpackPurchase unpackpurchase = new UnpackPurchase(mRecePacket, mRecePacket.length);
+            mResponse = unpackpurchase.getResponse();
+            mResponseDetail = unpackpurchase.getResponseDetail();
+            mField47 = unpackpurchase.getField47();
+
+        }
+            ///////////////////////Test//////////////////////////////////
+            if (PosApplication.testapp) {
+ /*if (mProcType == PacketProcessUtils.PACKET_PROCESS_PARAM_TRANS) {
             UnpackParaTrans unpackParaTrans = new UnpackParaTrans(context, mRecePacket, mRecePacket.length);
             mResponse = unpackParaTrans.getResponse();
             mResponseDetail = unpackParaTrans.getResponseDetail();
         } else if (mProcType == PacketProcessUtils.PACKET_PROCESS_STATUS_UPLOAD ||
-                mProcType == PacketProcessUtils.PACKET_PROCESS_ECHO_TEST ||
-                mProcType == PacketProcessUtils.PACKET_PROCESS_CONSUME_POSITIVE) {
+                mProcType == PacketProcessUtils.PACKET_PROCESS_ECHO_TEST ) {
             UnpackDefault unpackDefault = new UnpackDefault(mRecePacket, mRecePacket.length);
             mResponse = unpackDefault.getResponse();
             mResponseDetail = unpackDefault.getResponseDetail();
 
-        } else if (mProcType == PacketProcessUtils.PACKET_PROCESS_PURCHASE) {
-            UnpackPurchase unpackpurchase = new UnpackPurchase(mRecePacket, mRecePacket.length);
-            mResponse = unpackpurchase.getResponse();
-            mResponseDetail = unpackpurchase.getResponseDetail();
+        } else */
+                if (mProcType == PacketProcessUtils.PACKET_PROCESS_PURCHASE) {
+                    UnpackPurchase unpackpurchase = new UnpackPurchase(mRecePacket, mRecePacket.length);
+                    mResponse = unpackpurchase.getResponse();
+                    mResponseDetail = unpackpurchase.getResponseDetail();
+                    mField47 = unpackpurchase.getField47();
+                    ////////////////////////////////////////////////////////////
 
+                }
+            }
         }
-    }
 
     public String getResponse() {
         return mResponse;
@@ -275,11 +288,11 @@ public class UnpackPacket {
         if (mDownload62List == null) {
             return null;
         }
-        if (mProcType == PacketProcessUtils.PACKET_PROCESS_IC_CAPK_DOWNLOAD) {
+       /* if (mProcType == PacketProcessUtils.PACKET_PROCESS_IC_CAPK_DOWNLOAD) {
             activity.mTextProcDetail.setText(String.format(activity.getResources().getString(R.string.socket_proc_detail_emv_capk_download), mDownloacEmvNum + 1));
         } else {
             activity.mTextProcDetail.setText(String.format(activity.getResources().getString(R.string.socket_proc_detail_emv_para_download), mDownloacEmvNum + 1));
-        }
+        }*/
         byte[] field62 = mDownload62List.get(mDownloacEmvNum++);
         Log.i(TAG, "field62 = " + BCDASCII.bytesToHexString(field62));
         return field62;

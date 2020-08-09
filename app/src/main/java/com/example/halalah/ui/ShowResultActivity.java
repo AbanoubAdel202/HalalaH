@@ -47,7 +47,7 @@ public class ShowResultActivity extends Activity implements View.OnClickListener
         mErrorReson = data.getInt("result_errReason");
         Log.i(TAG, "mResponse = " + mResponse + ", mResponseDetail" + mResponseDetail + ", mErrorReson" + mErrorReson);
 
-        setActionBarText();
+//        setActionBarText();
 
         showResult();
     }
@@ -56,11 +56,13 @@ public class ShowResultActivity extends Activity implements View.OnClickListener
         ActionBar actionBar = this.getActionBar();
         if (mProcType == PacketProcessUtils.PACKET_PROCESS_ONLINE_INIT) {
             actionBar.setTitle(getString(R.string.online_init));
-        } else if (mProcType == PacketProcessUtils.PACKET_PROCESS_PARAM_TRANS) {
+        }
+        /* else if (mProcType == PacketProcessUtils.PACKET_PROCESS_PARAM_TRANS) {
             actionBar.setTitle(getString(R.string.text_param_trans));
         } else if (mProcType == PacketProcessUtils.PACKET_PROCESS_IC_PARA_DOWNLOAD) {
             actionBar.setTitle(getString(R.string.text_ic_para_download));
-        } else if (mProcType == PacketProcessUtils.PACKET_PROCESS_PURCHASE) {
+        }*/
+        else if (mProcType == PacketProcessUtils.PACKET_PROCESS_PURCHASE) {
             actionBar.setTitle(getString(R.string.Purchase));
         }
     }
@@ -99,7 +101,8 @@ public class ShowResultActivity extends Activity implements View.OnClickListener
                     mResponseDetail = getString(R.string.result_failed_online_init);
                     mImageResult.setImageDrawable(getDrawable(R.drawable.trans_faild));
                 }
-            } else if (mProcType == PacketProcessUtils.PACKET_PROCESS_SIGN_UP) {
+            }
+            /*else if (mProcType == PacketProcessUtils.PACKET_PROCESS_SIGN_UP) {
                 if (mResponse != null && mResponse.equals("00")) {
                     mResponse = null;
                     String temp = null;
@@ -118,29 +121,27 @@ public class ShowResultActivity extends Activity implements View.OnClickListener
                     mResponseDetail = getString(R.string.result_failed_sign_up);
                     mImageResult.setImageDrawable(getDrawable(R.drawable.trans_faild));
                 }
-            } else {
+            }*/
+            else {
                 if (mResponse == null || !mResponse.equals("00")) {
                     if (mResponseDetail == null) {
                         mResponseDetail = getString(R.string.result_error_unkown);
                     }
                     mImageResult.setImageDrawable(getDrawable(R.drawable.trans_faild));
-                } else {
+                } /*else {
                     mResponse = null;
 
                     if (mProcType == PacketProcessUtils.PACKET_PROCESS_PARAM_TRANS) {
                         mResponseDetail = getString(R.string.result_sucess_para_trans);
                     } else if (mProcType == PacketProcessUtils.PACKET_PROCESS_STATUS_UPLOAD) {
                         mResponseDetail = getString(R.string.result_sucess_status_upload);
-                    } else if (mProcType == PacketProcessUtils.PACKET_PROCESS_CONSUME_POSITIVE) {
-                        mResponseDetail = getString(R.string.result_sucess_consume_positive);
-
-                    } else {
+                    }  else {
                         if (mResponseDetail == null) {
                             mResponseDetail = getString(R.string.result_sucess);
                         }
                     }
                     mImageResult.setImageDrawable(getDrawable(R.drawable.trans_success));
-                }
+                }*/
             }
         }
 

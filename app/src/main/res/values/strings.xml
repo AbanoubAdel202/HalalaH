@@ -292,7 +292,6 @@
     <string name="qr_code_auto_scan_notification">Please put the two-dimensional code into the box</string>
 
 
-
     <string name="qr_code_camera_not_open">camera no open</string>
     <string name="qr_code_positive_button_know">ok </string>
     <string name="qr_code_positive_button_confirm">confirm</string>
@@ -318,6 +317,17 @@
     <string name="title_activity_search__trx">Search Transaction</string>
     <string name="title_activity_hosttransaction">Host Transaction</string>
     <string name="NaQD_AMOUNT">NAQD Amount</string>
+
+    <string name="title_activity_p__n_a_q_d__input">P_NAQD_InputActivity</string>
+
+    <string name="title_activity_refund__input">Refund_InputActivity</string>
+    <string name="Errorcode">Error Code</string>
+    <string name="MAC_Success">MAC Sucess</string>
+    <string name="Authorization">Authorization</string>
+    <string name="Purchase_with_naqd">Purchase with NAQD</string>
+    <string name="Admin">Admin</string>
+    <string name="MANUAL">Manual</string>
+    <string name="Pan_input_tip">PAN</string>
 
 
 </resources>

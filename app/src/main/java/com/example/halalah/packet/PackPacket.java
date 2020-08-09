@@ -5,9 +5,11 @@ import android.os.Bundle;
 import android.util.Log;
 
 import com.example.halalah.POSTransaction;
+import com.example.halalah.POS_MAIN;
 import com.example.halalah.PosApplication;
 import com.example.halalah.Utils;
 import com.example.halalah.iso8583.ISO8583;
+import com.example.halalah.secure.DUKPT_KEY;
 import com.example.halalah.storage.MerchantInfo;
 import com.example.halalah.util.ExtraUtil;
 import com.example.halalah.util.PacketProcessUtils;
@@ -16,58 +18,189 @@ public class PackPacket {
     private static final String TAG = Utils.TAGPUBLIC + PackPacket.class.getSimpleName();
 
     private Context mContext;
-    private String mTermId;
-    private String mMerId;
-    private String mTradNum;
     private String mTPDU;
-    private MerchantInfo mMerchantInfo;
 
 
-    private byte[] mField62 = null;
-    private int mQueryEmvNum = 0;
+
+
+
 
     public PackPacket(Context context, String tpdu) {
         mContext = context;
         mTPDU = tpdu;
 
-        mMerchantInfo = new MerchantInfo(context);
-        mTermId = mMerchantInfo.getTermId();
-        mMerId = mMerchantInfo.getMerchantId();
+
     }
 
-    public byte[] getSendPacket(int procType, Bundle data) {
+    public byte[] getSendPacket() {
         Log.i(TAG, "getSendPacket()");
-        if (procType == PacketProcessUtils.PACKET_PROCESS_PARAM_TRANS) {
-            PackParaTrans packParaTrans = new PackParaTrans(mTermId, mMerId);
-            return packParaTrans.get();
-        }
-         else if (procType == PacketProcessUtils.PACKET_PROCESS_PURCHASE) {
+        // test dummy data
+        PosApplication.getApp().oGPosTransaction.card_scheme.m_sCard_Scheme_ID="P1";
+        PosApplication.getApp().oGPosTransaction.m_sTransportData="tdata";
+        PosApplication.getApp().oGPosTransaction.card_scheme.m_sCard_Scheme_Name_English="mada";
+        PosApplication.getApp().oGPosTransaction.m_sAdditionalAmount = "000005500";
+        //////////////////////////////////////////////
+        if(PosApplication.getApp().oGPosTransaction.is_mada)
+        {
+            switch (PosApplication.getApp().oGPosTransaction.m_enmTrxType) {
 
-            PosApplication.getApp().oGPosTransaction.m_sProcessCode="000000";
-            PosApplication.getApp().oGPosTransaction.m_sTrxDateTime= ExtraUtil.GetDate_Time();
-            PosApplication.getApp().oGPosTransaction.m_sSTAN=String.valueOf(PosApplication.getApp().oGTerminal_Operation_Data.iSTAN++);
-            PosApplication.getApp().oGPosTransaction.m_sLocalTrxDateTime=ExtraUtil.GetDate_Time();
-            PosApplication.getApp().oGPosTransaction.m_sPOSEntryMode="12122323";
-            PosApplication.getApp().oGPosTransaction.m_sFunctionCode="34";
-            PosApplication.getApp().oGPosTransaction.m_sMsgReasonCode="12";
-            PosApplication.getApp().oGPosTransaction.m_sCardAcceptorBusinessCode="11";
-            PosApplication.getApp().oGPosTransaction.m_sAquirerInsIDCode="12";
-            PosApplication.getApp().oGPosTransaction.m_sRRNumber="1234567890";
-            PosApplication.getApp().oGPosTransaction.m_sTerminalID="12345678";
-            PosApplication.getApp().oGPosTransaction.m_sMerchantID="010002913";
-            PosApplication.getApp().oGPosTransaction.m_sCardSchemeSponsorID="50";
-            PosApplication.getApp().oGPosTransaction.m_sCurrencyCode="0628";
-            PosApplication.getApp().oGPosTransaction.m_sTrxSecurityControl="09000090";
-            PosApplication.getApp().oGPosTransaction.m_sAdditionalAmount="123456789";
-            PosApplication.getApp().oGPosTransaction.m_sTransportData="tdata";
-            PosApplication.getApp().oGPosTransaction.m_sTrxMACBlock="macblock";
-           // mTradNum = mMerchantInfo.getTradNum(true);
-           // PackPurchase packpurchase = new PackPurchase(PosApplication.getApp().oGPosTransaction.m_RequestISOMsg);
-            PosApplication.getApp().oGPosTransaction.ComposeFinancialMessage(POSTransaction.TranscationType.PURCHASE);
-            return PosApplication.getApp().oGPosTransaction.m_RequestISOMsg.isotostr();
+                /*****\
+                 * we can use BuildISO8583Message(TranscationType TrxType) for automatic compose function selection
+                 */
+                case PURCHASE:
+                    PosApplication.getApp().oGPosTransaction.ComposeFinancialMessage(POSTransaction.TranscationType.PURCHASE);
+                    return PosApplication.getApp().oGPosTransaction.m_RequestISOMsg.isotostr();
+                case PURCHASE_ADVICE:
+                     PosApplication.getApp().oGPosTransaction.ComposePurchaseAdviseMessage(POSTransaction.TranscationType.PURCHASE_ADVICE);
+                    return PosApplication.getApp().oGPosTransaction.m_RequestISOMsg.isotostr();
+
+                case PURCHASE_WITH_NAQD:
+
+                    PosApplication.getApp().oGPosTransaction.ComposeFinancialMessage(POSTransaction.TranscationType.PURCHASE_WITH_NAQD);
+                    return PosApplication.getApp().oGPosTransaction.m_RequestISOMsg.isotostr();
+                case AUTHORISATION:
+
+                    PosApplication.getApp().oGPosTransaction.ComposeAuthoriszationMessage(POSTransaction.TranscationType.AUTHORISATION);
+                    return PosApplication.getApp().oGPosTransaction.m_RequestISOMsg.isotostr();
+
+                case AUTHORISATION_ADVICE:
+
+                    PosApplication.getApp().oGPosTransaction.ComposeAuthorisationAdviseMessage(POSTransaction.TranscationType.AUTHORISATION_ADVICE);
+                    return PosApplication.getApp().oGPosTransaction.m_RequestISOMsg.isotostr();
+
+                case AUTHORISATION_EXTENSION:
+
+                    PosApplication.getApp().oGPosTransaction.ComposeAuthorisationAdviseMessage(POSTransaction.TranscationType.AUTHORISATION_EXTENSION);
+                    return PosApplication.getApp().oGPosTransaction.m_RequestISOMsg.isotostr();
+
+                case AUTHORISATION_VOID:
+
+                    PosApplication.getApp().oGPosTransaction.ComposeAuthorisationAdviseMessage(POSTransaction.TranscationType.AUTHORISATION_VOID);
+                    return PosApplication.getApp().oGPosTransaction.m_RequestISOMsg.isotostr();
+
+                case REFUND:
+
+                    PosApplication.getApp().oGPosTransaction.ComposeFinancialMessage(POSTransaction.TranscationType.REFUND);
+                    return PosApplication.getApp().oGPosTransaction.m_RequestISOMsg.isotostr();
+
+                case SADAD_BILL:
+
+                    PosApplication.getApp().oGPosTransaction.ComposeFinancialMessage(POSTransaction.TranscationType.SADAD_BILL);
+                    return PosApplication.getApp().oGPosTransaction.m_RequestISOMsg.isotostr();
+
+                case CASH_ADVANCE:
+
+                    PosApplication.getApp().oGPosTransaction.ComposeFinancialMessage(POSTransaction.TranscationType.CASH_ADVANCE);
+                    return PosApplication.getApp().oGPosTransaction.m_RequestISOMsg.isotostr();
+
+                case RECONCILIATION:
+
+                    PosApplication.getApp().oGPosTransaction.CompoaseReconciliationMessage();
+                    return PosApplication.getApp().oGPosTransaction.m_RequestISOMsg.isotostr();
+
+                case TERMINAL_REGISTRATION:
+
+                    PosApplication.getApp().oGPosTransaction.ComposeNetworkMessage();
+                    return PosApplication.getApp().oGPosTransaction.m_RequestISOMsg.isotostr();
+
+                case REVERSAL:
+
+                    PosApplication.getApp().oGPosTransaction.ComposeReversalMessage();
+                    return PosApplication.getApp().oGPosTransaction.m_RequestISOMsg.isotostr();
+
+                case TMS_FILE_DOWNLOAD:
+                    PosApplication.getApp().oGPosTransaction.ComposeFileDownloadMessage();
+                    return PosApplication.getApp().oGPosTransaction.m_RequestISOMsg.isotostr();
+
+                case ADMIN:
+
+                    PosApplication.getApp().oGPosTransaction.ComposeAdministrativeMessage();
+                    return PosApplication.getApp().oGPosTransaction.m_RequestISOMsg.isotostr();
+
+            }
+        }
+        else
+        {
+            switch (PosApplication.getApp().oGPosTransaction.m_enmTrxType) {
+
+                /*****\
+                 * we can use BuildISO8583Message(TranscationType TrxType) for automatic compose function selection
+                 */
+                case PURCHASE:
+                    PosApplication.getApp().oGPosTransaction.ComposeFinancialMessage(POSTransaction.TranscationType.PURCHASE);
+                    return PosApplication.getApp().oGPosTransaction.m_RequestISOMsg.isotostr();
+                case PURCHASE_ADVICE:
+                    PosApplication.getApp().oGPosTransaction.ComposePurchaseAdviseMessage(POSTransaction.TranscationType.PURCHASE_ADVICE);
+                    return PosApplication.getApp().oGPosTransaction.m_RequestISOMsg.isotostr();
+
+                case PURCHASE_WITH_NAQD:
+
+                    PosApplication.getApp().oGPosTransaction.ComposeFinancialMessage(POSTransaction.TranscationType.PURCHASE_WITH_NAQD);
+                    return PosApplication.getApp().oGPosTransaction.m_RequestISOMsg.isotostr();
+                case AUTHORISATION:
+
+                    PosApplication.getApp().oGPosTransaction.ComposeAuthoriszationMessage(POSTransaction.TranscationType.AUTHORISATION);
+                    return PosApplication.getApp().oGPosTransaction.m_RequestISOMsg.isotostr();
+
+                case AUTHORISATION_ADVICE:
+
+                    PosApplication.getApp().oGPosTransaction.ComposeAuthorisationAdviseMessage(POSTransaction.TranscationType.AUTHORISATION_ADVICE);
+                    return PosApplication.getApp().oGPosTransaction.m_RequestISOMsg.isotostr();
+
+                case AUTHORISATION_EXTENSION:
+
+                    PosApplication.getApp().oGPosTransaction.ComposeAuthorisationAdviseMessage(POSTransaction.TranscationType.AUTHORISATION_EXTENSION);
+                    return PosApplication.getApp().oGPosTransaction.m_RequestISOMsg.isotostr();
+
+                case AUTHORISATION_VOID:
+
+                    PosApplication.getApp().oGPosTransaction.ComposeAuthorisationAdviseMessage(POSTransaction.TranscationType.AUTHORISATION_VOID);
+                    return PosApplication.getApp().oGPosTransaction.m_RequestISOMsg.isotostr();
+
+                case REFUND:
+
+                    PosApplication.getApp().oGPosTransaction.ComposeFinancialMessage(POSTransaction.TranscationType.REFUND);
+                    return PosApplication.getApp().oGPosTransaction.m_RequestISOMsg.isotostr();
+
+                case SADAD_BILL:
+
+                    PosApplication.getApp().oGPosTransaction.ComposeFinancialMessage(POSTransaction.TranscationType.SADAD_BILL);
+                    return PosApplication.getApp().oGPosTransaction.m_RequestISOMsg.isotostr();
+
+                case CASH_ADVANCE:
+
+                    PosApplication.getApp().oGPosTransaction.ComposeFinancialMessage(POSTransaction.TranscationType.CASH_ADVANCE);
+                    return PosApplication.getApp().oGPosTransaction.m_RequestISOMsg.isotostr();
+
+                case RECONCILIATION:
+
+                    PosApplication.getApp().oGPosTransaction.CompoaseReconciliationMessage();
+                    return PosApplication.getApp().oGPosTransaction.m_RequestISOMsg.isotostr();
+
+                case TERMINAL_REGISTRATION:
+
+                    PosApplication.getApp().oGPosTransaction.ComposeNetworkMessage();
+                    return PosApplication.getApp().oGPosTransaction.m_RequestISOMsg.isotostr();
+
+                case REVERSAL:
+
+                    PosApplication.getApp().oGPosTransaction.ComposeReversalMessage();
+                    return PosApplication.getApp().oGPosTransaction.m_RequestISOMsg.isotostr();
+
+                case TMS_FILE_DOWNLOAD:
+                    PosApplication.getApp().oGPosTransaction.ComposeFileDownloadMessage();
+                    return PosApplication.getApp().oGPosTransaction.m_RequestISOMsg.isotostr();
+
+                case ADMIN:
+
+                    PosApplication.getApp().oGPosTransaction.ComposeAdministrativeMessage();
+                    return PosApplication.getApp().oGPosTransaction.m_RequestISOMsg.isotostr();
+
+            }
 
         }
-         //todo mostafa Add all other transactions (refund , purchase with cache back , preauthorizaiton , .....)
+
+
         return null;
     }
 }

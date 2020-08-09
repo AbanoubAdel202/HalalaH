@@ -22,7 +22,7 @@ public class Terminal_Registeration {
 
 
 
-/*
+/**
 	\Function Name: StartRegistrationProcess
 	\Param  : POSTransaction POSTrans
 	\Return : int
@@ -48,6 +48,7 @@ public class Terminal_Registeration {
         POSTrx.BuildISO8583Message(POSTransaction.TranscationType.TERMINAL_REGISTRATION);
         do{
 
+            //todo preconnection android
             //iStatus = StartHostConnection(POSTrx); // Connect , Send/Receive
             //iCounter++;
         }while( iStatus != 0 && iCounter < 3);
@@ -55,8 +56,8 @@ public class Terminal_Registeration {
         if (iStatus != 0)
             return iStatus; // It might be any connection error or response error
 
-        //todo ValidateHostResponse
-        //iStatus = ValidateHostResponse(POSTrx); // Approved Or Rejected
+        //todo ValidateHostResponse from POSMAIN
+        iStatus = POS_MAIN.ValidateHostResponse(); // Approved Or Rejected
 
         if(iStatus != 0)
             return iStatus;
@@ -77,7 +78,7 @@ public class Terminal_Registeration {
 
 
 
-    /*
+    /**
         \Function Name: LoadTerminalRegistrationData
         \Param  :
         \Return :int
@@ -100,7 +101,7 @@ public class Terminal_Registeration {
         return 0;
     }
 
-    /*
+    /**
         \Function Name: PromptRegisterationSetting
         \Param  :
         \Return :int
@@ -121,6 +122,7 @@ public class Terminal_Registeration {
     */
     public int PromptRegisterationSetting()
     {
+        //todo user interface for getting all terminal registeration required data for messaging
         return 0;
     }
 
@@ -156,6 +158,11 @@ public class Terminal_Registeration {
 
     public int ValidateHostRegistrationData()
     {
+        //todo validate terminal Registeration data from DE
+        // DE32 Acquirer Institution Identification Code
+        // DE41 Card Acceptor Terminal Identification(Terminal ID)
+        // DE42 Card Acceptor Identification Code (Merchant ID)
+        // DE48 Private – Additional Data
         return 0;
     }
 }

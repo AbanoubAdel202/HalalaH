@@ -20,6 +20,7 @@ import com.example.halalah.sqlite.database.DBManager;
  */
 public class PosApplication extends Application{
     private static final String TAG = Utils.TAGPUBLIC + PosApplication.class.getSimpleName();
+    public static boolean testapp=false;
 
     private Context mContext;
     private static PosApplication mPosApplication=new PosApplication();
@@ -49,6 +50,15 @@ public class PosApplication extends Application{
     public static String MTI_Administrative_Notification="1644";
     public static String MTI_Network_Management_Request="1804";
     public static String MTI_Network_Management_Response="1814";
+
+
+    /****************
+     * DukptKeyType *
+     ***************/
+    public final static int DUKPT_BDK = 0;
+    public final static int DUKPT_IPEK = 1;
+    public final static int DUKPT_MAK = 12;
+    public final static int DUKPT_PEK = 13;
 
 
     /**********************

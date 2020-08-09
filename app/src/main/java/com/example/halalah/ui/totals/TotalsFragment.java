@@ -1,24 +1,18 @@
 package com.example.halalah.ui.totals;
 
-import android.app.Activity;
-import android.bluetooth.le.ScanSettings;
-import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 
+import com.example.halalah.MainActivity;
 import com.example.halalah.R;
-import com.example.halalah.reconciliation;
 
 public class TotalsFragment extends Fragment implements View.OnClickListener {
 
@@ -52,15 +46,22 @@ public class TotalsFragment extends Fragment implements View.OnClickListener {
         switch(v.getId())
         {
             case R.id.recon_btn:
-                Intent reconciliation = new Intent(getActivity(), com.example.halalah.reconciliation.class);
+                Intent reconciliation = new Intent(getActivity(), reconciliation.class);
 
                 startActivity(reconciliation);
                 break;
             case R.id.run_tot_btn:
+                Intent running = new Intent(getActivity(), running_totals.class);
+
+                startActivity(running);
                 break;
             case R.id.Snapshot_btn:
+                Intent snapshot = new Intent(getActivity(), snapshot.class);
+                startActivity(snapshot);
                 break;
             case R.id.back_btn:
+                Intent home = new Intent(getActivity(), MainActivity.class);
+                startActivity(home);
                 break;
 
         }

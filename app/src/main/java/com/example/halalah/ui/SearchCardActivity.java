@@ -7,9 +7,13 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.halalah.POSTransaction;
+import com.example.halalah.PanInputActivity;
 import com.example.halalah.PosApplication;
 import com.example.halalah.R;
 import com.example.halalah.Utils;
@@ -26,6 +30,7 @@ public class SearchCardActivity extends Activity{
     private TextView mTextTime;
     private String mAmount;
     private Toast mToast;
+    private Button  mmanualbtn;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,7 +42,21 @@ public class SearchCardActivity extends Activity{
         //PosApplication.getApp().getDeviceManager();
         mTextAmount = (TextView) findViewById(R.id.trad_amount);
         mTextTime = (TextView) findViewById(R.id.text_time);
+        mmanualbtn=(Button)findViewById(R.id.manual_card_btn);
+        mmanualbtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                switch (v.getId())
+                {
+                    case R.id.manual_card_btn:
+                        PosApplication.getApp().oGPosTransaction.m_enmTrxCardType= POSTransaction.CardType.MANUAL;
+                        Intent PAN_Entry = new Intent(getApplicationContext(), PanInputActivity.class);
+                        startActivity(PAN_Entry);
+                        break;
 
+                }
+            }
+        });
         mAmount = PosApplication.getApp().oGPosTransaction.m_sTrxAmount;
         mTextAmount.setText(getString(R.string.trans_amount)+mAmount);
 
