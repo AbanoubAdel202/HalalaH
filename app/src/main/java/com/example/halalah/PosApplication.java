@@ -4,7 +4,9 @@ import android.app.Application;
 import android.content.Context;
 import android.util.Log;
 
-import com.example.halalah.TMS.SAMA_TMS;
+import androidx.room.Room;
+
+import com.example.halalah.sqlite.database.DBManager;
 
 /** Header PosApplication
  \Class Name: POSTransaction
@@ -67,7 +69,7 @@ public class PosApplication extends Application{
     /**********************
      * TMS SAMA *
      **********************/
-    public SAMA_TMS oGSama_TMS = new SAMA_TMS();
+//    public SAMA_TMS oGSama_TMS = new SAMA_TMS(getApplicationContext());
 
     /**************************
      * Terminal opertation DATA *
@@ -125,6 +127,9 @@ public class PosApplication extends Application{
         Log.i(TAG, "onCreate");
         mContext = getApplicationContext();
         mPosApplication = this;
+
+        DBManager.getInstance().init(this);
+        mContext = getApplicationContext();
 
     }
 

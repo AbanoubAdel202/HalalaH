@@ -1,13 +1,25 @@
 package com.example.halalah.TMS;
 
-/**********************************************************************/
-   public class Tcp_IP
-    {
-        public String Priority;
-        public String Communication_Type; //01=Dialup_;_02=TCP/IP_;03=GPRS;04=wifi;05=GSM
-        public String Network_IP_Address;
-        public String Network_TCP_Support;
-        public String Count_Access_Retries;
-        public String Response_Time_Out;
-        public String SSL_Certificate_File;
+import androidx.annotation.NonNull;
+import androidx.room.PrimaryKey;
+
+import com.example.halalah.sqlite.database.Column;
+import com.example.halalah.sqlite.database.Table;
+
+@Table(name = "Tcp_IP")
+public class Tcp_IP extends Connection {
+    @Column(name = "Network_IP_Address")
+    public String Network_IP_Address;
+    @Column(name = "Network_TCP_Support")
+    public String Network_TCP_Support;
+    @Column(name = "Count_Access_Retries")
+    public String Count_Access_Retries;
+    @Column(name = "Response_Time_Out")
+    public String Response_Time_Out;
+    @Column(name = "SSL_Certificate_File")
+    public String SSL_Certificate_File;
+
+    public Tcp_IP(){
+
     }
+}
