@@ -35,4 +35,10 @@ public class Utils {
     public static final String TEST_dial_host_number4 = "1             "; //中心交易号码4
 
     public static final String TEST_noSigLimit = "50";
+
+    public static final String CONNECTION_TYPE_DIALUP = "01";
+    public static final String CONNECTION_TYPE_TCPIP = "02";
+    public static final String CONNECTION_TYPE_GPRS = "03";
+    public static final String CONNECTION_TYPE_WIFI = "04";
+    public static final String CONNECTION_TYPE_GSM = "05";
 }
