@@ -12,6 +12,8 @@ import com.example.halalah.storage.CommunicationInfo;
 import com.example.halalah.util.PacketProcessUtils;
 
 
+import java.io.InputStream;
+
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
@@ -36,32 +38,43 @@ public class CommunicationsHandler {
 
     private byte[] mSendPacket;
     private byte[] mRecePacket;
-    private static SocketManager mSocketManager;
+    private static iConnect mSocketManager;
     private static String mHostIp;
     private static String mHostPort;
     private CountDownTimer timeoutCounter;
     private static BehaviorSubject<Boolean> sendReceiveBS;
+    private boolean mIsFinancialMessage = true;
+    private HeadersInterceptor headersInterceptor = new HeadersInterceptor();
 
-    private CommunicationsHandler() {
+    public static CommunicationsHandler getInstance(CommunicationInfo communicationInfo) {
+        return getInstance(communicationInfo, null);
+    }
 
+    public static CommunicationsHandler getInstance(CommunicationInfo communicationInfo, InputStream certificateIS) {
+        if (mInstance == null) {
+            mInstance = new CommunicationsHandler(communicationInfo, certificateIS);
+        }
+        return mInstance;
+    }
+
+    private CommunicationsHandler(CommunicationInfo communicationInfo, InputStream certificateIS) {
+        mCommunicationInfo = communicationInfo;
+        mHostIp = mCommunicationInfo.getHostIP();
+        mHostPort = mCommunicationInfo.getHostPort();
+        if (mCommunicationInfo.isSSLEnabled()) {
+            mSocketManager = SSLSocketManager.getInstance(certificateIS);
+        } else {
+            mSocketManager = PlainSocketManager.getInstance();
+        }
     }
 
     public void preConnect() {
-        Observable.fromCallable(() -> SocketManager.getInstance()
-                .preConnect(mCommunicationInfo.getHostIP(), mCommunicationInfo.getHostPort()))
+        BehaviorSubject<Integer> connectionStatusBS = BehaviorSubject.create();
+        Observable o = Observable.fromCallable(() -> mSocketManager.connect(mCommunicationInfo.getHostIP(), mCommunicationInfo.getHostPort()))
                 .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread()).subscribe();
-    }
-
-    public static CommunicationsHandler getInstance(CommunicationInfo communicationInfo) {
-        if (mInstance == null) {
-            mInstance = new CommunicationsHandler();
-            mCommunicationInfo = communicationInfo;
-            mHostIp = mCommunicationInfo.getHostIP();
-            mHostPort = mCommunicationInfo.getHostPort();
-            mSocketManager = SocketManager.getInstance();
-        }
-        return mInstance;
+                .observeOn(AndroidSchedulers.mainThread());
+        o.subscribe(connectionStatusBS);
+        connectionStatusBS.observeOn(AndroidSchedulers.mainThread()).subscribe();
     }
 
     public void setSendReceiveListener(SendReceiveListener sendReceiveListener) {
@@ -80,6 +93,7 @@ public class CommunicationsHandler {
     }
 
     private Boolean sendReceive() {
+        // TODO Apply connection configuration logic
         mHostIp = mCommunicationInfo.getHostIP();
         mHostPort = mCommunicationInfo.getHostPort();
         if (mHostIp == null || mHostPort == null) {
@@ -93,25 +107,30 @@ public class CommunicationsHandler {
         }
         Log.d(TAG, "ip and port is ok. IP: " + mHostIp + " PORT: " + mHostPort);
 
-        switch (SocketManager.getInstance().getConnectionStatus()) {
-            case SocketManager.CONNECTION_STATUS_CONNECTED:
+        switch (mSocketManager.getConnectionStatus()) {
+            case iConnect.CONNECTION_STATUS_CONNECTED:
                 updateUI(UI_STATUS_CONNECTED);
                 Log.d(TAG, "switch CONNECTION_STATUS_CONNECTED");
                 break;
-            case SocketManager.CONNECTION_STATUS_DISCONNECTED:
+            case iConnect.CONNECTION_STATUS_DISCONNECTED:
                 Log.d(TAG, "switch CONNECTION_STATUS_DISCONNECTED");
+                // TODO updateUI Connecting / Reconnecting
                 updateUI(UI_STATUS_RECONNECTING);
                 reconnect(5000, 3);
-                publishResult(PacketProcessUtils.SOCKET_PROC_ERROR_REASON_RECE_TIME_OUT);
+//                publishResult(PacketProcessUtils.SOCKET_PROC_ERROR_REASON_RECE_TIME_OUT);
                 return false;
-            case SocketManager.CONNECTION_STATUS_IN_PROGRESS:
+            case iConnect.CONNECTION_STATUS_IN_PROGRESS:
                 Log.d(TAG, "switch CONNECTION_STATUS_IN_PROGRESS");
                 updateUI(UI_STATUS_WAITING);
                 waitForCurrentCall(5000, 750);
-                publishResult(PacketProcessUtils.SOCKET_PROC_ERROR_REASON_RECE_TIME_OUT);
+//                publishResult(PacketProcessUtils.SOCKET_PROC_ERROR_REASON_RECE_TIME_OUT);
                 return false;
         }
 
+        if (mIsFinancialMessage) {
+            // Add length and tpdu
+            mSendPacket = headersInterceptor.addHeaders(mSendPacket, mCommunicationInfo.getTPDU());
+        }
         int isSendSuccess = mSocketManager.send(mSendPacket);
         if (mSendPacket != null && isSendSuccess <= 0) {
             Log.d(TAG, "send packet failed.");
@@ -120,14 +139,21 @@ public class CommunicationsHandler {
         }
         Log.d(TAG, "send packet success.");
 
-//                publishProgress(SOCKET_STATUS_RECE);
-        mRecePacket = mSocketManager.recv();
-       // mRecePacket = BCDASCII.hexStringToBytes("313232313732333030374331324543323842303531363438343738333530313034373439313230303030303030303030303030303130303031323036303231383132303030303438313831323036303435343436373130333031353133333443303030323030313030353533313130363538383834393334343834373833353031303437343931323D323130323232313138383838373538303230343534343630303030343734373439313230303034373030303132333031343930313233303130313132333435363738202020303036534149425031363832313347FFF00111100000000836303931353982023C009F3602026A9F26081912478F9943C9AD9F2701409F34034200009F1E0830373030303031319F101206010A0360AC040A0200000000004EAF333E9F3303E0F8C89F350122950508800400009F3704C162B7389F02060000000010009F03060000000000009F1A0206825F2A0206829A031812069C01008407A000000228201050046D6164619F120A6D6164612044656269744F07A00000022820103432313130303030303034373132303630313534343631383132303630343534343630363538383834393030313136303131303232303330303030303830343030353030374E323434313338453034363433343330393031303030303030303030303131303030303030303030313230303030303030303031333030303030303030303134303030303030303030303030313530363030303331363032303230323032FBB9A7");
-
+        mRecePacket = mSocketManager.receive();
+        // TODO TIMEOUT
         if ((mRecePacket == null) || (mRecePacket.length <= 0)) {
             Log.d(TAG, "receive packet failed.");
             publishResult(PacketProcessUtils.SOCKET_PROC_ERROR_REASON_RECE);
             return false;
+        }
+        if (mIsFinancialMessage) {
+            // check received packet integrity
+            if (headersInterceptor.checkPacketIntegrity(mRecePacket)){
+                mRecePacket = headersInterceptor.getResponseBody(mRecePacket);
+            } else {
+                publishResult(PacketProcessUtils.SOCKET_PROC_ERROR_REASON_RECE);
+                return false;
+            }
         }
         Log.d(TAG, "receive packet success.");
         publishResult(PacketProcessUtils.SUCCESS, mRecePacket);
@@ -139,6 +165,7 @@ public class CommunicationsHandler {
             timeoutCounter = new CountDownTimer(timesToReconnect * connectionTimeOut, connectionTimeOut) {
                 @Override
                 public void onTick(long millisUntilFinished) {
+                    preConnect();
                     Log.d(TAG, "reconnect seconds remaining: " + millisUntilFinished / 1000);
                     if (isConnected()) {
                         this.onFinish();
@@ -166,7 +193,7 @@ public class CommunicationsHandler {
                 @Override
                 public void onTick(long millisUntilFinished) {
                     Log.d(TAG, "waitForCurrentCall seconds remaining: " + millisUntilFinished / 1000);
-                    if (finishedCurrentTransaction()) {
+                    if (isCurrentCallFinished()) {
                         this.onFinish();
                     }
                 }
@@ -177,7 +204,7 @@ public class CommunicationsHandler {
                     if (isConnected()) {
                         sendReceive();
                     } else {
-                        updateUI(UI_STATUS_RECONNECTING);
+                        updateUI(UI_STATUS_FAILED);
                         reconnect(5000, 3);
                     }
                     timeoutCounter.cancel();
@@ -187,13 +214,13 @@ public class CommunicationsHandler {
     }
 
     private boolean isConnected() {
-        Log.d(TAG, "isConnected = " + (SocketManager.getInstance().getConnectionStatus() == SocketManager.CONNECTION_STATUS_CONNECTED));
-        return SocketManager.getInstance().getConnectionStatus() == SocketManager.CONNECTION_STATUS_CONNECTED;
+        Log.d(TAG, "isConnected = " + (mSocketManager.getConnectionStatus() == iConnect.CONNECTION_STATUS_CONNECTED));
+        return mSocketManager.getConnectionStatus() == iConnect.CONNECTION_STATUS_CONNECTED;
     }
 
-    private boolean finishedCurrentTransaction() {
-        Log.d(TAG, "finishedCurrentTransaction = " + (SocketManager.getInstance().getConnectionStatus() != SocketManager.CONNECTION_STATUS_IN_PROGRESS));
-        return SocketManager.getInstance().getConnectionStatus() != SocketManager.CONNECTION_STATUS_IN_PROGRESS;
+    private boolean isCurrentCallFinished() {
+        Log.d(TAG, "finishedCurrentTransaction = " + (mSocketManager.getConnectionStatus() != iConnect.CONNECTION_STATUS_IN_PROGRESS));
+        return mSocketManager.getConnectionStatus() != iConnect.CONNECTION_STATUS_IN_PROGRESS;
     }
 
     private void publishResult(int resultCode) {
@@ -217,7 +244,7 @@ public class CommunicationsHandler {
 
     public void closeConnection() {
         if (mSocketManager != null) {
-            mSocketManager.close();
+            mSocketManager.disconnect();
             updateUI(UI_STATUS_DISCONNECTED);
             Log.d(TAG, "Connection closed");
 
@@ -239,5 +266,7 @@ public class CommunicationsHandler {
             }
         }
     };
+
+
 
 }

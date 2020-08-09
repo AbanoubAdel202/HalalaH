@@ -12,6 +12,7 @@ public class CommunicationInfo {
     private Context mContext;
     private SharedPreferences mSharedPreferences;
     private SharedPreferences.Editor mEditor;
+    private boolean mIsSSLEnabled = false;
 
     public CommunicationInfo(Context context) {
         mContext = context;
@@ -72,5 +73,13 @@ public class CommunicationInfo {
     public String getTPDU() {
         Log.i(TAG, "getTPDU  "+mSharedPreferences.getString(CommunicationUtils.TPDU, null));
         return mSharedPreferences.getString(CommunicationUtils.TPDU, CommunicationUtils.tpdu_default_1);
+    }
+
+    public void setIsSSLEnabled(boolean isSSLEnabled){
+         mIsSSLEnabled = isSSLEnabled;
+    }
+
+    public boolean isSSLEnabled(){
+        return mIsSSLEnabled;
     }
 }

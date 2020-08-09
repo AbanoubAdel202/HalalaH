@@ -1,12 +1,26 @@
 package com.example.halalah.TMS;
 
-/**********************************************************************/
-    public class Revoked_Certificates
-    {
-        ////////////////////
+import androidx.annotation.NonNull;
+import androidx.room.Entity;
+import androidx.room.PrimaryKey;
+
+import com.example.halalah.sqlite.database.BaseModel;
+import com.example.halalah.sqlite.database.Column;
+import com.example.halalah.sqlite.database.Table;
+
+@Table(name = "Revoked_Certificates")
+public class Revoked_Certificates extends BaseModel {
+    ////////////////////
     //Segment 1 of Revoked Certificates
     ///////////////////
-        public String RID_Revoked_Certificate;
-        public String IDX;
-        public String Cert_serial_number;
+    @Column(name = "RID_Revoked_Certificate")
+    public String RID_Revoked_Certificate;
+    @Column(name = "IDX")
+    public String IDX;
+    @Column(name = "Cert_serial_number")
+    public String Cert_serial_number;
+
+    public Revoked_Certificates() {
+
     }
+}

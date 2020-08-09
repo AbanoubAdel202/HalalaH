@@ -20,32 +20,17 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
 import io.reactivex.subjects.BehaviorSubject;
 
-public class SocketManager {
-    private static final String TAG = Utils.TAGPUBLIC + SocketManager.class.getSimpleName();
-    public static final int CONNECTION_STATUS_CONNECTED = 1;
-    public static final int CONNECTION_STATUS_IN_PROGRESS = 0;
-    public static final int CONNECTION_STATUS_DISCONNECTED = -1;
+public class PlainSocketManager implements iConnect{
 
-    private static SocketManager mInstance;
+    private static final String TAG = Utils.TAGPUBLIC + PlainSocketManager.class.getSimpleName();
+    private static int connectionStatus = CONNECTION_STATUS_DISCONNECTED;
+
+    private static PlainSocketManager mInstance;
     private SocketChannel mSocketChannel;
     private Selector mSelector;
     private boolean mIsGoOn = true;
 
-    private static int connectionStatus = CONNECTION_STATUS_DISCONNECTED;
-    private static BehaviorSubject<Integer> connectionStatusBS;
-    private static Observable o;
-
-    private SocketManager() {
-    }
-
-    public Observable preConnect(String host, String port) {
-        connectionStatusBS = BehaviorSubject.create();
-
-        o = Observable.fromCallable(() -> open(host, port))
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread());
-        o.subscribe(connectionStatusBS);
-        return connectionStatusBS;
+    private PlainSocketManager() {
     }
 
     private void updateConnectionStatus(int status) {
@@ -56,22 +41,19 @@ public class SocketManager {
         return connectionStatus;
     }
 
-    public static SocketManager getInstance() {
+    public static PlainSocketManager getInstance() {
         if (mInstance == null) {
-            mInstance = new SocketManager();
+            mInstance = new PlainSocketManager();
         }
         return mInstance;
     }
 
-    public boolean open(String host, String port) {
+    public boolean connect(String host, String port) {
         if (port == null) return false;
 
         int intPort = Integer.parseInt(port);
-        return open(host, intPort);
-    }
-
-    public void setStop() {
-        mIsGoOn = false;
+         boolean isOpended = open(host, intPort);
+         return isOpended;
     }
 
     public boolean open(String host, int port) {
@@ -89,10 +71,10 @@ public class SocketManager {
             long mEndtTime = System.currentTimeMillis() + 5000;
             mSocketChannel.connect(new InetSocketAddress(host, port));
 
-            while (!mSocketChannel.finishConnect() && (System.currentTimeMillis() <= mEndtTime)) {
-            }
+            while (!mSocketChannel.finishConnect() && (System.currentTimeMillis() <= mEndtTime)) { }
             if (System.currentTimeMillis() > mEndtTime) {
                 updateConnectionStatus(CONNECTION_STATUS_DISCONNECTED);
+                Log.d(TAG, "Couldn't open channel, System.currentTimeMillis() > mEndtTime");
                 return false;
             }
             mSelector = Selector.open();
@@ -108,17 +90,15 @@ public class SocketManager {
         return true;
     }
 
-
     public int send(byte[] sendPacket) {
         updateConnectionStatus(CONNECTION_STATUS_IN_PROGRESS);
         Log.i(TAG, "send = " + BCDASCII.bytesToHexString(sendPacket));
         int count = 0;
         try {
-            mIsGoOn = true;
             //TODO:
-            while (mIsGoOn && mSelector.select() > 0) {
+            while (mSelector.select() > 0) {
                 Iterator it = mSelector.selectedKeys().iterator();
-                while (mIsGoOn && it.hasNext()) {
+                while (it.hasNext()) {
                     SelectionKey sk = (SelectionKey) it.next();
                     it.remove();
                     if (sk.isWritable()) {
@@ -139,7 +119,7 @@ public class SocketManager {
         return count;
     }
 
-    public byte[] recv() {
+    public byte[] receive() {
         updateConnectionStatus(CONNECTION_STATUS_IN_PROGRESS);
         byte[] receive = null;
         int count = 0;
@@ -176,7 +156,7 @@ public class SocketManager {
         return receive;
     }
 
-    public void close() {
+    public void disconnect() {
         try {
             if (mSocketChannel != null && mSocketChannel.isConnected()) {
                 mSocketChannel.finishConnect();

@@ -77,18 +77,18 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         CommunicationInfo communicationInfo = new CommunicationInfo(this);
-        //communicationInfo.setHostIP("192.168.8.124");
-        // communicationInfo.setHostPort("23");
+        communicationInfo.setHostIP("192.168.8.124");
+        communicationInfo.setHostPort("23");
 
         TextView date = findViewById(R.id.Date);
-        TextView time = findViewById(R.id.TIME);
+        TextView time =findViewById(R.id.TIME);
         TextView status = findViewById(R.id.Status);
         context = getApplicationContext();
         // Mostafa 21/4/2020 added to time and date for action bar
         Date d = new Date();
-        CharSequence s = DateFormat.format("MMMM d, yyyy ", d.getTime());
+        CharSequence s  = DateFormat.format("MMMM d, yyyy ", d.getTime());
         date.setText(s);
-        CharSequence t = DateFormat.format("HH:MM", d.getTime());
+        CharSequence t = DateFormat.format("HH:MM",d.getTime());
         time.setText(t);
 
         PosApplication.getApp().getDeviceManager();
@@ -109,7 +109,7 @@ public class MainActivity extends AppCompatActivity {
         // Passing each menu ID as a set of Ids because each
         // menu should be considered as top level destinations.
         mAppBarConfiguration = new AppBarConfiguration.Builder(
-                R.id.nav_transaction, R.id.nav_Merchant, R.id.nav_totals, R.id.nav_reports, R.id.nav_setting)
+                R.id.nav_transaction, R.id.nav_Merchant, R.id.nav_totals,R.id.nav_reports,R.id.nav_setting)
                 .setDrawerLayout(drawer)
                 .build();
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
@@ -125,7 +125,8 @@ public class MainActivity extends AppCompatActivity {
 
         Terminal_Initialization();
 
-        // StartMADA_APP();
+       // StartMADA_APP();
+
 
 
     }
@@ -150,13 +151,14 @@ public class MainActivity extends AppCompatActivity {
        /* Intent returnhome = new Intent(this,MainActivity.class);
 
         startActivity(returnhome);*/
-        Toast.makeText(this, "This is Home Screen", Toast.LENGTH_LONG).show();
+       Toast.makeText(this,"This is Home Screen",Toast.LENGTH_LONG).show();
+
+
 
 
     }
-
     @Override
-    public void onUserInteraction() {
+    public void onUserInteraction(){
 
         // if we need to do someting if user interacting
         //listen for user action
@@ -169,15 +171,15 @@ public class MainActivity extends AppCompatActivity {
         PosApplication.getApp().oGPosTransaction.Reset();
         AidlLed mAidlLed = DeviceTopUsdkServiceManager.getInstance().getLedManager();
         try {
-            if (mAidlLed != null) {
-                mAidlLed.setLed(0, false);
+            if(mAidlLed != null){
+                mAidlLed.setLed(0 , false);
             }
         } catch (RemoteException e) {
             e.printStackTrace();
         }
     }
 
-    private boolean Terminal_Initialization() {
+    private boolean Terminal_Initialization(){
 
         // todo Terminal initialization
         POS_MAIN.check_hardware();
@@ -195,7 +197,7 @@ public class MainActivity extends AppCompatActivity {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        if (mProgressDialog != null && mProgressDialog.isShowing()) {
+                        if(mProgressDialog!= null && mProgressDialog.isShowing()){
                             mProgressDialog.dismiss();
                         }
 
@@ -204,7 +206,7 @@ public class MainActivity extends AppCompatActivity {
             }
         }).start();
 
-        return true;
+return true;
 
 
     }
