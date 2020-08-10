@@ -310,4 +310,7 @@
     <string name="Purchase_with_naqd">Purchase with NAQD</string>
     <string name="Admin">Admin</string>
     <string name="MANUAL">Manual</string>
+    <string name="password">Supervisour PASS</string>
+    <string name="Partial">Partial</string>
+    <string name="Full">Full</string>
 </resources>

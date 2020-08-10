@@ -1,10 +1,19 @@
 package com.example.halalah;
+
 import com.example.halalah.storage.CommunicationInfo;
 import com.topwise.cloudpos.aidl.serialport.AidlSerialport;
+
+import android.Manifest;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.location.Address;
+import android.location.Geocoder;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.RemoteException;
 import android.os.SystemClock;
@@ -26,13 +35,14 @@ import com.example.halalah.secure.DUKPT_KEY;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.navigation.NavigationView;
-import com.topwise.cloudpos.aidl.emv.AidlPboc;
+
 import com.topwise.cloudpos.aidl.emv.TerminalParam;
 import com.topwise.cloudpos.aidl.led.AidlLed;
 import com.topwise.cloudpos.aidl.pinpad.AidlPinpad;
 import com.topwise.cloudpos.data.PinpadConstant;
 
 import androidx.activity.OnBackPressedDispatcher;
+import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.navigation.NavController;
@@ -51,6 +61,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.sql.Time;
 import java.util.Date;
+import java.util.List;
+import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -65,9 +77,8 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         CommunicationInfo communicationInfo = new CommunicationInfo(this);
-        communicationInfo.setHostIP("192.168.8.120");
-//        communicationInfo.setHostPort("2030");
-        communicationInfo.setHostPort("23");
+        communicationInfo.setHostIP("192.168.8.104");
+        communicationInfo.setHostPort("2030");
 
         TextView date = findViewById(R.id.Date);
         TextView time =findViewById(R.id.TIME);
@@ -171,14 +182,16 @@ public class MainActivity extends AppCompatActivity {
     private boolean Terminal_Initialization(){
 
         // todo Terminal initialization
-                //check hardware();
-                // load Terminal configuration file(); //TMS parameter
+        POS_MAIN.check_hardware();
+        POS_MAIN.load_Terminal_configuration_file(); //TMS parameter
+
+        Getlocation();
 
         new Thread(new Runnable() {
             @Override
             public void run() {
                 SystemClock.sleep(1000);
-                downLoadParM();
+                //downLoadParM(); removed added init() in oncreate application // DBManager.getInstance().init(this);
                 downLoadKeys();
 
                 runOnUiThread(new Runnable() {
@@ -196,9 +209,75 @@ public class MainActivity extends AppCompatActivity {
 return true;
 
 
+    }
+
+    private void Getlocation() {
+
+        LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+
+        boolean GpsStatus = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
+        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 10, new LocationListener() {
+            @Override
+            public void onLocationChanged(Location loc) {
+
+                Toast.makeText(
+                        getBaseContext(),
+                        "Location changed: Lat: " + loc.getLatitude() + " Lng: "
+                                + loc.getLongitude(), Toast.LENGTH_SHORT).show();
+                String longitude = "Longitude: " + loc.getLongitude();
+                Log.d("longitude", longitude);
+                String latitude = "Latitude: " + loc.getLatitude();
+                Log.v("latitude", latitude);
+
+                /*------- To get city name from coordinates -------- */
+                String cityName = null;
+                Geocoder gcd = new Geocoder(getBaseContext(), Locale.ENGLISH);
+                List<Address> addresses;
+                try {
+                    addresses = gcd.getFromLocation(loc.getLatitude(), loc.getLongitude(), 1);
+                    if (addresses.size() > 0) {
+                        System.out.println(addresses.get(0).getLocality());
+                        cityName = addresses.get(0).getLocality();
+                    }
+                }
+                catch (IOException e) {
+                    e.printStackTrace();
+                }
+                String s = longitude + "\n" + latitude + "\n\nMy Current City is: "
+                        + cityName;
+
+            }
+
+            @Override
+            public void onStatusChanged(String provider, int status, Bundle extras) {
+
+            }
+
+            @Override
+            public void onProviderEnabled(String provider) {
+
+            }
+
+            @Override
+            public void onProviderDisabled(String provider) {
+
+            }
+        });
+
+
 
     }
-    private boolean downLoadParM(){
+   /* private boolean downLoadParM(){
       AidlPboc mPbocManager = DeviceTopUsdkServiceManager.getInstance().getPbocManager();
         try {
             //Read the IC card parameter configuration file under assert and load the relevant parameters into the EMV kernel
@@ -239,7 +318,7 @@ return true;
         }
 
         return true;
-    }
+    }*/
 
 
     private boolean downLoadKeys(){
@@ -268,10 +347,11 @@ return true;
 
     private void StartMADA_APP()
     {   Load_Terminal_operation_data();
+        POS_MAIN.Get_Terminal_Transaction_limits();
         boolean bRegistered=PosApplication.getApp().oGTerminal_Operation_Data.m_bregistered;
         Initialize_Security();
         if(bRegistered==true) {
-            Initialize_EMV_Configuration();
+            //Initialize_EMV_Configuration();
             Initialize_CTLS_configuration();
         }
         else{
@@ -290,7 +370,7 @@ return true;
 
         //todo initialize security parameter
     }
-    private void Initialize_EMV_Configuration()
+ /*   private void Initialize_EMV_Configuration()
     {
         AidlPboc mPbocManager = DeviceTopUsdkServiceManager.getInstance().getPbocManager();
 
@@ -346,7 +426,7 @@ return true;
         ///////////////////////////
 
 
-    }
+    }*/
     private void Initialize_CTLS_configuration()
     {
         //todo initialize contactless parameters

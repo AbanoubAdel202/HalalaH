@@ -3,7 +3,7 @@ package com.example.halalah.util;
 import android.text.format.DateFormat;
 import android.util.Log;
 
-//import com.standard.app.PosApplication;
+//import com.example.halalah.PosApplication;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -25,6 +25,14 @@ public class ExtraUtil {
         CharSequence s  = DateFormat.format("MMDDhhmmss", d.getTime());
 
        return s.toString();
+
+    }
+
+    public static String Get_Local_Date_Time(){
+        Date d = new Date();
+        CharSequence s  = DateFormat.format("YYMMDDHHmmss", d.getTime());
+
+        return s.toString();
 
     }
 

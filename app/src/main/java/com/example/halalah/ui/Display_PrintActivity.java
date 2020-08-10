@@ -20,6 +20,7 @@ import com.example.halalah.Utils;
 import com.example.halalah.iso8583.BCDASCII;
 import com.example.halalah.print.Purchase_Print;
 
+import com.example.halalah.secure.DUKPT_KEY;
 import com.topwise.cloudpos.aidl.led.AidlLed;
 import com.topwise.cloudpos.data.PrinterConstant;
 
@@ -27,30 +28,30 @@ import java.io.UnsupportedEncodingException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-public class ConsumeSuccessActivity extends Activity implements View.OnClickListener {
-    private static final String TAG = Utils.TAGPUBLIC + ConsumeSuccessActivity.class.getSimpleName();
+public class Display_PrintActivity extends Activity implements View.OnClickListener {
+    private static final String TAG = Utils.TAGPUBLIC + Display_PrintActivity.class.getSimpleName();
 
     private static final int MSG_TIME_UPDATE = 100;
 
-    private TextView mConsumeAmt;
-    private TextView mConsumeType;
-    private TextView mConsumeCardNum;
-    private TextView mConsumeVenchor;
-    private TextView mConsumeReference;
+    private TextView mAmount;
+    private TextView mTransactionType;
+    private TextView mPANno;
+    private TextView mRecieptno;
+    private TextView mRRN;
     private TextView mOperatorNum;
-    private TextView mConsumeTime;
+    private TextView mTransactiontime;
     private TextView mPinBlock;
     private TextView mKsnValue;
 
     private Bundle mBundle;
-    private byte[] mField47;
+
 
     private String mShowMsg;
     private String mPrintHolder;
     private String mPrintMerchant;
     private String mPrintBank;
 
-    private Purchase_Print mConsumePrint;
+    private Purchase_Print mPurchasePrint;
     private AlertDialog.Builder mAlertDialog;
 
     private int mTime = 31;
@@ -63,36 +64,35 @@ public class ConsumeSuccessActivity extends Activity implements View.OnClickList
         Log.i(TAG, "onCreate()");
         setContentView(R.layout.activity_consume_result);
 
-        mConsumeAmt = (TextView) findViewById(R.id.consume_amount);
-        mConsumeType = (TextView) findViewById(R.id.consume_type);
-        mConsumeCardNum = (TextView) findViewById(R.id.consume_cardnum);
-        mConsumeVenchor = (TextView) findViewById(R.id.consume_venchor_num);
-        mConsumeReference = (TextView) findViewById(R.id.consume_reference_num);
+        mAmount = (TextView) findViewById(R.id.consume_amount);
+        mTransactionType = (TextView) findViewById(R.id.consume_type);
+        mPANno = (TextView) findViewById(R.id.consume_cardnum);
+        mRecieptno = (TextView) findViewById(R.id.consume_venchor_num);
+        mRRN = (TextView) findViewById(R.id.consume_reference_num);
         mOperatorNum = (TextView) findViewById(R.id.operator_num);
-        mConsumeTime = (TextView) findViewById(R.id.consume_time);
+        mTransactiontime = (TextView) findViewById(R.id.consume_time);
         mPinBlock = (TextView) findViewById(R.id.pin_block);
         mKsnValue = (TextView) findViewById(R.id.ksn_value);
 
         byte[] pin = PosApplication.getApp().oGPosTransaction.m_sTrxPIN.getBytes();
-      //  byte[] ksnValue = PosApplication.getApp().mConsumeData.getKsnValue();
+        byte[] ksnValue = DUKPT_KEY.getKSN().getBytes();
         Log.i(TAG, "pin: " + BCDASCII.bytesToHexString(pin));
-      //  Log.d(TAG, "ksnValue: " + BCDASCII.bytesToHexString(ksnValue));
+        Log.d(TAG, "ksnValue: " + BCDASCII.bytesToHexString(ksnValue));
         if (pin != null && pin.length > 0) {
             mPinBlock.setText(BCDASCII.bytesToHexString(pin));
         } else {
             mPinBlock.setText("null");
         }
-/*
         if (ksnValue != null && ksnValue.length > 0) {
             mKsnValue.setText(BCDASCII.bytesToHexString(ksnValue));
         } else {
             mKsnValue.setText("null");
-        }*/
+        }
 
-        mConsumePrint = new Purchase_Print(this);
-        mConsumePrint.setCurTime(getCurTime());
+        mPurchasePrint = new Purchase_Print(this);
+        mPurchasePrint.setCurTime(getCurTime());
         mBundle = this.getIntent().getExtras();
-        mField47 = mBundle.getByteArray("result_field47");
+
 
         ActionBar actionBar = this.getActionBar();
 //        actionBar.setTitle(R.string.title_consume);
@@ -100,7 +100,7 @@ public class ConsumeSuccessActivity extends Activity implements View.OnClickList
 //        mTransaction = TransactionSub.getInstance();
 
         mAlertDialog = new AlertDialog.Builder(this);
-        getPrintMessage(mField47);
+
         //add by zongli for fake data
         showConsumeData(mShowMsg);
         //showConsumeFakeData(mShowMsg);
@@ -126,13 +126,13 @@ public class ConsumeSuccessActivity extends Activity implements View.OnClickList
                 break;
             case R.id.btn_print:
                 try {
-                    int printState = mConsumePrint.mPrinterManager.getPrinterState();
+                    int printState = mPurchasePrint.mPrinterManager.getPrinterState();
                     Log.i(TAG, "printState = " + printState);
 
                     if (printState == PrinterConstant.PrinterState.PRINTER_STATE_NOPAPER) {
                         showDialog(null, getString(R.string.result_need_paper));
                     } else {
-                        mConsumePrint.printDetail(mPrintHolder);
+                        mPurchasePrint.printDetail(mPrintHolder);
                     }
                 } catch (RemoteException e) {
                     e.printStackTrace();
@@ -263,26 +263,26 @@ public class ConsumeSuccessActivity extends Activity implements View.OnClickList
             if (print[i].indexOf("Amount") != -1) {
                 data = print[i].replace("Amount:", "");
                 datas = data.split(" ");
-                mConsumeAmt.setText(datas[1]);
+                mAmount.setText(datas[1]);
             } else if (print[i].indexOf("Transaction Type\n") != -1) {
                 data = print[i].replace("Transaction Type\n:", "");
-                mConsumeType.setText(data);
+                mTransactionType.setText(data);
             } else if (print[i].indexOf("card number\n") != -1) {
                 data = print[i].replace("card number\n:", "");
-                mConsumeCardNum.setText(data);
+                mPANno.setText(data);
             } else if (print[i].indexOf("Voucher number") != -1) {
                 data = print[i].replace("Voucher number:", "");
                 datas = data.split(" ");
-                mConsumeVenchor.setText(datas[0]);
+                mRecieptno.setText(datas[0]);
             } else if (print[i].indexOf("operator") != -1) {
                 data = print[i].substring(print[i].length() - 2, print[i].length());
                 mOperatorNum.setText(data);
             } else if (print[i].indexOf("Transaction reference number\n") != -1) {
                 data = print[i].replace("Transaction reference number\n:", "");
-                mConsumeReference.setText(data);
+                mRRN.setText(data);
             } else if (print[i].indexOf("time") != -1) {
                 data = print[i].replace("time:", "");
-                mConsumeTime.setText(data);
+                mTransactiontime.setText(data);
             }
         }
     }
@@ -312,36 +312,36 @@ public class ConsumeSuccessActivity extends Activity implements View.OnClickList
                 data = print[i].replace("金额:", "");
                 datas = data.split(" ");
                 if (amount != null) {
-                    mConsumeAmt.setText(amount);
+                    mAmount.setText(amount);
                 } else {
-                    mConsumeAmt.setText(datas[1]);
+                    mAmount.setText(datas[1]);
                 }
             } else if (print[i].indexOf("交易类型") != -1) {
                 data = print[i].replace("交易类型:", "");
-                mConsumeType.setText(R.string.text_consume);
+                mTransactionType.setText(R.string.text_consume);
             } else if (print[i].indexOf("卡号") != -1) {
                 data = print[i].replace("卡号:", "");
                 if (cardNo != null) {
-                    mConsumeCardNum.setText(cardNo);
+                    mPANno.setText(cardNo);
                 } else {
-                    mConsumeCardNum.setText(data);
+                    mPANno.setText(data);
                 }
             } else if (print[i].indexOf("凭证号") != -1) {
                 data = print[i].replace("凭证号:", "");
                 datas = data.split(" ");
-                mConsumeVenchor.setText(datas[0]);
+                mRecieptno.setText(datas[0]);
             } else if (print[i].indexOf("操作员") != -1) {
                 data = print[i].substring(print[i].length() - 2, print[i].length());
                 mOperatorNum.setText(data);
             } else if (print[i].indexOf("交易参考号") != -1) {
                 data = print[i].replace("交易参考号:", "");
-                mConsumeReference.setText(data);
+                mRRN.setText(data);
             } else if (print[i].indexOf("时间") != -1) {
                 data = print[i].replace("时间:", "");
-                if (mConsumePrint != null && mConsumePrint.getCurTime() != null) {
-                    mConsumeTime.setText(mConsumePrint.getCurTime());
+                if (mPurchasePrint != null && mPurchasePrint.getCurTime() != null) {
+                    mTransactiontime.setText(mPurchasePrint.getCurTime());
                 } else {
-                    mConsumeTime.setText(data);
+                    mTransactiontime.setText(data);
                 }
             }
         }
@@ -378,13 +378,13 @@ public class ConsumeSuccessActivity extends Activity implements View.OnClickList
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
                     try {
-                        int printState = mConsumePrint.mPrinterManager.getPrinterState();
+                        int printState = mPurchasePrint.mPrinterManager.getPrinterState();
                         Log.i(TAG, "printState = " + printState);
 
                         if (printState == PrinterConstant.PrinterState.PRINTER_STATE_NOPAPER) {
                             showDialog(null, getString(R.string.result_need_paper));
                         } else {
-                            mConsumePrint.printDetail(mPrintMerchant + mPrintBank);
+                            mPurchasePrint.printDetail(mPrintMerchant + mPrintBank);
                         }
                     } catch (RemoteException e) {
                         e.printStackTrace();

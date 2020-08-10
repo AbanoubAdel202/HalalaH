@@ -4,6 +4,8 @@ package com.example.halalah.TMS;
 import android.content.Context;
 import android.util.Log;
 
+import com.example.halalah.PosApplication;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -267,7 +269,7 @@ public class SAMA_TMS implements Serializable {
     char GS = ''; //group seperator  1D
     char FS = '';// field seperator  1C
 
-    public SAMA_TMS(Context context) {
+    public SAMA_TMS() {
 
         retailer_data = new Retailer_Data();
         cardSchemeMap = new HashMap<>();
@@ -1055,12 +1057,13 @@ public class SAMA_TMS implements Serializable {
     }
 
     public static int Get_card_scheme_BY_AID(String AID) {
-        // todo get Card scheme by ID form database
+        PosApplication.getApp().oGPosTransaction.m_card_scheme=TMSManager.getInstance().getCardSchemeByAID(AID);
         return 0;
     }
 
     public static int Get_card_scheme_BY_PAN(String PAN) {
-        //todo get card scheme by pan from database
+
+        PosApplication.getApp().oGPosTransaction.m_card_scheme=TMSManager.getInstance().getCardSchemeByPAN(PAN);
         return 0;
     }
 

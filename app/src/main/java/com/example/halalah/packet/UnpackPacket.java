@@ -6,6 +6,7 @@ import android.os.RemoteException;
 import android.util.Log;
 
 import com.example.halalah.PosApplication;
+import com.example.halalah.emv.EmvManager;
 import com.example.halalah.ui.PacketProcessActivity;
 import com.example.halalah.DeviceTopUsdkServiceManager;
 import com.example.halalah.R;
@@ -16,7 +17,7 @@ import com.example.halalah.iso8583.ISO8583Util;
 import com.example.halalah.storage.MerchantInfo;
 import com.example.halalah.util.PacketProcessUtils;
 import com.example.halalah.util.TLVDecode;
-import com.topwise.cloudpos.aidl.emv.AidlPboc;
+
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -35,7 +36,7 @@ public class UnpackPacket {
     private byte[] mField47;
 
 
-    private AidlPboc mPobcManager;
+    private EmvManager mEMVManager;
     private List<LinkedHashMap<byte[], byte[]>> mQueryEmvList;
     private ArrayList<byte[]> mDownload62List;
 
@@ -49,47 +50,22 @@ public class UnpackPacket {
 
         mMerchantInfo = new MerchantInfo(context);
         mTermId = mMerchantInfo.getTermId();
-     /*  if (mProcType == PacketProcessUtils.PACKET_PROCESS_IC_CAPK_DOWNLOAD ||
-                mProcType == PacketProcessUtils.PACKET_PROCESS_IC_PARA_DOWNLOAD) {
-            mQueryEmvList = new ArrayList<LinkedHashMap<byte[], byte[]>>();
-            mPobcManager = DeviceTopUsdkServiceManager.getInstance().getPbocManager();
-        }*/
+
     }
 
-    public void procRecePacket(Context context, byte[] recePacket, Bundle data) {
-        Log.i(TAG, "procRecePacket(), mProcType" + mProcType);
+    public void Process_Rece_Packet(Context context, byte[] recePacket, Bundle data) {
+        Log.i(TAG, "Process_Rece_Packet(), mProcType" + mProcType);
         mRecePacket = recePacket;
 
         if (mProcType == PacketProcessUtils.PACKET_PROCESS_PURCHASE) {
             UnpackPurchase unpackpurchase = new UnpackPurchase(mRecePacket, mRecePacket.length);
             mResponse = unpackpurchase.getResponse();
             mResponseDetail = unpackpurchase.getResponseDetail();
-            mField47 = unpackpurchase.getField47();
+
 
         }
-            ///////////////////////Test//////////////////////////////////
-            if (PosApplication.testapp) {
- /*if (mProcType == PacketProcessUtils.PACKET_PROCESS_PARAM_TRANS) {
-            UnpackParaTrans unpackParaTrans = new UnpackParaTrans(context, mRecePacket, mRecePacket.length);
-            mResponse = unpackParaTrans.getResponse();
-            mResponseDetail = unpackParaTrans.getResponseDetail();
-        } else if (mProcType == PacketProcessUtils.PACKET_PROCESS_STATUS_UPLOAD ||
-                mProcType == PacketProcessUtils.PACKET_PROCESS_ECHO_TEST ) {
-            UnpackDefault unpackDefault = new UnpackDefault(mRecePacket, mRecePacket.length);
-            mResponse = unpackDefault.getResponse();
-            mResponseDetail = unpackDefault.getResponseDetail();
 
-        } else */
-                if (mProcType == PacketProcessUtils.PACKET_PROCESS_PURCHASE) {
-                    UnpackPurchase unpackpurchase = new UnpackPurchase(mRecePacket, mRecePacket.length);
-                    mResponse = unpackpurchase.getResponse();
-                    mResponseDetail = unpackpurchase.getResponseDetail();
-                    mField47 = unpackpurchase.getField47();
-                    ////////////////////////////////////////////////////////////
-
-                }
-            }
-        }
+   }
 
     public String getResponse() {
         return mResponse;
@@ -105,69 +81,12 @@ public class UnpackPacket {
 
 
 
-    private boolean setEmvCAPK(byte[] f62) {
-        if (mPobcManager == null) {
-            return false;
-        }
 
-        boolean isSetCapkSuccess = false;
-        try {
-            isSetCapkSuccess = mPobcManager.updateCAPK(0x01, BCDASCII.bytesToHexString(f62));
-            Log.i(TAG, "setEmvCAPK: " + isSetCapkSuccess + ", f62: " + BCDASCII.bytesToHexString(f62));
-            if (isSetCapkSuccess) {
-                mSetEmvNum++;
-            }
-        } catch (RemoteException e) {
-            e.printStackTrace();
-        }
-        return isSetCapkSuccess;
-    }
 
-    public boolean clearEmvCapk() {
-        Log.i(TAG, "clearEmvCapk()");
-        if (mPobcManager == null) {
-            return false;
-        }
-        boolean isClearCapkSuccess = false;
-        try {
-            isClearCapkSuccess = mPobcManager.updateCAPK(3, null);
-        } catch (RemoteException e) {
-            e.printStackTrace();
-        }
-        return isClearCapkSuccess;
-    }
 
-    private boolean setEmvPARA(byte[] f62) {
-        if (mPobcManager == null) {
-            return false;
-        }
-        boolean isSetParaSuccess = false;
-        try {
-            isSetParaSuccess = mPobcManager.updateAID(0x01, BCDASCII.bytesToHexString(f62));
-            Log.i(TAG, "setEmvPARA: " + isSetParaSuccess + ", f62: " + BCDASCII.bytesToHexString(f62));
-            if (isSetParaSuccess) {
-                mSetEmvNum++;
-            }
-        } catch (RemoteException e) {
-            e.printStackTrace();
-        }
-        return isSetParaSuccess;
-    }
 
-    public boolean clearEmvPara() {
-        Log.i(TAG, "clearEmvPara()");
-        if (mPobcManager == null) {
-            return false;
-        }
 
-        boolean isClearAidSuccess = false;
-        try {
-            isClearAidSuccess = mPobcManager.updateAID(0x03, null);
-        } catch (RemoteException e) {
-            e.printStackTrace();
-        }
-        return isClearAidSuccess;
-    }
+
 
     private void getDownloadCapkTLV62(Map<byte[], byte[]> queryCapkList) {
         if (queryCapkList.size() < 1) {

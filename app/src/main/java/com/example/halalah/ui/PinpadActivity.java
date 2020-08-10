@@ -14,6 +14,7 @@ import com.example.halalah.DeviceTopUsdkServiceManager;
 import com.example.halalah.POSTransaction;
 import com.example.halalah.PosApplication;
 import com.example.halalah.R;
+import com.example.halalah.SAF_Info;
 import com.example.halalah.Utils;
 import com.example.halalah.card.CardManager;
 import com.example.halalah.iso8583.BCDASCII;
@@ -278,16 +279,103 @@ public class PinpadActivity extends Activity {
             if (isOnline) {
                 //socket connection
                 Bundle bundle = new Bundle();
-                bundle.putInt(PacketProcessUtils.PACKET_PROCESS_TYPE, PacketProcessUtils.PACKET_PROCESS_PURCHASE);
-                if(POSTransaction.CardType.MANUAL == mCardType) {
-                    PosApplication.getApp().oGPosTransaction.m_enmTrxCVM = POSTransaction.CVM.ONLINE_PIN;
-                }
+                if(PosApplication.getApp().oGPosTransaction.m_is_mada) //MADA
+                {
+                    switch (PosApplication.getApp().oGPosTransaction.m_enmTrxType) {
 
-                CardManager.getInstance().startActivity(PinpadActivity.this, bundle, PacketProcessActivity.class);
+                        case PURCHASE:
+
+                            bundle.putInt(PacketProcessUtils.PACKET_PROCESS_TYPE, PacketProcessUtils.PACKET_PROCESS_PURCHASE);
+                            if (POSTransaction.CardType.MANUAL == mCardType) {
+                                PosApplication.getApp().oGPosTransaction.m_enmTrxCVM = POSTransaction.CVM.ONLINE_PIN;
+                            }
+
+                            CardManager.getInstance().startActivity(PinpadActivity.this, bundle, PacketProcessActivity.class);
+                        case REFUND:
+                            bundle.putInt(PacketProcessUtils.PACKET_PROCESS_TYPE, PacketProcessUtils.PACKET_PROCESS_REFUND);
+                            if (POSTransaction.CardType.MANUAL != mCardType) {
+                                CardManager.getInstance().startActivity(PinpadActivity.this, bundle, PacketProcessActivity.class);
+                            }
+
+
+                        case PURCHASE_ADVICE:
+                            bundle.putInt(PacketProcessUtils.PACKET_PROCESS_TYPE, PacketProcessUtils.PACKET_PROCESS_PURCHASE_ADVICE);
+                            //mada preauthcompeletion have to go online and not saved in saf
+                                CardManager.getInstance().startActivity(PinpadActivity.this, bundle, PacketProcessActivity.class);
+
+                        case AUTHORISATION_ADVICE:
+                        case AUTHORISATION:
+                            bundle.putInt(PacketProcessUtils.PACKET_PROCESS_TYPE, PacketProcessUtils.PACKET_PROCESS_AUTHORISATION);
+                            if (POSTransaction.CardType.MANUAL != mCardType) {
+                                CardManager.getInstance().startActivity(PinpadActivity.this, bundle, PacketProcessActivity.class);
+                            }
+
+
+                        case PURCHASE_WITH_NAQD:
+                        case AUTHORISATION_EXTENSION:
+                            bundle.putInt(PacketProcessUtils.PACKET_PROCESS_TYPE, PacketProcessUtils.PACKET_PROCESS_AUTHORISATION);
+                            if (POSTransaction.CardType.MANUAL != mCardType) {
+                                CardManager.getInstance().startActivity(PinpadActivity.this, bundle, PacketProcessActivity.class);
+                            }
+                        case CASH_ADVANCE:
+                            break;
+                        case SADAD_BILL:
+                            if (mCardType==POSTransaction.CardType.ICC ||mCardType==POSTransaction.CardType.CTLS||mCardType==POSTransaction.CardType.MAG) {
+                                CardManager.getInstance().startActivity(PinpadActivity.this, bundle, PacketProcessActivity.class);
+                            }
+
+                    }
+                }else //ICS
+                    {
+                        switch (PosApplication.getApp().oGPosTransaction.m_enmTrxType) {
+
+                            case PURCHASE:
+
+                                bundle.putInt(PacketProcessUtils.PACKET_PROCESS_TYPE, PacketProcessUtils.PACKET_PROCESS_PURCHASE);
+                                if (POSTransaction.CardType.MANUAL == mCardType) {
+                                    PosApplication.getApp().oGPosTransaction.m_enmTrxCVM = POSTransaction.CVM.ONLINE_PIN;
+                                }
+
+                                CardManager.getInstance().startActivity(PinpadActivity.this, bundle, PacketProcessActivity.class);
+
+                            case REFUND:
+
+                                bundle.putInt(PacketProcessUtils.PACKET_PROCESS_TYPE, PacketProcessUtils.PACKET_PROCESS_REFUND);
+                                if(PosApplication.getApp().oGPosTransaction.m_card_scheme.m_sOffline_Refund_PreAuthorization_Capture_Service_Indicator=="1") {
+                                    SAF_Info.SAVE_IN_SAF(PosApplication.getApp().oGPosTransaction);
+
+                                    CardManager.getInstance().startActivity(PinpadActivity.this, bundle, ShowResultActivity.class);
+                                }
+                                break;
+                            case PURCHASE_ADVICE:
+                                bundle.putInt(PacketProcessUtils.PACKET_PROCESS_TYPE, PacketProcessUtils.PACKET_PROCESS_PURCHASE_ADVICE);
+                                if (POSTransaction.CardType.MANUAL == mCardType ||mCardType==POSTransaction.CardType.ICC ||mCardType==POSTransaction.CardType.CTLS||mCardType==POSTransaction.CardType.MAG)
+                                {                                                                                                                 //Manual Entry Attended POS Preauthorization Completion Transaction
+                                    CardManager.getInstance().startActivity(PinpadActivity.this, bundle, PacketProcessActivity.class);   //for IBCS Scheme Cardsapprove a manual entry attended POS terminal
+                                }                                                                                                                 // preauthorization capture online without storing it in the SAF file locally at the terminal.
+
+                                 break;
+                            case AUTHORISATION_ADVICE:
+                            case AUTHORISATION:
+                                bundle.putInt(PacketProcessUtils.PACKET_PROCESS_TYPE, PacketProcessUtils.PACKET_PROCESS_AUTHORISATION);
+                                if (mCardType== POSTransaction.CardType.MAG ||mCardType==POSTransaction.CardType.CTLS)
+                                {                                                                                                                 //Manual Entry Attended POS Preauthorization Completion Transaction
+                                    CardManager.getInstance().startActivity(PinpadActivity.this, bundle, PacketProcessActivity.class);   //for IBCS Scheme Cardsapprove a manual entry attended POS terminal
+                                }
+
+                            case PURCHASE_WITH_NAQD:
+                            case AUTHORISATION_EXTENSION:
+                            case CASH_ADVANCE:
+                        }
+
+
+                }
                 /*byte[] sendData = PosApplication.getApp().mConsumeData.getICData();
                 Log.d(TAG, BCDASCII.bytesToHexString(sendData));
                 JsonAndHttpsUtils.sendJsonData(mContext, BCDASCII.bytesToHexString(sendData));*/
             } else {
+
+
                 if (POSTransaction.CardType.MAG == mCardType) {
                     Intent intent = new Intent(PinpadActivity.this, PacketProcessActivity.class);
                     intent.putExtra(PacketProcessUtils.PACKET_PROCESS_TYPE, PacketProcessUtils.PACKET_PROCESS_PURCHASE);
@@ -302,7 +390,7 @@ public class PinpadActivity extends Activity {
 
                 else {
                     if (pin == null) {
-                        CardManager.getInstance().setImportPin("000000");
+                        CardManager.getInstance().setImportPin("bypass");
                     } else {
                         CardManager.getInstance().setImportPin(BCDASCII.bytesToHexString(pin));
                     }
