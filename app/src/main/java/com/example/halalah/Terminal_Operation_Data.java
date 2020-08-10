@@ -81,7 +81,9 @@ public class Terminal_Operation_Data {
     public  String Terminal_TMS_Flag; // '0'=No action. '1' = Go on-line.
     //Force Reconciliation Flag
     public  String Force_Reconciliation_Flag;// '0'=No action. '1' = Go on-line.
-
+    //Terminal Global Limits
+    public String m_sMaximum_transaction_amount_indicator;
+    public String m_sMaximum_transaction_amount;
 
 
     public Terminal_Operation_Data(){

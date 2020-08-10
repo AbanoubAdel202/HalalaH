@@ -77,8 +77,8 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         CommunicationInfo communicationInfo = new CommunicationInfo(this);
-        communicationInfo.setHostIP("192.168.8.124");
-        communicationInfo.setHostPort("23");
+        communicationInfo.setHostIP("192.168.8.104");
+        communicationInfo.setHostPort("2030");
 
         TextView date = findViewById(R.id.Date);
         TextView time =findViewById(R.id.TIME);
@@ -347,6 +347,7 @@ return true;
 
     private void StartMADA_APP()
     {   Load_Terminal_operation_data();
+        POS_MAIN.Get_Terminal_Transaction_limits();
         boolean bRegistered=PosApplication.getApp().oGTerminal_Operation_Data.m_bregistered;
         Initialize_Security();
         if(bRegistered==true) {

@@ -26,6 +26,7 @@ import com.example.halalah.connect.connectivity.ConnectionManager;
 
 import com.example.halalah.TMS.SAMA_TMS;
 import com.example.halalah.emv.EmvManager;
+
 import com.example.halalah.secure.DUKPT_KEY;
 import com.example.halalah.ui.AmountInputActivity;
 import com.example.halalah.util.ExtraUtil;
@@ -247,15 +248,15 @@ View root =inflater.inflate(R.layout.fragment_home_transaction, container, false
 //             break;
 //        }
 
-                }
+             //   }
                 //Initialize_EMV_Configuration();
                 DUKPT_KEY.InitilizeDUKPT("0123456789ABCDEF0123456789ABCDEF","47FFF00111100000016D");
                 PosApplication.getApp().oGPosTransaction.Reset();  //
                 PosApplication.getApp().oGPosTransaction.m_enmTrxType=POSTransaction.TranscationType.PURCHASE;
                 Intent amounttest = new Intent(getContext(), AmountInputActivity.class);
                 startActivity(amounttest);
-             break;
-        }
+            // break;
+       // }
 
     }
     private void Initialize_EMV_Configuration()

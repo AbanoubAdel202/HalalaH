@@ -36,10 +36,10 @@ public class PackPacket {
     public byte[] getSendPacket() {
         Log.i(TAG, "getSendPacket()");
         // test dummy data
-        PosApplication.getApp().oGPosTransaction.m_card_scheme.m_sCard_Scheme_ID="P1";
-        PosApplication.getApp().oGPosTransaction.m_sTransportData="tdata";
-        PosApplication.getApp().oGPosTransaction.m_card_scheme.m_sCard_Scheme_Name_English="mada";
-        PosApplication.getApp().oGPosTransaction.m_sAdditionalAmount = "000005500";
+        //PosApplication.getApp().oGPosTransaction.m_card_scheme.m_sCard_Scheme_ID="P1";
+        //PosApplication.getApp().oGPosTransaction.m_sTransportData="tdata";
+        //PosApplication.getApp().oGPosTransaction.m_card_scheme.m_sCard_Scheme_Name_English="mada";
+        //PosApplication.getApp().oGPosTransaction.m_sAdditionalAmount = "000005500";
         //////////////////////////////////////////////
         if(PosApplication.getApp().oGPosTransaction.m_is_mada)
         {

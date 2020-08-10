@@ -772,9 +772,9 @@ public class POSTransaction {
         }
 
         //59.Transaport Data
-        if(m_sTransportData!=null)
+       /* if(m_sTransportData!=null)
         m_RequestISOMsg.SetDataElement(59, m_sTransportData.getBytes(), m_sTransportData.length());
-        Log.i(TAG, "DE 59 [m_sTransportData]= " + m_sTransportData+"Length ="+m_sTransportData.length());
+        Log.i(TAG, "DE 59 [m_sTransportData]= " + m_sTransportData+"Length ="+m_sTransportData.length());*/
 
         //62.Terminal Status
         ComposeTerminalStatusData();
@@ -844,7 +844,7 @@ public class POSTransaction {
         m_RequestISOMsg.SetDataElement(11, m_sSTAN.getBytes(), m_sSTAN.length());
         Log.i(TAG, "DE 11 [m_sSTAN]= " + m_sTrxAmount+"Length ="+m_sSTAN.length());
 
-
+        m_sLocalTrxDateTime=ExtraUtil.GetDate_Time();
         m_RequestISOMsg.SetDataElement(12, m_sLocalTrxDateTime.getBytes(), m_sLocalTrxDateTime.length());
         Log.i(TAG, "DE 12 [m_sLocalTrxDateTime]= " + m_sLocalTrxDateTime+"Length ="+m_sLocalTrxDateTime.length());
 
@@ -940,12 +940,14 @@ public class POSTransaction {
             m_RequestISOMsg.SetDataElement(56, m_sOriginalTrxData.getBytes(), m_sOriginalTrxData.length());
             Log.i(TAG, "DE 56 [m_sOriginalTrxData]= " + m_sOriginalTrxData + "Length =" + m_sOriginalTrxData.length());
         }
+/*
 
         if( m_sTransportData!=null )
         {
             m_RequestISOMsg.SetDataElement(59, m_sTransportData.getBytes(), m_sTransportData.length());
             Log.i(TAG, "DE 59 [m_sTransportData]= " + m_sTransportData + "Length =" + m_sTransportData.length());
         }
+*/
 
         ComposeTerminalStatusData();
         m_RequestISOMsg.SetDataElement(62, m_sTerminalStatus.getBytes(), m_sTerminalStatus.length());
@@ -1650,10 +1652,10 @@ public class POSTransaction {
             Log.i(TAG, "DE 56 [m_sOriginalTrxData]= " + m_sOriginalTrxData+"Length ="+m_sOriginalTrxData.length());
         }
 
-        //59.Transaport Data
+     /*   //59.Transaport Data
         m_RequestISOMsg.SetDataElement(59, m_sTransportData.getBytes(), m_sTransportData.length());
         Log.i(TAG, "DE 59 [m_sTransportData]= " + m_sTransportData+"Length ="+m_sTransportData.length());
-
+*/
         //62.Terminal Status
         ComposeTerminalStatusData();
         m_RequestISOMsg.SetDataElement(62, m_sTerminalStatus.getBytes(), m_sTerminalStatus.length());
@@ -1839,10 +1841,10 @@ public class POSTransaction {
         Log.i(TAG, "DE 56 [m_sOriginalTrxData]= " + m_sOriginalTrxData+"Length ="+m_sOriginalTrxData.length());
 
 
-        //59.Transaport Data
+     /*   //59.Transaport Data
         m_RequestISOMsg.SetDataElement(59, m_sTransportData.getBytes(), m_sTransportData.length());
         Log.i(TAG, "DE 59 [m_sTransportData]= " + m_sTransportData+"Length ="+m_sTransportData.length());
-
+*/
         //62.Terminal Status
         ComposeTerminalStatusData();
         m_RequestISOMsg.SetDataElement(62, m_sTerminalStatus.getBytes(), m_sTerminalStatus.length());

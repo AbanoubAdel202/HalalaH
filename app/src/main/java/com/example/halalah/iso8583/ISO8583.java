@@ -70,8 +70,8 @@ public class ISO8583 {
             mISO8583Domain[i] = new ISO8583Domain();
         }
 
-        initCupISO8583Domain();
-        //initISO8583Domain();
+        //initCupISO8583Domain();
+        initISO8583Domain();
 
         mOffset = 0;
         mDataBuffer = new byte[MAXBUFFERLEN];

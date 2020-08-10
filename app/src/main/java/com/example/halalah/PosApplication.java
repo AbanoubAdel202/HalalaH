@@ -8,7 +8,6 @@ import androidx.room.Room;
 
 import com.example.halalah.sqlite.database.DBManager;
 import com.example.halalah.TMS.SAMA_TMS;
-import com.example.halalah.database.table.DBManager;
 import com.topwise.cloudpos.aidl.emv.level2.EmvTerminalInfo;
 
 /** Header PosApplication
@@ -133,6 +132,7 @@ public class PosApplication extends Application{
         super.onCreate();
         Log.i(TAG, "onCreate");
 		DBManager.getInstance().init(this);
+        com.example.halalah.database.table.DBManager.getInstance().init(this);
         mContext = getApplicationContext();
         mPosApplication = this;
 

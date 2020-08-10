@@ -49,7 +49,10 @@ public class RFPbocStartListenerSub implements OnEmvProcessListener {
         if(!POS_MAIN.Check_transaction_allowed(PosApplication.getApp().oGPosTransaction.m_enmTrxType))
             //todo do transaction not allowed Activity
 
-        POS_MAIN.Check_transaction_limits();
+            if(POS_MAIN.Check_transaction_limits(PosApplication.getApp().oGPosTransaction.m_enmTrxType)==0)
+            {
+                //todo alert dialog for limit exeeded
+            }
 
         POS_MAIN.supervisor_pass_required();
 

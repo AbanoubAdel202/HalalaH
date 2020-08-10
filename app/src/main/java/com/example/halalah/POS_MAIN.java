@@ -9,6 +9,7 @@ import android.util.Log;
 import android.widget.Switch;
 
 import com.example.halalah.TMS.AID_Data;
+import com.example.halalah.TMS.Card_Scheme;
 import com.example.halalah.TMS.Public_Key;
 import com.example.halalah.TMS.SAMA_TMS;
 
@@ -20,6 +21,7 @@ import com.example.halalah.iso8583.ISO8583;
 import com.example.halalah.packet.UnpackPacket;
 import com.example.halalah.packet.UnpackPurchase;
 import com.example.halalah.secure.DUKPT_KEY;
+import com.example.halalah.sqlite.database.DBManager;
 import com.example.halalah.storage.CommunicationInfo;
 import com.example.halalah.ui.AmountInputActivity;
 import com.example.halalah.ui.Display_PrintActivity;
@@ -340,11 +342,88 @@ public class POS_MAIN implements SendReceiveListener {
      \DT		: 6/00/2020
      \Des    : check transaction limit allowed for each transaction
      */
-    public static int Check_transaction_limits()
+    public static int Check_transaction_limits(POSTransaction.TranscationType Trxtype)
     {
-            // todo get transaction limits
-        //todo  issues limit cases
-        return 0;
+        int istate=-1;
+       /* Note
+        1. The “Maximum transaction amount indicator” for the mada scheme i.e. ‘P1’  will act as the global setting for all card  schemes configured for each terminal.
+        2. The terminal application shall therefore ignore all the other scheme segments “Maximum transaction amount indicator” values.
+        3. When the “Maximum transaction amount indicator” is checked or unchecked it will apply to both contact and contactless  transactions.*/
+
+
+
+        switch (Trxtype) {
+            case PURCHASE://purchase  offset 0
+                if ("1".equals(PosApplication.getApp().oGTerminal_Operation_Data.m_sMaximum_transaction_amount_indicator.charAt(0)))
+                    istate=1;
+                break;
+            case PURCHASE_WITH_NAQD://PURCHASE_WITH_NAQD                                 offset 1
+                if ("1".equals(PosApplication.getApp().oGTerminal_Operation_Data.m_sMaximum_transaction_amount_indicator.charAt(1)))
+                    istate=1;
+                break;
+            case PURCHASE_ADVICE://PURCHASE_ADVICE:                                      offset 2
+            case AUTHORISATION_ADVICE://AUTHORISATION_ADVICE:
+                if ("1".equals(PosApplication.getApp().oGTerminal_Operation_Data.m_sMaximum_transaction_amount_indicator.charAt(2)))
+                    istate=1;
+                break;
+            case REFUND://REFUND                                                         offset 3
+                if ("1".equals(PosApplication.getApp().oGTerminal_Operation_Data.m_sMaximum_transaction_amount_indicator.charAt(3)))
+                    istate=1;
+                break;
+            case AUTHORISATION://AUTHORISATION:                                          offset 4
+                if ("1".equals(PosApplication.getApp().oGTerminal_Operation_Data.m_sMaximum_transaction_amount_indicator.charAt(4)))
+                    istate=1;
+                break;
+            case CASH_ADVANCE://CASH_ADVANCE:                                            offset 5
+                if ("1".equals(PosApplication.getApp().oGTerminal_Operation_Data.m_sMaximum_transaction_amount_indicator.charAt(5)))
+                    istate=1;
+                break;
+            case REVERSAL://REVERSAL:                                                    offset 6
+                if ("1".equals(PosApplication.getApp().oGTerminal_Operation_Data.m_sMaximum_transaction_amount_indicator.charAt(6)))
+                    istate=1;
+                break;
+            case AUTHORISATION_EXTENSION://AUTHORISATION_EXTENSION                       offset 7
+                if ("1".equals(PosApplication.getApp().oGTerminal_Operation_Data.m_sMaximum_transaction_amount_indicator.charAt(7))) {
+                    istate=1;
+                }else if(PosApplication.getApp().oGPosTransaction.m_is_mada)
+                {
+
+                    istate=1;
+                }
+                break;
+            case AUTHORISATION_VOID://AUTHORISATION_VOID:                                offset 8
+                if ("1".equals(PosApplication.getApp().oGTerminal_Operation_Data.m_sMaximum_transaction_amount_indicator.charAt(8)))
+                    istate=1;
+                else if(PosApplication.getApp().oGPosTransaction.m_is_mada)
+                {
+
+                    istate=1;
+                }
+                break;
+            case SADAD_BILL://SADAD_BILL:                                                offset 9
+                if ("1".equals(PosApplication.getApp().oGTerminal_Operation_Data.m_sMaximum_transaction_amount_indicator.charAt(9)))
+                    istate=1;
+                else if(PosApplication.getApp().oGPosTransaction.m_is_mada)
+                {
+
+                    istate=1;
+                }
+                break;
+
+
+        }
+
+        if(istate==1) {
+
+            if (Integer.parseInt(PosApplication.getApp().oGPosTransaction.m_sTrxAmount)>Integer.parseInt(PosApplication.getApp().oGTerminal_Operation_Data.m_sMaximum_transaction_amount))
+                istate=0;
+            else
+                istate=-1;
+        }
+
+
+
+        return istate;
     }
     public boolean Check_manual_allowed()
     {
@@ -390,7 +469,9 @@ public class POS_MAIN implements SendReceiveListener {
      */
     public static void supervisor_pass_required(){
 
-      if(PosApplication.getApp().oGPosTransaction.m_card_scheme.m_sSupervisor_Functions=="1") {//todo dialog which ask for password}
+      if(PosApplication.getApp().oGPosTransaction.m_card_scheme.m_sSupervisor_Functions=="1") {
+
+          //todo dialog which ask for password}
 
 
       /*    AlertDialog.Builder builder = new AlertDialog.Builder(mcontext);
@@ -1564,6 +1645,30 @@ DF03 Check Sum                                [20]   >> 4410C6D51C2F83ADFD92528F
                 }
         }
 
+    /**
+     \Function Name: Get_Terminal_Transaction_limits
+     \Param  : void
+     \Return : void
+     \Pre    :
+     \Post   :
+     \Author	: mostafa hussiny
+     \DT		: 09/08/2020
+     \Des    : getting terminal global limit indicator and max amount values from mada card scheme
+     */
+
+    public static void Get_Terminal_Transaction_limits() {
+        try {
+            Card_Scheme mada_card_Scheme = DBManager.getInstance().getCardSchemeDao().getById("P1");
+            PosApplication.getApp().oGTerminal_Operation_Data.m_sMaximum_transaction_amount_indicator=mada_card_Scheme.m_sMaximum_transaction_amount_indicator;
+            PosApplication.getApp().oGTerminal_Operation_Data.m_sMaximum_transaction_amount=mada_card_Scheme.m_sMaximum_amount_allowed;
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+
+
+    }
 }
 
 
