@@ -7,6 +7,8 @@ import android.util.Log;
 import androidx.room.Room;
 
 import com.example.halalah.sqlite.database.DBManager;
+import com.example.halalah.TMS.SAMA_TMS;
+import com.topwise.cloudpos.aidl.emv.level2.EmvTerminalInfo;
 
 /** Header PosApplication
  \Class Name: POSTransaction
@@ -60,6 +62,10 @@ public class PosApplication extends Application{
     public final static int DUKPT_MAK = 12;
     public final static int DUKPT_PEK = 13;
 
+    /**********************
+     * Global Transaction *
+     **********************/
+    public POS_MAIN oGPOS_MAIN = new POS_MAIN();
 
     /**********************
      * Global Transaction *
@@ -69,7 +75,7 @@ public class PosApplication extends Application{
     /**********************
      * TMS SAMA *
      **********************/
-//    public SAMA_TMS oGSama_TMS = new SAMA_TMS(getApplicationContext());
+    public SAMA_TMS oGSama_TMS = new SAMA_TMS();
 
     /**************************
      * Terminal opertation DATA *
@@ -125,11 +131,12 @@ public class PosApplication extends Application{
     public void onCreate() {
         super.onCreate();
         Log.i(TAG, "onCreate");
+		DBManager.getInstance().init(this);
+        com.example.halalah.database.table.DBManager.getInstance().init(this);
         mContext = getApplicationContext();
         mPosApplication = this;
 
-        DBManager.getInstance().init(this);
-        mContext = getApplicationContext();
+
 
     }
 

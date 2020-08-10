@@ -8,6 +8,7 @@ import android.util.Log;
 import android.view.View;
 
 import com.example.halalah.DeviceTopUsdkServiceManager;
+import com.example.halalah.POSTransaction;
 import com.example.halalah.PosApplication;
 import com.example.halalah.R;
 import com.example.halalah.util.HexUtil;
@@ -110,7 +111,7 @@ public class DUKPT_KEY {
         /*******************************************/
 
         // Load and inject DUKPT
-        InitilizeDUKPT(m_BDK, m_KSN.toString());   // todo check ksn to string is correct
+        InitilizeDUKPT(m_BDK, m_KSN.toString());
     }
 
 /*
@@ -298,16 +299,21 @@ Load Last Terminal Data from Terminal Operation Data Table
 
     public static String getKSN() {
 
-        AidlSystem systemInf=null;
+        byte[] byteCurrentKSN ;
+        boolean bNewksnflag=false;
+        if(PosApplication.getApp().oGPosTransaction.m_enmTrxCVM== POSTransaction.CVM.NO_CVM||PosApplication.getApp().oGPosTransaction.m_enmTrxCVM== POSTransaction.CVM.SIGNATURE)
+            bNewksnflag=true;
+
         try {
-            String ksn = systemInf.getKsn();
-            return ksn;
-        } catch (RemoteException e) {
+            byteCurrentKSN = pinpad.getDUKPTKsn(m_WorkKey, bNewksnflag);
+            return byteCurrentKSN.toString();
+        }catch (RemoteException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
 
-        return null;
+    return null;
+
     }
 
 

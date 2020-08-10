@@ -120,7 +120,10 @@ public class PanInputActivity extends Activity implements View.OnClickListener{
                     PosApplication.getApp().oGPosTransaction.m_sPAN = mPAN.toString();
                 POS_MAIN.Recognise_card();
                 POS_MAIN.Check_transaction_allowed(PosApplication.getApp().oGPosTransaction.m_enmTrxType);
-                POS_MAIN.Check_transaction_limits();
+                if(POS_MAIN.Check_transaction_limits(PosApplication.getApp().oGPosTransaction.m_enmTrxType)==0)
+                {
+                    //todo alert dialog for limit exeeded
+                }
                 POS_MAIN.supervisor_pass_required();
 
                 Intent Pinpadact=new Intent(getApplicationContext(), PinpadActivity.class);

@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.util.Log;
 
 import com.example.halalah.Utils;
+import com.example.halalah.card.CardMoniterService;
 
 /**
  * Created by zhoulin on 17-9-19.

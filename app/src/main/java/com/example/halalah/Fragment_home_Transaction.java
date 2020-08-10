@@ -18,11 +18,19 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.Toast;
 
 import com.example.halalah.TMS.AID_Data;
 import com.example.halalah.TMS.Public_Key;
 import com.example.halalah.connect.connectivity.ConnectionManager;
-import com.topwise.cloudpos.aidl.emv.AidlPboc;
+
+import com.example.halalah.TMS.SAMA_TMS;
+import com.example.halalah.emv.EmvManager;
+
+import com.example.halalah.secure.DUKPT_KEY;
+import com.example.halalah.ui.AmountInputActivity;
+import com.example.halalah.util.ExtraUtil;
+
 
 import java.util.List;
 
@@ -73,14 +81,15 @@ public class Fragment_home_Transaction extends Fragment implements View.OnClickL
         }
 
 
+
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        View root = inflater.inflate(R.layout.fragment_home_transaction, container, false);
-        Button mada1_btn = (Button) root.findViewById(R.id.Mada1_btn);
+View root =inflater.inflate(R.layout.fragment_home_transaction, container, false);
+        Button mada1_btn =(Button) root.findViewById(R.id.Mada1_btn);
         mada1_btn.setOnClickListener(this);
         return root;
     }
@@ -239,15 +248,28 @@ public class Fragment_home_Transaction extends Fragment implements View.OnClickL
 //             break;
 //        }
 
+             //   }
+                //Initialize_EMV_Configuration();
+                DUKPT_KEY.InitilizeDUKPT("0123456789ABCDEF0123456789ABCDEF","47FFF00111100000016D");
+                PosApplication.getApp().oGPosTransaction.Reset();  //
+                PosApplication.getApp().oGPosTransaction.m_enmTrxType=POSTransaction.TranscationType.PURCHASE;
+                Intent amounttest = new Intent(getContext(), AmountInputActivity.class);
+                startActivity(amounttest);
+            // break;
+       // }
+
     }
+    private void Initialize_EMV_Configuration()
+    {
 
-    private void Initialize_EMV_Configuration() {
 
 
-        AidlPboc mPbocManager = DeviceTopUsdkServiceManager.getInstance().getPbocManager();
+        EmvManager mEMVManager = EmvManager.getInstance();
 
-        try {
-            boolean updateResult = false;
+       /*  try {
+
+            //TODO update AIDs
+           boolean updateResult = false;
             boolean flag = true;
 
             String success = "";
@@ -259,24 +281,27 @@ public class Fragment_home_Transaction extends Fragment implements View.OnClickL
             AID_Data AIDdata[] = PosApplication.getApp().oGSama_TMS.GET_AID_Data_PARAM();
 
 
-            for (int index = 0; index < AIDdata.length; index++) {
+            for(int index=0;index<AIDdata.length;index++)
+            {
                 String sAIDdata = POS_MAIN.FormatAIDData(AIDdata[index]);
-                //  String raw="9F0608A000000333010101DF0101009F08020030DF1105D84000A800DF1205D84004F800DF130500100000009F1B0400000000DF150400000000DF160199DF170199DF14039F3704DF1801019F7B06000000100000DF1906000000100000DF2006000000100000DF2106000000100000";
+              //  String raw="9F0608A000000333010101DF0101009F08020030DF1105D84000A800DF1205D84004F800DF130500100000009F1B0400000000DF150400000000DF160199DF170199DF14039F3704DF1801019F7B06000000100000DF1906000000100000DF2006000000100000DF2106000000100000";
                 updateResult = mPbocManager.updateAID(0x01, sAIDdata);
 
             }
 
             Public_Key CAPK[] = PosApplication.getApp().oGSama_TMS.Get_all_CAPK();
 
-            for (int index = 0; index < CAPK.length; index++) {
-                String sCAPK = POS_MAIN.FormatCAKeys(CAPK[index]);
-                updateResult = mPbocManager.updateCAPK(0x01, sCAPK);
+            for (int index = 0; index<CAPK.length; index++)
+            {
+                String sCAPK=POS_MAIN.FormatCAKeys(CAPK[index]);
+                updateResult = mPbocManager.updateCAPK(0x01,sCAPK);
             }
+
 
 
         } catch (RemoteException e) {
             e.printStackTrace();
-        }
+        }*/
 
 
         ///////////////////////////

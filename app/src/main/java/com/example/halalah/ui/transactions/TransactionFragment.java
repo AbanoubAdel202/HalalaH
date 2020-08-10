@@ -27,8 +27,8 @@ import com.example.halalah.ui.AmountInputActivity;
 public class TransactionFragment extends Fragment implements View.OnClickListener, View.OnKeyListener {
 
     private TransactionViewModel transactionViewModel;
-    POS_MAIN oPos_main =new POS_MAIN();
-    POSTransaction oPostransaction =new POSTransaction();
+   
+   
 
 
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -50,7 +50,7 @@ public class TransactionFragment extends Fragment implements View.OnClickListene
         purchaseadvice.setOnClickListener(this);
 
         // context is handed to posmain
-        oPos_main.mcontext = getContext();
+        PosApplication.getApp().oGPOS_MAIN.mcontext = getContext();
         transactionViewModel.getText().observe(getViewLifecycleOwner(), new Observer<String>() {
             @Override
             public void onChanged(@Nullable String s) {
@@ -65,46 +65,48 @@ public class TransactionFragment extends Fragment implements View.OnClickListene
 
     @Override
     public void onClick(View v) {
+
         switch (v.getId())
         {
             case R.id.Mada_btn:
                 Toast.makeText(getContext(),R.string.Purchase,Toast.LENGTH_LONG).show();
                 PosApplication.getApp().oGPosTransaction.m_enmTrxType=POSTransaction.TranscationType.PURCHASE;
-                oPos_main.Start_Transaction(oPostransaction, POSTransaction.TranscationType.PURCHASE);
+                PosApplication.getApp().oGPOS_MAIN.Start_Transaction(PosApplication.getApp().oGPosTransaction, POSTransaction.TranscationType.PURCHASE);
                 break;
             case R.id.Naqd_btn:
                 Toast.makeText(getContext(),R.string.NaQD,Toast.LENGTH_LONG).show();
                 PosApplication.getApp().oGPosTransaction.m_enmTrxType=POSTransaction.TranscationType.PURCHASE_WITH_NAQD;
-                oPos_main.Start_Transaction(oPostransaction,POSTransaction.TranscationType.PURCHASE_WITH_NAQD);
+                PosApplication.getApp().oGPOS_MAIN.Start_Transaction(PosApplication.getApp().oGPosTransaction,POSTransaction.TranscationType.PURCHASE_WITH_NAQD);
                 break;
             case R.id.authorization_btn: // authorization transaction
+                //todo open Authorization menu for other (auth void , Auth ext , auth advice)
                 PosApplication.getApp().oGPosTransaction.m_enmTrxType=POSTransaction.TranscationType.AUTHORISATION;
-                oPos_main.Start_Transaction(oPostransaction,POSTransaction.TranscationType.AUTHORISATION);
+                PosApplication.getApp().oGPOS_MAIN.Start_Transaction(PosApplication.getApp().oGPosTransaction,POSTransaction.TranscationType.AUTHORISATION);
                 break;
             case R.id.preauthorization_btn:
 
-                PosApplication.getApp().oGPosTransaction.m_enmTrxType=POSTransaction.TranscationType.AUTHORISATION_ADVICE;
-                oPos_main.Start_Transaction(oPostransaction,POSTransaction.TranscationType.AUTHORISATION_ADVICE);
+               
                 break;
             case R.id.Purchase_advice_btn:
 
                 PosApplication.getApp().oGPosTransaction.m_enmTrxType=POSTransaction.TranscationType.PURCHASE_ADVICE;
-                oPos_main.Start_Transaction(oPostransaction,POSTransaction.TranscationType.PURCHASE_ADVICE);
+                PosApplication.getApp().oGPOS_MAIN.Start_Transaction(PosApplication.getApp().oGPosTransaction,POSTransaction.TranscationType.PURCHASE_ADVICE);
                 break;
             case R.id.cash_advance_btn:
                 //POS_transaction(cash_advance)
                 PosApplication.getApp().oGPosTransaction.m_enmTrxType=POSTransaction.TranscationType.CASH_ADVANCE;
-                oPos_main.Start_Transaction(oPostransaction,POSTransaction.TranscationType.CASH_ADVANCE);
+                PosApplication.getApp().oGPOS_MAIN.Start_Transaction(PosApplication.getApp().oGPosTransaction,POSTransaction.TranscationType.CASH_ADVANCE);
                 break;
             case R.id.Refund_btn:
                 PosApplication.getApp().oGPosTransaction.m_enmTrxType=POSTransaction.TranscationType.REFUND;
-                oPos_main.Start_Transaction(oPostransaction,POSTransaction.TranscationType.REFUND);
+                PosApplication.getApp().oGPOS_MAIN.Start_Transaction(PosApplication.getApp().oGPosTransaction,POSTransaction.TranscationType.REFUND);
                 break;
 
 
         }
 
     }
+
 
     @Override
     public boolean onKey(View v, int keyCode, KeyEvent event)

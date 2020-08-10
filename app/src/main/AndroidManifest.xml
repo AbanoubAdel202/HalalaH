@@ -36,6 +36,9 @@
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.INTERNET" /> <!-- 往SDCard写入数据权限 -->
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" /> <!-- 在SDCard中创建与删除文件权限 -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+
     <uses-permission
         android:name="android.permission.MOUNT_UNMOUNT_FILESYSTEMS"
         tools:ignore="ProtectedPermissions" />
@@ -51,10 +54,20 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
+            android:name=".ui.transactions.Authorization.AuthAdvice.authAdviceTypeActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:label="@string/title_activity_auth_advice_type"
+            android:theme="@style/FullscreenTheme"></activity>
+        <activity
+            android:name=".ui.transactions.Authorization.Auth_menuActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:label="@string/title_activity_auth_menu"
+            android:theme="@style/FullscreenTheme" />
+        <activity
             android:name=".ui.Refund_InputActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:label="@string/title_activity_refund__input"
-            android:theme="@style/FullscreenTheme"></activity>
+            android:theme="@style/FullscreenTheme" />
         <activity
             android:name=".ui.P_NAQD_InputActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
@@ -127,8 +140,8 @@
         <activity android:name=".ui.admin_settings.OthersSettingActivity" />
         <activity android:name=".ui.admin_settings.CommunicationSettingActivity" />
         <activity android:name=".ui.admin_settings.ImportKeyActivity" />
-        <activity android:name=".ui.ShowResultActivity"/>
-        <activity android:name=".PanInputActivity"/>
+        <activity android:name=".ui.ShowResultActivity" />
+        <activity android:name=".PanInputActivity" />
         <activity
             android:name=".MainActivity"
             android:label="@string/app_name"

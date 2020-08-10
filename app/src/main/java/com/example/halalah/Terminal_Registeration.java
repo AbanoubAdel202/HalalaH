@@ -1,5 +1,9 @@
 package com.example.halalah;
 import com.example.halalah.PosApplication;
+import com.example.halalah.connect.CommunicationsHandler;
+import com.example.halalah.connect.SendReceiveListener;
+import com.example.halalah.packet.PackPacket;
+import com.example.halalah.storage.CommunicationInfo;
 
 /** Header Terminal registeration
  \Class Name: Terminal_Registeration
@@ -11,14 +15,16 @@ import com.example.halalah.PosApplication;
  \DT		: 5/30/2020
  \Des    : Container for Terminal registeration methods
  */
-public class Terminal_Registeration {
+public class Terminal_Registeration implements SendReceiveListener {
 
 
      public boolean  bRegistered = false;
 
+    PackPacket mPackPacket = null;
+    byte[] mSendPacket = null;
+    byte[] mRecePacket = null;
 
-
-
+    int cont=-1;
 
 
 
@@ -34,8 +40,10 @@ public class Terminal_Registeration {
 */
 
     public int StartRegistrationProcess(POSTransaction POSTrx)
-    {  int iStatus = 0;
+    {  int iStatus = -1;
         int iCounter = 0;
+
+
         /* Fill required values*/
 
         // Transmission Date and Time
@@ -45,33 +53,43 @@ public class Terminal_Registeration {
         // Private – Additional Data (DE 48)
         // Private – Terminal Status (DE62)
 
-        POSTrx.BuildISO8583Message(POSTransaction.TranscationType.TERMINAL_REGISTRATION);
+        POSTrx.ComposeTerminalRegistrationData();
+        mSendPacket=POSTrx.m_RequestISOMsg.isotostr();
         do{
 
-            //todo preconnection android
-            //iStatus = StartHostConnection(POSTrx); // Connect , Send/Receive
-            //iCounter++;
+
+            CommunicationsHandler.getInstance(new CommunicationInfo(PosApplication.getApp().getApplicationContext())).preConnect();
+
+            mSendPacket=mPackPacket.getSendPacket();
+            CommunicationsHandler communicationsHandler = CommunicationsHandler.getInstance(new CommunicationInfo(PosApplication.getApp().getApplicationContext()));
+            communicationsHandler.setSendReceiveListener(this);
+            communicationsHandler.sendReceive(mSendPacket);
+            while(cont==-1) {
+                //TEST FUNCTIONALITY
+            }
+
+            iCounter++;
+
         }while( iStatus != 0 && iCounter < 3);
 
         if (iStatus != 0)
             return iStatus; // It might be any connection error or response error
 
-        //todo ValidateHostResponse from POSMAIN
-        iStatus = POS_MAIN.ValidateHostResponse(); // Approved Or Rejected
 
-        if(iStatus != 0)
-            return iStatus;
-        else
-        {
+
+
+
+
+
             /*     Get Host Terminal Registration Data */
             // DE32 Acquirer Institution Identification Code
             // DE41 Card Acceptor Terminal Identification(Terminal ID)
             // DE42 Card Acceptor Identification Code (Merchant ID)
             // DE48 Private – Additional Data
 
-            iStatus = ValidateHostRegistrationData();
+            iStatus = ValidateHostRegistrationData(mRecePacket);
 
-        }
+
         return iStatus;
     }
 
@@ -156,7 +174,7 @@ public class Terminal_Registeration {
 
 
 
-    public int ValidateHostRegistrationData()
+    public int ValidateHostRegistrationData(byte[] byte_recived)
     {
         //todo validate terminal Registeration data from DE
         // DE32 Acquirer Institution Identification Code
@@ -164,5 +182,26 @@ public class Terminal_Registeration {
         // DE42 Card Acceptor Identification Code (Merchant ID)
         // DE48 Private – Additional Data
         return 0;
+    }
+
+    @Override
+    public void showConnectionStatus(int connectionStatus) {
+
+    }
+
+    @Override
+    public void onSuccess(byte[] receivedPacket) {
+
+        mRecePacket=receivedPacket;
+        cont=0;
+        ValidateHostRegistrationData(mRecePacket);
+
+
+    }
+
+    @Override
+    public void onFailure(int errReason) {
+        cont=0;
+
     }
 }

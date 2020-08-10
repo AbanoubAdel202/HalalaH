@@ -9,9 +9,15 @@ import android.os.RemoteException;
 import android.util.Log;
 
 import com.topwise.cloudpos.aidl.AidlDeviceService;
-import com.topwise.cloudpos.aidl.emv.AidlPboc;
+import com.topwise.cloudpos.aidl.emv.level2.AidlAmex;
+import com.topwise.cloudpos.aidl.emv.level2.AidlEmvL2;
+import com.topwise.cloudpos.aidl.emv.level2.AidlEntry;
+import com.topwise.cloudpos.aidl.emv.level2.AidlPaypass;
+import com.topwise.cloudpos.aidl.emv.level2.AidlPaywave;
+import com.topwise.cloudpos.aidl.emv.level2.AidlPure;
 import com.topwise.cloudpos.aidl.iccard.AidlICCard;
 import com.topwise.cloudpos.aidl.led.AidlLed;
+import com.topwise.cloudpos.aidl.magcard.AidlMagCard;
 import com.topwise.cloudpos.aidl.pinpad.AidlPinpad;
 import com.topwise.cloudpos.aidl.printer.AidlPrinter;
 import com.topwise.cloudpos.aidl.rfcard.AidlRFCard;
@@ -175,24 +181,6 @@ public class DeviceTopUsdkServiceManager {
         return aidlPrinter;
     }
 
-    public IBinder getEMVL2() {
-        try {
-            if (mDeviceService != null) {
-                return mDeviceService.getEMVL2();
-            }
-        } catch (RemoteException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    public AidlPboc getPbocManager() {
-
-        AidlPboc aidlPboc = AidlPboc.Stub.asInterface(getEMVL2());
-        return aidlPboc;
-    }
-
-
     public IBinder getRFIDReader() {
         try {
             if (mDeviceService != null) {
@@ -274,6 +262,83 @@ public class DeviceTopUsdkServiceManager {
         try {
             if (mDeviceService != null) {
                 return AidlRFCard.Stub.asInterface(mDeviceService.getRFIDReader());
+            }
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public AidlMagCard getMagCardMoniter() {
+        try {
+            if (mDeviceService != null) {
+                return AidlMagCard.Stub.asInterface(mDeviceService.getMagCardReader());
+            }
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public AidlEmvL2 getEmvL2() {
+        try {
+            if (mDeviceService != null) {
+                return AidlEmvL2.Stub.asInterface(mDeviceService.getL2Emv());
+            }
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public AidlPure getL2Pure() {
+        try {
+            if (mDeviceService != null) {
+                return AidlPure.Stub.asInterface(mDeviceService.getL2Pure());
+            }
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public AidlPaypass getL2Paypass() {
+        try {
+            if (mDeviceService != null) {
+                return AidlPaypass.Stub.asInterface(mDeviceService.getL2Paypass());
+            }
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public AidlPaywave getL2Paywave() {
+        try {
+            if (mDeviceService != null) {
+                return AidlPaywave.Stub.asInterface(mDeviceService.getL2Paywave());
+            }
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public AidlEntry getL2Entry() {
+        try {
+            if (mDeviceService != null) {
+                return AidlEntry.Stub.asInterface(mDeviceService.getL2Entry());
+            }
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public AidlAmex getL2Amex() {
+        try {
+            if (mDeviceService != null) {
+                return AidlAmex.Stub.asInterface(mDeviceService.getL2Amex());
             }
         } catch (RemoteException e) {
             e.printStackTrace();

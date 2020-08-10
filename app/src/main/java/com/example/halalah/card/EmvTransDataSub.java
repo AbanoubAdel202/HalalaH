@@ -1,33 +1,30 @@
 package com.example.halalah.card;
 
+import com.example.halalah.POSTransaction;
+import com.example.halalah.PosApplication;
 import com.example.halalah.Utils;
-import com.topwise.cloudpos.aidl.emv.EmvTransData;
+
 
 public class EmvTransDataSub{
     private static final String TAG = Utils.TAGPUBLIC + EmvTransDataSub.class.getSimpleName();
 
     private byte mTranstype;// Consumption 0x00 Query 0x31 Pre-authorization 0x03 Return 0x20 Consumption Revocation 0x20 ...
-    private byte mRequestAmtPosition;// Request input amount position 0x01: before displaying card number 0x02: after displaying card number
-    private byte mEmvFlow;// 0x01 – PBOC process 0x02 – qPBOC process
-    private byte mSlotType;// 0x00-contact 0x01-non-contact
-    private byte[] mReserv;// Reserved for extended use. When the transaction type is 0xF4-card loading log query, Resv [0] value 0x00-read one by one 0x01-read once
+    private byte mCardType;//CardType.RF或CardType.IC或RF或CardType.MAG
 
     private EmvTransData mEmvTransData;
 
     public EmvTransData getEmvTransData(boolean isIc) {
-        mTranstype = 0x03;
-        mRequestAmtPosition = 0x01;
-        mReserv = new byte[3];
-
+        int amount = Integer.parseInt(PosApplication.getApp().oGPosTransaction.m_sTrxAmount.replace(".",""));
+        if(PosApplication.getApp().oGPosTransaction.m_enmTrxType== POSTransaction.TranscationType.PURCHASE_WITH_NAQD)
+            mTranstype = 0x09;
+        else
+            mTranstype = 0x00;
         if (isIc) {
-            mEmvFlow = 0x01;
-            mSlotType = 0x00;
+            mCardType = CardType.IC;
         } else {
-            mEmvFlow = 0x02;
-            mSlotType = 0x01;
+            mCardType = CardType.RF;
         }
-
-        mEmvTransData = new EmvTransData(mTranstype, mRequestAmtPosition, false, true, true, mEmvFlow, mSlotType, mReserv);
+        mEmvTransData = new EmvTransData(mCardType,mTranstype,amount,true);
         return mEmvTransData;
     }
 }
