@@ -470,8 +470,9 @@ public class POSTransaction {
         m_sTrxMACBlock= DUKPT_KEY.CaluclateMACBlock(sMAC);
 
         //removinglast 4 bytes
-        m_sTrxMACBlock=m_sTrxMACBlock.substring(3,7);
-        m_sTrxMACBlock=m_sTrxMACBlock+0xFF+0xFF+0xFF+0xFF;
+        m_sTrxMACBlock=m_sTrxMACBlock.substring(0,4);
+        m_sTrxMACBlock=m_sTrxMACBlock.concat("ÿÿÿÿ");
+
 
         return "0";
     }
@@ -747,7 +748,7 @@ public class POSTransaction {
 
 
         //53. Transaction Security control
-        m_sTrxSecurityControl=DUKPT_KEY.getKSN();
+        m_sTrxSecurityControl=BCDASCII.asciiByteArray2String(DUKPT_KEY.getKSN()).concat("609");
         if(m_sTrxSecurityControl!=null)
         {
             m_RequestISOMsg.SetDataElement(53, m_sTrxSecurityControl.getBytes(), m_sTrxSecurityControl.length());
@@ -917,10 +918,10 @@ public class POSTransaction {
             Log.i(TAG, "DE 52 [m_sTrxPIN]= " + m_sTrxPIN + "Length =" + m_sTrxPIN.length());
         }
 
-        m_sTrxSecurityControl=DUKPT_KEY.getKSN();
+        m_sTrxSecurityControl=BCDASCII.asciiByteArray2String(DUKPT_KEY.getKSN()).concat("609");
         if(m_sTrxSecurityControl!=null) {
             m_RequestISOMsg.SetDataElement(53, m_sTrxSecurityControl.getBytes(), m_sTrxSecurityControl.length());
-            Log.i(TAG, "DE 53 [m_sTrxSecurityControl]= " + m_sTrxSecurityControl + "Length =" + m_sTrxSecurityControl.length());
+            Log.i(TAG, "DE 53 [m_sTrxSecurityControl]= " + m_sTrxSecurityControl + " Length =" + m_sTrxSecurityControl.length());
         }
         if(PosApplication.getApp().oGPosTransaction.m_enmTrxType==TranscationType.PURCHASE_WITH_NAQD) {
             m_RequestISOMsg.SetDataElement(54, m_sAdditionalAmount.getBytes(), m_sAdditionalAmount.length());
@@ -930,7 +931,7 @@ public class POSTransaction {
         if (m_enmTrxCardType == CardType.ICC)
         {
 
-            m_RequestISOMsg.SetDataElement(55, m_sICCRelatedTags.getBytes(), m_sICCRelatedTags.length());
+            m_RequestISOMsg.SetDataElement(55, BCDASCII.asciiByteArray2String(m_sICCRelatedTags.getBytes()).getBytes(), m_sICCRelatedTags.length());
             Log.i(TAG, "DE 55 [m_sICCRelatedTags]= " + m_sICCRelatedTags + "Length =" + m_sICCRelatedTags.length());
         }
 
@@ -954,7 +955,8 @@ public class POSTransaction {
         Log.i(TAG, "DE 62 [m_sTerminalStatus]= " + m_sTerminalStatus+"Length ="+m_sTerminalStatus.length());
 
         ComposeMACBlockData(m_enmTrxType);
-        m_RequestISOMsg.SetDataElement(64, m_sTrxMACBlock.getBytes(), m_sTrxMACBlock.length());
+
+        m_RequestISOMsg.SetDataElement(64,m_sTrxMACBlock.getBytes(), m_sTrxMACBlock.length());
         Log.i(TAG, "DE 64 [m_sTrxMACBlock]= " + m_sTrxMACBlock+"Length ="+m_sTrxMACBlock.length());
 
 
@@ -1100,7 +1102,7 @@ public class POSTransaction {
 
 
         // Set KSN
-        m_sTrxSecurityControl=DUKPT_KEY.getKSN();
+        m_sTrxSecurityControl=BCDASCII.asciiByteArray2String(DUKPT_KEY.getKSN()).concat("609");
         if(m_sTrxSecurityControl!=null) {
             m_RequestISOMsg.SetDataElement(53, m_sTrxSecurityControl.getBytes(), m_sTrxSecurityControl.length());
             Log.i(TAG, " DE 53 [m_sTrxSecurityControl]= " + m_sTrxSecurityControl + "Length =" + m_sTrxSecurityControl.length());
@@ -1218,7 +1220,7 @@ public class POSTransaction {
 
 
         // Set KSN
-        m_sTrxSecurityControl=DUKPT_KEY.getKSN();
+        m_sTrxSecurityControl=BCDASCII.asciiByteArray2String(DUKPT_KEY.getKSN()).concat("609");
         if(m_sTrxSecurityControl!=null) {
             m_RequestISOMsg.SetDataElement(53, m_sTrxSecurityControl.getBytes(), m_sTrxSecurityControl.length());
             Log.i(TAG, " DE 53 [m_sTrxSecurityControl]= " + m_sTrxSecurityControl + "Length =" + m_sTrxSecurityControl.length());
@@ -1264,8 +1266,9 @@ public class POSTransaction {
 
 
         // Set Transmission Date and Time
+        m_sTrxDateTime=ExtraUtil.GetDate_Time();
         m_RequestISOMsg.SetDataElement(7, m_sTrxDateTime.getBytes(), m_sTrxDateTime.length());
-        Log.i(TAG, " DE 7 [m_sTrxDateTime]= " + m_sTrxDateTime+"Length ="+m_sTrxAmount.length());
+        Log.i(TAG, " DE 7 [m_sTrxDateTime]= " + m_sTrxDateTime+"Length ="+m_sTrxDateTime.length());
 
 
         // Set Transaction STAN
@@ -1380,7 +1383,7 @@ public class POSTransaction {
         Log.i(TAG, " DE 42 [m_sMerchantID]= " + m_sMerchantID+"Length ="+m_sMerchantID.length());
 
         // Set KSN
-        m_sTrxSecurityControl=DUKPT_KEY.getKSN();
+        m_sTrxSecurityControl=BCDASCII.asciiByteArray2String(DUKPT_KEY.getKSN()).concat("609");
         if(m_sTrxSecurityControl!=null) {
             m_RequestISOMsg.SetDataElement(53, m_sTrxSecurityControl.getBytes(), m_sTrxSecurityControl.length());
             Log.i(TAG, " DE 53 [m_sTrxSecurityControl]= " + m_sTrxSecurityControl + "Length =" + m_sTrxSecurityControl.length());
@@ -1630,7 +1633,7 @@ public class POSTransaction {
         }
 
         //53. Transaction Security control
-        m_sTrxSecurityControl=DUKPT_KEY.getKSN();
+        m_sTrxSecurityControl=BCDASCII.asciiByteArray2String(DUKPT_KEY.getKSN()).concat("609");
         if(m_sTrxSecurityControl!=null) {
             m_RequestISOMsg.SetDataElement(53, m_sTrxSecurityControl.getBytes(), m_sTrxSecurityControl.length());
             Log.i(TAG, "DE 53 [m_sTrxSecurityControl]= " + m_sTrxSecurityControl + "Length =" + m_sTrxSecurityControl.length());
@@ -1824,7 +1827,7 @@ public class POSTransaction {
         }
 
         //53. Transaction Security control
-        m_sTrxSecurityControl=DUKPT_KEY.getKSN();
+        m_sTrxSecurityControl=BCDASCII.asciiByteArray2String(DUKPT_KEY.getKSN()).concat("609");
         if(m_sTrxSecurityControl!=null) {
             m_RequestISOMsg.SetDataElement(53, m_sTrxSecurityControl.getBytes(), m_sTrxSecurityControl.length());
             Log.i(TAG, "DE 53 [m_sTrxSecurityControl]= " + m_sTrxSecurityControl + "Length =" + m_sTrxSecurityControl.length());
@@ -1852,6 +1855,7 @@ public class POSTransaction {
 
         //64.Transaction Block
         ComposeMACBlockData(m_enmTrxType);
+
         m_RequestISOMsg.SetDataElement(64, m_sTrxMACBlock.getBytes(), m_sTrxMACBlock.length());
         Log.i(TAG, "DE 64 [m_sTrxMACBlock]= " + m_sTrxMACBlock+"Length ="+m_sTrxMACBlock.length());
 
@@ -2164,6 +2168,7 @@ public class POSTransaction {
     public void GetDE22_POSEntryMode()
     {   Card_data_input_capability cdic = null;
         Cardholder_authentication_capability cac=null;
+        //Byte Card_capture_capability;added hard coded
         Operating_environment oe=null;
         Cardholder_present Cardholder_p=null;
         Card_present Card_p=null;
@@ -2174,7 +2179,7 @@ public class POSTransaction {
         Terminal_output_capability toc=null;
         PIN_capture_capability pcc=null;
 
-        byte[] bDE22=new byte[12];
+        char[] bDE22=new char[12];
     if(m_enmTrxCardType==CardType.ICC)
     {    cdic= Card_data_input_capability.ICC;
          oe= Operating_environment.On_premises_of_card_acceptor_attended;
@@ -2343,141 +2348,141 @@ public class POSTransaction {
         switch(cdic){
 
             case PAN_Entry_Mode_Unknown:
-                bDE22[0]=0;
+                bDE22[0]='0';
                 break;
             case Manual_no_terminal:
-                bDE22[0]=1;
+                bDE22[0]='1';
                 break;
             case Magnetic_stripe_read:
-                bDE22[0]=2;
+                bDE22[0]='2';
                 break;
             case Bar_Code:
-                bDE22[0]=3;
+                bDE22[0]='3';
                 break;
             case OCR:
-                bDE22[0]=4;
+                bDE22[0]='4';
                 break;
             case ICC:
-                bDE22[0]=5;
+                bDE22[0]='5';
                 break;
             case Key_Entered:
-                bDE22[0]=6;
+                bDE22[0]='6';
                 break;
             case Contactless:
-                bDE22[0]=7;
+                bDE22[0]='7';
                 break;
 
         }
 
         switch(cac){
             case No_electronic_authentication:
-                bDE22[1]=0;
+                bDE22[1]='0';
                 break;
             case PIN:
-                bDE22[1]=1;
+                bDE22[1]='1';
                 break;
             case Electronic_signature_analysis:
-                bDE22[1]=2;
+                bDE22[1]='2';
                 break;
             case Biometrics:
-                bDE22[1]=3;
+                bDE22[1]='3';
                 break;
             case Biographic:
-                bDE22[1]=4;
+                bDE22[1]='4';
                 break;
             case Electronic_authentication_inoperative:
-                bDE22[1]=5;
+                bDE22[1]='5';
                 break;
             case other:
-                bDE22[1]=6;
+                bDE22[1]='6';
                 break;
         }
 
-        bDE22[2]=0;   // for position 3 always 0
+        bDE22[2]='0';   // for position 3 always 0
 
         switch (oe)
         {
             case On_premises_of_card_acceptor_attended:
-                bDE22[3]=1;
+                bDE22[3]='1';
                 break;
             case On_premises_of_card_acceptor_unattended:
-                bDE22[3]=2;
+                bDE22[3]='2';
                 break;
             case Off_premises_of_card_acceptor_attended:
-                bDE22[3]=3;
+                bDE22[3]='3';
                 break;
             case Off_premises_of_card_acceptor_unattended:
-                bDE22[3]=4;
+                bDE22[3]='4';
                 break;
         }
         switch (Cardholder_p)
         {
             case Cardholder_present:
-                bDE22[4]=0;
+                bDE22[4]='0';
                 break;
             case Cardholder_not_present_unspecified:
-                bDE22[4]=1;
+                bDE22[4]='1';
                 break;
         }
         switch (Card_p)
         {
             case Card_not_present:
-                bDE22[5]=0;
+                bDE22[5]='0';
                 break;
             case Card_present:
-                bDE22[5]=1;
+                bDE22[5]='1';
                 break;
         }
         switch (cdim)
         {
             case Unspecified:
-                bDE22[6]=0;
+                bDE22[6]='0';
                 break;
             case Manual_no_terminal:
-                bDE22[6]=1;
+                bDE22[6]='1';
                 break;
             case  Magnetic_stripe_read:
-                bDE22[6]=2;
+                bDE22[6]='2';
                 break;
             case Bar_Code:
-                bDE22[6]=3;
+                bDE22[6]='3';
                 break;
             case OCR:
-                bDE22[6]=4;
+                bDE22[6]='4';
                 break;
             case ICC:
-                bDE22[6]=5;
+                bDE22[6]='5';
                 break;
             case Key_entered:
-                bDE22[6]=6;
+                bDE22[6]='6';
                 break;
             case Contactless:
-                bDE22[6]=7;
+                bDE22[6]='7';
                 break;
         }
 
         switch (cam)
         {
             case Not_authenticated:
-                bDE22[7]=0;
+                bDE22[7]='0';
                 break;
             case PIN:
-                bDE22[7]=1;
+                bDE22[7]='1';
                 break;
             case Electronic_signature_analysis:
-                bDE22[7]=2;
+                bDE22[7]='2';
                 break;
             case Biometrics:
-                bDE22[7]=3;
+                bDE22[7]='3';
                 break;
             case Biographic:
-                bDE22[7]=4;
+                bDE22[7]='4';
                 break;
             case Manual_signature_analysis:
-                bDE22[7]=5;
+                bDE22[7]='5';
                 break;
             case Other_manual_verifications:
-                bDE22[7]=6;
+                bDE22[7]='6';
                 break;
 
         }
@@ -2485,22 +2490,22 @@ public class POSTransaction {
         switch (cae)
         {
             case Not_authenticated:
-                bDE22[8]=0;
+                bDE22[8]='0';
                 break;
             case ICC:
-                bDE22[8]=1;
+                bDE22[8]='1';
                 break;
             case CAD:
-                bDE22[8]=2;
+                bDE22[8]='2';
                 break;
             case Authorising_agent:
-                bDE22[8]=3;
+                bDE22[8]='3';
                 break;
             case By_merchant:
-                bDE22[8]=4;
+                bDE22[8]='4';
                 break;
             case other:
-                bDE22[8]=5;
+                bDE22[8]='5';
                 break;
 
         }
@@ -2508,62 +2513,73 @@ public class POSTransaction {
         switch (coc)
         {
             case Unknown:
-                bDE22[9]=0;
+                bDE22[9]='0';
                 break;
             case None:
-                bDE22[9]=1;
+                bDE22[9]='1';
             case Magnetic_Stripe_write:
-                bDE22[9]=2;
+                bDE22[9]='2';
             case ICC:
-                bDE22[9]=3;
+                bDE22[9]='3';
         }
 
         switch (toc)
         {
             case Unknown:
-                bDE22[10]=0;
+                bDE22[10]='0';
                 break;
             case None:
-                bDE22[10]=1;
+                bDE22[10]='1';
                 break;
             case Printing:
-                bDE22[10]=2;
+                bDE22[10]='2';
                 break;
             case Display:
-                bDE22[10]=3;
+                bDE22[10]='3';
                 break;
             case Printing_and_display:
-                bDE22[10]=4;
+                bDE22[10]='4';
                 break;
         }
 
         switch (pcc)
         {
             case No_PIN_capture_capability:
+                bDE22[11]='0';
                 break;
             case Device_PIN_capture_capability_unknown:
+                bDE22[11]='1';
                 break;
             case Four_characters:
+                bDE22[11]='4';
                 break;
             case Five_characters:
+                bDE22[11]='5';
                 break;
             case Six_characters:
+                bDE22[11]='6';
                 break;
             case Seven_characters:
+                bDE22[11]='7';
                 break;
             case Eight_characters:
+                bDE22[11]='8';
                 break;
             case Nine_characters:
+                bDE22[11]='9';
                 break;
             case Ten_characters:
+                bDE22[11]='A';
                 break;
             case Eleven_characters:
+                bDE22[11]='B';
                 break;
             case Twelve_characters:
+                bDE22[11]='C';
                 break;
         }
 
-        m_sPOSEntryMode=bDE22.toString();
+        m_sPOSEntryMode=String.copyValueOf(bDE22);
 
 
     }
@@ -2826,7 +2842,7 @@ public class POSTransaction {
      * \Des    : for getting messeage reason code
      */
     public void GetDE25_Messagereasoncode()
-    {Message_reason_code mrc =null;
+    {   Message_reason_code mrc =null;
 
             //todo getting original message reason code from authorization request message response
 
@@ -2840,7 +2856,7 @@ public class POSTransaction {
 
                                         switch (m_enmTrxCardType) {
                                             case ICC:
-                                                mrc=Message_reason_code.ICC_random_selection;  //todo condition of other //15xx
+                                                mrc=Message_reason_code.On_line_forced_by_ICC_CDF_or_ADF;  //todo condition of other //15xx
                                                 break;
                                             case CTLS:
                                                 mrc=Message_reason_code.Contactless_Transaction;
@@ -2863,13 +2879,13 @@ public class POSTransaction {
                           default:       // For IBCS
                               switch (m_enmTrxCardType) {
                                   case ICC:
-
+                                       mrc= Message_reason_code.On_line_forced_by_card_acceptor;
                                       break;
                                   case CTLS:
-
+                                        mrc=Message_reason_code.Contactless_Transaction;
                                       break;
                                   case MAG:
-
+                                        mrc= Message_reason_code.On_line_forced_by_card_acceptor;
                                       break;
                                   case FALLBACK:
                                       mrc= Message_reason_code.Fallback_from_chip_to_magnetic_stripe;//1776

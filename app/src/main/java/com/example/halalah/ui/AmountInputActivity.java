@@ -149,7 +149,8 @@ public class AmountInputActivity extends Activity implements View.OnClickListene
                 String sAmount = mAmount.substring(1);
 
 
-                PosApplication.getApp().oGPosTransaction.m_sTrxAmount = sAmount;
+                PosApplication.getApp().oGPosTransaction.m_sTrxAmount= sAmount;
+
                 switch (PosApplication.getApp().oGPosTransaction.m_enmTrxType) {
                     case PURCHASE:
                     case PURCHASE_ADVICE:

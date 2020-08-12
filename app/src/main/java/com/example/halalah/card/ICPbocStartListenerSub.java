@@ -256,9 +256,7 @@ public class ICPbocStartListenerSub implements OnEmvProcessListener {
                     bundle.putInt(PacketProcessUtils.PACKET_PROCESS_TYPE, PacketProcessUtils.PACKET_PROCESS_PURCHASE_ADVICE);
                     CardManager.getInstance().startActivity(mContext, bundle, PacketProcessActivity.class);
             }
-        /*byte[] sendData = PosApplication.getApp().mConsumeData.getICData();
-        Log.d(TAG, BCDASCII.bytesToHexString(sendData));
-        JsonAndHttpsUtils.sendJsonData(mContext, BCDASCII.bytesToHexString(sendData));*/
+
         }
     }
 

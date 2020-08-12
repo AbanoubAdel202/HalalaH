@@ -1245,8 +1245,8 @@ DF03 Check Sum                                [20]   >> 4410C6D51C2F83ADFD92528F
         sMAC= DUKPT_KEY.CaluclateMACBlock(sMAC);
 
         //removinglast 4 bytes
-        sMAC=sMAC.substring(3,7);
-        sMAC=sMAC+0xFF+0xFF+0xFF+0xFF;
+        sMAC=sMAC.substring(0,4);
+        sMAC=sMAC.concat("ÿÿÿÿ");
 
 
         if(sMAC.equals(oResponseTrx.getDataElement(64)))
@@ -1604,9 +1604,46 @@ DF03 Check Sum                                [20]   >> 4410C6D51C2F83ADFD92528F
      \Des    : loading Terminal operation data from saved file of terminal configuration data
      */
     public static void load_Terminal_configuration_file() {
+        // to copy initial terminal operation data
+        SAMA_TMS Default_TMS = new SAMA_TMS();
 
-        //todo load file
-        //todo copy data to oGSama_TMS in PosApplication
+        // default retailer data
+        Default_TMS.retailer_data.m_sArabic_Receipt_1="Arabic_Receipt_1";
+        Default_TMS.retailer_data.m_sArabic_Receipt_2="m_sArabic_Receipt_2";
+        Default_TMS.retailer_data.m_sAutomatic_Load="0";
+        Default_TMS.retailer_data.m_sTerminal_Capability="0000000";
+        Default_TMS.retailer_data.m_sAdditional_Terminal_Capabilities="000000";
+        Default_TMS.retailer_data.m_sCurrency_Symbol_Arabic="ريال";
+        Default_TMS.retailer_data.m_sCurrency_Symbol_English="SAR";
+        Default_TMS.retailer_data.m_sTerminal_Currency_Code="0682";
+        Default_TMS.retailer_data.m_sTerminal_Country_Code="0682";
+        Default_TMS.retailer_data.m_sTransaction_Currency_Exponent="2";
+        Default_TMS.retailer_data.m_sSAF_Default_Message_Transmission_Number="2";
+        Default_TMS.retailer_data.m_sSAF_Retry_Limit="3";
+        Default_TMS.retailer_data.m_sDownload_Phone_Number="+01061456840";
+        Default_TMS.retailer_data.m_sEMV_Terminal_Type="22";
+        Default_TMS.retailer_data.m_sNext_load="0";
+        Default_TMS.retailer_data.m_sReconciliation_time="233000";
+        Default_TMS.retailer_data.m_sEnglish_Receipt_1="English_Receipt_1";
+        Default_TMS.retailer_data.m_sEnglish_Receipt_2="English_Receipt_2";
+        Default_TMS.retailer_data.m_sRetailer_Address_1_Arabic="هلا، المملكه العربيه السعوديه1 ";
+        Default_TMS.retailer_data.m_sRetailer_Address_2_Arabic="هلا، المملكه العربيه السعوديه2 ";
+        Default_TMS.retailer_data.m_sRetailer_Address_1_English="hala , saudiarabia 1";
+        Default_TMS.retailer_data.m_sRetailer_Address_2_English="hala , saudiarabia 2";
+        Default_TMS.retailer_data.m_sRetailer_Name_Arabic="تاجر مؤقت";
+        Default_TMS.retailer_data.m_sRetailer_Name_English="temp Merchant";
+
+
+
+
+
+
+
+        PosApplication.getApp().oGSama_TMS=Default_TMS;
+
+
+
+
 
 
     }
@@ -1643,6 +1680,8 @@ DF03 Check Sum                                [20]   >> 4410C6D51C2F83ADFD92528F
                            PosApplication.getApp().oGTerminal_Operation_Data.Printer_Status = "1";
                     case 2:
                 }
+
+
         }
 
     /**

@@ -297,16 +297,16 @@ Load Last Terminal Data from Terminal Operation Data Table
         return strMACBLOCK;
     }
 
-    public static String getKSN() {
+    public static byte[] getKSN() {
 
         byte[] byteCurrentKSN ;
         boolean bNewksnflag=false;
-        if(PosApplication.getApp().oGPosTransaction.m_enmTrxCVM== POSTransaction.CVM.NO_CVM||PosApplication.getApp().oGPosTransaction.m_enmTrxCVM== POSTransaction.CVM.SIGNATURE)
+        if(PosApplication.getApp().oGPosTransaction.m_sTrxPIN==null)
             bNewksnflag=true;
 
         try {
             byteCurrentKSN = pinpad.getDUKPTKsn(m_WorkKey, bNewksnflag);
-            return byteCurrentKSN.toString();
+            return byteCurrentKSN;
         }catch (RemoteException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();

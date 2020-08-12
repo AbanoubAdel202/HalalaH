@@ -440,8 +440,8 @@ public class ISO8583 {
         //如果固定长度为8，实际传入只有6，那么需要补2位，len >= l.
 
         Log.i(TAG, "setBit, l: " + l + ",len: " + len);
-        mISO8583Domain[n].mBitf = 1;            /*置该域为有数据 */  
-        mISO8583Domain[n].mLength = len;        /*保存该域的长度*/
+        mISO8583Domain[n].mBitf = 1;            /*flag bit enabled */
+        mISO8583Domain[n].mLength = len;        /*length of the field */
         mISO8583Domain[n].mStartAddr = mOffset;  /*该域值在mDataBuffer中的起始位置*/
         if ((mOffset + len) >=  MAXBUFFERLEN) {//mDataBuffer空间已满
             return -1;
@@ -454,7 +454,7 @@ public class ISO8583 {
             mOffset += (len+1)/2;
         } else if (mISO8583Domain[n].mType == L_ASC) {
             System.arraycopy(src, 0, tmp, 0, l);
-            Arrays.fill(tmp, l, len, (byte)' ');
+            Arrays.fill(tmp, l, len, (byte)'0');
             System.arraycopy(tmp, 0, mDataBuffer, mOffset, len);
             mOffset += len;
         } else if (mISO8583Domain[n].mType == R_BCD) {
@@ -464,14 +464,14 @@ public class ISO8583 {
             System.arraycopy(pt, 0, mDataBuffer, mOffset, (len+1)/2);
             mOffset += (len+1)/2;
         } else if (mISO8583Domain[n].mType == R_ASC) {
-            Arrays.fill(tmp, 0, len-l, (byte)' ');
+            Arrays.fill(tmp, 0, len-l, (byte)'0');
             System.arraycopy(src, 0, tmp, len-l, l);
             System.arraycopy(tmp, 0, mDataBuffer, mOffset, len);
             mOffset += len;
 		} else if (mISO8583Domain[n].mType == D_BIN) {
             Log.i(TAG, "  l = " + l);
 			System.arraycopy(src, 0, tmp, 0, l);
-			Arrays.fill(tmp, l, len, (byte) ' ');
+			Arrays.fill(tmp, l, len, (byte) '0');
 			pt = BCDASCII.fromASCIIToBCD(tmp, 0, len, false);
 			System.arraycopy(pt, 0, mDataBuffer, mOffset, (len + 1) / 2);
 			mOffset += (len + 1) / 2;
@@ -654,7 +654,7 @@ public class ISO8583 {
         mISO8583Domain[18].setDomainProperty(  4, R_BCD, FIX_LEN,       		"未使用");	    //19
         mISO8583Domain[19].setDomainProperty(  4, R_BCD, FIX_LEN,       		"未使用");	    //20
         mISO8583Domain[20].setDomainProperty(  4, R_BCD, FIX_LEN,       		"未使用");	    //21
-        mISO8583Domain[21].setDomainProperty(  12, L_ASC, FIX_LEN,       	"Point of Service Data Code"); 	//22 + Henry 4->3 R_BCD->L_BCD
+        mISO8583Domain[21].setDomainProperty(  12, R_ASC, FIX_LEN,       	"Point of Service Data Code"); 	//22 + Henry 4->3 R_BCD->L_BCD
         mISO8583Domain[22].setDomainProperty(  3, L_ASC, FIX_LEN,       		"Card Sequence Number ");	    //23 + Henry 4->3
         mISO8583Domain[23].setDomainProperty(  3, L_ASC, FIX_LEN,       		"Function Code ");	    //24
         mISO8583Domain[24].setDomainProperty(  4, L_ASC, FIX_LEN,       		"Message Reason Code");	//25 +
@@ -667,7 +667,7 @@ public class ISO8583 {
         mISO8583Domain[31].setDomainProperty(  11, L_ASC, LLVAR_LEN,    		"Acquirer Institution Identification Code ");	//32 +
         mISO8583Domain[32].setDomainProperty(  99, L_BCD, LLVAR_LEN,	   		"未使用");	    //33
         mISO8583Domain[33].setDomainProperty( 999, L_BCD, LLLVAR_LEN,   		"未使用");	    //34
-        mISO8583Domain[34].setDomainProperty( 37, D_BIN, LLVAR_LEN,    		"Track-2 Data ");	    //35 +
+        mISO8583Domain[34].setDomainProperty( 37, R_ASC, LLVAR_LEN,    		"Track-2 Data ");	    //35 +
         mISO8583Domain[35].setDomainProperty(112,  D_BIN, LLLVAR_LEN,   		"三磁道数据");	    //36 +
         mISO8583Domain[36].setDomainProperty( 12,  L_ASC, FIX_LEN,      		" Retrieval Reference Number ");		//37 +  Henry 16->12
         mISO8583Domain[37].setDomainProperty(  6,  L_ASC, FIX_LEN,      		" Approval Code ");		//38 +
@@ -680,14 +680,14 @@ public class ISO8583 {
         mISO8583Domain[44].setDomainProperty( 99,  L_BCD, LLVAR_LEN,			"未使用");	    //45
         mISO8583Domain[45].setDomainProperty(999, R_ASC, LLLVAR_LEN,			"未使用");	    //46
         mISO8583Domain[46].setDomainProperty(999, L_ASC, LLLVAR_LEN,			" Private - Card Scheme Sponsor ID & Additional Scheme Data ");	    //47
-        mISO8583Domain[47].setDomainProperty(999, R_BCD, LLLVAR_LEN,    		" Private – Additional Data ");	//48 +
+        mISO8583Domain[47].setDomainProperty(999, R_ASC, LLLVAR_LEN,    		" Private – Additional Data ");	//48 +
         mISO8583Domain[48].setDomainProperty(  3, R_ASC, FIX_LEN,       		"Currency Code, Transaction ");	//49 +
         mISO8583Domain[49].setDomainProperty(  3, R_ASC, FIX_LEN,			" Currency Code, Reconciliation ");		//50
         mISO8583Domain[50].setDomainProperty(  3, R_BCD, FIX_LEN,           	"未使用");		//51
-        mISO8583Domain[51].setDomainProperty(  8, L_BCD, FIX_LEN,       		"Personal Identification Number(PIN)");	//52 +
-        mISO8583Domain[52].setDomainProperty( 48, L_ASC, LLVAR_LEN,       		"Security Related Control Information");		//53 +
+        mISO8583Domain[51].setDomainProperty(  8, L_ASC, FIX_LEN,       		"Personal Identification Number(PIN)");	//52 +
+        mISO8583Domain[52].setDomainProperty( 48, R_ASC, LLVAR_LEN,       		"Security Related Control Information");		//53 +
         mISO8583Domain[53].setDomainProperty( 120, R_ASC, LLLVAR_LEN,    		"Additional Amounts ");	    //54 +
-        mISO8583Domain[54].setDomainProperty(255, L_ASC, LLLVAR_LEN,    		" ICC Related Data ");	    //55
+        mISO8583Domain[54].setDomainProperty(255, R_ASC, LLLVAR_LEN,    		" ICC Related Data ");	    //55
         mISO8583Domain[55].setDomainProperty(58, L_ASC, LLVAR_LEN,       	"Original Data Elements ");	    //56
         mISO8583Domain[56].setDomainProperty(999, R_BCD, LLLVAR_LEN,       	"未使用");	    //57
         mISO8583Domain[57].setDomainProperty(100, R_BCD, LLLVAR_LEN,    		"PBOC电子钱包标准交易信息");	    //58
