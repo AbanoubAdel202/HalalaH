@@ -1,17 +1,14 @@
 package com.example.halalah;
+
 import android.util.Log;
-import android.widget.Switch;
 
 import com.example.halalah.TMS.Card_Scheme;
 import com.example.halalah.TMS.SAMA_TMS;
-import com.example.halalah.iso8583.BCDASCII;
 import com.example.halalah.iso8583.ISO8583;
-
-import com.example.halalah.packet.PackUtils;
+import com.example.halalah.registration.RegistrationData;
 import com.example.halalah.secure.DUKPT_KEY;
 import com.example.halalah.util.ExtraUtil;
 
-import java.lang.reflect.Array;
 import java.util.Locale;
 
 /** Header POSTransaction
@@ -27,8 +24,7 @@ import java.util.Locale;
 public class POSTransaction {
     private static final String TAG = Utils.TAGPUBLIC + POSTransaction.class.getSimpleName();
 
-
-
+    private RegistrationData terminalRegistrationData;
 
     public boolean m_is_mada;
     public boolean m_is_final;
@@ -295,24 +291,34 @@ public class POSTransaction {
             stotalsDE124.concat(String.format(Locale.ENGLISH,"%010D",oTotalsArray[i].m_lCreditCount));           /* Credit Count*/
             stotalsDE124.concat(String.format(Locale.ENGLISH,"%015D",oTotalsArray[i].m_dCreditAmount));          /* Credit Amount*/
             stotalsDE124.concat(String.format(Locale.ENGLISH,"%015D",oTotalsArray[i].m_dCashBackAmount));        /* Cash Back Amount*/
-            stotalsDE124.concat(String.format(Locale.ENGLISH,"%015D",oTotalsArray[i].m_dCashAdvanceAmount));     /* Cash Advance Amount*/
-            stotalsDE124.concat(String.format(Locale.ENGLISH,"%010D",oTotalsArray[i].m_lAuthorisationCount));    /* Authorisation Count*/
+            stotalsDE124.concat(String.format(Locale.ENGLISH, "%015D", oTotalsArray[i].m_dCashAdvanceAmount));     /* Cash Advance Amount*/
+            stotalsDE124.concat(String.format(Locale.ENGLISH, "%010D", oTotalsArray[i].m_lAuthorisationCount));    /* Authorisation Count*/
         }
         return stotalsDE124;
     }
-    public String ComposeICCTags(CardType enmCard)
-    {
+
+    public String ComposeICCTags(CardType enmCard) {
         return "0";
     }
 
-    public String ComposeTerminalRegistrationData() // use ComposeNetworkMessage instead
-    {
+    public String ComposeTerminalRegistrationData(RegistrationData terminalRegistrationData) {
 
+        StringBuilder registrationDataBuilder = new StringBuilder();
 
-        return "0";
+        registrationDataBuilder.append(terminalRegistrationData.getVendorId());
+        registrationDataBuilder.append(terminalRegistrationData.getVendorTerminalType());
+        registrationDataBuilder.append(terminalRegistrationData.getTrsmid());
+        registrationDataBuilder.append(terminalRegistrationData.getVendorKeyIndex());
+        registrationDataBuilder.append(terminalRegistrationData.getSamaKeyIndex());
+        registrationDataBuilder.append(terminalRegistrationData.getRandomLengthIndicator());
+        registrationDataBuilder.append(terminalRegistrationData.getRandomStringSequence());
+        registrationDataBuilder.append(terminalRegistrationData.getVendorKeyLength());
+        registrationDataBuilder.append(terminalRegistrationData.getVendorSignature());
+
+        return registrationDataBuilder.toString();
     }
-    public int    ParseICCTags(String ICCHostTags)
-    {
+
+    public int ParseICCTags(String ICCHostTags) {
         return 0;
     }
 
@@ -664,7 +670,7 @@ public class POSTransaction {
         //12. Local Transaction time and date
         m_sLocalTrxDateTime=ExtraUtil.GetDate_Time();
         m_RequestISOMsg.SetDataElement(12, m_sLocalTrxDateTime.getBytes(), m_sLocalTrxDateTime.length());
-        Log.i(TAG, "DE 12 [m_sLocalTrxDateTime]= " + m_sLocalTrxDateTime+"Length ="+m_sTrxAmount.length());
+        Log.i(TAG, "DE 12 [m_sLocalTrxDateTime]= " + m_sLocalTrxDateTime + "Length =" + m_sLocalTrxDateTime.length());
 
 
         //14. Card Expiry Date
@@ -764,11 +770,10 @@ public class POSTransaction {
             Log.i(TAG, "DE 55 [m_sICCRelatedTags]= " + m_sICCRelatedTags + "Length =" + m_sICCRelatedTags.length());
         }
         //56.original Transaction data
-        if(m_enmTrxType==TrxType.REFUND )
-        {
+        if (m_enmTrxType == TranscationType.REFUND) {
             GetDE56_Original_TRX_Data();
-        m_RequestISOMsg.SetDataElement(56, m_sOriginalTrxData.getBytes(), m_sOriginalTrxData.length());
-        Log.i(TAG, "DE 56 [m_sOriginalTrxData]= " + m_sOriginalTrxData+"Length ="+m_sOriginalTrxData.length());
+            m_RequestISOMsg.SetDataElement(56, m_sOriginalTrxData.getBytes(), m_sOriginalTrxData.length());
+            Log.i(TAG, "DE 56 [m_sOriginalTrxData]= " + m_sOriginalTrxData + "Length =" + m_sOriginalTrxData.length());
         }
 
         //59.Transaport Data
@@ -999,7 +1004,7 @@ public class POSTransaction {
         // Set Transmission Date and Time
         m_sTrxDateTime=ExtraUtil.GetDate_Time();
         m_RequestISOMsg.SetDataElement(7, m_sTrxDateTime.getBytes(), m_sTrxDateTime.length());
-        Log.i(TAG, " DE 7 [m_sTrxDateTime]= " + m_sTrxDateTime+"Length ="+m_sTrxAmount.length());
+        Log.i(TAG, " DE 7 [m_sTrxDateTime]= " + m_sTrxDateTime + "Length =" + m_sTrxDateTime.length());
 
 
         // Set Transaction STAN
@@ -1164,7 +1169,7 @@ public class POSTransaction {
 
         // Set Transmission Date and Time
         m_RequestISOMsg.SetDataElement(7, m_sTrxDateTime.getBytes(), m_sTrxDateTime.length());
-        Log.i(TAG, " DE 7 [m_sTrxDateTime]= " + m_sTrxDateTime+"Length ="+m_sTrxAmount.length());
+        Log.i(TAG, " DE 7 [m_sTrxDateTime]= " + m_sTrxDateTime + "Length =" + m_sTrxDateTime.length());
 
 
         // Set Transaction STAN
@@ -1265,7 +1270,7 @@ public class POSTransaction {
 
         // Set Transmission Date and Time
         m_RequestISOMsg.SetDataElement(7, m_sTrxDateTime.getBytes(), m_sTrxDateTime.length());
-        Log.i(TAG, " DE 7 [m_sTrxDateTime]= " + m_sTrxDateTime+"Length ="+m_sTrxAmount.length());
+        Log.i(TAG, " DE 7 [m_sTrxDateTime]= " + m_sTrxDateTime + "Length =" + m_sTrxDateTime.length());
 
 
         // Set Transaction STAN
@@ -1339,7 +1344,7 @@ public class POSTransaction {
         // Set Transmission Date and Time
         m_sTrxDateTime= ExtraUtil.GetDate_Time();
         m_RequestISOMsg.SetDataElement(7, m_sTrxDateTime.getBytes(), m_sTrxDateTime.length());
-        Log.i(TAG, " DE 7 [m_sTrxDateTime]= " + m_sTrxDateTime+"Length ="+m_sTrxAmount.length());
+        Log.i(TAG, " DE 7 [m_sTrxDateTime]= " + m_sTrxDateTime + "Length =" + m_sTrxDateTime.length());
 
 
         // Set Transaction STAN
@@ -1424,7 +1429,7 @@ public class POSTransaction {
 
         // Set Transmission Date and Time
         m_RequestISOMsg.SetDataElement(7, m_sTrxDateTime.getBytes(), m_sTrxDateTime.length());
-        Log.i(TAG, " DE 7 [m_sTrxDateTime]= " + m_sTrxDateTime+"Length ="+m_sTrxAmount.length());
+        Log.i(TAG, " DE 7 [m_sTrxDateTime]= " + m_sTrxDateTime + "Length =" + m_sTrxDateTime.length());
 
 
         // Set Transaction STAN
@@ -1527,7 +1532,7 @@ public class POSTransaction {
         //12. Local Transaction time and date
         m_sLocalTrxDateTime=ExtraUtil.GetDate_Time();
         m_RequestISOMsg.SetDataElement(12, m_sLocalTrxDateTime.getBytes(), m_sLocalTrxDateTime.length());
-        Log.i(TAG, "DE 12 [m_sLocalTrxDateTime]= " + m_sTrxAmount+"Length ="+m_sTrxAmount.length());
+        Log.i(TAG, "DE 12 [m_sLocalTrxDateTime]= " + m_sTrxAmount + "Length =" + m_sLocalTrxDateTime.length());
 
 
         //14. Card Expiry Date
@@ -1592,7 +1597,7 @@ public class POSTransaction {
 
 
         //38.Approval code
-        if(m_enmTrxType!=TrxType.REFUND) //todo other transactions if not exist
+        if (m_enmTrxType != TranscationType.REFUND) //todo other transactions if not exist
         {
             m_RequestISOMsg.SetDataElement(38, m_sApprovalCode.getBytes(), m_sApprovalCode.length());
             Log.i(TAG, "DE 38 [m_sApprovalCode]= " + m_sApprovalCode + "Length =" + m_sApprovalCode.length());
@@ -1645,11 +1650,10 @@ public class POSTransaction {
         Log.i(TAG, "DE 55 [m_sICCRelatedTags]= " + m_sICCRelatedTags+"Length ="+m_sICCRelatedTags.length());
 
         //56.original Transaction data
-        if(m_enmTrxType==TrxType.REFUND ||m_enmTrxType==TrxType.PURCHASE_ADVICE)
-        {
+        if (m_enmTrxType == TranscationType.REFUND || m_enmTrxType == TranscationType.PURCHASE_ADVICE) {
             GetDE56_Original_TRX_Data();
             m_RequestISOMsg.SetDataElement(56, m_sOriginalTrxData.getBytes(), m_sOriginalTrxData.length());
-            Log.i(TAG, "DE 56 [m_sOriginalTrxData]= " + m_sOriginalTrxData+"Length ="+m_sOriginalTrxData.length());
+            Log.i(TAG, "DE 56 [m_sOriginalTrxData]= " + m_sOriginalTrxData + "Length =" + m_sOriginalTrxData.length());
         }
 
      /*   //59.Transaport Data
@@ -1722,7 +1726,7 @@ public class POSTransaction {
         //12. Local Transaction time and date
         m_sLocalTrxDateTime=ExtraUtil.GetDate_Time();
         m_RequestISOMsg.SetDataElement(12, m_sLocalTrxDateTime.getBytes(), m_sLocalTrxDateTime.length());
-        Log.i(TAG, "DE 12 [m_sLocalTrxDateTime]= " + m_sTrxAmount+"Length ="+m_sTrxAmount.length());
+        Log.i(TAG, "DE 12 [m_sLocalTrxDateTime]= " + m_sTrxAmount + "Length =" + m_sLocalTrxDateTime.length());
 
 
         //14. Card Expiry Date
@@ -3520,19 +3524,23 @@ public class POSTransaction {
            DE 37 Retrieval Reference Number of the original transaction as keyed by the Retailer.length 12
           Original local transaction date from original transaction receipt. Default value of ‘000000’ if unavailable. length 6
          */
-        if (m_card_scheme.m_sCard_Scheme_ID =="P1" & (m_enmTrxType==TranscationType.REFUND |m_enmTrxType==TranscationType.AUTHORISATION_EXTENSION|m_enmTrxType==TranscationType.AUTHORISATION_EXTENSION|m_enmTrxType==TranscationType.AUTHORISATION_ADVICE|m_enmTrxType==TranscationType.AUTHORISATION_VOID))
-        {
-            if(m_sOrigLocalTrxDate==null)
-                m_sOrigLocalTrxDate="000000";
-            m_sOriginalTrxData= m_sOrigMTI+m_sOrigRRNumber+m_sOrigLocalTrxDate;
+        if (m_card_scheme.m_sCard_Scheme_ID =="P1" & (m_enmTrxType==TranscationType.REFUND |m_enmTrxType==TranscationType.AUTHORISATION_EXTENSION|m_enmTrxType==TranscationType.AUTHORISATION_EXTENSION|m_enmTrxType==TranscationType.AUTHORISATION_ADVICE|m_enmTrxType==TranscationType.AUTHORISATION_VOID)) {
+            if (m_sOrigLocalTrxDate == null)
+                m_sOrigLocalTrxDate = "000000";
+            m_sOriginalTrxData = m_sOrigMTI + m_sOrigRRNumber + m_sOrigLocalTrxDate;
         }
 
         //todo check DE65 page 103 in manaual entry IBCS will be 3 sub fields not 6 subfields
 
     }
 
+    public RegistrationData getTerminalRegistrationData() {
+        return terminalRegistrationData;
+    }
 
-
+    public void setTerminalRegistrationData(RegistrationData terminalRegistrationData) {
+        this.terminalRegistrationData = terminalRegistrationData;
+    }
 }
 
 

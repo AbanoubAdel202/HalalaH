@@ -1,6 +1,8 @@
 package com.example.halalah.registration;
 
 
+import android.content.Context;
+
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.MessageDigest;
@@ -11,6 +13,7 @@ import java.security.Signature;
 import javax.crypto.Cipher;
 
 public class RegistrationManager {
+    private static RegistrationManager instance;
 
     // TODO use this code when we need to this registration Manager
 //    RegistrationManager registrationManager = new RegistrationManager();
@@ -23,55 +26,71 @@ public class RegistrationManager {
 //    } catch (IOException e) {
 //        e.printStackTrace();
 //    }
+    private PrivateKey privateKey;
+    private PublicKey publicKey;
 
-    public void signAndHashWithGeneratedKeys() {
+    private RegistrationManager() {
+    }
+
+    public static RegistrationManager getInstance() {
+        if (instance == null) {
+            instance = new RegistrationManager();
+        }
+        return instance;
+    }
+
+    public boolean loadKeys(Context context, String vendorKeyIndex, String samaKeyIndex) {
         try {
-            String text = "This is the message being signed";
+            byte[] privateKeyBytes = AssetsHelper.loadKeyFile(context, "vendor_private_" + vendorKeyIndex + ".der");
+            byte[] publicKeyBytes = AssetsHelper.loadKeyFile(context, "sama_public_" + samaKeyIndex + ".der");
+
+            privateKey = PrivateKeyReader.get(privateKeyBytes);
+            publicKey = PublicKeyReader.get(publicKeyBytes);
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public byte[] signAndHashWithGeneratedKeys(String text) {
+        try {
             KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA");
             keyGen.initialize(1152);
             KeyPair keyPair = keyGen.generateKeyPair();
-            sign(text, keyPair.getPrivate(), keyPair.getPublic());
-            hashSHA(text, keyPair.getPrivate());
-
+            return sign(hashSHA(text, keyPair.getPrivate()), keyPair.getPrivate(), keyPair.getPublic());
         } catch (Exception e) {
             e.printStackTrace();
         }
+        return null;
     }
 
-    public void signAndHashWithLoadedKeys(byte[] privateKeyBytes, byte[] publicKeyBytes) {//, )
-
+    public byte[] signAndHashWithLoadedKeys(String text) {//, )
         try {
-            String text = "This is the message being signed";
-
-            PrivateKey privateKey = PrivateKeyReader.get(privateKeyBytes);
-
-            PublicKey publicKey = PublicKeyReader.get(publicKeyBytes);
-
-            sign(text, privateKey, publicKey);
-            hashSHA(text, privateKey);
-
+            return sign(hashSHA(text, privateKey), privateKey, publicKey);
         } catch (Exception e) {
             e.printStackTrace();
         }
+        return null;
     }
 
-    private byte[] sign(String text, PrivateKey privateKey, PublicKey publicKey) throws Exception {
+    private byte[] sign(byte[] hashedText, PrivateKey privateKey, PublicKey publicKey) throws Exception {
         // Compute signature
         Signature instance = Signature.getInstance("SHA1withRSA");
 
         instance.initSign(privateKey);
-        instance.update((text).getBytes());
+        instance.update(hashedText);
         byte[] signature = instance.sign();
         System.out.println("Signature: " + Utils.byteArrayToHex(signature));
 
         instance.initVerify(publicKey);
-        instance.update((text).getBytes());
+        instance.update(hashedText);
         System.out.println("verify with signature : " + instance.verify(signature));
 
         return signature;
     }
 
-    private void hashSHA(String text, PrivateKey privateKey) {
+    private byte[] hashSHA(String text, PrivateKey privateKey) {
         try {
             // Compute digest
             MessageDigest sha1 = MessageDigest.getInstance("SHA1");
@@ -87,9 +106,12 @@ public class RegistrationManager {
             System.out.println("Digest: " + Utils.byteArrayToHex(digest));
             System.out.println("Cipher text: " + Utils.byteArrayToHex(cipherText));
 
+            return cipherText;
+
         } catch (Exception e) {
             e.printStackTrace();
         }
+        return null;
     }
 
 }

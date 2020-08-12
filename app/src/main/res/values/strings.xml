@@ -333,6 +333,20 @@
     <string name="title_activity_auth_advice_type">FullscreenActivity</string>
     <string name="Partial">Partial</string>
     <string name="Full">Full</string>
+    <string name="registration_error">registration error</string>
+    <string name="invalid_pki_files">invalid PKI files</string>
+    <string name="vendor_terminal_type">vendor terminal type</string>
+    <string name="terminal_registration">Terminal Registration</string>
+    <string name="terminal_serial_id">Terminal serial id (TRSMID)</string>
+    <string name="connection_settings">Connection Settings</string>
+    <string name="vendor_key_index">Vendor Key Index</string>
+    <string name="sama_key_index"> Sama Key Index</string>
+    <string name="proceed">Proceed</string>
+    <string name="invalid_trsmid">Invalid TRSMID</string>
 
+    <string-array name="key_indicies">
+        <item>    00    </item>
+        <item>    01    </item>
+    </string-array>
 
 </resources>
