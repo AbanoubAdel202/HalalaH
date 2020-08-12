@@ -680,7 +680,7 @@ public class ISO8583 {
         mISO8583Domain[44].setDomainProperty( 99,  L_BCD, LLVAR_LEN,			"未使用");	    //45
         mISO8583Domain[45].setDomainProperty(999, R_ASC, LLLVAR_LEN,			"未使用");	    //46
         mISO8583Domain[46].setDomainProperty(999, L_ASC, LLLVAR_LEN,			" Private - Card Scheme Sponsor ID & Additional Scheme Data ");	    //47
-        mISO8583Domain[47].setDomainProperty(999, R_BCD, LLLVAR_LEN,    		" Private – Additional Data ");	//48 +
+        mISO8583Domain[47].setDomainProperty(999, R_ASC, LLLVAR_LEN,    		" Private – Additional Data ");	//48 +
         mISO8583Domain[48].setDomainProperty(  3, R_ASC, FIX_LEN,       		"Currency Code, Transaction ");	//49 +
         mISO8583Domain[49].setDomainProperty(  3, R_ASC, FIX_LEN,			" Currency Code, Reconciliation ");		//50
         mISO8583Domain[50].setDomainProperty(  3, R_BCD, FIX_LEN,           	"未使用");		//51
