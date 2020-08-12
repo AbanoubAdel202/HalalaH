@@ -75,7 +75,7 @@ public class Display_PrintActivity extends Activity implements View.OnClickListe
         mKsnValue = (TextView) findViewById(R.id.ksn_value);
 
         byte[] pin = PosApplication.getApp().oGPosTransaction.m_sTrxPIN.getBytes();
-        byte[] ksnValue = DUKPT_KEY.getKSN().getBytes();
+        byte[] ksnValue = DUKPT_KEY.getKSN();
         Log.i(TAG, "pin: " + BCDASCII.bytesToHexString(pin));
         Log.d(TAG, "ksnValue: " + BCDASCII.bytesToHexString(ksnValue));
         if (pin != null && pin.length > 0) {

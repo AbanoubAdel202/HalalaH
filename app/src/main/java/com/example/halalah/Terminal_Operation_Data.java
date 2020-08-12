@@ -1,6 +1,8 @@
 package com.example.halalah;
 
 
+import com.example.halalah.iso8583.BCDASCII;
+
 /** Header Terminal operation Data
  \Class Name: Terminal_Operation_Data
  \Param  :
@@ -43,6 +45,16 @@ public class Terminal_Operation_Data {
         public String m_sTerminal_Contactless_Transaction_Limit;
         public String m_sTerminal_CVM_Required_Limit;
 
+        public byte[] m_CurrentKSN;
+
+        /*******************
+         * Terminal retailer options *
+         *******************/
+            public enum Terminallanguage{
+                Arabic,
+            English
+            }
+            public Terminallanguage enum_Terminallanguage;
 
         /*******************
          * Terminal Status *
@@ -88,15 +100,48 @@ public class Terminal_Operation_Data {
 
     public Terminal_Operation_Data(){
         m_iPinKeyboardMode=1;
-        m_sMerchantID="111111111111111";
-        m_sTerminalID="12345678";
-        sMerchant_Category_Code="1234";
-        sAcquirer_ID="HALA";
-        m_sCurrencycode="0628";
-        m_sCountrycode="0628";
+        m_sMerchantID="000000000001478";
+        m_sTerminalID="0000000000001234";
+        sMerchant_Category_Code="5411";
+        sAcquirer_ID="1050";
+        m_sCurrencycode="682";
+        m_sCountrycode="682";
         TerminalType=22;
         saf_info=new SAF_Info();
         g_NumberOfCardSchemes = 10;
+        m_iSTAN=100;
+        m_CurrentKSN= BCDASCII.hexStringToBytes( "47FFF00111100000016D");
+
+        //TerminalStatus
+        //Terminal Dial Indicator
+         terminal_dial_indicator ="0";// '1'-9', 'A' - 'F' (i.e. total range is '1'-'F').
+        //Printer Status
+        Printer_Status="0";  //'0' = No printer. '1' = Out of paper. '2' = Plain paper receipt.
+        //Idle Time
+        Idle_Time="000000"; //hhmmss
+        //Magnetic Reader Status
+        Magnetic_Reader_Status="0";// '0'=Okay. '1' = Out of order.
+        //Chip Card Reader Status
+        Chip_Card_Reader_Status="0";// '0'=Okay. '1' = Out of order.
+        //GPS Location Coordinates
+        GPS_Location_Coordinates="N402646W0795856";// ANNNNNNANNNNNNN e.g. N402646W0795856 Which represents, N 40° 26′ 46″ W 079° 58′ 56″
+        //Contactless Reader Status
+        Contactless_Reader_Status="0";// '0'=Okay. '1' = Out of order. '9' = Not supported.
+        //Connection Start Time
+        Connection_Start_Time="000000000"; //HHMMSSsss As 24 hour clock
+        //Connection End Time
+        Connection_End_Time="000000000"; //HHMMSSsss As 24 hour clock
+        //Request Sent Time
+        Request_Sent_Time="000000000"; //HHMMSSsss As 24 hour clock
+        //Response Received Time
+        Response_Received_Time="000000000"; //HHMMSSsss As 24 hour clock
+        //Performance Timers Reference
+        Performance_Timers_Reference="00000000000"; //original RRN for the online authorization or financial message for which the timers refer to.
+        //mada EFTPOS specification release version
+        mada_EFTPOS_specification_release_version="6.0.9"; //The POS should send the version number without dots, and with 2 digits each with a leading zero, if applicable, for the Major, Minor and Patch specification version numbers i.e. Version 6.0.3 should be expressed as 060003 and Version 10.2.0 should be expressed as 100200
+        //Connection Details
+        Connection_Details="00000000"; //Connection Priority ‘01’ Primary ‘02’ Secondary,   Network Service Provider (NSP) ‘01’ iNET ‘02’ Mobily ‘03’ Zain ‘04’ Sky Band ‘05’ Geidea ,   Provider ‘01’ STC ‘02’ Mobily ‘03’ Zain ‘04’ Sky Band  , Connection Method ‘01’ Dial-up ‘02’ SIM ‘03’ TCP/IP ‘04’ VSAT ‘05’ DSL ‘06’ WiFi
+
     }
 
 

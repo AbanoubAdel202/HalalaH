@@ -41,6 +41,7 @@ public class PackPacket {
         //PosApplication.getApp().oGPosTransaction.m_card_scheme.m_sCard_Scheme_Name_English="mada";
         //PosApplication.getApp().oGPosTransaction.m_sAdditionalAmount = "000005500";
         //////////////////////////////////////////////
+        PosApplication.getApp().oGPosTransaction.m_sTrxAmount= PosApplication.getApp().oGPosTransaction.m_sTrxAmount.replace(".","");
         if(PosApplication.getApp().oGPosTransaction.m_is_mada)
         {
             switch (PosApplication.getApp().oGPosTransaction.m_enmTrxType) {

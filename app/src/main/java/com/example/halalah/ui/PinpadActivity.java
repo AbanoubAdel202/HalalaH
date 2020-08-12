@@ -274,7 +274,7 @@ public class PinpadActivity extends Activity {
             }
             Log.d(TAG, "isOnline: " + isOnline);
             if(pin!=null) {
-                PosApplication.getApp().oGPosTransaction.m_sTrxPIN = new String(pin);
+                PosApplication.getApp().oGPosTransaction.m_sTrxPIN = BCDASCII.bytesToHexString(pin);
             }
             if (isOnline) {
                 //socket connection

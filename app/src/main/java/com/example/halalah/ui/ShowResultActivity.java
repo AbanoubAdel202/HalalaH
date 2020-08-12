@@ -10,6 +10,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.example.halalah.DeviceTopUsdkServiceManager;
+import com.example.halalah.PosApplication;
 import com.example.halalah.R;
 import com.example.halalah.Utils;
 
@@ -107,6 +108,7 @@ public class ShowResultActivity extends Activity implements View.OnClickListener
                 if (mResponse == null || !mResponse.equals("00")) {
                     if (mResponseDetail == null) {
                         mResponseDetail = getString(R.string.result_error_unkown);
+                        PosApplication.getApp().oGTerminal_Operation_Data.breversal_flg=true;
                     }
                     mImageResult.setImageDrawable(getDrawable(R.drawable.trans_faild));
                 }
