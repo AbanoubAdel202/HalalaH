@@ -11,6 +11,8 @@ public interface ITransaction {
         void showError(@StringRes int errorMessageId);
 
         void showError(String errorMessageString);
+
+        void showConnectionStatus(int connectionStatus);
     }
 
     interface Handler {

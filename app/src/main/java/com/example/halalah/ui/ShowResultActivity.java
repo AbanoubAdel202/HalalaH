@@ -10,9 +10,9 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.example.halalah.DeviceTopUsdkServiceManager;
+import com.example.halalah.PosApplication;
 import com.example.halalah.R;
 import com.example.halalah.Utils;
-
 import com.example.halalah.util.PacketProcessUtils;
 import com.topwise.cloudpos.aidl.led.AidlLed;
 
@@ -36,9 +36,9 @@ public class ShowResultActivity extends Activity implements View.OnClickListener
         Log.i(TAG, "onCreate()");
         setContentView(R.layout.activity_show_result);
 
-        mImageResult = (ImageView) findViewById(R.id.image_result);
-        mTextResponse = (TextView) findViewById(R.id.result_response);
-        mTextResDetail = (TextView) findViewById(R.id.result_detail);
+        mImageResult = findViewById(R.id.image_result);
+        mTextResponse = findViewById(R.id.result_response);
+        mTextResDetail = findViewById(R.id.result_detail);
 
         Bundle data = getIntent().getExtras();
         mProcType = data.getInt(PacketProcessUtils.PACKET_PROCESS_TYPE);
@@ -107,6 +107,7 @@ public class ShowResultActivity extends Activity implements View.OnClickListener
                 if (mResponse == null || !mResponse.equals("00")) {
                     if (mResponseDetail == null) {
                         mResponseDetail = getString(R.string.result_error_unkown);
+                        PosApplication.getApp().oGTerminal_Operation_Data.breversal_flg = true;
                     }
                     mImageResult.setImageDrawable(getDrawable(R.drawable.trans_faild));
                 }

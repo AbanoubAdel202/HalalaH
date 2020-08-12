@@ -71,22 +71,6 @@ public class Terminal_Registeration implements SendReceiveListener {
         iCounter++;
     }
 
-
-    /*
-        \Function Name: ValidatePKIFiles
-        \Param  :int iType ,int iIndex
-        \Return :int
-        \Pre    : Files exist
-        \Post   : Keys loaded and ready for Use
-        \Author	: Moamen Ahmed
-        \DT		: 05/04/2020
-        \Des    : Validate PKI files for both Vendor or Hala
-    */
-    public int ValidatePKIFiles(int iType, int iIndex) {
-        return 1;
-    }
-
-
 /*
 	\Function Name: ValidateHostRegistrationData
 	\Param  :
@@ -110,7 +94,9 @@ public class Terminal_Registeration implements SendReceiveListener {
 
     @Override
     public void showConnectionStatus(int connectionStatus) {
-
+        if (mView != null) {
+            mView.showConnectionStatus(connectionStatus);
+        }
     }
 
     @Override

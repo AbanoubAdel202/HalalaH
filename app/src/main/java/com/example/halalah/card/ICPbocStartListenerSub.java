@@ -5,20 +5,16 @@ import android.os.Bundle;
 import android.os.RemoteException;
 import android.util.Log;
 
-import com.example.halalah.DeviceTopUsdkServiceManager;
 import com.example.halalah.POSTransaction;
 import com.example.halalah.POS_MAIN;
 import com.example.halalah.PosApplication;
 import com.example.halalah.Utils;
-
-import com.example.halalah.ui.PacketProcessActivity;
-import com.example.halalah.ui.PinpadActivity;
 import com.example.halalah.emv.EmvManager;
 import com.example.halalah.emv.OnEmvProcessListener;
 import com.example.halalah.iso8583.BCDASCII;
+import com.example.halalah.ui.PacketProcessActivity;
+import com.example.halalah.ui.PinpadActivity;
 import com.example.halalah.util.PacketProcessUtils;
-
-import com.topwise.cloudpos.aidl.emv.CardInfo;
 import com.topwise.cloudpos.aidl.emv.PCardLoadLog;
 import com.topwise.cloudpos.aidl.emv.PCardTransLog;
 
@@ -256,9 +252,7 @@ public class ICPbocStartListenerSub implements OnEmvProcessListener {
                     bundle.putInt(PacketProcessUtils.PACKET_PROCESS_TYPE, PacketProcessUtils.PACKET_PROCESS_PURCHASE_ADVICE);
                     CardManager.getInstance().startActivity(mContext, bundle, PacketProcessActivity.class);
             }
-        /*byte[] sendData = PosApplication.getApp().mConsumeData.getICData();
-        Log.d(TAG, BCDASCII.bytesToHexString(sendData));
-        JsonAndHttpsUtils.sendJsonData(mContext, BCDASCII.bytesToHexString(sendData));*/
+
         }
     }
 
@@ -437,7 +431,7 @@ public class ICPbocStartListenerSub implements OnEmvProcessListener {
 
         if (seqNumTlvList != null) {
             cardSeqNum = BCDASCII.bytesToHexString(seqNumTlvList);
-            cardSeqNum = cardSeqNum.substring(cardSeqNum.length() - 2, cardSeqNum.length());
+            cardSeqNum = cardSeqNum.substring(cardSeqNum.length() - 2);
         }
         Log.d(TAG, "setSeqNum : " + cardSeqNum);
         PosApplication.getApp().oGPosTransaction.m_sCardSeqNum=cardSeqNum;

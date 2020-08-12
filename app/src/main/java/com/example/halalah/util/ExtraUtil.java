@@ -21,8 +21,7 @@ public class ExtraUtil {
 
     public static String GetDate_Time(){
         Date d = new Date();
-        CharSequence s  = DateFormat.format("MMDDhhmmss", d.getTime());
-        s = DateFormat.format("MMddHHmmss", d.getTime());
+        CharSequence s = DateFormat.format("MMddHHmmss", d.getTime());
        return s.toString();
 
     }

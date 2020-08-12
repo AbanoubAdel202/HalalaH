@@ -14,7 +14,7 @@ public class RegistrationData {
     String samaKeyIndex;          // 00,01
     String randomLengthIndicator;  // 0010
     String randomStringSequence;   //
-    String vendorKeyLength; // 1152 = "148" * 2 = 288
+    String vendorKeyLength; // 1152 = "148" * 2 = 288 ==> should be send as 3 byte = 000090
     String vendorSignature;        // "encryptedData"
 
     public RegistrationData() {
@@ -100,31 +100,28 @@ public class RegistrationData {
     }
 
     private String generateRandom() {
-        String AlphaNumericString = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-                + "0123456789"
-                + "abcdefghijklmnopqrstuvxyz";
+        String hexaString = "ABCDEF"
+                + "0123456789";
 
-        Long length = 32L;
+        Long lengthInCharacters = 32L;
         try {
-            length = Long.parseLong(randomLengthIndicator, 16);
+            Long lengthInBytes = Long.parseLong(randomLengthIndicator, 16);
+            lengthInCharacters = lengthInBytes * 2;
         } catch (Exception e) {
             e.printStackTrace();
         }
 
         // create StringBuffer size of AlphaNumericString
-        StringBuilder sb = new StringBuilder(length.intValue());
+        StringBuilder sb = new StringBuilder(lengthInCharacters.intValue());
 
-        for (int i = 0; i < length; i++) {
+        for (int i = 0; i < lengthInCharacters; i++) {
 
             // generate a random number between
             // 0 to AlphaNumericString variable length
-            int index
-                    = (int) (AlphaNumericString.length()
-                    * Math.random());
+            int index = (int) (hexaString.length() * Math.random());
 
             // add Character one by one in end of sb
-            sb.append(AlphaNumericString
-                    .charAt(index));
+            sb.append(hexaString.charAt(index));
         }
         return randomStringSequence = sb.toString();
     }

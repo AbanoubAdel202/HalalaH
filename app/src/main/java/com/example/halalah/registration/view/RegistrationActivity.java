@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.text.TextUtils;
+import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
@@ -33,6 +34,7 @@ public class RegistrationActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        Log.d("mRegistrationData", "" + this.hashCode());
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_registration);
 
@@ -79,8 +81,8 @@ public class RegistrationActivity extends AppCompatActivity {
         mRegistrationData.setVendorTerminalType("01");
         mRegistrationData.setVendorKeyIndex(spVendor.getSelectedItem().toString().trim());
         mRegistrationData.setSamaKeyIndex(spSama.getSelectedItem().toString().trim());
-        mRegistrationData.setRandomLengthIndicator("0010");
-        mRegistrationData.setVendorKeyLength("288");
+        mRegistrationData.setRandomLengthIndicator("000010");
+        mRegistrationData.setVendorKeyLength("000090");
 
         Intent resultIntent = new Intent();
         resultIntent.putExtra("registrationData", Parcels.wrap(mRegistrationData));

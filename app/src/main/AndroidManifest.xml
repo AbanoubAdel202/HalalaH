@@ -71,7 +71,9 @@
                 android:value="yes" />
         </activity>
 
-        <activity android:name=".registration.view.RegistrationActivity"></activity>
+        <activity
+            android:name=".registration.view.RegistrationActivity"
+            android:launchMode="singleTask"></activity>
         <activity
             android:name=".ui.transactions.Authorization.AuthAdvice.authAdviceTypeActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"

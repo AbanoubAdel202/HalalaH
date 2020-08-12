@@ -19,7 +19,6 @@ import com.example.halalah.R;
 import com.example.halalah.Utils;
 import com.example.halalah.iso8583.BCDASCII;
 import com.example.halalah.print.Purchase_Print;
-
 import com.example.halalah.secure.DUKPT_KEY;
 import com.topwise.cloudpos.aidl.led.AidlLed;
 import com.topwise.cloudpos.data.PrinterConstant;
@@ -64,18 +63,18 @@ public class Display_PrintActivity extends Activity implements View.OnClickListe
         Log.i(TAG, "onCreate()");
         setContentView(R.layout.activity_consume_result);
 
-        mAmount = (TextView) findViewById(R.id.consume_amount);
-        mTransactionType = (TextView) findViewById(R.id.consume_type);
-        mPANno = (TextView) findViewById(R.id.consume_cardnum);
-        mRecieptno = (TextView) findViewById(R.id.consume_venchor_num);
-        mRRN = (TextView) findViewById(R.id.consume_reference_num);
-        mOperatorNum = (TextView) findViewById(R.id.operator_num);
-        mTransactiontime = (TextView) findViewById(R.id.consume_time);
-        mPinBlock = (TextView) findViewById(R.id.pin_block);
-        mKsnValue = (TextView) findViewById(R.id.ksn_value);
+        mAmount = findViewById(R.id.consume_amount);
+        mTransactionType = findViewById(R.id.consume_type);
+        mPANno = findViewById(R.id.consume_cardnum);
+        mRecieptno = findViewById(R.id.consume_venchor_num);
+        mRRN = findViewById(R.id.consume_reference_num);
+        mOperatorNum = findViewById(R.id.operator_num);
+        mTransactiontime = findViewById(R.id.consume_time);
+        mPinBlock = findViewById(R.id.pin_block);
+        mKsnValue = findViewById(R.id.ksn_value);
 
         byte[] pin = PosApplication.getApp().oGPosTransaction.m_sTrxPIN.getBytes();
-        byte[] ksnValue = DUKPT_KEY.getKSN().getBytes();
+        byte[] ksnValue = DUKPT_KEY.getKSN();
         Log.i(TAG, "pin: " + BCDASCII.bytesToHexString(pin));
         Log.d(TAG, "ksnValue: " + BCDASCII.bytesToHexString(ksnValue));
         if (pin != null && pin.length > 0) {
@@ -275,7 +274,7 @@ public class Display_PrintActivity extends Activity implements View.OnClickListe
                 datas = data.split(" ");
                 mRecieptno.setText(datas[0]);
             } else if (print[i].indexOf("operator") != -1) {
-                data = print[i].substring(print[i].length() - 2, print[i].length());
+                data = print[i].substring(print[i].length() - 2);
                 mOperatorNum.setText(data);
             } else if (print[i].indexOf("Transaction reference number\n") != -1) {
                 data = print[i].replace("Transaction reference number\n:", "");
@@ -331,7 +330,7 @@ public class Display_PrintActivity extends Activity implements View.OnClickListe
                 datas = data.split(" ");
                 mRecieptno.setText(datas[0]);
             } else if (print[i].indexOf("操作员") != -1) {
-                data = print[i].substring(print[i].length() - 2, print[i].length());
+                data = print[i].substring(print[i].length() - 2);
                 mOperatorNum.setText(data);
             } else if (print[i].indexOf("交易参考号") != -1) {
                 data = print[i].replace("交易参考号:", "");
