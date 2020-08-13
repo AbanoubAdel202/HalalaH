@@ -453,8 +453,9 @@ public class MainActivity extends AppCompatActivity implements ITransaction.View
                 if (resultCode == RESULT_OK && data != null && data.hasExtra("registrationData")) {
                     RegistrationData registrationData = Parcels.unwrap(data.getParcelableExtra("registrationData"));
                     PosApplication.getApp().oGPosTransaction.setTerminalRegistrationData(registrationData);
-                    PosApplication.getApp().oGPOS_MAIN.Start_Transaction(PosApplication.getApp().oGPosTransaction,
-                            POSTransaction.TranscationType.TERMINAL_REGISTRATION, this);
+                    // based on Moamen Ahmed Registeration file , Terminal_Registeration.java also
+                    PosApplication.getApp().oGTerminal_Registeration.StartRegistrationProcess(
+                            PosApplication.getApp().oGPosTransaction, this);
                 } else {
                     showError(R.string.registration_error);
                 }

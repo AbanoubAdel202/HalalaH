@@ -311,7 +311,7 @@ public class POSTransaction {
         registrationDataBuilder.append(terminalRegistrationData.getTrsmid());
         registrationDataBuilder.append(terminalRegistrationData.getVendorKeyIndex());
         registrationDataBuilder.append(terminalRegistrationData.getSamaKeyIndex());
-        registrationDataBuilder.append(terminalRegistrationData.getRandomLengthIndicator());
+        registrationDataBuilder.append(terminalRegistrationData.getRandomLengthIndicatorHex());
         registrationDataBuilder.append(terminalRegistrationData.getRandomStringSequence());
         registrationDataBuilder.append(terminalRegistrationData.getVendorKeyLength());
 

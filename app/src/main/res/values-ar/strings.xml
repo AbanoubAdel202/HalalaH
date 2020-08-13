@@ -323,4 +323,5 @@
     <string name="sama_key_index"> Sama Key Index</string>
     <string name="proceed">Proceed</string>
     <string name="invalid_trsmid">Invalid TRSMID</string>
+    <string name="random_length">Random length (in bytes)</string>
 </resources>

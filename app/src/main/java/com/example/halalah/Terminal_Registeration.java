@@ -54,10 +54,10 @@ public class Terminal_Registeration implements SendReceiveListener {
         // Private – Terminal Status (DE62)
 
         this.mView = transactionView;
-
+        PosApplication.getApp().oGPosTransaction.Reset();
         String de48Str = POSTrx.ComposeTerminalRegistrationData(POSTrx.getTerminalRegistrationData());
         POSTrx.m_sHostData_DE48 = de48Str;
-        POSTrx.m_sFunctionCode = "814";
+//        POSTrx.m_sFunctionCode = "814";
         PosApplication.getApp().oGPosTransaction.m_enmTrxType = POSTransaction.TranscationType.TERMINAL_REGISTRATION;
         POSTrx.ComposeNetworkMessage();
 

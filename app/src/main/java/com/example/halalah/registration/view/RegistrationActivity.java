@@ -26,6 +26,7 @@ import org.parceler.Parcels;
 public class RegistrationActivity extends AppCompatActivity {
 
     RegistrationData mRegistrationData;
+    private EditText etRandomLength;
     private EditText etTRSMID;
     private Spinner spVendor;
     private Spinner spSama;
@@ -48,10 +49,34 @@ public class RegistrationActivity extends AppCompatActivity {
     private void proceed() {
 
         String trsmid = etTRSMID.getText().toString();
-        if (TextUtils.isEmpty(trsmid)) {
+        if (TextUtils.isEmpty(trsmid) || trsmid.length() != 6) {
             showError(R.string.invalid_trsmid);
             return;
         }
+
+        String randomLengthString = etRandomLength.getText().toString();
+        int randomLengthInt;
+        try {
+            randomLengthInt = Integer.parseInt(randomLengthString);
+        } catch (Exception e) {
+            e.printStackTrace();
+            showError(R.string.invalid_trsmid);
+            return;
+        }
+
+        try {
+            Long longTrsmid = Long.parseLong(trsmid, 16);
+            if (longTrsmid == 0) {
+                showError(R.string.invalid_trsmid);
+                return;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            showError(R.string.invalid_trsmid);
+            return;
+        }
+
+
         try {
             Long longTrsmid = Long.parseLong(trsmid, 16);
             if (longTrsmid == 0) {
@@ -81,8 +106,8 @@ public class RegistrationActivity extends AppCompatActivity {
         mRegistrationData.setVendorTerminalType("01");
         mRegistrationData.setVendorKeyIndex(spVendor.getSelectedItem().toString().trim());
         mRegistrationData.setSamaKeyIndex(spSama.getSelectedItem().toString().trim());
-        mRegistrationData.setRandomLengthIndicator("000010");
-        mRegistrationData.setVendorKeyLength("000090");
+        mRegistrationData.setRandomLengthIndicator(randomLengthInt);
+        mRegistrationData.setVendorKeyLength("144");
 
         Intent resultIntent = new Intent();
         resultIntent.putExtra("registrationData", Parcels.wrap(mRegistrationData));
@@ -96,6 +121,7 @@ public class RegistrationActivity extends AppCompatActivity {
 
     private void initViews() {
         etTRSMID = findViewById(R.id.et_trsmid);
+        etRandomLength = findViewById(R.id.et_random_length);
 
         spVendor = findViewById(R.id.vendor_sp);
         spSama = findViewById(R.id.sama_sp);

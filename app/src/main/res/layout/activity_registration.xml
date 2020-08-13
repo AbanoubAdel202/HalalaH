@@ -97,6 +97,27 @@
         app:layout_constraintStart_toEndOf="@id/terminal_4_label"
         app:layout_constraintTop_toBottomOf="@+id/vendor_sp" />
 
+
+    <TextView
+        android:id="@+id/random_length_label"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/random_length"
+        app:layout_constraintTop_toBottomOf="@+id/sama_sp" />
+
+    <EditText
+        android:id="@+id/et_random_length"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:digits="1234567890"
+        android:hint="TRSMID"
+        android:inputType="number"
+        android:maxLength="6"
+        android:text="16"
+        android:textAlignment="center"
+        app:layout_constraintTop_toBottomOf="@+id/random_length_label" />
+
+
     <Button
         android:id="@+id/btn_proceed"
         android:layout_width="match_parent"
@@ -106,5 +127,8 @@
         android:text="@string/proceed"
         android:textAlignment="center"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/sama_sp" />
+        app:layout_constraintTop_toBottomOf="@+id/et_random_length" />
+
+
+    et_random_ength
 </androidx.constraintlayout.widget.ConstraintLayout>

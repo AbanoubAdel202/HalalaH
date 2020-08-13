@@ -1163,7 +1163,6 @@ DF03 Check Sum                                [20]   >> 4410C6D51C2F83ADFD92528F
     public void Start_Transaction(POSTransaction oPos_trans, POSTransaction.TranscationType Trxtype, ITransaction.View transactionView) {
         PosApplication.getApp().oGPosTransaction.Reset();
 
-
         Intent AmountACT;
         switch (Trxtype) {
             case PURCHASE://purchase

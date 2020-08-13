@@ -7,15 +7,16 @@ import org.parceler.Parcel;
 
 @Parcel
 public class RegistrationData {
-    String vendorId;              // 50
-    String vendorTerminalType;    // 01
-    String trsmid;                // 010203
-    String vendorKeyIndex;        // 00,01
-    String samaKeyIndex;          // 00,01
-    String randomLengthIndicator;  // 0010
-    String randomStringSequence;   //
-    String vendorKeyLength; // 1152 = "148" * 2 = 288 ==> should be send as 3 byte = 000090
-    String vendorSignature;        // "encryptedData"
+    String vendorId;                // 50
+    String vendorTerminalType;      // 01
+    String trsmid;                  // 010203
+    String vendorKeyIndex;          // 00,01
+    String samaKeyIndex;            // 00,01
+    int randomLengthIndicator = 16; // 000010
+    String randomLengthIndicatorHex; // 000010
+    String randomStringSequence;    //
+    String vendorKeyLength;         // 1152 = "148" * 2 = 288 ==> should be send as 3 byte = 000090
+    String vendorSignature;         // "encryptedData"
 
     public RegistrationData() {
         randomStringSequence = generateRandom();
@@ -26,7 +27,7 @@ public class RegistrationData {
     }
 
     public void setVendorId(String vendorId) {
-        this.vendorId = vendorId;
+        this.vendorId = String.format("%02X", Long.valueOf(vendorId, 16));
     }
 
     public String getVendorTerminalType() {
@@ -34,7 +35,7 @@ public class RegistrationData {
     }
 
     public void setVendorTerminalType(String vendorTerminalType) {
-        this.vendorTerminalType = vendorTerminalType;
+        this.vendorTerminalType = String.format("%02X", Long.valueOf(vendorTerminalType, 16));
     }
 
     public String getTrsmid() {
@@ -42,7 +43,7 @@ public class RegistrationData {
     }
 
     public void setTrsmid(String trsmid) {
-        this.trsmid = trsmid;
+        this.trsmid = String.format("%06X", Long.valueOf(trsmid, 16));
     }
 
     public String getVendorKeyIndex() {
@@ -50,7 +51,7 @@ public class RegistrationData {
     }
 
     public void setVendorKeyIndex(String vendorKeyIndex) {
-        this.vendorKeyIndex = vendorKeyIndex;
+        this.vendorKeyIndex = String.format("%02X", Long.valueOf(vendorKeyIndex, 16));
     }
 
     public String getSamaKeyIndex() {
@@ -58,16 +59,21 @@ public class RegistrationData {
     }
 
     public void setSamaKeyIndex(String samaKeyIndex) {
-        this.samaKeyIndex = samaKeyIndex;
+        this.samaKeyIndex = String.format("%02X", Long.valueOf(samaKeyIndex, 16));
     }
 
-    public String getRandomLengthIndicator() {
+    public int getRandomLengthIndicator() {
         return randomLengthIndicator;
     }
 
-    public void setRandomLengthIndicator(String randomLengthIndicator) {
+    public void setRandomLengthIndicator(int randomLengthIndicator) {
         this.randomLengthIndicator = randomLengthIndicator;
+        this.randomLengthIndicatorHex = String.format("%06X", Integer.valueOf(randomLengthIndicator));
         randomStringSequence = generateRandom();
+    }
+
+    public String getRandomLengthIndicatorHex() {
+        return randomLengthIndicatorHex;
     }
 
     public String getRandomStringSequence() {
@@ -80,7 +86,7 @@ public class RegistrationData {
     }
 
     public void setVendorKeyLength(String vendorKeyLength) {
-        this.vendorKeyLength = vendorKeyLength;
+        this.vendorKeyLength = String.format("%06X", Integer.valueOf(vendorKeyLength));
     }
 
     public String getVendorSignature() {
@@ -100,28 +106,21 @@ public class RegistrationData {
     }
 
     private String generateRandom() {
-        String hexaString = "ABCDEF"
-                + "0123456789";
+        String hexString = "ABCDEF0123456789";
 
-        Long lengthInCharacters = 32L;
-        try {
-            Long lengthInBytes = Long.parseLong(randomLengthIndicator, 16);
-            lengthInCharacters = lengthInBytes * 2;
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        int lengthInCharacters = randomLengthIndicator * 2;
 
         // create StringBuffer size of AlphaNumericString
-        StringBuilder sb = new StringBuilder(lengthInCharacters.intValue());
+        StringBuilder sb = new StringBuilder(lengthInCharacters);
 
         for (int i = 0; i < lengthInCharacters; i++) {
 
             // generate a random number between
             // 0 to AlphaNumericString variable length
-            int index = (int) (hexaString.length() * Math.random());
+            int index = (int) (hexString.length() * Math.random());
 
             // add Character one by one in end of sb
-            sb.append(hexaString.charAt(index));
+            sb.append(hexString.charAt(index));
         }
         return randomStringSequence = sb.toString();
     }
