@@ -112,6 +112,7 @@
         android:layout_height="wrap_content"
         android:digits="1234567890"
         android:visibility="gone"
+
         android:hint="TRSMID"
         android:inputType="number"
         android:maxLength="6"
