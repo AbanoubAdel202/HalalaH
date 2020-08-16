@@ -77,7 +77,7 @@ public class AmountInputActivity extends Activity implements View.OnClickListene
         // open socket to be ready to sending/receiving financial messages
         CommunicationInfo communicationInfo = new CommunicationInfo(this);
         InputStream caInputStream = getResources().openRawResource(R.raw.bks);
-        CommunicationsHandler.getInstance(communicationInfo, caInputStream).preConnect();
+        CommunicationsHandler.getInstance(communicationInfo, caInputStream).connect();
     }
 
     private Handler mHandle = new Handler() {

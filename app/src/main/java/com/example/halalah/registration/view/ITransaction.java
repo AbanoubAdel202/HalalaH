@@ -13,6 +13,8 @@ public interface ITransaction {
         void showError(String errorMessageString);
 
         void showConnectionStatus(int connectionStatus);
+
+        void showRegistrationSuccess();
     }
 
     interface Handler {

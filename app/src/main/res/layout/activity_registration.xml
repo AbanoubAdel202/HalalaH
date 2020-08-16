@@ -101,6 +101,7 @@
     <TextView
         android:id="@+id/random_length_label"
         android:layout_width="match_parent"
+        android:visibility="gone"
         android:layout_height="wrap_content"
         android:text="@string/random_length"
         app:layout_constraintTop_toBottomOf="@+id/sama_sp" />
@@ -110,6 +111,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:digits="1234567890"
+        android:visibility="gone"
         android:hint="TRSMID"
         android:inputType="number"
         android:maxLength="6"
@@ -117,9 +119,8 @@
         android:textAlignment="center"
         app:layout_constraintTop_toBottomOf="@+id/random_length_label" />
 
-
     <Button
-        android:id="@+id/btn_proceed"
+        android:id="@+id/btn_"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="80dp"
@@ -130,5 +131,15 @@
         app:layout_constraintTop_toBottomOf="@+id/et_random_length" />
 
 
-    et_random_ength
+    <Button
+        android:id="@+id/btn_proceed"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="40dp"
+        android:padding="8dp"
+        android:text="Connection"
+        android:textAlignment="center"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/btn_" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

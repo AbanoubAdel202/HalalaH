@@ -344,6 +344,10 @@
     <string name="proceed">Proceed</string>
     <string name="invalid_trsmid">Invalid TRSMID</string>
     <string name="random_length">Random length (in bytes)</string>
+    <string name="sending_error">sending error</string>
+    <string name="receiving_error">receiving error</string>
+    <string name="timeout_error">timeout error</string>
+    <string name="connection_error">connection_error</string>
 
     <string-array name="key_indicies">
         <item>    00    </item>

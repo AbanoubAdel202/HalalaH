@@ -4,6 +4,7 @@ import com.example.halalah.connect.CommunicationsHandler;
 import com.example.halalah.connect.SendReceiveListener;
 import com.example.halalah.registration.view.ITransaction;
 import com.example.halalah.storage.CommunicationInfo;
+import com.example.halalah.util.PacketProcessUtils;
 
 /**
  * Header Terminal registeration
@@ -54,6 +55,11 @@ public class Terminal_Registeration implements SendReceiveListener {
         // Private – Terminal Status (DE62)
 
         this.mView = transactionView;
+
+        mCommunicationsHandler = CommunicationsHandler.getInstance(new CommunicationInfo(PosApplication.getApp().getApplicationContext()));
+        CommunicationsHandler communicationsHandler = CommunicationsHandler.getInstance(new CommunicationInfo(PosApplication.getApp().getApplicationContext()));
+//        communicationsHandler.connect();
+
         PosApplication.getApp().oGPosTransaction.Reset();
         String de48Str = POSTrx.ComposeTerminalRegistrationData(POSTrx.getTerminalRegistrationData());
         POSTrx.m_sHostData_DE48 = de48Str;
@@ -63,8 +69,6 @@ public class Terminal_Registeration implements SendReceiveListener {
 
         mSendPacket = POSTrx.m_RequestISOMsg.isotostr();
 
-        mCommunicationsHandler = CommunicationsHandler.getInstance(new CommunicationInfo(PosApplication.getApp().getApplicationContext()));
-        CommunicationsHandler communicationsHandler = CommunicationsHandler.getInstance(new CommunicationInfo(PosApplication.getApp().getApplicationContext()));
         communicationsHandler.setSendReceiveListener(this);
         communicationsHandler.sendReceive(mSendPacket);
 
@@ -115,11 +119,25 @@ public class Terminal_Registeration implements SendReceiveListener {
     }
 
     @Override
-    public void onFailure(int errReason) {
-        //transactionView.showRegistrationScreen();
+    public void onFailure(int communicationErrorReason) {
         mCommunicationsHandler.closeConnection();
         if (mView != null) {
-            mView.showError(errReason);
+            switch (communicationErrorReason) {
+                case PacketProcessUtils.SOCKET_PROC_ERROR_REASON_SEND:
+                    mView.showError(R.string.sending_error);
+                    break;
+                case PacketProcessUtils.SOCKET_PROC_ERROR_REASON_RECE:
+                    mView.showError(R.string.receiving_error);
+                    break;
+                case PacketProcessUtils.SOCKET_PROC_ERROR_REASON_RECE_TIME_OUT:
+                    mView.showError(R.string.timeout_error);
+                    break;
+                default:
+                case PacketProcessUtils.SOCKET_PROC_ERROR_REASON_CONNE:
+                    mView.showError(R.string.connection_error);
+                    break;
+            }
+
         }
     }
 }

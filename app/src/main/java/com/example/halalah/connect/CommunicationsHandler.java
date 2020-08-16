@@ -69,7 +69,7 @@ public class CommunicationsHandler {
         }
     }
 
-    public void preConnect() {
+    public void connect() {
         BehaviorSubject<Integer> connectionStatusBS = BehaviorSubject.create();
         Observable o = Observable.fromCallable(() -> mSocketManager.connect(mCommunicationInfo.getHostIP(), mCommunicationInfo.getHostPort()))
                 .subscribeOn(Schedulers.io())
@@ -166,7 +166,7 @@ public class CommunicationsHandler {
             timeoutCounter = new CountDownTimer(timesToReconnect * connectionTimeOut, connectionTimeOut) {
                 @Override
                 public void onTick(long millisUntilFinished) {
-                    preConnect();
+                    connect();
                     Log.d(TAG, "reconnect seconds remaining: " + millisUntilFinished / 1000);
                     if (isConnected()) {
                         this.onFinish();

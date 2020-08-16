@@ -56,6 +56,7 @@ public class MainActivity extends AppCompatActivity implements ITransaction.View
     private AppBarConfiguration mAppBarConfiguration;
     Context context;
     ProgressDialog mProgressDialog;
+    private boolean isRegistrationInProgress;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -104,18 +105,11 @@ public class MainActivity extends AppCompatActivity implements ITransaction.View
         NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);
         NavigationUI.setupWithNavController(navigationView, navController);
 
-
-        mProgressDialog = new ProgressDialog(this);
-        mProgressDialog.setCancelable(false);
-        mProgressDialog.setMessage("Terminal Initializing please wait...");
-        mProgressDialog.show();
-
+        showLoading("Terminal Initializing please wait...");
 
         Terminal_Initialization();
 
         StartMADA_APP();
-
-
     }
 
     @Override
@@ -182,10 +176,7 @@ public class MainActivity extends AppCompatActivity implements ITransaction.View
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    if (mProgressDialog != null && mProgressDialog.isShowing()) {
-                        mProgressDialog.dismiss();
-                    }
-
+                    hideLoading();
                 }
             });
         }).start();
@@ -380,6 +371,10 @@ public class MainActivity extends AppCompatActivity implements ITransaction.View
     }
 
     private void checkRegistration() {
+        if (isRegistrationInProgress) {
+            showLoading("Registering terminal. Please wait ...");
+            return;
+        }
         boolean bRegistered = PosApplication.getApp().oGTerminal_Operation_Data.m_bregistered;
 //        Initialize_Security();
         if (bRegistered == true) {
@@ -387,6 +382,21 @@ public class MainActivity extends AppCompatActivity implements ITransaction.View
             Initialize_CTLS_configuration();
         } else {
             showRegistrationScreen();
+        }
+    }
+
+    private void showLoading(String message) {
+        if (mProgressDialog == null) {
+            mProgressDialog = new ProgressDialog(this);
+        }
+        mProgressDialog.setCancelable(false);
+        mProgressDialog.setMessage(message);
+        mProgressDialog.show();
+    }
+
+    private void hideLoading() {
+        if (mProgressDialog != null && mProgressDialog.isShowing()) {
+            mProgressDialog.dismiss();
         }
     }
 
@@ -429,12 +439,14 @@ public class MainActivity extends AppCompatActivity implements ITransaction.View
 
     @Override
     public void showError(int errorMessageId) {
+        hideLoading();
         Toast.makeText(context, getString(errorMessageId), Toast.LENGTH_SHORT).show();
         checkRegistration();
     }
 
     @Override
     public void showError(String errorMessageString) {
+        hideLoading();
         Toast.makeText(context, errorMessageString, Toast.LENGTH_SHORT).show();
         checkRegistration();
     }
@@ -442,6 +454,12 @@ public class MainActivity extends AppCompatActivity implements ITransaction.View
     @Override
     public void showConnectionStatus(int connectionStatus) {
         Toast.makeText(context, "Connection code = " + connectionStatus, Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void showRegistrationSuccess() {
+        hideLoading();
+        Toast.makeText(context, "Terminal registered successfully !! ", Toast.LENGTH_SHORT).show();
     }
 
     @Override
@@ -454,6 +472,7 @@ public class MainActivity extends AppCompatActivity implements ITransaction.View
                     RegistrationData registrationData = Parcels.unwrap(data.getParcelableExtra("registrationData"));
                     PosApplication.getApp().oGPosTransaction.setTerminalRegistrationData(registrationData);
                     // based on Moamen Ahmed Registeration file , Terminal_Registeration.java also
+                    isRegistrationInProgress = true;
                     PosApplication.getApp().oGTerminal_Registeration.StartRegistrationProcess(
                             PosApplication.getApp().oGPosTransaction, this);
                 } else {
