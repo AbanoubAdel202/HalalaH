@@ -134,7 +134,7 @@
         <activity android:name=".ui.SearchCardActivity" />
         <activity android:name=".ui.PinpadActivity" />
         <activity android:name=".ui.PacketProcessActivity" />
-        <activity android:name=".ui.ConsumeSuccessActivity" />
+
         <activity android:name=".ui.CardConfirmActivity" />
         <activity android:name=".ui.admin_settings.SuperAdminActivity" />
         <activity android:name=".ui.admin_settings.OthersSettingActivity" />

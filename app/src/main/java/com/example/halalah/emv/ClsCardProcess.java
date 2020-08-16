@@ -20,6 +20,7 @@ import com.topwise.cloudpos.aidl.emv.level2.AidlPure;
 import com.topwise.cloudpos.aidl.emv.level2.Combination;
 import com.topwise.cloudpos.aidl.emv.level2.PreProcResult;
 import com.topwise.cloudpos.aidl.emv.level2.TransParam;
+import com.topwise.cloudpos.aidl.led.AidlLed;
 import com.topwise.cloudpos.struct.BytesUtil;
 import com.topwise.cloudpos.struct.Tlv;
 import com.topwise.cloudpos.struct.TlvList;

@@ -2,6 +2,7 @@ package com.example.halalah;
 
 
 import com.example.halalah.iso8583.BCDASCII;
+import com.example.halalah.storage.CommunicationInfo;
 
 /** Header Terminal operation Data
  \Class Name: Terminal_Operation_Data
@@ -97,6 +98,11 @@ public class Terminal_Operation_Data {
     public String m_sMaximum_transaction_amount_indicator;
     public String m_sMaximum_transaction_amount;
 
+    //TMSCoonect
+    public String m_sTMSHeader;
+
+    //COMMUNICATION
+    public CommunicationInfo communicationInfo;
 
     public Terminal_Operation_Data(){
         m_iPinKeyboardMode=1;
@@ -111,6 +117,8 @@ public class Terminal_Operation_Data {
         g_NumberOfCardSchemes = 10;
         m_iSTAN=100;
         m_CurrentKSN= BCDASCII.hexStringToBytes( "47FFF00111100000016D");
+        m_sMaximum_transaction_amount_indicator="1111111111";
+        m_sMaximum_transaction_amount="999999999999";
 
         //TerminalStatus
         //Terminal Dial Indicator
@@ -141,6 +149,10 @@ public class Terminal_Operation_Data {
         mada_EFTPOS_specification_release_version="6.0.9"; //The POS should send the version number without dots, and with 2 digits each with a leading zero, if applicable, for the Major, Minor and Patch specification version numbers i.e. Version 6.0.3 should be expressed as 060003 and Version 10.2.0 should be expressed as 100200
         //Connection Details
         Connection_Details="00000000"; //Connection Priority ‘01’ Primary ‘02’ Secondary,   Network Service Provider (NSP) ‘01’ iNET ‘02’ Mobily ‘03’ Zain ‘04’ Sky Band ‘05’ Geidea ,   Provider ‘01’ STC ‘02’ Mobily ‘03’ Zain ‘04’ Sky Band  , Connection Method ‘01’ Dial-up ‘02’ SIM ‘03’ TCP/IP ‘04’ VSAT ‘05’ DSL ‘06’ WiFi
+
+        //TMSHEADER
+        m_sTMSHeader="3040000";
+        //communication
 
     }
 

@@ -42,28 +42,9 @@ public class UnpackUtils {
         tmpstr = BCDASCII.fromBCDToASCIIString(srcData, srcDataOffset, 12, false);
         Log.d(TAG, "Header = "+tmpstr);
 
-        //front data
-        srcDataOffset = 2+5+6;
-        tmpstr = new String(srcData, srcDataOffset, 15);
-        Log.d(TAG, "Mid = "+tmpstr);
-        
-        srcDataOffset = 2+5+6+15;
-        tmpstr = new String(srcData, srcDataOffset, 8);
-        Log.d(TAG, "Tid = "+tmpstr);
-        
-        srcDataOffset = 2+5+6+15+8;
-        tmpstr = new String(srcData, srcDataOffset, 15);
-        Log.d(TAG, "Mname = "+tmpstr);
-        
-        srcDataOffset = 2+5+6+15+8+15;
-        tmpstr = new String(srcData, srcDataOffset, 8);
-        Log.d(TAG, "BType = "+tmpstr);
-        
-        srcDataOffset = 2+5+6+15+8+15+8;
-        tmpstr = new String(srcData, srcDataOffset, 15);
-        Log.d(TAG, "Mid = "+tmpstr);
 
-        srcDataOffset = 2+5+6+15+8+15+8+15;
+
+        srcDataOffset = 2+5+6;
         
         tmpstr = new String(srcData, srcDataOffset, 8);
         Log.d(TAG, "8583Len = "+tmpstr);
@@ -76,8 +57,8 @@ public class UnpackUtils {
        // data8583="313131303732333030303131304543323838303131363438343738333530313034373439313230303030303030303030303039303030383031323133303433383433303030323632313831323133303733383433313831323133303635383838343930373338343330303032363234373439313230303034373030303132333031343930313233303130313132333435363738202020303036534149425031363832313347FFF00111100000000536303904C3C1".getBytes();
         ISO8583 mIso = new ISO8583();
 
-        //mIso.strtoiso(data8583);
-        mIso.strtoiso_original(data8583);
+        mIso.strtoiso(data8583);
+      //  mIso.strtoiso_original(data8583);
 
 		return mIso;
 	}

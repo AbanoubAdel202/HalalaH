@@ -18,6 +18,8 @@ import com.example.halalah.PosApplication;
 import com.example.halalah.R;
 import com.example.halalah.Utils;
 import com.example.halalah.card.CardManager;
+import com.example.halalah.connect.CommunicationsHandler;
+import com.example.halalah.storage.CommunicationInfo;
 import com.example.halalah.util.CardSearchErrorUtil;
 import com.example.halalah.util.PacketProcessUtils;
 
@@ -157,6 +159,7 @@ public class SearchCardActivity extends Activity{
         super.onBackPressed();
         Log.d(TAG, "onBackPressed");
         CardManager.getInstance().stopCardDealService(this);
+        CommunicationsHandler.getInstance(new CommunicationInfo(this)).closeConnection();
     }
 
     @Override

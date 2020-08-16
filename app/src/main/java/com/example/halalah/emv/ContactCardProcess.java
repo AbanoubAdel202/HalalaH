@@ -5,7 +5,9 @@ import android.os.RemoteException;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.example.halalah.POS_MAIN;
 import com.example.halalah.PosApplication;
+import com.example.halalah.iso8583.BCDASCII;
 import com.example.halalah.util.CommonFunction;
 import com.example.halalah.util.TLVDecode;
 import com.topwise.cloudpos.aidl.emv.level2.AidlEmvL2;
@@ -477,6 +479,7 @@ public class ContactCardProcess {
 
             //The terminal issues the SELECT command
             emvRet = emvL2.EMV_AppFinalSelect(emvCandidateItem);
+
             Log.d(TAG, "EMV_AppFinalSelect emvRet : " + emvRet);
             if ((EmvDefinition.EMV_APP_BLOCKED == emvRet)
                     || (EmvDefinition.EMV_NO_APP == emvRet)
@@ -530,6 +533,25 @@ public class ContactCardProcess {
                 endEmv();
                 return;
             }
+
+            //check bussiness flow and load card data before EMV processing
+
+            PosApplication.getApp().oGPosTransaction.m_sAID= BCDASCII.bytesToHexString(emvCandidateItem.getAucAID());
+            //todo success validation
+            if (POS_MAIN.Recognise_card()!=0)
+            {
+                //todo do activity error CArd not recognised
+            }
+            if(!POS_MAIN.Check_transaction_allowed(PosApplication.getApp().oGPosTransaction.m_enmTrxType))
+            {
+                //todo do transaction not allowed Activity
+            }
+            if(POS_MAIN.Check_transaction_limits(PosApplication.getApp().oGPosTransaction.m_enmTrxType)==0)
+            {
+               //todo alert dialog for limit exeeded
+            }
+            POS_MAIN.supervisor_pass_required();
+
 
             //Initiate Application Processing
             //The terminal issues the GET PROCESSING OPTIONS command
@@ -1117,4 +1139,6 @@ public class ContactCardProcess {
         countDownLatchdDown();
         return true;
     }
+
+
 }

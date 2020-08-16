@@ -41,6 +41,7 @@ public class PackPacket {
         //PosApplication.getApp().oGPosTransaction.m_card_scheme.m_sCard_Scheme_Name_English="mada";
         //PosApplication.getApp().oGPosTransaction.m_sAdditionalAmount = "000005500";
         //////////////////////////////////////////////
+        if(PosApplication.getApp().oGPosTransaction.m_enmTrxType!= POSTransaction.TranscationType.TMS_FILE_DOWNLOAD)
         PosApplication.getApp().oGPosTransaction.m_sTrxAmount= PosApplication.getApp().oGPosTransaction.m_sTrxAmount.replace(".","");
         if(PosApplication.getApp().oGPosTransaction.m_is_mada)
         {
@@ -108,10 +109,10 @@ public class PackPacket {
                     PosApplication.getApp().oGPosTransaction.ComposeReversalMessage();
                     return PosApplication.getApp().oGPosTransaction.m_RequestISOMsg.isotostr();
 
-               /* case TMS_FILE_DOWNLOAD:
+               case TMS_FILE_DOWNLOAD:
                     PosApplication.getApp().oGPosTransaction.ComposeFileDownloadMessage();
                     return PosApplication.getApp().oGPosTransaction.m_RequestISOMsg.isotostr();
-*/
+
                 case ADMIN:
 
                     PosApplication.getApp().oGPosTransaction.ComposeAdministrativeMessage();
@@ -131,7 +132,7 @@ public class PackPacket {
                     if(PosApplication.getApp().oGPosTransaction.m_enmTrxCardType== POSTransaction.CardType.ICC || PosApplication.getApp().oGPosTransaction.m_enmTrxCardType== POSTransaction.CardType.CTLS)
                     PosApplication.getApp().oGPosTransaction.ComposeAuthoriszationMessage(POSTransaction.TranscationType.AUTHORISATION);
                     else if(PosApplication.getApp().oGPosTransaction.m_enmTrxCardType== POSTransaction.CardType.MAG)
-                    PosApplication.getApp().oGPosTransaction.ComposeAuthoriszationMessage(POSTransaction.TranscationType.PURCHASE);
+                    PosApplication.getApp().oGPosTransaction.ComposeFinancialMessage(POSTransaction.TranscationType.PURCHASE);
 
                     return PosApplication.getApp().oGPosTransaction.m_RequestISOMsg.isotostr();
                 case AUTHORISATION:
@@ -193,10 +194,10 @@ public class PackPacket {
                     PosApplication.getApp().oGPosTransaction.ComposeReversalMessage();
                     return PosApplication.getApp().oGPosTransaction.m_RequestISOMsg.isotostr();
 
-           /*     case TMS_FILE_DOWNLOAD:
+                case TMS_FILE_DOWNLOAD:
                     PosApplication.getApp().oGPosTransaction.ComposeFileDownloadMessage();
                     return PosApplication.getApp().oGPosTransaction.m_RequestISOMsg.isotostr();
-*/
+
                 case ADMIN:
 
                     PosApplication.getApp().oGPosTransaction.ComposeAdministrativeMessage();

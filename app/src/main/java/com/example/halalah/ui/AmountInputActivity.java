@@ -1,21 +1,33 @@
 package com.example.halalah.ui;
 
 import android.app.Activity;
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.IBinder;
 import android.os.Message;
+import android.os.RemoteException;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
+import com.example.halalah.DeviceTopUsdkServiceManager;
 import com.example.halalah.PosApplication;
 import com.example.halalah.R;
 import com.example.halalah.connect.CommunicationsHandler;
 import com.example.halalah.storage.CommunicationInfo;
+import com.topwise.cloudpos.aidl.AidlDeviceService;
+import com.topwise.cloudpos.aidl.buzzer.AidlBuzzer;
+import com.topwise.cloudpos.aidl.led.AidlLed;
 
 import java.io.InputStream;
+import java.util.List;
 
 public class AmountInputActivity extends Activity implements View.OnClickListener {
     private static final String TAG = AmountInputActivity.class.getSimpleName();
@@ -28,7 +40,10 @@ public class AmountInputActivity extends Activity implements View.OnClickListene
     private StringBuilder mAmountBuilder;
     private StringBuilder mAmount;
     private StringBuilder mNAQD_Amount;
-
+    private AidlDeviceService serviceManager;
+    private AidlLed mAidlLed = DeviceTopUsdkServiceManager.getInstance().getLedManager();
+    private AidlBuzzer iBeeper;
+    public static final String TOPWISE_SERVICE_ACTION = "topwise_cloudpos_device_service";
 
     private int mTime = 30;
 
@@ -38,7 +53,34 @@ public class AmountInputActivity extends Activity implements View.OnClickListene
         Log.i(TAG, "onCreate()");
         setContentView(R.layout.activity_amount_input);
 
-        preConnect();
+        ServiceConnection conn = new ServiceConnection(){
+
+            @Override
+            public void onServiceConnected(ComponentName name, IBinder serviceBinder) {
+                Log.d(TAG,"aidlService服务连接成功");
+                if(serviceBinder != null){	//绑定成功
+                    serviceManager = AidlDeviceService.Stub.asInterface(serviceBinder);
+                    try {
+                        iBeeper = AidlBuzzer.Stub.asInterface(serviceManager.getBuzzer());
+                    } catch (RemoteException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+
+            @Override
+            public void onServiceDisconnected(ComponentName name) {
+                Log.d(TAG,"AidlService服务断开了");
+            }
+        };
+        Intent intent = new Intent();
+        intent.setAction(TOPWISE_SERVICE_ACTION);
+        final Intent eintent = new Intent(createExplicitFromImplicitIntent(this,intent));
+        boolean flag =bindService(eintent, conn, Context.BIND_AUTO_CREATE);
+
+
+
+
 
         /*ActionBar actionBar = this.getActionBar();
         actionBar.setTitle(R.string.title_consume);*/
@@ -100,40 +142,101 @@ public class AmountInputActivity extends Activity implements View.OnClickListene
 
     @Override
     public void onClick(View v) {
+
+
+
         switch (v.getId()) {
             case R.id.btn_0:
                 setText("0");
+
+                try {
+                    mAidlLed.setLed(0,true);
+                } catch (RemoteException e) {
+                    e.printStackTrace();
+                }
                 break;
             case R.id.btn_1:
                 setText("1");
+
+                try {
+                    mAidlLed.setLed(1,true);
+                } catch (RemoteException e) {
+                    e.printStackTrace();
+                }
                 break;
             case R.id.btn_2:
                 setText("2");
+                try {
+                    mAidlLed.setLed(2,true);
+                } catch (RemoteException e) {
+                    e.printStackTrace();
+                }
                 break;
             case R.id.btn_3:
                 setText("3");
+                try {
+                    mAidlLed.setLed(3,true);
+                } catch (RemoteException e) {
+                    e.printStackTrace();
+                }
                 break;
             case R.id.btn_4:
                 setText("4");
+                try {
+                    mAidlLed.setLed(4,true);
+                } catch (RemoteException e) {
+                    e.printStackTrace();
+                }
                 break;
             case R.id.btn_5:
                 setText("5");
+                try {
+                    iBeeper.beep(0,100);
+                } catch (RemoteException e) {
+                    e.printStackTrace();
+                }
                 break;
             case R.id.btn_6:
                 setText("6");
+                try {
+                    iBeeper.beep(1,100);
+                } catch (RemoteException e) {
+                    e.printStackTrace();
+                }
                 break;
             case R.id.btn_7:
                 setText("7");
+                try {
+                    iBeeper.beep(2,100);
+                } catch (RemoteException e) {
+                    e.printStackTrace();
+                }
                 break;
             case R.id.btn_8:
                 setText("8");
+                try {
+                    iBeeper.beep(3,100);
+                } catch (RemoteException e) {
+                    e.printStackTrace();
+                }
                 break;
             case R.id.btn_9:
                 setText("9");
+                try {
+                    iBeeper.beep(4,100);
+                } catch (RemoteException e) {
+                    e.printStackTrace();
+                }
                 break;
             case R.id.btn_back:
                 if (mAmountBuilder.length() > 1) {
                     mAmountBuilder.delete(mAmountBuilder.length() - 1, mAmountBuilder.length());
+                }
+
+                try {
+                    mAidlLed.setLed(0,false);
+                } catch (RemoteException e) {
+                    e.printStackTrace();
                 }
                 setText(null);
                 break;
@@ -145,7 +248,7 @@ public class AmountInputActivity extends Activity implements View.OnClickListene
                 finish();
                 break;
             case R.id.btn_search_card:
-
+                preConnect();
                 String sAmount = mAmount.substring(1);
 
 
@@ -252,5 +355,30 @@ public class AmountInputActivity extends Activity implements View.OnClickListene
         super.onDestroy();
         Log.i(TAG, "onDestroy()");
         mHandle.removeMessages(MSG_TIME_UPDATE);
+    }
+
+    public static Intent createExplicitFromImplicitIntent(Context context, Intent implicitIntent) {
+        // Retrieve all services that can match the given intent
+        PackageManager pm = context.getPackageManager();
+        List<ResolveInfo> resolveInfo = pm.queryIntentServices(implicitIntent, 0);
+
+        // Make sure only one match was found
+        if (resolveInfo == null || resolveInfo.size() != 1) {
+            return null;
+        }
+
+        // Get component info and create ComponentName
+        ResolveInfo serviceInfo = resolveInfo.get(0);
+        String packageName = serviceInfo.serviceInfo.packageName;
+        String className = serviceInfo.serviceInfo.name;
+        ComponentName component = new ComponentName(packageName, className);
+
+        // Create a new intent. Use the old one for extras and such reuse
+        Intent explicitIntent = new Intent(implicitIntent);
+
+        // Set the component to be explicit
+        explicitIntent.setComponent(component);
+
+        return explicitIntent;
     }
 }

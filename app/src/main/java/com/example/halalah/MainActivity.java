@@ -58,9 +58,8 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        CommunicationInfo communicationInfo = new CommunicationInfo(this);
-        communicationInfo.setHostIP("192.168.8.104");
-        communicationInfo.setHostPort("2030");
+
+
 
         TextView date = findViewById(R.id.Date);
         TextView time =findViewById(R.id.TIME);

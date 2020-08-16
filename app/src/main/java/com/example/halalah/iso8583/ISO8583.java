@@ -128,6 +128,15 @@ public class ISO8583 {
 				    if (mISO8583Domain[n].mType == D_BIN) {
                         len = (len+1)/2;
 				    }
+                    if (mISO8583Domain[n].mType == L_BCD) {
+                        len = (len+1)/2;
+                    } else if (mISO8583Domain[n].mType == L_ASC) {
+
+                    } else if (mISO8583Domain[n].mType == R_BCD) {
+                        len = (len+1)/2;
+                    } else if (mISO8583Domain[n].mType == R_ASC) {
+
+                    }
 
                 	String lenstr = String.format(Locale.ENGLISH,"%02d",len);
 
@@ -138,19 +147,30 @@ public class ISO8583 {
 				    if (mISO8583Domain[n].mType == D_BIN) {
                         len = (len+1)/2;
 				    }
+                    if (mISO8583Domain[n].mType == L_BCD) {
+                        len = (len+1)/2;
+                    } else if (mISO8583Domain[n].mType == L_ASC) {
+
+                    } else if (mISO8583Domain[n].mType == R_BCD) {
+                        len = (len+1)/2;
+                    } else if (mISO8583Domain[n].mType == R_ASC) {
+
+                    }
                 	String lenstr = String.format(Locale.ENGLISH,"%03d",len);
                    // arraylen = BCDASCII.fromASCIIToBCD(lenstr, 0, 4, false);   //srclen, 0, 4, false);
                     System.arraycopy(lenstr.getBytes(), 0, data, dataOffset, 3);
                     dataOffset += 3;
                 }
-                if (mISO8583Domain[n].mType == L_BCD) {
-                    len = (len+1)/2;
-                } else if (mISO8583Domain[n].mType == L_ASC) {
+                else {
+                    if (mISO8583Domain[n].mType == L_BCD) {
+                        len = (len + 1) / 2;
+                    } else if (mISO8583Domain[n].mType == L_ASC) {
 
-                } else if (mISO8583Domain[n].mType == R_BCD) {
-                    len = (len+1)/2;
-                } else if (mISO8583Domain[n].mType == R_ASC) {
-                    
+                    } else if (mISO8583Domain[n].mType == R_BCD) {
+                        len = (len + 1) / 2;
+                    } else if (mISO8583Domain[n].mType == R_ASC) {
+
+                    }
                 }
                 System.arraycopy(mDataBuffer, mISO8583Domain[n].mStartAddr, data, dataOffset, len);
                 dataOffset += len;

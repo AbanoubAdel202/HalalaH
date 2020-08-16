@@ -41,6 +41,7 @@ public class RFPbocStartListenerSub implements OnEmvProcessListener {
         byte[] bAIDs;
         String[] AIDs = new String[]{"9F06"};
         bAIDs= getTlv(AIDs);
+        PosApplication.getApp().oGPosTransaction.m_sAID= BCDASCII.bytesToHexString(bAIDs).replace("9F0607",""); //todo function generc remove tag and leangth
 
         //todo success validation
         if (POS_MAIN.Recognise_card()!=0)
@@ -172,24 +173,30 @@ public class RFPbocStartListenerSub implements OnEmvProcessListener {
         byte[] bCVMR;
         String[] sCVMR_Tag = new String[]{"9F34"};
         bCVMR= getTlv(sCVMR_Tag);
-        switch(String.valueOf(bCVMR)) {
-            case "01":
+        switch(bCVMR[3]) {
+            case 0x01:
+            case 0x41:
                 PosApplication.getApp().oGPosTransaction.m_enmTrxCVM = POSTransaction.CVM.OFFLINE_PIN;
                 break;
-            case "02":
-            case "04":
+            case 0x02:
+            case 0x42:
                 PosApplication.getApp().oGPosTransaction.m_enmTrxCVM = POSTransaction.CVM.ONLINE_PIN;
                 break;
-            case "03":
-            case "05":
+            case 0x03:
+            case 0x43:
+            case 0x05:
+            case 0x45:
                 PosApplication.getApp().oGPosTransaction.m_enmTrxCVM = POSTransaction.CVM.OFFLINE_PIN_SIGNATURE;
                 break;
-            case "1E":
+            case 0x1E:
+            case 0x5E:
                 PosApplication.getApp().oGPosTransaction.m_enmTrxCVM = POSTransaction.CVM.SIGNATURE;
                 break;
-            case "1F":
+            case 0x1F:
+            case 0x5F:
                 PosApplication.getApp().oGPosTransaction.m_enmTrxCVM = POSTransaction.CVM.NO_CVM;
                 break;
+
 
         }
         // todo TTQ ,CTQ checks

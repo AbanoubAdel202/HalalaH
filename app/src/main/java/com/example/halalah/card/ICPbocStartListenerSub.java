@@ -1,5 +1,6 @@
 package com.example.halalah.card;
 
+import android.app.AlertDialog;
 import android.content.Context;
 import android.os.Bundle;
 import android.os.RemoteException;
@@ -49,13 +50,20 @@ public class ICPbocStartListenerSub implements OnEmvProcessListener {
         byte[] bAIDs;
         String[] AIDs = new String[]{"9F06"};
         bAIDs= getTlv(AIDs);
+        PosApplication.getApp().oGPosTransaction.m_sAID=BCDASCII.bytesToHexString(bAIDs);
+        //todo success validation
+        if (POS_MAIN.Recognise_card()!=0)
+            //todo do activity error CArd not recognised
 
-        POS_MAIN.Recognise_card();
-        POS_MAIN.Check_transaction_allowed(PosApplication.getApp().oGPosTransaction.m_enmTrxType);
-        if(POS_MAIN.Check_transaction_limits(PosApplication.getApp().oGPosTransaction.m_enmTrxType)==0)
-        {
-            //todo alert dialog for limit exeeded
-        }
+            if(!POS_MAIN.Check_transaction_allowed(PosApplication.getApp().oGPosTransaction.m_enmTrxType)) {
+                //todo do transaction not allowed Activity
+                return;
+            }
+
+                if(POS_MAIN.Check_transaction_limits(PosApplication.getApp().oGPosTransaction.m_enmTrxType)==0)
+                {
+                    //todo alert dialog for limit exeeded
+                }
         POS_MAIN.supervisor_pass_required();
 
 
@@ -435,7 +443,7 @@ public class ICPbocStartListenerSub implements OnEmvProcessListener {
 
         if (seqNumTlvList != null) {
             cardSeqNum = BCDASCII.bytesToHexString(seqNumTlvList);
-            cardSeqNum = cardSeqNum.substring(cardSeqNum.length() - 2, cardSeqNum.length());
+            cardSeqNum = cardSeqNum.substring(4);
         }
         Log.d(TAG, "setSeqNum : " + cardSeqNum);
         PosApplication.getApp().oGPosTransaction.m_sCardSeqNum=cardSeqNum;

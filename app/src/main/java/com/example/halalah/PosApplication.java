@@ -8,6 +8,7 @@ import androidx.room.Room;
 
 import com.example.halalah.sqlite.database.DBManager;
 import com.example.halalah.TMS.SAMA_TMS;
+import com.example.halalah.storage.CommunicationInfo;
 import com.topwise.cloudpos.aidl.emv.level2.EmvTerminalInfo;
 
 /** Header PosApplication
@@ -82,6 +83,7 @@ public class PosApplication extends Application{
      **************************/
    public Terminal_Operation_Data oGTerminal_Operation_Data =new Terminal_Operation_Data();
 
+
     /**********************
      * Terminal Regestration  *
      **********************/
@@ -134,6 +136,9 @@ public class PosApplication extends Application{
 		DBManager.getInstance().init(this);
         com.example.halalah.database.table.DBManager.getInstance().init(this);
         mContext = getApplicationContext();
+        oGTerminal_Operation_Data.communicationInfo=new CommunicationInfo(this);
+        oGTerminal_Operation_Data.communicationInfo.setHostIP("192.168.8.132");
+        oGTerminal_Operation_Data.communicationInfo.setHostPort("1000");
         mPosApplication = this;
 
 

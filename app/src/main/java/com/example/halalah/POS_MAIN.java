@@ -160,6 +160,7 @@ public class POS_MAIN implements SendReceiveListener {
 
                 Intent TMSprocess= new Intent(mcontext, PacketProcessActivity.class);
                 TMSprocess.putExtra("transaction Type",Trxtype);
+                mcontext.startActivity(TMSprocess);
 
                 break;
             case TERMINAL_REGISTRATION://TREMINAL_REGISTRATION:
@@ -237,19 +238,17 @@ public class POS_MAIN implements SendReceiveListener {
     public static int Recognise_card(){
            int istate=-1;
             if(PosApplication.getApp().oGPosTransaction.m_enmTrxCardType==POSTransaction.CardType.MANUAL || PosApplication.getApp().oGPosTransaction.m_enmTrxCardType==POSTransaction.CardType.MAG )
-            {
-                istate= SAMA_TMS.Get_card_scheme_BY_PAN(PosApplication.getApp().oGPosTransaction.m_sPAN);
-                            if (Check_MADA_Card())
-                              PosApplication.getApp().oGPosTransaction.m_is_mada=true;
-                            else
-                                PosApplication.getApp().oGPosTransaction.m_is_mada=false;
-
-
-            }
+               istate= SAMA_TMS.Get_card_scheme_BY_PAN(PosApplication.getApp().oGPosTransaction.m_sPAN);
             else
                 istate=SAMA_TMS.Get_card_scheme_BY_AID(PosApplication.getApp().oGPosTransaction.m_sAID);
 
-           return istate;
+        if (Check_MADA_Card())
+            PosApplication.getApp().oGPosTransaction.m_is_mada=true;
+        else
+            PosApplication.getApp().oGPosTransaction.m_is_mada=false;
+
+
+        return istate;
 
     }
 
@@ -271,36 +270,36 @@ public class POS_MAIN implements SendReceiveListener {
 
         switch (Trxtype) {
             case PURCHASE://purchase  offset 0
-                if ("1".equals(PosApplication.getApp().oGPosTransaction.m_card_scheme.m_sTransactions_Allowed.charAt(0)))
+                if ('1'==PosApplication.getApp().oGPosTransaction.m_card_scheme.m_sTransactions_Allowed.charAt(0))
                 return true;
                 break;
             case PURCHASE_WITH_NAQD://PURCHASE_WITH_NAQD                                 offset 1
-                if ("1".equals(PosApplication.getApp().oGPosTransaction.m_card_scheme.m_sTransactions_Allowed.charAt(1)))
+                if ('1'==PosApplication.getApp().oGPosTransaction.m_card_scheme.m_sTransactions_Allowed.charAt(1))
                 return true;
                 break;
             case PURCHASE_ADVICE://PURCHASE_ADVICE:                                      offset 2
             case AUTHORISATION_ADVICE://AUTHORISATION_ADVICE:
-                if ("1".equals(PosApplication.getApp().oGPosTransaction.m_card_scheme.m_sTransactions_Allowed.charAt(2)))
+                if ('1'==PosApplication.getApp().oGPosTransaction.m_card_scheme.m_sTransactions_Allowed.charAt(2))
                 return true;
                 break;
             case REFUND://REFUND                                                         offset 3
-                if ("1".equals(PosApplication.getApp().oGPosTransaction.m_card_scheme.m_sTransactions_Allowed.charAt(3)))
+                if ('1'==PosApplication.getApp().oGPosTransaction.m_card_scheme.m_sTransactions_Allowed.charAt(3))
                 return true;
                 break;
             case AUTHORISATION://AUTHORISATION:                                          offset 4
-                if ("1".equals(PosApplication.getApp().oGPosTransaction.m_card_scheme.m_sTransactions_Allowed.charAt(4)))
+                if ('1'==PosApplication.getApp().oGPosTransaction.m_card_scheme.m_sTransactions_Allowed.charAt(4))
                 return true;
                 break;
             case CASH_ADVANCE://CASH_ADVANCE:                                            offset 5
-                if ("1".equals(PosApplication.getApp().oGPosTransaction.m_card_scheme.m_sTransactions_Allowed.charAt(5)))
+                if ('1'==PosApplication.getApp().oGPosTransaction.m_card_scheme.m_sTransactions_Allowed.charAt(5))
                 return true;
                 break;
             case REVERSAL://REVERSAL:                                                    offset 6
-                if ("1".equals(PosApplication.getApp().oGPosTransaction.m_card_scheme.m_sTransactions_Allowed.charAt(6)))
+                if ('1'==PosApplication.getApp().oGPosTransaction.m_card_scheme.m_sTransactions_Allowed.charAt(6))
                 return true;
                 break;
             case AUTHORISATION_EXTENSION://AUTHORISATION_EXTENSION                       offset 7
-                if ("1".equals(PosApplication.getApp().oGPosTransaction.m_card_scheme.m_sTransactions_Allowed.charAt(7))) {
+                if ('1'==PosApplication.getApp().oGPosTransaction.m_card_scheme.m_sTransactions_Allowed.charAt(7)) {
                     return true;
                 }else if(PosApplication.getApp().oGPosTransaction.m_is_mada)
                 {
@@ -309,7 +308,7 @@ public class POS_MAIN implements SendReceiveListener {
                 }
                 break;
             case AUTHORISATION_VOID://AUTHORISATION_VOID:                                offset 8
-                if ("1".equals(PosApplication.getApp().oGPosTransaction.m_card_scheme.m_sTransactions_Allowed.charAt(8)))
+                if ('1'==PosApplication.getApp().oGPosTransaction.m_card_scheme.m_sTransactions_Allowed.charAt(8))
                 return true;
                 else if(PosApplication.getApp().oGPosTransaction.m_is_mada)
                 {
@@ -318,7 +317,7 @@ public class POS_MAIN implements SendReceiveListener {
                 }
                 break;
             case SADAD_BILL://SADAD_BILL:                                                offset 9
-                if ("1".equals(PosApplication.getApp().oGPosTransaction.m_card_scheme.m_sTransactions_Allowed.charAt(9)))
+                if ('1'==PosApplication.getApp().oGPosTransaction.m_card_scheme.m_sTransactions_Allowed.charAt(9))
                 return true;
                 else if(PosApplication.getApp().oGPosTransaction.m_is_mada)
                 {
@@ -354,36 +353,36 @@ public class POS_MAIN implements SendReceiveListener {
 
         switch (Trxtype) {
             case PURCHASE://purchase  offset 0
-                if ("1".equals(PosApplication.getApp().oGTerminal_Operation_Data.m_sMaximum_transaction_amount_indicator.charAt(0)))
+                if ('1'==PosApplication.getApp().oGTerminal_Operation_Data.m_sMaximum_transaction_amount_indicator.charAt(0))
                     istate=1;
                 break;
             case PURCHASE_WITH_NAQD://PURCHASE_WITH_NAQD                                 offset 1
-                if ("1".equals(PosApplication.getApp().oGTerminal_Operation_Data.m_sMaximum_transaction_amount_indicator.charAt(1)))
+                if ('1'==PosApplication.getApp().oGTerminal_Operation_Data.m_sMaximum_transaction_amount_indicator.charAt(1))
                     istate=1;
                 break;
             case PURCHASE_ADVICE://PURCHASE_ADVICE:                                      offset 2
             case AUTHORISATION_ADVICE://AUTHORISATION_ADVICE:
-                if ("1".equals(PosApplication.getApp().oGTerminal_Operation_Data.m_sMaximum_transaction_amount_indicator.charAt(2)))
+                if ('1'==PosApplication.getApp().oGTerminal_Operation_Data.m_sMaximum_transaction_amount_indicator.charAt(2))
                     istate=1;
                 break;
             case REFUND://REFUND                                                         offset 3
-                if ("1".equals(PosApplication.getApp().oGTerminal_Operation_Data.m_sMaximum_transaction_amount_indicator.charAt(3)))
+                if ('1'==PosApplication.getApp().oGTerminal_Operation_Data.m_sMaximum_transaction_amount_indicator.charAt(3))
                     istate=1;
                 break;
             case AUTHORISATION://AUTHORISATION:                                          offset 4
-                if ("1".equals(PosApplication.getApp().oGTerminal_Operation_Data.m_sMaximum_transaction_amount_indicator.charAt(4)))
+                if ('1'==PosApplication.getApp().oGTerminal_Operation_Data.m_sMaximum_transaction_amount_indicator.charAt(4))
                     istate=1;
                 break;
             case CASH_ADVANCE://CASH_ADVANCE:                                            offset 5
-                if ("1".equals(PosApplication.getApp().oGTerminal_Operation_Data.m_sMaximum_transaction_amount_indicator.charAt(5)))
+                if ('1'==PosApplication.getApp().oGTerminal_Operation_Data.m_sMaximum_transaction_amount_indicator.charAt(5))
                     istate=1;
                 break;
             case REVERSAL://REVERSAL:                                                    offset 6
-                if ("1".equals(PosApplication.getApp().oGTerminal_Operation_Data.m_sMaximum_transaction_amount_indicator.charAt(6)))
+                if ('1'==PosApplication.getApp().oGTerminal_Operation_Data.m_sMaximum_transaction_amount_indicator.charAt(6))
                     istate=1;
                 break;
             case AUTHORISATION_EXTENSION://AUTHORISATION_EXTENSION                       offset 7
-                if ("1".equals(PosApplication.getApp().oGTerminal_Operation_Data.m_sMaximum_transaction_amount_indicator.charAt(7))) {
+                if ('1'==PosApplication.getApp().oGTerminal_Operation_Data.m_sMaximum_transaction_amount_indicator.charAt(7)) {
                     istate=1;
                 }else if(PosApplication.getApp().oGPosTransaction.m_is_mada)
                 {
@@ -392,7 +391,7 @@ public class POS_MAIN implements SendReceiveListener {
                 }
                 break;
             case AUTHORISATION_VOID://AUTHORISATION_VOID:                                offset 8
-                if ("1".equals(PosApplication.getApp().oGTerminal_Operation_Data.m_sMaximum_transaction_amount_indicator.charAt(8)))
+                if ('1'==PosApplication.getApp().oGTerminal_Operation_Data.m_sMaximum_transaction_amount_indicator.charAt(8))
                     istate=1;
                 else if(PosApplication.getApp().oGPosTransaction.m_is_mada)
                 {
@@ -401,7 +400,7 @@ public class POS_MAIN implements SendReceiveListener {
                 }
                 break;
             case SADAD_BILL://SADAD_BILL:                                                offset 9
-                if ("1".equals(PosApplication.getApp().oGTerminal_Operation_Data.m_sMaximum_transaction_amount_indicator.charAt(9)))
+                if ('1'==PosApplication.getApp().oGTerminal_Operation_Data.m_sMaximum_transaction_amount_indicator.charAt(9))
                     istate=1;
                 else if(PosApplication.getApp().oGPosTransaction.m_is_mada)
                 {
@@ -415,7 +414,7 @@ public class POS_MAIN implements SendReceiveListener {
 
         if(istate==1) {
 
-            if (Integer.parseInt(PosApplication.getApp().oGPosTransaction.m_sTrxAmount)>Integer.parseInt(PosApplication.getApp().oGTerminal_Operation_Data.m_sMaximum_transaction_amount))
+            if (Long.parseLong(PosApplication.getApp().oGPosTransaction.m_sTrxAmount.replace(".",""))>Long.parseLong(PosApplication.getApp().oGTerminal_Operation_Data.m_sMaximum_transaction_amount))
                 istate=0;
             else
                 istate=-1;
@@ -450,7 +449,7 @@ public class POS_MAIN implements SendReceiveListener {
      */
     public static boolean Check_MADA_Card()
     {
-        if(PosApplication.getApp().oGPosTransaction.m_card_scheme.m_sCard_Scheme_ID=="P1")
+        if(PosApplication.getApp().oGPosTransaction.m_card_scheme.m_sCard_Scheme_ID.equals("P1"))
         return true;
 
         return false;
