@@ -98,6 +98,9 @@ public class TMSManager {
     public Connection_Parameters getConnectionParameters(){
 
         Connection_Parameters connectionParameters = dbManager.getConnectionParametersDao().get();
+        if (connectionParameters  == null) {
+            return null;
+        }
         connectionParameters.setConn_primary(getConnection(connectionParameters.getPrimaryConnectionType(), "1"));
         connectionParameters.setConn_secondary(getConnection(connectionParameters.getSecondaryConnectionType(), "2"));
         return connectionParameters;

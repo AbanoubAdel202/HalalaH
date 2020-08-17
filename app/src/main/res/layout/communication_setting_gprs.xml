@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/activity_communication_setting"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="@dimen/activity_vertical_margin">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/btn_background"
+            android:orientation="horizontal">
+
+            <EditText
+                android:id="@+id/et_dial_Number"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_alignParentBottom="true"
+                android:layout_marginLeft="20dp"
+                android:layout_toRightOf="@+id/host_ip_1_tip"
+                android:background="@null"
+                android:hint="@string/dial_Number"
+                android:singleLine="true"
+                android:textSize="20sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/btn_background"
+            android:orientation="horizontal">
+
+            <EditText
+                android:id="@+id/et_access_point_name"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_alignParentBottom="true"
+                android:layout_marginLeft="20dp"
+                android:layout_toRightOf="@+id/host_port_1_tip"
+                android:background="@null"
+                android:hint="@string/access_point_name"
+                android:numeric="integer"
+                android:singleLine="true"
+                android:textSize="20sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/btn_background"
+            android:orientation="horizontal">
+
+            <EditText
+                android:id="@+id/et_connect_time"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_alignParentBottom="true"
+                android:layout_marginLeft="20dp"
+                android:layout_toRightOf="@+id/host_ip_2_tip"
+                android:background="@null"
+                android:hint="@string/connect_time"
+                android:singleLine="true"
+                android:textSize="20sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/btn_background"
+            android:orientation="horizontal">
+
+            <EditText
+                android:id="@+id/et_network_ip_address"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_alignParentBottom="true"
+                android:layout_marginLeft="20dp"
+                android:layout_toRightOf="@+id/host_port_2_tip"
+                android:background="@null"
+                android:hint="@string/network_ip_address"
+                android:numeric="integer"
+                android:singleLine="true"
+                android:textSize="20sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/btn_background"
+            android:orientation="horizontal">
+
+            <EditText
+                android:id="@+id/et_network_tcp_port"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_alignParentBottom="true"
+                android:layout_marginLeft="20dp"
+                android:layout_toRightOf="@+id/tpdu_tip"
+                android:background="@null"
+                android:hint="@string/network_tcp_port"
+                android:numeric="integer"
+                android:singleLine="true"
+                android:textSize="20sp" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/btn_background"
+            android:orientation="horizontal">
+
+            <EditText
+                android:id="@+id/et_dial_attempts"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_alignParentBottom="true"
+                android:layout_marginLeft="20dp"
+                android:layout_toRightOf="@+id/tpdu_tip"
+                android:background="@null"
+                android:hint="@string/dial_attempts"
+                android:numeric="integer"
+                android:singleLine="true"
+                android:textSize="20sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/btn_background"
+            android:orientation="horizontal">
+
+            <EditText
+                android:id="@+id/et_response_timeout"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_alignParentBottom="true"
+                android:layout_marginLeft="20dp"
+                android:layout_toRightOf="@+id/tpdu_tip"
+                android:background="@null"
+                android:hint="@string/response_timeout"
+                android:numeric="integer"
+                android:singleLine="true"
+                android:textSize="20sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="16dp"
+            android:background="@drawable/btn_background"
+            android:orientation="horizontal">
+
+            <EditText
+                android:id="@+id/et_ssl_certificate_file"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_alignParentBottom="true"
+                android:layout_marginLeft="20dp"
+                android:layout_toRightOf="@+id/tpdu_tip"
+                android:background="@null"
+                android:hint="@string/ssl_certificate_file"
+                android:numeric="integer"
+                android:singleLine="true"
+                android:textSize="20sp" />
+        </LinearLayout>
+
+    </LinearLayout>
+</ScrollView>

@@ -20,6 +20,7 @@ import com.example.halalah.connect.CommunicationsHandler;
 import com.example.halalah.registration.RegistrationData;
 import com.example.halalah.registration.RegistrationManager;
 import com.example.halalah.storage.CommunicationInfo;
+import com.example.halalah.ui.admin_settings.CommunicationSettingActivity;
 
 import org.parceler.Parcels;
 
@@ -31,6 +32,7 @@ public class RegistrationActivity extends AppCompatActivity {
     private Spinner spVendor;
     private Spinner spSama;
     private Button btnProceed;
+    private Button connectionSettingsBtn;
     private CommunicationsHandler mCommunicationsHandler;
 
     @Override
@@ -44,6 +46,11 @@ public class RegistrationActivity extends AppCompatActivity {
                 CommunicationsHandler.getInstance(new CommunicationInfo(PosApplication.getApp().getApplicationContext()));
 
         btnProceed.setOnClickListener(v -> proceed());
+        connectionSettingsBtn.setOnClickListener(v -> openConnectionSettings());
+    }
+
+    private void openConnectionSettings() {
+        startActivity(new Intent(this, CommunicationSettingActivity.class));
     }
 
     private void proceed() {
@@ -126,6 +133,7 @@ public class RegistrationActivity extends AppCompatActivity {
         spVendor = findViewById(R.id.vendor_sp);
         spSama = findViewById(R.id.sama_sp);
         btnProceed = findViewById(R.id.btn_proceed);
+        connectionSettingsBtn = findViewById(R.id.btn_connection);
     }
 
     private void showError(@StringRes int resId) {

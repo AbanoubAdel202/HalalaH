@@ -107,7 +107,7 @@ public class MainActivity extends AppCompatActivity implements ITransaction.View
 
         showLoading("Terminal Initializing please wait...");
 
-        Terminal_Initialization();
+//        Terminal_Initialization();
 
         StartMADA_APP();
     }
