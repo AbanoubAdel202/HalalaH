@@ -1,4 +1,4 @@
-package com.example.halalah.ui.admin_settings;
+package com.example.halalah.ui.admin_settings.communication;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -12,11 +12,6 @@ import androidx.fragment.app.Fragment;
 import com.example.halalah.R;
 import com.example.halalah.storage.CommunicationInfo;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link DefaultCommunicationSettingsFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
 public class DefaultCommunicationSettingsFragment extends Fragment implements View.OnClickListener {
 
     private EditText mHostIp1;

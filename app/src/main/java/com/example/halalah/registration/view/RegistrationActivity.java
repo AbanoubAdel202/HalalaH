@@ -28,7 +28,7 @@ import com.example.halalah.connect.CommunicationsHandler;
 import com.example.halalah.registration.RegistrationData;
 import com.example.halalah.registration.RegistrationManager;
 import com.example.halalah.storage.CommunicationInfo;
-import com.example.halalah.ui.admin_settings.CommunicationSettingActivity;
+import com.example.halalah.ui.admin_settings.communication.CommunicationSettingActivity;
 
 import org.parceler.Parcels;
 

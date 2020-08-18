@@ -3,6 +3,9 @@ package com.example.halalah.TMS;
 import com.example.halalah.sqlite.database.BaseModel;
 import com.example.halalah.sqlite.database.Column;
 
+import org.parceler.Parcel;
+
+@Parcel
 public class Connection extends BaseModel {
 
     @Column(name = "Priority")

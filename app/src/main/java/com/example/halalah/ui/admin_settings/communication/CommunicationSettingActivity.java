@@ -1,4 +1,4 @@
-package com.example.halalah.ui.admin_settings;
+package com.example.halalah.ui.admin_settings.communication;
 
 import android.os.Bundle;
 

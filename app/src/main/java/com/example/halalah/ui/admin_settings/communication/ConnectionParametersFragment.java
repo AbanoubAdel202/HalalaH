@@ -1,4 +1,4 @@
-package com.example.halalah.ui.admin_settings;
+package com.example.halalah.ui.admin_settings.communication;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -7,19 +7,16 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
-import android.widget.EditText;
 import android.widget.TextView;
 
+import androidx.annotation.IdRes;
 import androidx.fragment.app.Fragment;
 
 import com.example.halalah.R;
 import com.example.halalah.TMS.Connection;
 import com.example.halalah.TMS.Connection_Parameters;
-import com.example.halalah.TMS.Dialup;
 import com.example.halalah.TMS.Gprs;
-import com.example.halalah.TMS.Gsm;
 import com.example.halalah.TMS.TMSManager;
-import com.example.halalah.TMS.Tcp_IP;
 import com.example.halalah.TMS.Wifi;
 
 import static com.example.halalah.Utils.CONNECTION_TYPE_DIALUP;
@@ -44,6 +41,9 @@ public class ConnectionParametersFragment extends Fragment implements View.OnCli
 
     private Connection_Parameters mConnectionParameters;
 
+    ISaveConnection iSaveConnection1;
+    ISaveConnection iSaveConnection2;
+
     public ConnectionParametersFragment() {
         // Required empty public constructor
     }
@@ -56,8 +56,8 @@ public class ConnectionParametersFragment extends Fragment implements View.OnCli
         initViews(rootView);
 
         mConnectionParameters = TMSManager.getInstance().getConnectionParameters();
-        setConnectionData(primaryDetailsLayout, mConnectionParameters.getConn_primary());
-        setConnectionData(secondaryDetailsLayout, mConnectionParameters.getConn_secondary());
+        setConnectionData(R.id.primary_connection_details, mConnectionParameters.getConn_primary());
+        setConnectionData(R.id.secondary_connection_details, mConnectionParameters.getConn_secondary());
         return rootView;
     }
 
@@ -99,6 +99,7 @@ public class ConnectionParametersFragment extends Fragment implements View.OnCli
                     primaryDetailsLayout.setVisibility(View.GONE);
                 } else {
                     primaryDetailsLayout.setVisibility(View.VISIBLE);
+                    secondaryDetailsLayout.setVisibility(View.GONE);
                 }
                 break;
 
@@ -107,6 +108,7 @@ public class ConnectionParametersFragment extends Fragment implements View.OnCli
                     secondaryDetailsLayout.setVisibility(View.GONE);
                 } else {
                     secondaryDetailsLayout.setVisibility(View.VISIBLE);
+                    primaryDetailsLayout.setVisibility(View.GONE);
                 }
                 break;
 
@@ -141,7 +143,7 @@ public class ConnectionParametersFragment extends Fragment implements View.OnCli
         }
     }
 
-    private void setConnectionData(ViewGroup root, Connection connection) {
+    private void setConnectionData(@IdRes int containerId, Connection connection) {
 
         if (connection != null) {
 
@@ -154,26 +156,30 @@ public class ConnectionParametersFragment extends Fragment implements View.OnCli
 
             switch (connection.Communication_Type) {
                 case CONNECTION_TYPE_DIALUP:
-                    setDialupData((Dialup) connection, root);
+//                    setDialupData((Dialup) connection, root);
                     break;
                 case CONNECTION_TYPE_TCPIP:
-                    setTCPIPData((Tcp_IP) connection, root);
+//                    setTCPIPData((Tcp_IP) connection, root);
                     break;
                 case CONNECTION_TYPE_GPRS:
-                    setGPRSData((Gprs) connection, root);
+                    GPRSFragment gprsFragment = GPRSFragment.newInstance((Gprs) connection);
+                    iSaveConnection1 = gprsFragment;
+                    getChildFragmentManager().beginTransaction()
+                            .add(containerId, gprsFragment).commit();
                     break;
                 case CONNECTION_TYPE_GSM:
-                    setGSMData((Gsm) connection, root);
+//                    setGSMData((Gsm) connection, root);
                     break;
                 default:
                 case CONNECTION_TYPE_WIFI:
-                    setWIFIData((Wifi) connection, root);
+                    WifiFragment wifiFragment = WifiFragment.newInstance((Wifi) connection);
+                    iSaveConnection2 = wifiFragment;
+
+                    getChildFragmentManager().beginTransaction()
+                            .add(containerId, wifiFragment).commit();
+
                     break;
             }
-        } else {
-            final View addedView = getLayoutInflater().inflate(R.layout.communication_setting_default,
-                    null);
-            root.addView(addedView);
         }
     }
 
@@ -197,70 +203,6 @@ public class ConnectionParametersFragment extends Fragment implements View.OnCli
     private void setWIFIData(Wifi connection, ViewGroup root) {
 
         final View addedView = getLayoutInflater().inflate(R.layout.communication_setting_wifi,
-                null);
-        root.addView(addedView);
-        root.setVisibility(View.GONE);
-
-        EditText et_network_ip_address = root.findViewById(R.id.et_network_ip_address);
-        EditText et_network_tcp_support = root.findViewById(R.id.et_network_tcp_support);
-        EditText et_count_access_retries = root.findViewById(R.id.et_count_access_retries);
-        EditText et_response_timeout = root.findViewById(R.id.et_response_timeout);
-        EditText et_ssl_certificate_file = root.findViewById(R.id.et_ssl_certificate_file);
-
-        et_network_ip_address.setText(connection.Network_IP_Address);
-        et_network_tcp_support.setText(connection.Network_TCP_Support);
-        et_count_access_retries.setText(connection.Count_Access_Retries);
-        et_response_timeout.setText(connection.Response_Time_Out);
-        et_ssl_certificate_file.setText(connection.SSL_Certificate_File);
-
-    }
-
-    private void setGSMData(Gsm connection, ViewGroup root) {
-
-        final View addedView = getLayoutInflater().inflate(R.layout.communication_setting_gsm,
-                null);
-        root.addView(addedView);
-        root.setVisibility(View.GONE);
-
-    }
-
-    private void setGPRSData(Gprs connection, ViewGroup root) {
-
-        final View addedView = getLayoutInflater().inflate(R.layout.communication_setting_gprs,
-                null);
-        root.addView(addedView);
-        root.setVisibility(View.GONE);
-
-        EditText et_dial_Number = root.findViewById(R.id.et_dial_Number);
-        EditText et_access_point_name = root.findViewById(R.id.et_access_point_name);
-        EditText et_connect_time = root.findViewById(R.id.et_connect_time);
-        EditText et_network_ip_address = root.findViewById(R.id.et_network_ip_address);
-        EditText et_network_tcp_port = root.findViewById(R.id.et_network_tcp_port);
-        EditText et_dial_attempts = root.findViewById(R.id.et_dial_attempts);
-        EditText et_response_timeout = root.findViewById(R.id.et_response_timeout);
-        EditText et_ssl_certificate_file = root.findViewById(R.id.et_ssl_certificate_file);
-
-        et_dial_Number.setText(connection.GPRS_dial_Number);
-        et_access_point_name.setText(connection.GPRS_access_point_name);
-        et_connect_time.setText(connection.Connect__Time_for_GPRS_phone);
-        et_network_ip_address.setText(connection.Network_IP_address);
-        et_network_tcp_port.setText(connection.Network_TCP_port);
-        et_dial_attempts.setText(connection.Dial_attempts_to_network);
-        et_response_timeout.setText(connection.Response_time_out);
-        et_ssl_certificate_file.setText(connection.SSL_Certificate_file);
-
-    }
-
-    private void setTCPIPData(Tcp_IP connection, ViewGroup root) {
-        final View addedView = getLayoutInflater().inflate(R.layout.communication_setting_tcpip,
-                null);
-        root.addView(addedView);
-        root.setVisibility(View.GONE);
-    }
-
-    private void setDialupData(Dialup connection, ViewGroup root) {
-
-        final View addedView = getLayoutInflater().inflate(R.layout.communication_setting_dialup,
                 null);
         root.addView(addedView);
         root.setVisibility(View.GONE);

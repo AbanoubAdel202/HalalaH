@@ -156,7 +156,7 @@
         <activity android:name=".ui.CardConfirmActivity" />
         <activity android:name=".ui.admin_settings.SuperAdminActivity" />
         <activity android:name=".ui.admin_settings.OthersSettingActivity" />
-        <activity android:name=".ui.admin_settings.CommunicationSettingActivity" />
+        <activity android:name=".ui.admin_settings.communication.CommunicationSettingActivity" />
         <activity android:name=".ui.admin_settings.ImportKeyActivity" />
         <activity android:name=".ui.ShowResultActivity" />
         <activity android:name=".PanInputActivity" />

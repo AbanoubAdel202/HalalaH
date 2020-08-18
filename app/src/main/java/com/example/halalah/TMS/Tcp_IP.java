@@ -1,11 +1,11 @@
 package com.example.halalah.TMS;
 
-import androidx.annotation.NonNull;
-import androidx.room.PrimaryKey;
-
 import com.example.halalah.sqlite.database.Column;
 import com.example.halalah.sqlite.database.Table;
 
+import org.parceler.Parcel;
+
+@Parcel
 @Table(name = "Tcp_IP")
 public class Tcp_IP extends Connection {
     @Column(name = "Network_IP_Address")
