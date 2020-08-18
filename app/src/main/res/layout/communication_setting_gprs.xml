@@ -46,7 +46,6 @@
                 android:layout_toRightOf="@+id/host_port_1_tip"
                 android:background="@null"
                 android:hint="@string/access_point_name"
-                android:numeric="integer"
                 android:singleLine="true"
                 android:textSize="20sp" />
         </LinearLayout>
@@ -87,7 +86,6 @@
                 android:layout_toRightOf="@+id/host_port_2_tip"
                 android:background="@null"
                 android:hint="@string/network_ip_address"
-                android:numeric="integer"
                 android:singleLine="true"
                 android:textSize="20sp" />
         </LinearLayout>
@@ -108,7 +106,6 @@
                 android:layout_toRightOf="@+id/tpdu_tip"
                 android:background="@null"
                 android:hint="@string/network_tcp_port"
-                android:numeric="integer"
                 android:singleLine="true"
                 android:textSize="20sp" />
 
@@ -130,7 +127,6 @@
                 android:layout_toRightOf="@+id/tpdu_tip"
                 android:background="@null"
                 android:hint="@string/dial_attempts"
-                android:numeric="integer"
                 android:singleLine="true"
                 android:textSize="20sp" />
         </LinearLayout>
@@ -151,7 +147,6 @@
                 android:layout_toRightOf="@+id/tpdu_tip"
                 android:background="@null"
                 android:hint="@string/response_timeout"
-                android:numeric="integer"
                 android:singleLine="true"
                 android:textSize="20sp" />
         </LinearLayout>
@@ -173,7 +168,6 @@
                 android:layout_toRightOf="@+id/tpdu_tip"
                 android:background="@null"
                 android:hint="@string/ssl_certificate_file"
-                android:numeric="integer"
                 android:singleLine="true"
                 android:textSize="20sp" />
         </LinearLayout>

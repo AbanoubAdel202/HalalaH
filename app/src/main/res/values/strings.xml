@@ -352,7 +352,7 @@
     <string name="stop_bit">Stop Bit</string>
     <string name="data_bit">Data Bit</string>
     <string name="parity_bit">Parity Bit</string>
-    <string name="baud_rate_default" >Baud Rate Default</string>
+    <string name="baud_rate_default">Baud Rate Default</string>
     <string name="connect_time">Connect Time</string>
     <string name="dial_attempts">Dial Attempts</string>
     <string name="phone_number">Phone Number</string>

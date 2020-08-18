@@ -2,13 +2,21 @@ package com.example.halalah.registration.view;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
+import android.text.SpannableString;
+import android.text.Spanned;
+import android.text.TextPaint;
 import android.text.TextUtils;
+import android.text.method.LinkMovementMethod;
+import android.text.style.ClickableSpan;
 import android.util.Log;
+import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.StringRes;
@@ -32,7 +40,7 @@ public class RegistrationActivity extends AppCompatActivity {
     private Spinner spVendor;
     private Spinner spSama;
     private Button btnProceed;
-    private Button connectionSettingsBtn;
+    private TextView connectionSettingsTv;
     private CommunicationsHandler mCommunicationsHandler;
 
     @Override
@@ -44,9 +52,6 @@ public class RegistrationActivity extends AppCompatActivity {
         initViews();
         mCommunicationsHandler =
                 CommunicationsHandler.getInstance(new CommunicationInfo(PosApplication.getApp().getApplicationContext()));
-
-        btnProceed.setOnClickListener(v -> proceed());
-        connectionSettingsBtn.setOnClickListener(v -> openConnectionSettings());
     }
 
     private void openConnectionSettings() {
@@ -133,7 +138,28 @@ public class RegistrationActivity extends AppCompatActivity {
         spVendor = findViewById(R.id.vendor_sp);
         spSama = findViewById(R.id.sama_sp);
         btnProceed = findViewById(R.id.btn_proceed);
-        connectionSettingsBtn = findViewById(R.id.btn_connection);
+        connectionSettingsTv = findViewById(R.id.btn_connection);
+
+        btnProceed.setOnClickListener(v -> proceed());
+
+        SpannableString ss = new SpannableString(getString(R.string.connection_settings));
+        ClickableSpan clickableSpan = new ClickableSpan() {
+            @Override
+            public void onClick(View textView) {
+                openConnectionSettings();
+            }
+
+            @Override
+            public void updateDrawState(TextPaint ds) {
+                super.updateDrawState(ds);
+                ds.setUnderlineText(false);
+            }
+        };
+        ss.setSpan(clickableSpan, 0, ss.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+        connectionSettingsTv.setText(ss);
+        connectionSettingsTv.setMovementMethod(LinkMovementMethod.getInstance());
+        connectionSettingsTv.setHighlightColor(Color.TRANSPARENT);
     }
 
     private void showError(@StringRes int resId) {

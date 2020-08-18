@@ -37,7 +37,6 @@ import com.example.halalah.registration.RegistrationData;
 import com.example.halalah.registration.view.ITransaction;
 import com.example.halalah.registration.view.RegistrationActivity;
 import com.example.halalah.secure.DUKPT_KEY;
-import com.example.halalah.storage.CommunicationInfo;
 import com.google.android.material.navigation.NavigationView;
 import com.topwise.cloudpos.aidl.emv.level2.EmvTerminalInfo;
 import com.topwise.cloudpos.aidl.led.AidlLed;
@@ -64,10 +63,10 @@ public class MainActivity extends AppCompatActivity implements ITransaction.View
         setContentView(R.layout.activity_main);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        CommunicationInfo communicationInfo = new CommunicationInfo(this);
-        communicationInfo.setHostIP("192.168.8.124");
-        communicationInfo.setHostPort("1001");
-        communicationInfo.setTPDU("6000230000");
+//        CommunicationInfo communicationInfo = new CommunicationInfo(this);
+//        communicationInfo.setHostIP("192.168.8.124");
+//        communicationInfo.setHostPort("1001");
+//        communicationInfo.setTPDU("6000230000");
 
         TextView date = findViewById(R.id.Date);
         TextView time = findViewById(R.id.TIME);
@@ -106,7 +105,7 @@ public class MainActivity extends AppCompatActivity implements ITransaction.View
         NavigationUI.setupWithNavController(navigationView, navController);
 
         showLoading("Terminal Initializing please wait...");
-
+        DownLoadParM();
 //        Terminal_Initialization();
 
         StartMADA_APP();

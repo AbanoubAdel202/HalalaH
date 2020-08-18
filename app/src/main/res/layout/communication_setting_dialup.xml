@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/activity_communication_setting"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -63,7 +62,6 @@
                 android:layout_marginLeft="20dp"
                 android:layout_toRightOf="@+id/host_port_1_tip"
                 android:background="@null"
-                android:numeric="integer"
                 android:singleLine="true"
                 android:textSize="20sp" />
         </LinearLayout>
@@ -120,7 +118,6 @@
                 android:layout_marginLeft="20dp"
                 android:layout_toRightOf="@+id/host_port_2_tip"
                 android:background="@null"
-                android:numeric="integer"
                 android:singleLine="true"
                 android:textSize="20sp" />
         </LinearLayout>
@@ -149,7 +146,6 @@
                 android:layout_marginLeft="20dp"
                 android:layout_toRightOf="@+id/tpdu_tip"
                 android:background="@null"
-                android:numeric="integer"
                 android:singleLine="true"
                 android:textSize="20sp" />
         </LinearLayout>
@@ -178,7 +174,6 @@
                 android:layout_marginLeft="20dp"
                 android:layout_toRightOf="@+id/tpdu_tip"
                 android:background="@null"
-                android:numeric="integer"
                 android:singleLine="true"
                 android:textSize="20sp" />
         </LinearLayout>
@@ -207,7 +202,6 @@
                 android:layout_marginLeft="20dp"
                 android:layout_toRightOf="@+id/tpdu_tip"
                 android:background="@null"
-                android:numeric="integer"
                 android:singleLine="true"
                 android:textSize="20sp" />
         </LinearLayout>
@@ -237,7 +231,6 @@
                 android:layout_marginLeft="20dp"
                 android:layout_toRightOf="@+id/tpdu_tip"
                 android:background="@null"
-                android:numeric="integer"
                 android:singleLine="true"
                 android:textSize="20sp" />
         </LinearLayout>
