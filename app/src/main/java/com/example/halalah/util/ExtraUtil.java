@@ -22,19 +22,19 @@ public class ExtraUtil {
 
     public static String GetDate_Time(){
         Date d = new Date();
-        CharSequence s  = DateFormat.format("mmddhhmmss", d.getTime());
-
-       return s.toString();
+        CharSequence s = DateFormat.format("MMddHHmmss", d.getTime());
+        return s.toString();
 
     }
 
     public static String Get_Local_Date_Time(){
         Date d = new Date();
-        CharSequence s  = DateFormat.format("YYMMddHHmmss", d.getTime());
+        CharSequence s = DateFormat.format("yyMMddHHmmss", d.getTime());
 
         return s.toString();
 
     }
+
 
 
     public static String getCustomVersionMsg(String originalMsg) {
@@ -67,5 +67,18 @@ public class ExtraUtil {
         version.append(content.toString());
         Log.i("topwise","getCustomVersionMsg: " + version.toString());
         return version.toString();
+    }
+
+    public static String padLeftZeros(String inputString, int length) {
+        if (inputString.length() >= length) {
+            return inputString;
+        }
+        StringBuilder sb = new StringBuilder();
+        while (sb.length() < length - inputString.length()) {
+            sb.append('0');
+        }
+        sb.append(inputString);
+
+        return sb.toString();
     }
 }

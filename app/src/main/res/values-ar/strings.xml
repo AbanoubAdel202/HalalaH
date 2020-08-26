@@ -313,4 +313,9 @@
     <string name="password">Supervisour PASS</string>
     <string name="Partial">Partial</string>
     <string name="Full">Full</string>
+    <string name="Auth_Advice">Authorization advice</string>
+    <string name="reversal">reversal</string>
+    <string name="SADAD">SADAD</string>
+    <string name="Auth_void">Authorization void</string>
+    <string name="Auth_ext">Authorization Extension</string>
 </resources>

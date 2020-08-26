@@ -330,13 +330,13 @@ public class ContactCardProcess {
         emvTerminalInfo.setUnThresholdValue(10000);
         emvTerminalInfo.setAucTerminalID("00000001");
         emvTerminalInfo.setAucIFDSerialNumber("12345678");
-        emvTerminalInfo.setAucTerminalCountryCode(new byte[] {0x01, 0x56});
+        emvTerminalInfo.setAucTerminalCountryCode(BCDASCII.fromASCIIToBCD("0682",0,4,true));
         emvTerminalInfo.setAucMerchantID("0000000100000001");
         emvTerminalInfo.setAucMerchantCategoryCode(new byte[] {0x00, 0x01});
         emvTerminalInfo.setAucMerchantNameLocation(new byte[] {0x30, 0x30, 0x30, 0x31}); //"0001"
-        emvTerminalInfo.setAucTransCurrencyCode(new byte[] {0x01, 0x56});
+        emvTerminalInfo.setAucTransCurrencyCode(BCDASCII.fromASCIIToBCD("0682",0,4,true));
         emvTerminalInfo.setUcTransCurrencyExp((byte) 2);
-        emvTerminalInfo.setAucTransRefCurrencyCode(new byte[] {0x01, 0x56});
+        emvTerminalInfo.setAucTransRefCurrencyCode(BCDASCII.fromASCIIToBCD("0682",0,4,true));
         emvTerminalInfo.setUcTransRefCurrencyExp((byte) 2);
         emvTerminalInfo.setUcTerminalEntryMode((byte) 0x05);
 
@@ -617,10 +617,13 @@ public class ContactCardProcess {
         //Offline Data Authentication
         //The terminal uses the RID and index to retrieve the terminal-stored CAPK
         emvRet = retrieveCAPK();
+
         if (emvRet != 0) {
+
             emvListener.onTransResult(getAppEmvtransResult(emvRet));
             endEmv();
             return;
+            //todo display CAPK not found
         }
         emvRet = emvL2.EMV_OfflineDataAuth();
         Log.d(TAG, "EMV_OfflineDataAuth emvRet : " + emvRet);
@@ -850,7 +853,7 @@ public class ContactCardProcess {
         byte[] index = emvL2.EMV_GetTLVData(0x8F);
         if ((index == null) || (index.length != 1)) {
             Log.d(TAG, "Get CAPK index(8F) failed!");
-            return -1;
+            return 0;
         }
         Log.d(TAG, "CAPK index(8F): " + BytesUtil.bytes2HexString(index));
 
@@ -860,7 +863,7 @@ public class ContactCardProcess {
         Capk capk = db.getCapkDao().findByRidIndex(strRid, index[0]);
         if (null == db.getCapkDao().findByRidIndex(strRid, index[0])) {
             Log.d(TAG, "findByRidIndex failed!");
-            return -1;
+            return 0;
         }
 
         Log.d(TAG, "getRid(): " + capk.getRid());
@@ -887,7 +890,7 @@ public class ContactCardProcess {
         Log.d(TAG, "EMV_AddCAPK emvRet : " + emvRet);
         if (emvRet != 0) {
             Log.d(TAG, "EMV_AddCAPK failed!");
-            return -1;
+            return 0;
         }
 
         //Add CAPK Revocation list

@@ -4,10 +4,12 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.widget.Switch;
 
+import com.example.halalah.POSTransaction;
 import com.example.halalah.POS_MAIN;
 import com.example.halalah.PosApplication;
 import com.example.halalah.packet.PackUtils;
 
+import java.lang.reflect.Array;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Locale;
@@ -92,12 +94,12 @@ public class ISO8583 {
         int dataOffset = 0;
         int bytenum=16;
         int bitnum = 8;
-        String sbitmap;
+
         int n = 0; 
         byte[] data = new byte[MAXBUFFERLEN];    
        // BCDASCII.fromASCIIToBCD(mMessageId, 0, MSGIDLEN, data, 0, false);
         System.arraycopy(mMessageId, 0, data, 0, MSGIDLEN);
-        if(Arrays.equals(mMessageId, PosApplication.MTI_Terminal_Reconciliation_Advice.getBytes())) {
+        if(Arrays.equals(mMessageId, PosApplication.MTI_Terminal_Reconciliation_Advice.getBytes())||PosApplication.getApp().oGPosTransaction.m_enmTrxType== POSTransaction.TranscationType.TMS_FILE_DOWNLOAD) {
             bytenum = 32;
         }
         dataOffset = MSGIDLEN + bytenum; //Point to the data field after the message type and bitmap   // todo: mostafa : we have to consider 16 byte and 32 byte mapping
@@ -342,85 +344,7 @@ public class ISO8583 {
 		return 0;
 	}
 
-    public int strtoiso_original(byte[] src) {
-        int bitnum = 8;//位图为64位二进制，8个字节。
-        int bitmask = 0x80;//0x80为128，1000 0000，通过bitmask移位来检查一个字节8位中的每一位是否为1。
-        ClearFields();//清除8583包中的数据。
-        BCDASCII.fromBCDToASCII(src, 0, mMessageId, 0, MSGIDLEN, false);
-        int srcLen = src.length;
-        byte[] srcData = new byte[srcLen - ((MSGIDLEN/2) + bitnum)];//将src中的消息类型和位图的数据去除。
-        System.arraycopy(src, (MSGIDLEN/2) + bitnum, srcData, 0, srcData.length);
-        byte[] varLen = new byte[10];//字串中表示可变长度的长度值，如长度为104，则BCD码为 01 04，2个字节表示
-        int n = 0;
-        int len = 0;//每个域的数据长度
-        int srcDataOffset = 0;
-        int offset = 0;
-        for (int i = 0; i < bitnum; i++) {//位图64位，8个字节，每个字节8位按顺序检测是否为1
-            bitmask = 0x80;
-            for (int j = 0; j < bitnum; j++, bitmask>>=1) {//bitmask = 0x80，10000000，每次右移一位，代表判断这个字节中的下一位是否为1
-                if (i == 0 && bitmask == 0x80) {//第一个字节的第一位，代表是64域还是128域，
-                    continue;
-                }
-                if ((src[i+2] & bitmask)==0) {//从第2位开始，i=0，j=1，bitmask=0x40为 1000000，判断位图中的第二位
-                    continue;
-                }
-                n = (i<<3) + j;//当i=1，则代表从第九个域开始，则是8+j，
-                if (mISO8583Domain[n].mFlag == LLVAR_LEN) {
-                    String lenSrc = BCDASCII.fromBCDToASCIIString(srcData, srcDataOffset, 2, false);
-                    Log.i(TAG, "LLVAR_LEN ascii_len=" + lenSrc);
-                    len = Integer.parseInt(lenSrc, 10); // .valueOf(lenSrc);
-                    srcDataOffset += 1;
-                } else if (mISO8583Domain[n].mFlag == LLLVAR_LEN) {
-                    String lenSrc = BCDASCII.fromBCDToASCIIString(srcData, srcDataOffset, 4, false);
-                    Log.i(TAG, "LLLVAR_LEN ascii_len=" + lenSrc);
-                    len = Integer.parseInt(lenSrc, 10); // .valueOf(lenSrc);
-                    srcDataOffset += 2;
-                } else if (mISO8583Domain[n].mFlag == FIX_LEN) {
-                    len = mISO8583Domain[n].mMaxLength;
-                }
-                mISO8583Domain[n].mLength = len;        /*保存该域的长度*/
-                mISO8583Domain[n].mStartAddr = offset;  /*该域值在mDataBuffer中的起始位置*/
-                if (len + offset >= MAXBUFFERLEN) {
-                    return -1;
-                }
-                // for debug
-                byte[] buf = new byte[len + 1];
-                if (mISO8583Domain[n].mType == L_BCD) {
-                    len = (len+1)/2;
-                    System.arraycopy(srcData, srcDataOffset, mDataBuffer, offset, len);
-                    // buf=BCDASCII.fromBCDToASCII(mDataBuffer, offset, len,
-                    // false);
-                    System.arraycopy(srcData, srcDataOffset, buf, 0, len);
-                } else if (mISO8583Domain[n].mType == L_ASC || mISO8583Domain[n].mType == D_BIN) {
-                    System.arraycopy(srcData, srcDataOffset, mDataBuffer,
-                            offset, len);
-                    System.arraycopy(srcData, srcDataOffset, buf, 0, len);
-                } else if (mISO8583Domain[n].mType == R_BCD) {
-                    len = (len+1)/2;
-                    System.arraycopy(srcData, srcDataOffset, mDataBuffer, offset, len);
-                    // buf=BCDASCII.fromBCDToASCII(mDataBuffer, offset, len,
-                    // false);
-                    System.arraycopy(srcData, srcDataOffset, buf, 0, len);
-                } else if (mISO8583Domain[n].mType == R_ASC) {
-                    System.arraycopy(srcData, srcDataOffset, mDataBuffer, offset, len);
-                    System.arraycopy(srcData, srcDataOffset, buf, 0, len);
-                }
-                // if (mISO8583Domain[n].mType == R_ASC ||
-                // mISO8583Domain[n].mType == L_ASC)
-                // Log.i(TAG,
-                // "idx="+(n+1)+", "+mISO8583Domain[n].mDomainName+", Len="+len+",[ASCII] "+new
-                // String(buf));
-                // else
-                Log.i(TAG, "idx=" + (n + 1) + ", " + mISO8583Domain[n].mDomainName + ", Len=" + len + ",[BCD] " + BCDASCII.bytesToHexString(buf));
 
-                mISO8583Domain[n].mBitf = 1;
-                offset += len;
-                srcDataOffset += len;
-            }
-        }
-        mOffset = offset;
-        return 0;
-    }
 
     /*=================================================================
     * Function ID :  setbit
@@ -602,7 +526,9 @@ public class ISO8583 {
         int dataOffset = 0;
         int bytenum=16;
         int bitnum = 8;
-        String sbitmap;
+        if(Arrays.equals(mMessageId, PosApplication.MTI_Terminal_Reconciliation_Advice.getBytes())||PosApplication.getApp().oGPosTransaction.m_enmTrxType== POSTransaction.TranscationType.TMS_FILE_DOWNLOAD){
+            bytenum=32;
+        }
         int n = 0;
         byte[] data = new byte[MAXBUFFERLEN];
 
@@ -614,15 +540,20 @@ public class ISO8583 {
                 if((i==0 & bitmask==0x80)& bytenum==32)
                 {
                     mISO8583Domain[n].mBitf = 1;
+                    //we should set field 128 bitmap =1 but it's not nessasery here we only need first bitmap
+                }
+                if(n==63 & bytenum==16)
+                {
+                    //force DE 64 Exist in bitmap as it not set yet
+                    mISO8583Domain[n].mBitf = 1;
                 }
                 if (mISO8583Domain[n].mBitf == 0) {//This field has no value
                     continue;
                 }
                 bitmap |= bitmask;
 
-
             }
-
+            data[i + 4] = bitmap;
 
 
         }

@@ -106,27 +106,27 @@ public class Terminal_Operation_Data {
 
     public Terminal_Operation_Data(){
         m_iPinKeyboardMode=1;
-        m_sMerchantID="000000000001478";
-        m_sTerminalID="0000000000001234";
+        m_sMerchantID="800150400577";
+        m_sTerminalID="5012345600123456";
         sMerchant_Category_Code="5411";
-        sAcquirer_ID="1050";
+        sAcquirer_ID="588847";
         m_sCurrencycode="682";
         m_sCountrycode="682";
         TerminalType=22;
         saf_info=new SAF_Info();
         g_NumberOfCardSchemes = 10;
         m_iSTAN=100;
-        m_CurrentKSN= BCDASCII.hexStringToBytes( "47FFF00111100000016D");
+        m_CurrentKSN= BCDASCII.hexStringToBytes( "50FFF012345600000000");
         m_sMaximum_transaction_amount_indicator="1111111111";
         m_sMaximum_transaction_amount="999999999999";
-
+        Mada_Auto_Selection=1;
         //TerminalStatus
         //Terminal Dial Indicator
-         terminal_dial_indicator ="0";// '1'-9', 'A' - 'F' (i.e. total range is '1'-'F').
+         terminal_dial_indicator ="1";// '1'-9', 'A' - 'F' (i.e. total range is '1'-'F').
         //Printer Status
-        Printer_Status="0";  //'0' = No printer. '1' = Out of paper. '2' = Plain paper receipt.
+        Printer_Status="2";  //'0' = No printer. '1' = Out of paper. '2' = Plain paper receipt.
         //Idle Time
-        Idle_Time="000000"; //hhmmss
+        Idle_Time="010101"; //hhmmss
         //Magnetic Reader Status
         Magnetic_Reader_Status="0";// '0'=Okay. '1' = Out of order.
         //Chip Card Reader Status
@@ -136,22 +136,22 @@ public class Terminal_Operation_Data {
         //Contactless Reader Status
         Contactless_Reader_Status="0";// '0'=Okay. '1' = Out of order. '9' = Not supported.
         //Connection Start Time
-        Connection_Start_Time="000000000"; //HHMMSSsss As 24 hour clock
+        Connection_Start_Time="121212000"; //HHMMSSsss As 24 hour clock
         //Connection End Time
-        Connection_End_Time="000000000"; //HHMMSSsss As 24 hour clock
+        Connection_End_Time="121212000"; //HHMMSSsss As 24 hour clock
         //Request Sent Time
-        Request_Sent_Time="000000000"; //HHMMSSsss As 24 hour clock
+        Request_Sent_Time="121212000"; //HHMMSSsss As 24 hour clock
         //Response Received Time
-        Response_Received_Time="000000000"; //HHMMSSsss As 24 hour clock
+        Response_Received_Time="121212000"; //HHMMSSsss As 24 hour clock
         //Performance Timers Reference
-        Performance_Timers_Reference="00000000000"; //original RRN for the online authorization or financial message for which the timers refer to.
+        Performance_Timers_Reference="123456789123456"; //original RRN for the online authorization or financial message for which the timers refer to.
         //mada EFTPOS specification release version
-        mada_EFTPOS_specification_release_version="6.0.9"; //The POS should send the version number without dots, and with 2 digits each with a leading zero, if applicable, for the Major, Minor and Patch specification version numbers i.e. Version 6.0.3 should be expressed as 060003 and Version 10.2.0 should be expressed as 100200
+        mada_EFTPOS_specification_release_version="060009"; //The POS should send the version number without dots, and with 2 digits each with a leading zero, if applicable, for the Major, Minor and Patch specification version numbers i.e. Version 6.0.3 should be expressed as 060003 and Version 10.2.0 should be expressed as 100200
         //Connection Details
-        Connection_Details="00000000"; //Connection Priority ‘01’ Primary ‘02’ Secondary,   Network Service Provider (NSP) ‘01’ iNET ‘02’ Mobily ‘03’ Zain ‘04’ Sky Band ‘05’ Geidea ,   Provider ‘01’ STC ‘02’ Mobily ‘03’ Zain ‘04’ Sky Band  , Connection Method ‘01’ Dial-up ‘02’ SIM ‘03’ TCP/IP ‘04’ VSAT ‘05’ DSL ‘06’ WiFi
+        Connection_Details="01010101"; //Connection Priority ‘01’ Primary ‘02’ Secondary,   Network Service Provider (NSP) ‘01’ iNET ‘02’ Mobily ‘03’ Zain ‘04’ Sky Band ‘05’ Geidea ,   Provider ‘01’ STC ‘02’ Mobily ‘03’ Zain ‘04’ Sky Band  , Connection Method ‘01’ Dial-up ‘02’ SIM ‘03’ TCP/IP ‘04’ VSAT ‘05’ DSL ‘06’ WiFi
 
         //TMSHEADER
-        m_sTMSHeader="3040000";
+        m_sTMSHeader="3060000";
         //communication
 
     }

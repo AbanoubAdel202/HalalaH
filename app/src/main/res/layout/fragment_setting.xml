@@ -25,12 +25,12 @@
                 android:text="@string/network_settings" />
 
             <Button
-                android:id="@+id/button3"
+                android:id="@+id/TMS_btn"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:background="@drawable/button_shape"
-                android:text="Button" />
+                android:text="TMS DOWNLOAD" />
         </LinearLayout>
 
         <LinearLayout

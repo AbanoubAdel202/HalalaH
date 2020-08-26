@@ -5,18 +5,14 @@ import android.annotation.SuppressLint;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.MotionEvent;
 import android.view.View;
-import android.widget.Switch;
 
 import com.example.halalah.POSTransaction;
-import com.example.halalah.POS_MAIN;
 import com.example.halalah.PosApplication;
 import com.example.halalah.R;
-import com.example.halalah.ui.AmountInputActivity;
 
 /**
  * An example full-screen activity that shows and hides the system UI (i.e.
@@ -183,7 +179,7 @@ public class Auth_menuActivity extends AppCompatActivity implements View.OnClick
 
        switch(v.getId())
         {
-            case R.id.authorization_btn:
+            case R.id.auth_btn:
                 PosApplication.getApp().oGPOS_MAIN.Start_Transaction(PosApplication.getApp().oGPosTransaction, POSTransaction.TranscationType.AUTHORISATION);
                 break;
 

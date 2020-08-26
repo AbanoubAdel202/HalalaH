@@ -9,6 +9,7 @@ import android.os.RemoteException;
 import android.util.Log;
 
 import com.topwise.cloudpos.aidl.AidlDeviceService;
+import com.topwise.cloudpos.aidl.buzzer.AidlBuzzer;
 import com.topwise.cloudpos.aidl.emv.level2.AidlAmex;
 import com.topwise.cloudpos.aidl.emv.level2.AidlEmvL2;
 import com.topwise.cloudpos.aidl.emv.level2.AidlEntry;
@@ -164,6 +165,23 @@ public class DeviceTopUsdkServiceManager {
     }
 
 
+
+    public AidlBuzzer getBeepManager() {
+
+        AidlBuzzer aidlBuzzer = AidlBuzzer.Stub.asInterface(getBeep());
+
+        return aidlBuzzer;
+    }
+    public IBinder getBeep() {
+        try {
+            if (mDeviceService != null) {
+                return mDeviceService.getBuzzer();
+            }
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
     public IBinder getPrinter() {
         try {
             if (mDeviceService != null) {

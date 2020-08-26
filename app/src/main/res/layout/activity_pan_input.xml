@@ -36,7 +36,7 @@
             android:layout_below="@+id/PAN_input_tip"
             android:layout_marginTop="30dp"
             android:gravity="right|center_vertical"
-            android:maxLength="14"
+            android:maxLength="19"
             android:paddingRight="40dp"
             android:singleLine="true"
             android:text="PAN"

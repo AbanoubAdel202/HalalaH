@@ -134,11 +134,11 @@ public class PosApplication extends Application{
         super.onCreate();
         Log.i(TAG, "onCreate");
 		DBManager.getInstance().init(this);
-        com.example.halalah.database.table.DBManager.getInstance().init(this);
+
         mContext = getApplicationContext();
         oGTerminal_Operation_Data.communicationInfo=new CommunicationInfo(this);
-        oGTerminal_Operation_Data.communicationInfo.setHostIP("192.168.8.132");
-        oGTerminal_Operation_Data.communicationInfo.setHostPort("1000");
+        oGTerminal_Operation_Data.communicationInfo.setHostIP("192.168.8.133");
+        oGTerminal_Operation_Data.communicationInfo.setHostPort("2030");
         mPosApplication = this;
 
 

@@ -130,8 +130,8 @@ public class PackPacket {
                  */
                 case PURCHASE:
                     if(PosApplication.getApp().oGPosTransaction.m_enmTrxCardType== POSTransaction.CardType.ICC || PosApplication.getApp().oGPosTransaction.m_enmTrxCardType== POSTransaction.CardType.CTLS)
-                    PosApplication.getApp().oGPosTransaction.ComposeAuthoriszationMessage(POSTransaction.TranscationType.AUTHORISATION);
-                    else if(PosApplication.getApp().oGPosTransaction.m_enmTrxCardType== POSTransaction.CardType.MAG)
+                    PosApplication.getApp().oGPosTransaction.ComposeAuthoriszationMessage(POSTransaction.TranscationType.PURCHASE);
+                    else if(PosApplication.getApp().oGPosTransaction.m_enmTrxCardType== POSTransaction.CardType.MAG ||PosApplication.getApp().oGPosTransaction.m_enmTrxCardType== POSTransaction.CardType.MANUAL)
                     PosApplication.getApp().oGPosTransaction.ComposeFinancialMessage(POSTransaction.TranscationType.PURCHASE);
 
                     return PosApplication.getApp().oGPosTransaction.m_RequestISOMsg.isotostr();

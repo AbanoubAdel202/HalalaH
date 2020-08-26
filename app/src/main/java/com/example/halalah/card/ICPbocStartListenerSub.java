@@ -103,7 +103,7 @@ public class ICPbocStartListenerSub implements OnEmvProcessListener {
             for(int index=0 ;index<aids.length;index++)
             {
                 if (aids[index].contains("mada"))
-                    iAID_Index=index+1;
+                    iAID_Index=index;
             }
 
         }
@@ -481,13 +481,21 @@ public class ICPbocStartListenerSub implements OnEmvProcessListener {
 
     private void setDE55() {
         Log.i(TAG, "getDE55()");
+        try {
 
-        String[] DE55Tag = new String[]{"82","9F02","9F03","4F","50","9F12","9F36","9F6C","9F26","9F27","9F34",
-                                        "84","9F6E","9F10","9F1E","5A","9F24","57","9F33","9F66","9F35","95",
-                                        "9F1A","5F2A","9A","9C","9F37","9F19","9F25"};
-        byte[] DE55TlvList = getTlv(DE55Tag);
-        Log.d(TAG, "setDE55 DE55TlvList : " + BCDASCII.bytesToHexString(DE55TlvList));
-        PosApplication.getApp().oGPosTransaction.m_sICCRelatedTags=BCDASCII.bytesToHexString(DE55TlvList);
+
+            String[] DE55Tag = new String[]{"82", "9F02", "9F03", "4F", "50", "9F12", "9F36", "9F6C", "9F26", "9F27", "9F34",
+                    "84", "9F6E", "9F10", "9F1E", "5A", "9F24", "57", "9F33", "9F66", "9F35", "95",
+                    "9F1A", "5F2A", "9A", "9C", "9F37", "9F19", "9F25"};
+            byte[] DE55TlvList = getTlv(DE55Tag);
+
+            Log.d(TAG, "setDE55 DE55TlvList : " + BCDASCII.bytesToHexString(DE55TlvList));
+            PosApplication.getApp().oGPosTransaction.m_sICCRelatedTags = BCDASCII.bytesToHexString(DE55TlvList);
+        }catch(Exception e)
+        {
+            e.printStackTrace();
+        }
+
     }
 
 

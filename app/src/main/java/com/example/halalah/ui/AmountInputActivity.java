@@ -40,11 +40,8 @@ public class AmountInputActivity extends Activity implements View.OnClickListene
     private StringBuilder mAmountBuilder;
     private StringBuilder mAmount;
     private StringBuilder mNAQD_Amount;
-    private AidlDeviceService serviceManager;
     private AidlLed mAidlLed = DeviceTopUsdkServiceManager.getInstance().getLedManager();
-    private AidlBuzzer iBeeper;
-    public static final String TOPWISE_SERVICE_ACTION = "topwise_cloudpos_device_service";
-
+    private AidlBuzzer beepManager = DeviceTopUsdkServiceManager.getInstance().getBeepManager();
     private int mTime = 30;
 
     @Override
@@ -52,36 +49,6 @@ public class AmountInputActivity extends Activity implements View.OnClickListene
         super.onCreate(savedInstanceState);
         Log.i(TAG, "onCreate()");
         setContentView(R.layout.activity_amount_input);
-
-        ServiceConnection conn = new ServiceConnection(){
-
-            @Override
-            public void onServiceConnected(ComponentName name, IBinder serviceBinder) {
-                Log.d(TAG,"aidlService服务连接成功");
-                if(serviceBinder != null){	//绑定成功
-                    serviceManager = AidlDeviceService.Stub.asInterface(serviceBinder);
-                    try {
-                        iBeeper = AidlBuzzer.Stub.asInterface(serviceManager.getBuzzer());
-                    } catch (RemoteException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-
-            @Override
-            public void onServiceDisconnected(ComponentName name) {
-                Log.d(TAG,"AidlService服务断开了");
-            }
-        };
-        Intent intent = new Intent();
-        intent.setAction(TOPWISE_SERVICE_ACTION);
-        final Intent eintent = new Intent(createExplicitFromImplicitIntent(this,intent));
-        boolean flag =bindService(eintent, conn, Context.BIND_AUTO_CREATE);
-
-
-
-
-
         /*ActionBar actionBar = this.getActionBar();
         actionBar.setTitle(R.string.title_consume);*/
         mBtnConfirm = (Button) findViewById(R.id.btn_search_card);
@@ -149,95 +116,49 @@ public class AmountInputActivity extends Activity implements View.OnClickListene
             case R.id.btn_0:
                 setText("0");
 
-                try {
-                    mAidlLed.setLed(0,true);
-                } catch (RemoteException e) {
-                    e.printStackTrace();
-                }
                 break;
             case R.id.btn_1:
                 setText("1");
 
-                try {
-                    mAidlLed.setLed(1,true);
-                } catch (RemoteException e) {
-                    e.printStackTrace();
-                }
                 break;
             case R.id.btn_2:
                 setText("2");
-                try {
-                    mAidlLed.setLed(2,true);
-                } catch (RemoteException e) {
-                    e.printStackTrace();
-                }
+
                 break;
             case R.id.btn_3:
                 setText("3");
-                try {
-                    mAidlLed.setLed(3,true);
-                } catch (RemoteException e) {
-                    e.printStackTrace();
-                }
+
                 break;
             case R.id.btn_4:
                 setText("4");
-                try {
-                    mAidlLed.setLed(4,true);
-                } catch (RemoteException e) {
-                    e.printStackTrace();
-                }
+
                 break;
             case R.id.btn_5:
                 setText("5");
-                try {
-                    iBeeper.beep(0,100);
-                } catch (RemoteException e) {
-                    e.printStackTrace();
-                }
+
                 break;
             case R.id.btn_6:
                 setText("6");
-                try {
-                    iBeeper.beep(1,100);
-                } catch (RemoteException e) {
-                    e.printStackTrace();
-                }
+
                 break;
             case R.id.btn_7:
                 setText("7");
-                try {
-                    iBeeper.beep(2,100);
-                } catch (RemoteException e) {
-                    e.printStackTrace();
-                }
+
                 break;
             case R.id.btn_8:
                 setText("8");
-                try {
-                    iBeeper.beep(3,100);
-                } catch (RemoteException e) {
-                    e.printStackTrace();
-                }
+
                 break;
             case R.id.btn_9:
                 setText("9");
-                try {
-                    iBeeper.beep(4,100);
-                } catch (RemoteException e) {
-                    e.printStackTrace();
-                }
+
                 break;
             case R.id.btn_back:
                 if (mAmountBuilder.length() > 1) {
                     mAmountBuilder.delete(mAmountBuilder.length() - 1, mAmountBuilder.length());
                 }
 
-                try {
-                    mAidlLed.setLed(0,false);
-                } catch (RemoteException e) {
-                    e.printStackTrace();
-                }
+
                 setText(null);
                 break;
             case R.id.btn_clear:
@@ -315,9 +236,11 @@ public class AmountInputActivity extends Activity implements View.OnClickListene
         String temp = mAmountBuilder.toString();
         Log.i(TAG, "temp = " + temp);
 
-        if (temp.length() > 12) {
+        if (temp.length() > 10) {
             return;
         }
+    if(charNum=="0" && temp.length()<2)
+        return;
 
         if (charNum != null) {
             mAmountBuilder.append(charNum);

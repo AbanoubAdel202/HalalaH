@@ -29,6 +29,7 @@ import com.example.halalah.ui.Display_PrintActivity;
 import com.example.halalah.ui.P_NAQD_InputActivity;
 import com.example.halalah.ui.PacketProcessActivity;
 import com.example.halalah.ui.Refund_InputActivity;
+import com.example.halalah.ui.SearchCardActivity;
 import com.example.halalah.ui.ShowResultActivity;
 import com.example.halalah.util.PacketProcessUtils;
 import com.topwise.cloudpos.aidl.printer.AidlPrinter;
@@ -79,21 +80,29 @@ public class POS_MAIN implements SendReceiveListener {
         PosApplication.getApp().oGPosTransaction.Reset();
 
 
-        Intent AmountACT;
+        Intent intent;
+
         switch(Trxtype)
         {
             case PURCHASE://purchase
 
                 //get amount
-                AmountACT= new Intent(mcontext, AmountInputActivity.class);
-                AmountACT.putExtra("transaction Type",Trxtype);
-                mcontext.startActivity(AmountACT);
+                intent= new Intent(mcontext, AmountInputActivity.class);
+                intent.putExtra("transaction Type",Trxtype);
+                mcontext.startActivity(intent);
                 break;
             case PURCHASE_WITH_NAQD://PURCHASE_WITH_NAQD
                 //get amount
-                 AmountACT = new Intent(mcontext, P_NAQD_InputActivity.class);
+                /* AmountACT = new Intent(mcontext, P_NAQD_InputActivity.class);
                  AmountACT.putExtra("transaction Type",Trxtype);
-                mcontext.startActivity(AmountACT);
+                mcontext.startActivity(AmountACT);*/
+                PosApplication.getApp().oGPosTransaction.m_sTrxAmount="500.35";
+                PosApplication.getApp().oGPosTransaction.m_sAdditionalAmount="200.80";
+                PosApplication.getApp().oGPosTransaction.m_enmTrxType= POSTransaction.TranscationType.PURCHASE_WITH_NAQD;
+                intent= new Intent(mcontext, SearchCardActivity.class);
+                mcontext.startActivity(intent);
+
+
 
                 break;
             case REFUND://REFUND
@@ -101,45 +110,73 @@ public class POS_MAIN implements SendReceiveListener {
 
 
 
-                // TODO get original transaction Type
+               /* // TODO get original transaction Type
                 AmountACT = new Intent(mcontext, Refund_InputActivity.class);
                 AmountACT.putExtra("transaction Type",Trxtype);
-                mcontext.startActivity(AmountACT);
+                mcontext.startActivity(AmountACT);*/
+
+                PosApplication.getApp().oGPosTransaction.m_sTrxAmount="500.35";
+                PosApplication.getApp().oGPosTransaction.m_sOrigRRNumber="2233445566";
+                PosApplication.getApp().oGPosTransaction.m_sOrigTrxDateTime="2008251212";
+                PosApplication.getApp().oGPosTransaction.m_sOrigLocalTrxDateTime="200825121210";
+                PosApplication.getApp().oGPosTransaction.m_sOrigMTI="1200";
+
+                PosApplication.getApp().oGPosTransaction.m_enmTrxType= POSTransaction.TranscationType.REFUND;
+                intent= new Intent(mcontext, SearchCardActivity.class);
+                mcontext.startActivity(intent);
 
                 break;
             case AUTHORISATION://AUTHORISATION:
 
 
                 //get amount
-                AmountACT = new Intent(mcontext, AmountInputActivity.class);
-                AmountACT.putExtra("transaction Type",Trxtype);
-                mcontext.startActivity(AmountACT);
+                intent = new Intent(mcontext, AmountInputActivity.class);
+                intent.putExtra("transaction Type",Trxtype);
+                mcontext.startActivity(intent);
+
+             /*   PosApplication.getApp().oGPosTransaction.m_sTrxAmount="500.35";
+                PosApplication.getApp().oGPosTransaction.m_enmTrxType= POSTransaction.TranscationType.AUTHORISATION;
+                searchcard= new Intent(mcontext, SearchCardActivity.class);
+                mcontext.startActivity(searchcard);*/
 
                 break;
             case AUTHORISATION_ADVICE://AUTHORISATION_ADVICE:
                 //get amount
-                AmountACT = new Intent(mcontext, AmountInputActivity.class);
+               /* AmountACT = new Intent(mcontext, AmountInputActivity.class);
                 AmountACT.putExtra("transaction Type",Trxtype);
-                mcontext.startActivity(AmountACT);
+                mcontext.startActivity(AmountACT);*/
+                PosApplication.getApp().oGPosTransaction.m_sTrxAmount="500.35";
+                PosApplication.getApp().oGPosTransaction.m_sOrigRRNumber="121323";
+                PosApplication.getApp().oGPosTransaction.m_sApprovalCode="123456";
+                PosApplication.getApp().oGPosTransaction.m_enmTrxType= POSTransaction.TranscationType.AUTHORISATION_ADVICE;
+                intent= new Intent(mcontext, SearchCardActivity.class);
+                mcontext.startActivity(intent);
                 break;
             case AUTHORISATION_VOID://AUTHORISATION_VOID:
-                AmountACT = new Intent(mcontext, AmountInputActivity.class);
-                AmountACT.putExtra("transaction Type",Trxtype);
+               /* AmountACT = new Intent(mcontext, AmountInputActivity.class);
+                AmountACT.putExtra("transaction Type",Trxtype);*/
+                PosApplication.getApp().oGPosTransaction.m_sTrxAmount="500.35";
+                PosApplication.getApp().oGPosTransaction.m_sOrigRRNumber="121323";
+                PosApplication.getApp().oGPosTransaction.m_sOrigAmount="500.35";
+                PosApplication.getApp().oGPosTransaction.m_sOrigLocalTrxDateTime="121212121212";
+                PosApplication.getApp().oGPosTransaction.m_enmTrxType= POSTransaction.TranscationType.AUTHORISATION_VOID;
+                intent= new Intent(mcontext, PacketProcessActivity.class);
+                mcontext.startActivity(intent);
                 break;
             case AUTHORISATION_EXTENSION://AUTHORISATION_EXTENSION
-                AmountACT = new Intent(mcontext, AmountInputActivity.class);
-                AmountACT.putExtra("transaction Type",Trxtype);
+                intent = new Intent(mcontext, AmountInputActivity.class);
+                intent.putExtra("transaction Type",Trxtype);
                 break;
             case PURCHASE_ADVICE://PURCHASE_ADVICE:
-                 AmountACT = new Intent(mcontext, AmountInputActivity.class);
-                AmountACT.putExtra("transaction Type",Trxtype);
+                intent = new Intent(mcontext, AmountInputActivity.class);
+                intent.putExtra("transaction Type",Trxtype);
 
                 break;
 
             case CASH_ADVANCE://CASH_ADVANCE:
                 //todo start cash advance
-                AmountACT = new Intent(mcontext, AmountInputActivity.class);
-                AmountACT.putExtra("transaction Type",Trxtype);
+                intent = new Intent(mcontext, AmountInputActivity.class);
+                intent.putExtra("transaction Type",Trxtype);
                 break;
             case REVERSAL://REVERSAL
                 //todo check host transaction
@@ -673,15 +710,15 @@ public class POS_MAIN implements SendReceiveListener {
 
         // Adding Contactless floor limit
         //"DF19" ClssFloorLimit
-        if(PosApplication.getApp().oGTerminal_Operation_Data.m_sTerminal_Contactless_Floor_Limit.length()>0)
+        if(PosApplication.getApp().oGTerminal_Operation_Data.m_sTerminal_Contactless_Floor_Limit!=null)
         strFormatedAIDData.append("DF19"+String.format(Locale.ENGLISH,"%02d",PosApplication.getApp().oGTerminal_Operation_Data.m_sTerminal_Contactless_Floor_Limit.length()/2)+PosApplication.getApp().oGTerminal_Operation_Data.m_sTerminal_Contactless_Floor_Limit);
         //adding Contactless Transaction limit
         //"DF20" ClssTxnLimit
-        if(PosApplication.getApp().oGTerminal_Operation_Data.m_sTerminal_Contactless_Transaction_Limit.length()>0)
+        if(PosApplication.getApp().oGTerminal_Operation_Data.m_sTerminal_Contactless_Transaction_Limit!=null)
         strFormatedAIDData.append("DF20"+String.format(Locale.ENGLISH,"%02d",PosApplication.getApp().oGTerminal_Operation_Data.m_sTerminal_Contactless_Transaction_Limit.length()/2)+PosApplication.getApp().oGTerminal_Operation_Data.m_sTerminal_Contactless_Transaction_Limit);
         //adding Contactless CVM limit
         //"DF21" ClssCVMLimit
-        if(PosApplication.getApp().oGTerminal_Operation_Data.m_sTerminal_CVM_Required_Limit.length()>0)
+        if(PosApplication.getApp().oGTerminal_Operation_Data.m_sTerminal_CVM_Required_Limit!=null)
         strFormatedAIDData.append("DF21"+String.format(Locale.ENGLISH,"%02d",PosApplication.getApp().oGTerminal_Operation_Data.m_sTerminal_CVM_Required_Limit.length()/2)+PosApplication.getApp().oGTerminal_Operation_Data.m_sTerminal_CVM_Required_Limit);
 
 
@@ -1241,7 +1278,7 @@ DF03 Check Sum                                [20]   >> 4410C6D51C2F83ADFD92528F
             }
         }
 
-        sMAC= DUKPT_KEY.CaluclateMACBlock(sMAC);
+        sMAC= DUKPT_KEY.CaluclateMACBlock(bMac);
 
         //removinglast 4 bytes
         sMAC=sMAC.substring(0,4);

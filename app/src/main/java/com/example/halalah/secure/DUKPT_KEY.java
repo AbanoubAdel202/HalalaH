@@ -11,6 +11,7 @@ import com.example.halalah.DeviceTopUsdkServiceManager;
 import com.example.halalah.POSTransaction;
 import com.example.halalah.PosApplication;
 import com.example.halalah.R;
+import com.example.halalah.iso8583.BCDASCII;
 import com.example.halalah.util.HexUtil;
 import com.topwise.cloudpos.aidl.pinpad.AidlPinpad;
 import com.topwise.cloudpos.aidl.system.AidlSystem;
@@ -237,7 +238,7 @@ Load Last Terminal Data from Terminal Operation Data Table
 **************************************/
 
 
-    public static String CaluclateMACBlock(String strMACInputData)
+    public static String CaluclateMACBlock(byte[] bMACInputData)//String strMACInputData)
     {
 
         int    iRetRes         = -1;
@@ -246,11 +247,12 @@ Load Last Terminal Data from Terminal Operation Data Table
         String strMACBLOCK ;
         byte[] byteCurrentKSN;
 
-        Log.i(TAG," CaluclateMACBlock STarted Input Data  [ "+strMACInputData+ " ]");
+        Log.i(TAG," CaluclateMACBlock STarted Input Data  [ "+bMACInputData+ " ]");
 
         macBundle.putInt("wkeyid", m_WorkKey);
         macBundle.putInt("key_type", PosApplication.DUKPT_MAK);
-        macBundle.putByteArray("data",HexUtil.hexStringToByte(strMACInputData));
+        //byte[]x=HexUtil.StringToByte(strMACInputData);
+        macBundle.putByteArray("data", bMACInputData);//HexUtil.StringToByte(strMACInputData));
         macBundle.putByteArray("random", null);
         macBundle.putInt("type", 0x00);
 
@@ -288,7 +290,8 @@ Load Last Terminal Data from Terminal Operation Data Table
         {
             //showMessage(getResources().getString(R.string.pin_mac_919_mac_success1) + HexUtil.bcd2str(mac));
 
-            strMACBLOCK = HexUtil.bcd2str(byteMACBlock);
+            //strMACBLOCK = HexUtil.bcd2str(byteMACBlock);
+            strMACBLOCK=BCDASCII.bytesToHexString(byteMACBlock);
             Log.i(TAG,"getMac Succeed with return [ "+R.string.MAC_Success+"] and Value ["+strMACBLOCK+"]");
         }
 

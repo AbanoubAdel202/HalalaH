@@ -39,9 +39,10 @@ public class RFPbocStartListenerSub implements OnEmvProcessListener {
         //todo AID supported or not
 
         byte[] bAIDs;
-        String[] AIDs = new String[]{"9F06"};
+        String[] AIDs = new String[]{"4F"};
         bAIDs= getTlv(AIDs);
-        PosApplication.getApp().oGPosTransaction.m_sAID= BCDASCII.bytesToHexString(bAIDs).replace("9F0607",""); //todo function generc remove tag and leangth
+
+        PosApplication.getApp().oGPosTransaction.m_sAID= BCDASCII.bytesToHexString(bAIDs).replace("4F07",""); //todo function generc remove tag and leangth
 
         //todo success validation
         if (POS_MAIN.Recognise_card()!=0)

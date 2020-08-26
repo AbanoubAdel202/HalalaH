@@ -2,12 +2,15 @@ package com.example.halalah.ui;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.media.AudioManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.os.RemoteException;
 import android.text.InputType;
 import android.util.Log;
+import android.view.SoundEffectConstants;
+import android.view.View;
 import android.widget.TextView;
 
 import com.example.halalah.DeviceTopUsdkServiceManager;
@@ -21,8 +24,10 @@ import com.example.halalah.iso8583.BCDASCII;
 import com.example.halalah.util.CardSearchErrorUtil;
 import com.example.halalah.util.HexUtil;
 import com.example.halalah.util.PacketProcessUtils;
+import com.topwise.cloudpos.aidl.buzzer.AidlBuzzer;
 import com.topwise.cloudpos.aidl.pinpad.AidlPinpad;
 import com.topwise.cloudpos.aidl.pinpad.GetPinListener;
+import com.topwise.cloudpos.data.BuzzerCode;
 
 public class PinpadActivity extends Activity {
     private static final String TAG = Utils.TAGPUBLIC + PinpadActivity.class.getSimpleName();
@@ -170,7 +175,7 @@ public class PinpadActivity extends Activity {
         bundle.putInt("inputtimes", 1);
         bundle.putInt("minlength", 4);
         bundle.putInt("maxlength", 12);
-        bundle.putString("pan", /*PosApplication.getApp().oGPosTransaction.m_sPAN*/"5892068642097536");//for test
+        bundle.putString("pan", PosApplication.getApp().oGPosTransaction.m_sPAN);
         bundle.putString("tips", PosApplication.getApp().oGPosTransaction.m_sTrxAmount);
         bundle.putBoolean("is_lkl", false);
 
@@ -244,6 +249,9 @@ public class PinpadActivity extends Activity {
         @Override
         public void onInputKey(int len, String msg) throws RemoteException {
             Log.i(TAG, "onInputKey(), len = " + len + ", msg = " + msg);
+            AidlBuzzer aidlBuzzer=DeviceTopUsdkServiceManager.getInstance().getBeepManager();
+            aidlBuzzer.beep(BuzzerCode.BUZZER_MODE_NORAML,0);
+
 
             mPinInput = msg;
             mHandler.sendEmptyMessage(1);
