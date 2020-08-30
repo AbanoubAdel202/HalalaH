@@ -126,30 +126,35 @@ public class WifiFragment extends Fragment implements ISaveConnection {
         tpdu = et_tpdu.getText().toString();
         if (TextUtils.isEmpty(tpdu)) {
             et_tpdu.setError("tpdu error");
+            et_tpdu.requestFocus();
             return false;
         }
 
         ip = et_network_ip_address.getText().toString();
         if (!Patterns.IP_ADDRESS.matcher(ip).matches()) {
             et_network_ip_address.setError("ip error");
+            et_network_ip_address.requestFocus();
             return false;
         }
 
         port = et_network_tcp_port.getText().toString();
         if (TextUtils.isEmpty(port)) {
             et_network_tcp_port.setError("port error");
+            et_network_tcp_port.requestFocus();
             return false;
         }
 
         retries_count = et_count_access_retries.getText().toString();
         if (TextUtils.isEmpty(retries_count)) {
             et_count_access_retries.setError("retries count error");
+            et_count_access_retries.requestFocus();
             return false;
         }
 
         response_timeout = et_response_timeout.getText().toString();
         if (TextUtils.isEmpty(response_timeout)) {
             et_response_timeout.setError("response timeout error");
+            et_response_timeout.requestFocus();
             return false;
         }
 

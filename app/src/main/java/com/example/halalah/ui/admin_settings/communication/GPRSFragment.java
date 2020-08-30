@@ -141,18 +141,21 @@ public class GPRSFragment extends Fragment implements ISaveConnection {
         tpdu = et_tpdu.getText().toString();
         if (TextUtils.isEmpty(tpdu)) {
             et_tpdu.setError("tpdu error");
+            et_tpdu.requestFocus();
             return false;
         }
 
         dial_Number = et_dial_Number.getText().toString();
         if (TextUtils.isEmpty(dial_Number)) {
             et_dial_Number.setError("Dial Number error");
+            et_dial_Number.requestFocus();
             return false;
         }
 
         access_point_name = et_access_point_name.getText().toString();
         if (TextUtils.isEmpty(access_point_name)) {
             et_access_point_name.setError("Access point_name error");
+            et_access_point_name.requestFocus();
             return false;
         }
 
@@ -165,24 +168,28 @@ public class GPRSFragment extends Fragment implements ISaveConnection {
         ip = et_network_ip_address.getText().toString();
         if (!Patterns.IP_ADDRESS.matcher(ip).matches()) {
             et_network_ip_address.setError("ip error");
+            et_network_ip_address.requestFocus();
             return false;
         }
 
         port = et_network_tcp_port.getText().toString();
         if (TextUtils.isEmpty(port)) {
             et_network_tcp_port.setError("port error");
+            et_network_tcp_port.requestFocus();
             return false;
         }
 
         dial_attempts = et_dial_attempts.getText().toString();
         if (TextUtils.isEmpty(dial_attempts)) {
             et_dial_attempts.setError("dial attempts error");
+            et_dial_attempts.requestFocus();
             return false;
         }
 
         response_timeout = et_response_timeout.getText().toString();
         if (TextUtils.isEmpty(response_timeout)) {
             et_response_timeout.setError("response timeout error");
+            et_response_timeout.requestFocus();
             return false;
         }
 
