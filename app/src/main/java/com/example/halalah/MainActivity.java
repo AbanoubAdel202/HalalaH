@@ -1,12 +1,9 @@
 package com.example.halalah;
 
-import com.example.halalah.emv.EmvManager;
-import com.example.halalah.storage.CommunicationInfo;
-import com.topwise.cloudpos.aidl.emv.level2.EmvTerminalInfo;
-
 import android.Manifest;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Address;
 import android.location.Geocoder;
@@ -22,35 +19,43 @@ import android.view.Menu;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.halalah.TMS.SAMA_TMS;
-import com.example.halalah.iso8583.BCDASCII;
-
-import com.example.halalah.secure.DUKPT_KEY;
-import com.google.android.material.navigation.NavigationView;
-
-import com.topwise.cloudpos.aidl.led.AidlLed;
-import com.topwise.cloudpos.aidl.pinpad.AidlPinpad;
-import com.topwise.cloudpos.data.PinpadConstant;
-
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
-import androidx.drawerlayout.widget.DrawerLayout;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
+
+import com.example.halalah.TMS.SAMA_TMS;
+import com.example.halalah.cloudpos.data.PinpadConstant;
+import com.example.halalah.emv.EmvManager;
+import com.example.halalah.iso8583.BCDASCII;
+import com.example.halalah.registration.RegistrationData;
+import com.example.halalah.registration.view.ITransaction;
+import com.example.halalah.registration.view.RegistrationActivity;
+import com.example.halalah.secure.DUKPT_KEY;
+import com.google.android.material.navigation.NavigationView;
+import com.topwise.cloudpos.aidl.emv.level2.EmvTerminalInfo;
+import com.topwise.cloudpos.aidl.led.AidlLed;
+import com.topwise.cloudpos.aidl.pinpad.AidlPinpad;
+
+import org.parceler.Parcels;
 
 import java.io.IOException;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements ITransaction.View {
 
+    private static final int REGISTRATION_REQUEST_CODE = 1000;
     private AppBarConfiguration mAppBarConfiguration;
     Context context;
     ProgressDialog mProgressDialog;
+    private boolean isRegistrationInProgress;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,19 +63,20 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        CommunicationInfo communicationInfo = new CommunicationInfo(this);
-        communicationInfo.setHostIP("192.168.8.104");
-        communicationInfo.setHostPort("2030");
+//        CommunicationInfo communicationInfo = new CommunicationInfo(this);
+//        communicationInfo.setHostIP("192.168.8.124");
+//        communicationInfo.setHostPort("1001");
+//        communicationInfo.setTPDU("6000230000");
 
         TextView date = findViewById(R.id.Date);
-        TextView time =findViewById(R.id.TIME);
+        TextView time = findViewById(R.id.TIME);
         TextView status = findViewById(R.id.Status);
         context = getApplicationContext();
         // Mostafa 21/4/2020 added to time and date for action bar
         Date d = new Date();
-        CharSequence s  = DateFormat.format("MMMM d, yyyy ", d.getTime());
+        CharSequence s = DateFormat.format("MMMM d, yyyy ", d.getTime());
         date.setText(s);
-        CharSequence t = DateFormat.format("HH:MM",d.getTime());
+        CharSequence t = DateFormat.format("HH:MM", d.getTime());
         time.setText(t);
 
         PosApplication.getApp().getDeviceManager();
@@ -91,26 +97,18 @@ public class MainActivity extends AppCompatActivity {
         // Passing each menu ID as a set of Ids because each
         // menu should be considered as top level destinations.
         mAppBarConfiguration = new AppBarConfiguration.Builder(
-                R.id.nav_transaction, R.id.nav_Merchant, R.id.nav_totals,R.id.nav_reports,R.id.nav_setting)
+                R.id.nav_transaction, R.id.nav_Merchant, R.id.nav_totals, R.id.nav_reports, R.id.nav_setting)
                 .setDrawerLayout(drawer)
                 .build();
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
         NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);
         NavigationUI.setupWithNavController(navigationView, navController);
 
+        showLoading("Terminal Initializing please wait...");
+        DownLoadParM();
+//        Terminal_Initialization();
 
-        mProgressDialog = new ProgressDialog(this);
-        mProgressDialog.setCancelable(false);
-        mProgressDialog.setMessage("Terminal Initializing please wait...");
-        mProgressDialog.show();
-
-
-        Terminal_Initialization();
-
-       // StartMADA_APP();
-
-
-
+        StartMADA_APP();
     }
 
     @Override
@@ -133,14 +131,13 @@ public class MainActivity extends AppCompatActivity {
        /* Intent returnhome = new Intent(this,MainActivity.class);
 
         startActivity(returnhome);*/
-       Toast.makeText(this,"This is Home Screen",Toast.LENGTH_LONG).show();
-
-
+        Toast.makeText(this, "This is Home Screen", Toast.LENGTH_LONG).show();
 
 
     }
+
     @Override
-    public void onUserInteraction(){
+    public void onUserInteraction() {
 
         // if we need to do someting if user interacting
         //listen for user action
@@ -152,43 +149,38 @@ public class MainActivity extends AppCompatActivity {
         super.onResume();
         PosApplication.getApp().oGPosTransaction.Reset();
         AidlLed mAidlLed = DeviceTopUsdkServiceManager.getInstance().getLedManager();
+        checkRegistration();
         try {
-            if(mAidlLed != null){
-                mAidlLed.setLed(0 , false);
+            if (mAidlLed != null) {
+                mAidlLed.setLed(0, false);
             }
         } catch (RemoteException e) {
             e.printStackTrace();
         }
     }
 
-    private boolean Terminal_Initialization(){
+    private boolean Terminal_Initialization() {
 
         // todo Terminal initialization
         POS_MAIN.check_hardware();
         POS_MAIN.load_Terminal_configuration_file(); //TMS parameter
 
-        Getlocation();
+//        Getlocation();
 
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                SystemClock.sleep(1000);
-                DownLoadParM();//Dummy TMS download
-                downLoadKeys();
+        new Thread(() -> {
+            SystemClock.sleep(1000);
+            DownLoadParM();//Dummy TMS download
+            downLoadKeys();
 
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        if(mProgressDialog!= null && mProgressDialog.isShowing()){
-                            mProgressDialog.dismiss();
-                        }
-
-                    }
-                });
-            }
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    hideLoading();
+                }
+            });
         }).start();
 
-return true;
+        return true;
 
 
     }
@@ -231,8 +223,7 @@ return true;
                         System.out.println(addresses.get(0).getLocality());
                         cityName = addresses.get(0).getLocality();
                     }
-                }
-                catch (IOException e) {
+                } catch (IOException e) {
                     e.printStackTrace();
                 }
                 String s = longitude + "\n" + latitude + "\n\nMy Current City is: "
@@ -257,15 +248,14 @@ return true;
         });
 
 
-
     }
-    private void DownLoadParM(){
+
+    private void DownLoadParM() {
         SAMA_TMS sama_tms = new SAMA_TMS();
         //3060125\u001D011\u001C1720\u001Cاهرêماو امسبرس 72\u001C400101490012\u001CMobily\u001C2\u001C682\u001C682\u001C02\u001C\u001CSAR\u001C\u001C\u001C\u001C\u001D012 انظنêا\u001COlaya 1222\u001D013 انرêاض\u001CRIYADH\u001D014E0F8C8\u001CD000F0A000\u001C\u001C22\u001C0\u001C03\u001C03
         // this is for testing here should be
-        PosApplication.getApp().oGSama_TMS=sama_tms;
-        for (int i=0 ;i<42;i++)
-        {
+        PosApplication.getApp().oGSama_TMS = sama_tms;
+        for (int i = 0; i < 42; i++) {
             // String DE72buffer = "3060125\u001D011\u001C1720\u001Cاهرêماو امسبرس 72\u001C400101490012\u001CMobily\u001C2\u001C682\u001C682\u001C02\u001C\u001CSAR\u001C\u001C\u001C\u001C\u001D012 انظنêا\u001COlaya 1222\u001D013 انرêاض\u001CRIYADH\u001D014E0F8C8\u001CD000F0A000\u001C\u001C22\u001C0\u001C03\u001C03";
                    /* String[] DE72buffer = {
                             "3060125\u001D011\u001C1720\u001Cاهرêماو امسبرس 72\u001C400101490012\u001CMobily\u001C2\u001C682\u001C682\u001C02\u001C\u001CSAR\u001C\u001C\u001C\u001C\u001D012 انظنêا\u001COlaya 1222\u001D013 انرêاض\u001CRIYADH\u001D014E0F8C8\u001CD000F0A000\u001C\u001C22\u001C0\u001C03\u001C03",
@@ -295,7 +285,7 @@ return true;
                             "3062525\u001D081A000000025010402\u001CAMEX                \u001C\u001C0\u001C0\u001C\u001C9F3704                                  \u001C\u001C0000000000\u001CCC00000000\u001CCC00000000\u001C\u001C\u001C"};
 
                    */
-            String[] DE72buffer ={
+            String[] DE72buffer = {
                     "3060143\u001D0111604081438\u001C1720\u001CÇåÑêãÇæ ÇãÓÈÑÓ 72\u001C400101490012\u001CMobily\u001C2\u001C682\u001C682\u001C02\u001C\u001CSAR\u001C\u001C\u001C\u001C\u001D012 ÇäÙäêÇ\u001COlaya 1222\u001D013 ÇäÑêÇÖ\u001CRIYADH\u001D014E0F8C8\u001C4000F0A000\u001C\u001C22\u001C0\u001C03\u001C03",
                     "3060243\u001D021JC\u001CÇåÑêãÇæ ÇãÓÈÑÓ\u001CJCB\u001CSAIB\u001C5311\u001C400101490012   \u001C01490123\u001C0\u001C1\u001C0\u001D022JC\u001C1111111111111111\u001C1011100000000000\u001C0001000000000000\u001C0000100000000000\u001C0\u001C\u001C\u001C\u001C0000000000000000\u001C\u001C1\u001C00\u001C0\u001D023JC\u001C34FFFF|38FFFF|37FFFF\u001CF\u001D021DC\u001CåÇêÓÊÑè\u001CDiscover\u001CSAIB\u001C5311\u001C400101490012   \u001C01490123\u001C0\u001C1\u001C0\u001D022DC\u001C1111111111111111\u001C2001000000000000\u001C0001000000000000\u001C0000000000000000\u001C1\u001C400\u001C2\u001C200\u001C1001000000000000\u001C50000\u001C1\u001C00\u001C0\u001D023DC\u001C50FFFF|56FFFF|57FFFF|6FFFFF|7FFFFF\u001CF\u001D021MC\u001CåÇÓÊÑ ãÇÑÏ\u001CMASTERCARD\u001CSAIB\u001C5311\u001C400101490012   \u001C01490123\u001C0\u001C1\u001C1\u001D022MC\u001C1111111111111111\u001C3011102000000000\u001C0001000000000000\u001C0000100000000000\u001C1\u001C400\u001C\u001C\u001C0000000000000000\u001C20000\u001C1\u001C00\u001C0\u001D023MC\u001C51FFFF|52FFFF|53FFFF|54FFFF|55FFFF\u001CF\u001D021P1\u001CåÏé èÓÈÇæ\u001CMoa AND AHM\u001CSAIB\u001C5311\u001C400101490012   \u001C01490123\u001C1\u001C1\u001C0\u001D022P1\u001C1111111111111111\u001C2102000000000000\u001C0001000000000000\u001C0000000000000000\u001C1\u001C400\u001C2\u001C200\u001C0000000000000000\u001C20000\u001C1\u001C00\u001C0",
                     "3060343\u001D023P1\u001C455036|588845|440647|440795|588846|493428|588850|588847|490980|588849|588851|605141|589206|585265|588983|588848|504300|440533|410685|636120|417633|431361|443927|446404|549760|557655|409201|400861|588982|400681|432328|486094\u001CF\u001D021VC\u001CáêÒÇ\u001CVISA\u001CSAIB\u001C5311\u001C400101490012   \u001C01490123\u001C0\u001C1\u001C1\u001D022VC\u001C1111111111111111\u001C3333333000000000\u001C0001000000000000\u001C1111111111111111\u001C1\u001C400\u001C\u001C\u001C0000000000000000\u001C40000\u001C1\u001C00\u001C0\u001D023VC\u001C4FFFFF\u001CF",
@@ -346,20 +336,18 @@ return true;
             PosApplication.getApp().oGSama_TMS.Get_Sama_param(DE72buffer[i]);
 
 
-
-
         }
     }
 
 
-    private boolean downLoadKeys(){
+    private boolean downLoadKeys() {
 
         final AidlPinpad pinpadManager = DeviceTopUsdkServiceManager.getInstance().getPinpadManager(0);
         final byte[] tmk = BCDASCII.hexStringToBytes("89F8B0FDA2F2896B9801F131D32F986D89F8B0FDA2F2896B");
         final byte[] tak = BCDASCII.hexStringToBytes("92B1754D6634EB22");
         final byte[] tpk = BCDASCII.hexStringToBytes("B5E175AC5FD8DD8A03AD23A35C5BAB6B");
         final byte[] trk = BCDASCII.hexStringToBytes("744185122EEC284830694CAD383B4F7A");
-        boolean mIsSuccess =false;
+        boolean mIsSuccess = false;
 
         try {
             mIsSuccess = pinpadManager.loadMainkey(0, tmk, null);
@@ -373,59 +361,123 @@ return true;
         } catch (RemoteException e) {
             e.printStackTrace();
         }
-    return true;
+        return true;
     }
 
-    private void StartMADA_APP()
-    {   Load_Terminal_operation_data();
+    private void StartMADA_APP() {
+        Load_Terminal_operation_data();
         POS_MAIN.Get_Terminal_Transaction_limits();
-        boolean bRegistered=PosApplication.getApp().oGTerminal_Operation_Data.m_bregistered;
-        Initialize_Security();
-        if(bRegistered==true) {
+    }
+
+    private void checkRegistration() {
+        if (isRegistrationInProgress) {
+            showLoading("Registering terminal. Please wait ...");
+            return;
+        }
+        boolean bRegistered = PosApplication.getApp().oGTerminal_Operation_Data.m_bregistered;
+//        Initialize_Security();
+        if (bRegistered == true) {
             //Initialize_EMV_Configuration();
             Initialize_CTLS_configuration();
-        }
-        else{
-
-            while (!PosApplication.getApp().oGTerminal_Operation_Data.m_bregistered)  //todo add tries counter due to connection failures
-            {
-                POS_MAIN oPos_Main = new POS_MAIN();
-                oPos_Main.Start_Transaction(PosApplication.getApp().oGPosTransaction,POSTransaction.TranscationType.TERMINAL_REGISTRATION);
-
-            }
+        } else {
+            showRegistrationScreen();
         }
     }
-    private void Initialize_Security()
-    {
-        DUKPT_KEY.InitilizeDUKPT("0123456789ABCDEF0123456789ABCDEF","47FFF00111100000016D");
+
+    private void showLoading(String message) {
+        if (mProgressDialog == null) {
+            mProgressDialog = new ProgressDialog(this);
+        }
+        mProgressDialog.setCancelable(true);
+        mProgressDialog.setMessage(message);
+        mProgressDialog.show();
+    }
+
+    private void hideLoading() {
+        if (mProgressDialog != null && mProgressDialog.isShowing()) {
+            mProgressDialog.dismiss();
+        }
+    }
+
+    private void Initialize_Security() {
+        DUKPT_KEY.InitilizeDUKPT("0123456789ABCDEF0123456789ABCDEF", "47FFF00111100000016D");
 
         //todo initialize security parameter
     }
-    private void Initialize_EMV_Configuration()
-    {
+
+    private void Initialize_EMV_Configuration() {
         EmvManager mEMVmanager = EmvManager.getInstance();
 
         EmvTerminalInfo EMVterminalParam = new EmvTerminalInfo();
         EMVterminalParam.setUcTerminalType(Byte.parseByte(PosApplication.getApp().oGSama_TMS.retailer_data.m_sEMV_Terminal_Type));
         EMVterminalParam.setAucTerminalCountryCode(PosApplication.getApp().oGSama_TMS.retailer_data.m_sTerminal_Country_Code.getBytes());
         EMVterminalParam.setAucTransCurrencyCode(PosApplication.getApp().oGSama_TMS.retailer_data.m_sTerminal_Currency_Code.getBytes());
-       // EMVterminalParam.setAucTerminalCapabilities(PosApplication.getApp().oGSama_TMS.retailer_data.m_sTerminal_Capability.getBytes());
+        // EMVterminalParam.setAucTerminalCapabilities(PosApplication.getApp().oGSama_TMS.retailer_data.m_sTerminal_Capability.getBytes());
         mEMVmanager.setEmvTerminalInfo(EMVterminalParam);
 
 
     }
-    private void Initialize_CTLS_configuration()
-    {
+
+
+    private void Initialize_CTLS_configuration() {
         //todo initialize contactless parameters
     }
-    private void Load_Terminal_operation_data()
-    {
+
+    private void Load_Terminal_operation_data() {
         //todo Load Terminal operation data from database
     }
 
 
+    @Override
+    public void showRegistrationScreen() {
+        Intent intent = new Intent(this, RegistrationActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        startActivityForResult(intent, REGISTRATION_REQUEST_CODE);
+    }
 
+    @Override
+    public void showError(int errorMessageId) {
+        hideLoading();
+        Toast.makeText(context, getString(errorMessageId), Toast.LENGTH_SHORT).show();
+        checkRegistration();
+    }
 
+    @Override
+    public void showError(String errorMessageString) {
+        hideLoading();
+        Toast.makeText(context, errorMessageString, Toast.LENGTH_SHORT).show();
+        checkRegistration();
+    }
 
+    @Override
+    public void showConnectionStatus(int connectionStatus) {
+        Toast.makeText(context, "Connection code = " + connectionStatus, Toast.LENGTH_SHORT).show();
+    }
 
+    @Override
+    public void showRegistrationSuccess() {
+        hideLoading();
+        Toast.makeText(context, "Terminal registered successfully !! ", Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        Log.d("onActivityResult", "onActivityResult");
+        switch (requestCode) {
+            case REGISTRATION_REQUEST_CODE:
+                if (resultCode == RESULT_OK && data != null && data.hasExtra("registrationData")) {
+                    RegistrationData registrationData = Parcels.unwrap(data.getParcelableExtra("registrationData"));
+                    PosApplication.getApp().oGPosTransaction.setTerminalRegistrationData(registrationData);
+                    // based on Moamen Ahmed Registeration file , Terminal_Registeration.java also
+                    isRegistrationInProgress = true;
+                    PosApplication.getApp().oGTerminal_Registeration.StartRegistrationProcess(
+                            PosApplication.getApp().oGPosTransaction, this);
+                } else {
+                    showError(R.string.registration_error);
+                }
+                break;
+        }
+    }
 }

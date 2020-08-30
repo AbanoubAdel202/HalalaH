@@ -4,11 +4,8 @@ import android.app.Application;
 import android.content.Context;
 import android.util.Log;
 
-import androidx.room.Room;
-
-import com.example.halalah.sqlite.database.DBManager;
 import com.example.halalah.TMS.SAMA_TMS;
-import com.topwise.cloudpos.aidl.emv.level2.EmvTerminalInfo;
+import com.example.halalah.sqlite.database.DBManager;
 
 /** Header PosApplication
  \Class Name: POSTransaction
@@ -131,11 +128,10 @@ public class PosApplication extends Application{
     public void onCreate() {
         super.onCreate();
         Log.i(TAG, "onCreate");
-		DBManager.getInstance().init(this);
+        DBManager.getInstance().init(this);
         com.example.halalah.database.table.DBManager.getInstance().init(this);
         mContext = getApplicationContext();
         mPosApplication = this;
-
 
 
     }

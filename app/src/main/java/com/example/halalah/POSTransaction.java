@@ -1,17 +1,15 @@
 package com.example.halalah;
+
 import android.util.Log;
-import android.widget.Switch;
 
 import com.example.halalah.TMS.Card_Scheme;
 import com.example.halalah.TMS.SAMA_TMS;
 import com.example.halalah.iso8583.BCDASCII;
 import com.example.halalah.iso8583.ISO8583;
-
-import com.example.halalah.packet.PackUtils;
+import com.example.halalah.registration.RegistrationData;
 import com.example.halalah.secure.DUKPT_KEY;
 import com.example.halalah.util.ExtraUtil;
 
-import java.lang.reflect.Array;
 import java.util.Locale;
 
 /** Header POSTransaction
@@ -27,8 +25,7 @@ import java.util.Locale;
 public class POSTransaction {
     private static final String TAG = Utils.TAGPUBLIC + POSTransaction.class.getSimpleName();
 
-
-
+    private RegistrationData terminalRegistrationData;
 
     public boolean m_is_mada;
     public boolean m_is_final;
@@ -295,24 +292,37 @@ public class POSTransaction {
             stotalsDE124.concat(String.format(Locale.ENGLISH,"%010D",oTotalsArray[i].m_lCreditCount));           /* Credit Count*/
             stotalsDE124.concat(String.format(Locale.ENGLISH,"%015D",oTotalsArray[i].m_dCreditAmount));          /* Credit Amount*/
             stotalsDE124.concat(String.format(Locale.ENGLISH,"%015D",oTotalsArray[i].m_dCashBackAmount));        /* Cash Back Amount*/
-            stotalsDE124.concat(String.format(Locale.ENGLISH,"%015D",oTotalsArray[i].m_dCashAdvanceAmount));     /* Cash Advance Amount*/
-            stotalsDE124.concat(String.format(Locale.ENGLISH,"%010D",oTotalsArray[i].m_lAuthorisationCount));    /* Authorisation Count*/
+            stotalsDE124.concat(String.format(Locale.ENGLISH, "%015D", oTotalsArray[i].m_dCashAdvanceAmount));     /* Cash Advance Amount*/
+            stotalsDE124.concat(String.format(Locale.ENGLISH, "%010D", oTotalsArray[i].m_lAuthorisationCount));    /* Authorisation Count*/
         }
         return stotalsDE124;
     }
-    public String ComposeICCTags(CardType enmCard)
-    {
+
+    public String ComposeICCTags(CardType enmCard) {
         return "0";
     }
 
-    public String ComposeTerminalRegistrationData() // use ComposeNetworkMessage instead
-    {
+    public String ComposeTerminalRegistrationData(RegistrationData terminalRegistrationData) {
 
+        StringBuilder registrationDataBuilder = new StringBuilder();
 
-        return "0";
+        registrationDataBuilder.append(terminalRegistrationData.getVendorId());
+        registrationDataBuilder.append(terminalRegistrationData.getVendorTerminalType());
+        registrationDataBuilder.append(terminalRegistrationData.getTrsmid());
+        registrationDataBuilder.append(terminalRegistrationData.getVendorKeyIndex());
+        registrationDataBuilder.append(terminalRegistrationData.getSamaKeyIndex());
+        registrationDataBuilder.append(terminalRegistrationData.getRandomLengthIndicatorHex());
+        registrationDataBuilder.append(terminalRegistrationData.getRandomStringSequence());
+        registrationDataBuilder.append(terminalRegistrationData.getVendorKeyLength());
+
+        String signature = terminalRegistrationData.getVendorSignature();
+
+        registrationDataBuilder.append(signature);
+
+        return registrationDataBuilder.toString();
     }
-    public int    ParseICCTags(String ICCHostTags)
-    {
+
+    public int ParseICCTags(String ICCHostTags) {
         return 0;
     }
 
@@ -460,18 +470,17 @@ public class POSTransaction {
         //72.Data Record
         //124.Private - (POS Terminal Reconciliation)
         byte[] bMac = sMAC.getBytes();
-        if (bMac.length%8!=0) {
-            for(int i=0 ;i<bMac.length%8;i++)
-            {
-                sMAC=sMAC+0x00;
+        if (bMac.length % 8 != 0) {
+            for (int i = 0; i < bMac.length % 8; i++) {
+                sMAC = sMAC + 0x00;
             }
         }
 
-        m_sTrxMACBlock= DUKPT_KEY.CaluclateMACBlock(sMAC);
+        m_sTrxMACBlock = DUKPT_KEY.CaluclateMACBlock(sMAC);
 
         //removinglast 4 bytes
-        m_sTrxMACBlock=m_sTrxMACBlock.substring(0,4);
-        m_sTrxMACBlock=m_sTrxMACBlock.concat("ÿÿÿÿ");
+        m_sTrxMACBlock = m_sTrxMACBlock.substring(0, 4);
+        m_sTrxMACBlock = m_sTrxMACBlock.concat("ÿÿÿÿ");
 
 
         return "0";
@@ -663,9 +672,9 @@ public class POSTransaction {
         Log.i(TAG, "DE 11 [m_sSTAN]= " + m_sSTAN+"Length ="+m_sSTAN.length());
 
         //12. Local Transaction time and date
-        m_sLocalTrxDateTime=ExtraUtil.GetDate_Time();
+        m_sLocalTrxDateTime = ExtraUtil.Get_Local_Date_Time();
         m_RequestISOMsg.SetDataElement(12, m_sLocalTrxDateTime.getBytes(), m_sLocalTrxDateTime.length());
-        Log.i(TAG, "DE 12 [m_sLocalTrxDateTime]= " + m_sLocalTrxDateTime+"Length ="+m_sTrxAmount.length());
+        Log.i(TAG, "DE 12 [m_sLocalTrxDateTime]= " + m_sLocalTrxDateTime + "Length =" + m_sLocalTrxDateTime.length());
 
 
         //14. Card Expiry Date
@@ -748,7 +757,7 @@ public class POSTransaction {
 
 
         //53. Transaction Security control
-        m_sTrxSecurityControl=BCDASCII.asciiByteArray2String(DUKPT_KEY.getKSN()).concat("609");
+        m_sTrxSecurityControl = BCDASCII.asciiByteArray2String(DUKPT_KEY.getKSN()).concat("609");
         if(m_sTrxSecurityControl!=null)
         {
             m_RequestISOMsg.SetDataElement(53, m_sTrxSecurityControl.getBytes(), m_sTrxSecurityControl.length());
@@ -765,11 +774,10 @@ public class POSTransaction {
             Log.i(TAG, "DE 55 [m_sICCRelatedTags]= " + m_sICCRelatedTags + "Length =" + m_sICCRelatedTags.length());
         }
         //56.original Transaction data
-        if(m_enmTrxType==TrxType.REFUND )
-        {
+        if (m_enmTrxType == TranscationType.REFUND) {
             GetDE56_Original_TRX_Data();
-        m_RequestISOMsg.SetDataElement(56, m_sOriginalTrxData.getBytes(), m_sOriginalTrxData.length());
-        Log.i(TAG, "DE 56 [m_sOriginalTrxData]= " + m_sOriginalTrxData+"Length ="+m_sOriginalTrxData.length());
+            m_RequestISOMsg.SetDataElement(56, m_sOriginalTrxData.getBytes(), m_sOriginalTrxData.length());
+            Log.i(TAG, "DE 56 [m_sOriginalTrxData]= " + m_sOriginalTrxData + "Length =" + m_sOriginalTrxData.length());
         }
 
         //59.Transaport Data
@@ -845,7 +853,7 @@ public class POSTransaction {
         m_RequestISOMsg.SetDataElement(11, m_sSTAN.getBytes(), m_sSTAN.length());
         Log.i(TAG, "DE 11 [m_sSTAN]= " + m_sTrxAmount+"Length ="+m_sSTAN.length());
 
-        m_sLocalTrxDateTime=ExtraUtil.GetDate_Time();
+        m_sLocalTrxDateTime = ExtraUtil.Get_Local_Date_Time();
         m_RequestISOMsg.SetDataElement(12, m_sLocalTrxDateTime.getBytes(), m_sLocalTrxDateTime.length());
         Log.i(TAG, "DE 12 [m_sLocalTrxDateTime]= " + m_sLocalTrxDateTime+"Length ="+m_sLocalTrxDateTime.length());
 
@@ -918,7 +926,7 @@ public class POSTransaction {
             Log.i(TAG, "DE 52 [m_sTrxPIN]= " + m_sTrxPIN + "Length =" + m_sTrxPIN.length());
         }
 
-        m_sTrxSecurityControl=BCDASCII.asciiByteArray2String(DUKPT_KEY.getKSN()).concat("609");
+        m_sTrxSecurityControl = BCDASCII.asciiByteArray2String(DUKPT_KEY.getKSN()).concat("609");
         if(m_sTrxSecurityControl!=null) {
             m_RequestISOMsg.SetDataElement(53, m_sTrxSecurityControl.getBytes(), m_sTrxSecurityControl.length());
             Log.i(TAG, "DE 53 [m_sTrxSecurityControl]= " + m_sTrxSecurityControl + " Length =" + m_sTrxSecurityControl.length());
@@ -952,12 +960,12 @@ public class POSTransaction {
 
         ComposeTerminalStatusData();
         m_RequestISOMsg.SetDataElement(62, m_sTerminalStatus.getBytes(), m_sTerminalStatus.length());
-        Log.i(TAG, "DE 62 [m_sTerminalStatus]= " + m_sTerminalStatus+"Length ="+m_sTerminalStatus.length());
+        Log.i(TAG, "DE 62 [m_sTerminalStatus]= " + m_sTerminalStatus + "Length =" + m_sTerminalStatus.length());
 
         ComposeMACBlockData(m_enmTrxType);
 
-        m_RequestISOMsg.SetDataElement(64,m_sTrxMACBlock.getBytes(), m_sTrxMACBlock.length());
-        Log.i(TAG, "DE 64 [m_sTrxMACBlock]= " + m_sTrxMACBlock+"Length ="+m_sTrxMACBlock.length());
+        m_RequestISOMsg.SetDataElement(64, m_sTrxMACBlock.getBytes(), m_sTrxMACBlock.length());
+        Log.i(TAG, "DE 64 [m_sTrxMACBlock]= " + m_sTrxMACBlock + "Length =" + m_sTrxMACBlock.length());
 
 
         return 0;
@@ -1001,7 +1009,7 @@ public class POSTransaction {
         // Set Transmission Date and Time
         m_sTrxDateTime=ExtraUtil.GetDate_Time();
         m_RequestISOMsg.SetDataElement(7, m_sTrxDateTime.getBytes(), m_sTrxDateTime.length());
-        Log.i(TAG, " DE 7 [m_sTrxDateTime]= " + m_sTrxDateTime+"Length ="+m_sTrxAmount.length());
+        Log.i(TAG, " DE 7 [m_sTrxDateTime]= " + m_sTrxDateTime + "Length =" + m_sTrxDateTime.length());
 
 
         // Set Transaction STAN
@@ -1011,7 +1019,7 @@ public class POSTransaction {
 
 
         // Set Date & Time, Local Transaction
-        m_sLocalTrxDateTime=ExtraUtil.GetDate_Time();  //todo original transaction time
+        m_sLocalTrxDateTime = ExtraUtil.Get_Local_Date_Time();  //todo original transaction time
         m_RequestISOMsg.SetDataElement(12, m_sLocalTrxDateTime.getBytes(), m_sLocalTrxDateTime.length());
         Log.i(TAG, " DE 12 [m_sLocalTrxDateTime]= " + m_sLocalTrxDateTime+"Length ="+m_sLocalTrxDateTime.length());
 
@@ -1102,7 +1110,7 @@ public class POSTransaction {
 
 
         // Set KSN
-        m_sTrxSecurityControl=BCDASCII.asciiByteArray2String(DUKPT_KEY.getKSN()).concat("609");
+        m_sTrxSecurityControl = BCDASCII.asciiByteArray2String(DUKPT_KEY.getKSN()).concat("609");
         if(m_sTrxSecurityControl!=null) {
             m_RequestISOMsg.SetDataElement(53, m_sTrxSecurityControl.getBytes(), m_sTrxSecurityControl.length());
             Log.i(TAG, " DE 53 [m_sTrxSecurityControl]= " + m_sTrxSecurityControl + "Length =" + m_sTrxSecurityControl.length());
@@ -1166,7 +1174,7 @@ public class POSTransaction {
 
         // Set Transmission Date and Time
         m_RequestISOMsg.SetDataElement(7, m_sTrxDateTime.getBytes(), m_sTrxDateTime.length());
-        Log.i(TAG, " DE 7 [m_sTrxDateTime]= " + m_sTrxDateTime+"Length ="+m_sTrxAmount.length());
+        Log.i(TAG, " DE 7 [m_sTrxDateTime]= " + m_sTrxDateTime + "Length =" + m_sTrxDateTime.length());
 
 
         // Set Transaction STAN
@@ -1176,7 +1184,7 @@ public class POSTransaction {
 
 
         // Set Date & Time, Local Transaction
-        m_sLocalTrxDateTime=ExtraUtil.GetDate_Time();
+        m_sLocalTrxDateTime = ExtraUtil.Get_Local_Date_Time();
         m_RequestISOMsg.SetDataElement(12, m_sLocalTrxDateTime.getBytes(), m_sLocalTrxDateTime.length());
         Log.i(TAG, " DE 12 [m_sLocalTrxDateTime]= " + m_sLocalTrxDateTime+"Length ="+m_sLocalTrxDateTime.length());
 
@@ -1220,7 +1228,7 @@ public class POSTransaction {
 
 
         // Set KSN
-        m_sTrxSecurityControl=BCDASCII.asciiByteArray2String(DUKPT_KEY.getKSN()).concat("609");
+        m_sTrxSecurityControl = BCDASCII.asciiByteArray2String(DUKPT_KEY.getKSN()).concat("609");
         if(m_sTrxSecurityControl!=null) {
             m_RequestISOMsg.SetDataElement(53, m_sTrxSecurityControl.getBytes(), m_sTrxSecurityControl.length());
             Log.i(TAG, " DE 53 [m_sTrxSecurityControl]= " + m_sTrxSecurityControl + "Length =" + m_sTrxSecurityControl.length());
@@ -1266,9 +1274,9 @@ public class POSTransaction {
 
 
         // Set Transmission Date and Time
-        m_sTrxDateTime=ExtraUtil.GetDate_Time();
+        m_sTrxDateTime = ExtraUtil.GetDate_Time();
         m_RequestISOMsg.SetDataElement(7, m_sTrxDateTime.getBytes(), m_sTrxDateTime.length());
-        Log.i(TAG, " DE 7 [m_sTrxDateTime]= " + m_sTrxDateTime+"Length ="+m_sTrxDateTime.length());
+        Log.i(TAG, " DE 7 [m_sTrxDateTime]= " + m_sTrxDateTime + "Length =" + m_sTrxDateTime.length());
 
 
         // Set Transaction STAN
@@ -1278,7 +1286,7 @@ public class POSTransaction {
 
 
         // Set Date & Time, Local Transaction
-        m_sLocalTrxDateTime=ExtraUtil.GetDate_Time();
+        m_sLocalTrxDateTime = ExtraUtil.Get_Local_Date_Time();
         m_RequestISOMsg.SetDataElement(12, m_sLocalTrxDateTime.getBytes(), m_sLocalTrxDateTime.length());
         Log.i(TAG, " DE 12 [m_sLocalTrxDateTime]= " + m_sLocalTrxDateTime+"Length ="+m_sLocalTrxDateTime.length());
 
@@ -1308,13 +1316,14 @@ public class POSTransaction {
 */
 
         // Set HostData
-        m_RequestISOMsg.SetDataElement(48, m_sHostData_DE48.getBytes(), m_sHostData_DE48.length());
-        Log.i(TAG, " DE 48 [m_sHostData_DE48]= " + m_sHostData_DE48+"Length ="+m_sHostData_DE48.length());
+        byte[] bytes = BCDASCII.fromASCIIToBCD(m_sHostData_DE48, 0, m_sHostData_DE48.length(), true);
+        m_RequestISOMsg.SetDataElement(48, bytes, bytes.length);
+        Log.i(TAG, " DE 48 [m_sHostData_DE48]= " + m_sHostData_DE48 + "Length =" + m_sHostData_DE48.length());
 
         // Set Terminal Status
         ComposeTerminalStatusData();
         m_RequestISOMsg.SetDataElement(62, m_sTerminalStatus.getBytes(), m_sTerminalStatus.length());
-        Log.i(TAG, " DE 62 [m_sTerminalStatus]= " + m_sTerminalStatus+"Length ="+m_sTerminalStatus.length());
+        Log.i(TAG, " DE 62 [m_sTerminalStatus]= " + m_sTerminalStatus + "Length =" + m_sTerminalStatus.length());
 
         return 0;
     }
@@ -1342,7 +1351,7 @@ public class POSTransaction {
         // Set Transmission Date and Time
         m_sTrxDateTime= ExtraUtil.GetDate_Time();
         m_RequestISOMsg.SetDataElement(7, m_sTrxDateTime.getBytes(), m_sTrxDateTime.length());
-        Log.i(TAG, " DE 7 [m_sTrxDateTime]= " + m_sTrxDateTime+"Length ="+m_sTrxAmount.length());
+        Log.i(TAG, " DE 7 [m_sTrxDateTime]= " + m_sTrxDateTime + "Length =" + m_sTrxDateTime.length());
 
 
         // Set Transaction STAN
@@ -1352,7 +1361,7 @@ public class POSTransaction {
 
 
         // Set Date & Time, Local Transaction
-        m_sLocalTrxDateTime=ExtraUtil.GetDate_Time();
+        m_sLocalTrxDateTime = ExtraUtil.Get_Local_Date_Time();
         m_RequestISOMsg.SetDataElement(12, m_sLocalTrxDateTime.getBytes(), m_sLocalTrxDateTime.length());
         Log.i(TAG, " DE 12 [m_sLocalTrxDateTime]= " + m_sLocalTrxDateTime+"Length ="+m_sLocalTrxDateTime.length());
 
@@ -1383,7 +1392,7 @@ public class POSTransaction {
         Log.i(TAG, " DE 42 [m_sMerchantID]= " + m_sMerchantID+"Length ="+m_sMerchantID.length());
 
         // Set KSN
-        m_sTrxSecurityControl=BCDASCII.asciiByteArray2String(DUKPT_KEY.getKSN()).concat("609");
+        m_sTrxSecurityControl = BCDASCII.asciiByteArray2String(DUKPT_KEY.getKSN()).concat("609");
         if(m_sTrxSecurityControl!=null) {
             m_RequestISOMsg.SetDataElement(53, m_sTrxSecurityControl.getBytes(), m_sTrxSecurityControl.length());
             Log.i(TAG, " DE 53 [m_sTrxSecurityControl]= " + m_sTrxSecurityControl + "Length =" + m_sTrxSecurityControl.length());
@@ -1427,7 +1436,7 @@ public class POSTransaction {
 
         // Set Transmission Date and Time
         m_RequestISOMsg.SetDataElement(7, m_sTrxDateTime.getBytes(), m_sTrxDateTime.length());
-        Log.i(TAG, " DE 7 [m_sTrxDateTime]= " + m_sTrxDateTime+"Length ="+m_sTrxAmount.length());
+        Log.i(TAG, " DE 7 [m_sTrxDateTime]= " + m_sTrxDateTime + "Length =" + m_sTrxDateTime.length());
 
 
         // Set Transaction STAN
@@ -1437,7 +1446,7 @@ public class POSTransaction {
 
 
         // Set Date & Time, Local Transaction
-        m_sLocalTrxDateTime=ExtraUtil.GetDate_Time();
+        m_sLocalTrxDateTime = ExtraUtil.Get_Local_Date_Time();
         m_RequestISOMsg.SetDataElement(12, m_sLocalTrxDateTime.getBytes(), m_sLocalTrxDateTime.length());
         Log.i(TAG, " DE 12 [m_sLocalTrxDateTime]= " + m_sLocalTrxDateTime+"Length ="+m_sLocalTrxDateTime.length());
 
@@ -1528,9 +1537,9 @@ public class POSTransaction {
         Log.i(TAG, "DE 11 [m_sSTAN]= " + m_sTrxAmount+"Length ="+m_sSTAN.length());
 
         //12. Local Transaction time and date
-        m_sLocalTrxDateTime=ExtraUtil.GetDate_Time();
+        m_sLocalTrxDateTime = ExtraUtil.Get_Local_Date_Time();
         m_RequestISOMsg.SetDataElement(12, m_sLocalTrxDateTime.getBytes(), m_sLocalTrxDateTime.length());
-        Log.i(TAG, "DE 12 [m_sLocalTrxDateTime]= " + m_sTrxAmount+"Length ="+m_sTrxAmount.length());
+        Log.i(TAG, "DE 12 [m_sLocalTrxDateTime]= " + m_sTrxAmount + "Length =" + m_sLocalTrxDateTime.length());
 
 
         //14. Card Expiry Date
@@ -1595,7 +1604,7 @@ public class POSTransaction {
 
 
         //38.Approval code
-        if(m_enmTrxType!=TrxType.REFUND) //todo other transactions if not exist
+        if (m_enmTrxType != TranscationType.REFUND) //todo other transactions if not exist
         {
             m_RequestISOMsg.SetDataElement(38, m_sApprovalCode.getBytes(), m_sApprovalCode.length());
             Log.i(TAG, "DE 38 [m_sApprovalCode]= " + m_sApprovalCode + "Length =" + m_sApprovalCode.length());
@@ -1633,7 +1642,7 @@ public class POSTransaction {
         }
 
         //53. Transaction Security control
-        m_sTrxSecurityControl=BCDASCII.asciiByteArray2String(DUKPT_KEY.getKSN()).concat("609");
+        m_sTrxSecurityControl = BCDASCII.asciiByteArray2String(DUKPT_KEY.getKSN()).concat("609");
         if(m_sTrxSecurityControl!=null) {
             m_RequestISOMsg.SetDataElement(53, m_sTrxSecurityControl.getBytes(), m_sTrxSecurityControl.length());
             Log.i(TAG, "DE 53 [m_sTrxSecurityControl]= " + m_sTrxSecurityControl + "Length =" + m_sTrxSecurityControl.length());
@@ -1648,11 +1657,10 @@ public class POSTransaction {
         Log.i(TAG, "DE 55 [m_sICCRelatedTags]= " + m_sICCRelatedTags+"Length ="+m_sICCRelatedTags.length());
 
         //56.original Transaction data
-        if(m_enmTrxType==TrxType.REFUND ||m_enmTrxType==TrxType.PURCHASE_ADVICE)
-        {
+        if (m_enmTrxType == TranscationType.REFUND || m_enmTrxType == TranscationType.PURCHASE_ADVICE) {
             GetDE56_Original_TRX_Data();
             m_RequestISOMsg.SetDataElement(56, m_sOriginalTrxData.getBytes(), m_sOriginalTrxData.length());
-            Log.i(TAG, "DE 56 [m_sOriginalTrxData]= " + m_sOriginalTrxData+"Length ="+m_sOriginalTrxData.length());
+            Log.i(TAG, "DE 56 [m_sOriginalTrxData]= " + m_sOriginalTrxData + "Length =" + m_sOriginalTrxData.length());
         }
 
      /*   //59.Transaport Data
@@ -1723,9 +1731,9 @@ public class POSTransaction {
         Log.i(TAG, "DE 11 [m_sSTAN]= " + m_sTrxAmount+"Length ="+m_sSTAN.length());
 
         //12. Local Transaction time and date
-        m_sLocalTrxDateTime=ExtraUtil.GetDate_Time();
+        m_sLocalTrxDateTime = ExtraUtil.Get_Local_Date_Time();
         m_RequestISOMsg.SetDataElement(12, m_sLocalTrxDateTime.getBytes(), m_sLocalTrxDateTime.length());
-        Log.i(TAG, "DE 12 [m_sLocalTrxDateTime]= " + m_sTrxAmount+"Length ="+m_sTrxAmount.length());
+        Log.i(TAG, "DE 12 [m_sLocalTrxDateTime]= " + m_sTrxAmount + "Length =" + m_sLocalTrxDateTime.length());
 
 
         //14. Card Expiry Date
@@ -1827,7 +1835,7 @@ public class POSTransaction {
         }
 
         //53. Transaction Security control
-        m_sTrxSecurityControl=BCDASCII.asciiByteArray2String(DUKPT_KEY.getKSN()).concat("609");
+        m_sTrxSecurityControl = BCDASCII.asciiByteArray2String(DUKPT_KEY.getKSN()).concat("609");
         if(m_sTrxSecurityControl!=null) {
             m_RequestISOMsg.SetDataElement(53, m_sTrxSecurityControl.getBytes(), m_sTrxSecurityControl.length());
             Log.i(TAG, "DE 53 [m_sTrxSecurityControl]= " + m_sTrxSecurityControl + "Length =" + m_sTrxSecurityControl.length());
@@ -2179,7 +2187,7 @@ public class POSTransaction {
         Terminal_output_capability toc=null;
         PIN_capture_capability pcc=null;
 
-        char[] bDE22=new char[12];
+        char[] bDE22 = new char[12];
     if(m_enmTrxCardType==CardType.ICC)
     {    cdic= Card_data_input_capability.ICC;
          oe= Operating_environment.On_premises_of_card_acceptor_attended;
@@ -2348,141 +2356,141 @@ public class POSTransaction {
         switch(cdic){
 
             case PAN_Entry_Mode_Unknown:
-                bDE22[0]='0';
+                bDE22[0] = '0';
                 break;
             case Manual_no_terminal:
-                bDE22[0]='1';
+                bDE22[0] = '1';
                 break;
             case Magnetic_stripe_read:
-                bDE22[0]='2';
+                bDE22[0] = '2';
                 break;
             case Bar_Code:
-                bDE22[0]='3';
+                bDE22[0] = '3';
                 break;
             case OCR:
-                bDE22[0]='4';
+                bDE22[0] = '4';
                 break;
             case ICC:
-                bDE22[0]='5';
+                bDE22[0] = '5';
                 break;
             case Key_Entered:
-                bDE22[0]='6';
+                bDE22[0] = '6';
                 break;
             case Contactless:
-                bDE22[0]='7';
+                bDE22[0] = '7';
                 break;
 
         }
 
         switch(cac){
             case No_electronic_authentication:
-                bDE22[1]='0';
+                bDE22[1] = '0';
                 break;
             case PIN:
-                bDE22[1]='1';
+                bDE22[1] = '1';
                 break;
             case Electronic_signature_analysis:
-                bDE22[1]='2';
+                bDE22[1] = '2';
                 break;
             case Biometrics:
-                bDE22[1]='3';
+                bDE22[1] = '3';
                 break;
             case Biographic:
-                bDE22[1]='4';
+                bDE22[1] = '4';
                 break;
             case Electronic_authentication_inoperative:
-                bDE22[1]='5';
+                bDE22[1] = '5';
                 break;
             case other:
-                bDE22[1]='6';
+                bDE22[1] = '6';
                 break;
         }
 
-        bDE22[2]='0';   // for position 3 always 0
+        bDE22[2] = '0';   // for position 3 always 0
 
         switch (oe)
         {
             case On_premises_of_card_acceptor_attended:
-                bDE22[3]='1';
+                bDE22[3] = '1';
                 break;
             case On_premises_of_card_acceptor_unattended:
-                bDE22[3]='2';
+                bDE22[3] = '2';
                 break;
             case Off_premises_of_card_acceptor_attended:
-                bDE22[3]='3';
+                bDE22[3] = '3';
                 break;
             case Off_premises_of_card_acceptor_unattended:
-                bDE22[3]='4';
+                bDE22[3] = '4';
                 break;
         }
         switch (Cardholder_p)
         {
             case Cardholder_present:
-                bDE22[4]='0';
+                bDE22[4] = '0';
                 break;
             case Cardholder_not_present_unspecified:
-                bDE22[4]='1';
+                bDE22[4] = '1';
                 break;
         }
         switch (Card_p)
         {
             case Card_not_present:
-                bDE22[5]='0';
+                bDE22[5] = '0';
                 break;
             case Card_present:
-                bDE22[5]='1';
+                bDE22[5] = '1';
                 break;
         }
         switch (cdim)
         {
             case Unspecified:
-                bDE22[6]='0';
+                bDE22[6] = '0';
                 break;
             case Manual_no_terminal:
-                bDE22[6]='1';
+                bDE22[6] = '1';
                 break;
             case  Magnetic_stripe_read:
-                bDE22[6]='2';
+                bDE22[6] = '2';
                 break;
             case Bar_Code:
-                bDE22[6]='3';
+                bDE22[6] = '3';
                 break;
             case OCR:
-                bDE22[6]='4';
+                bDE22[6] = '4';
                 break;
             case ICC:
-                bDE22[6]='5';
+                bDE22[6] = '5';
                 break;
             case Key_entered:
-                bDE22[6]='6';
+                bDE22[6] = '6';
                 break;
             case Contactless:
-                bDE22[6]='7';
+                bDE22[6] = '7';
                 break;
         }
 
         switch (cam)
         {
             case Not_authenticated:
-                bDE22[7]='0';
+                bDE22[7] = '0';
                 break;
             case PIN:
-                bDE22[7]='1';
+                bDE22[7] = '1';
                 break;
             case Electronic_signature_analysis:
-                bDE22[7]='2';
+                bDE22[7] = '2';
                 break;
             case Biometrics:
-                bDE22[7]='3';
+                bDE22[7] = '3';
                 break;
             case Biographic:
-                bDE22[7]='4';
+                bDE22[7] = '4';
                 break;
             case Manual_signature_analysis:
-                bDE22[7]='5';
+                bDE22[7] = '5';
                 break;
             case Other_manual_verifications:
-                bDE22[7]='6';
+                bDE22[7] = '6';
                 break;
 
         }
@@ -2490,22 +2498,22 @@ public class POSTransaction {
         switch (cae)
         {
             case Not_authenticated:
-                bDE22[8]='0';
+                bDE22[8] = '0';
                 break;
             case ICC:
-                bDE22[8]='1';
+                bDE22[8] = '1';
                 break;
             case CAD:
-                bDE22[8]='2';
+                bDE22[8] = '2';
                 break;
             case Authorising_agent:
-                bDE22[8]='3';
+                bDE22[8] = '3';
                 break;
             case By_merchant:
-                bDE22[8]='4';
+                bDE22[8] = '4';
                 break;
             case other:
-                bDE22[8]='5';
+                bDE22[8] = '5';
                 break;
 
         }
@@ -2513,73 +2521,73 @@ public class POSTransaction {
         switch (coc)
         {
             case Unknown:
-                bDE22[9]='0';
+                bDE22[9] = '0';
                 break;
             case None:
-                bDE22[9]='1';
+                bDE22[9] = '1';
             case Magnetic_Stripe_write:
-                bDE22[9]='2';
+                bDE22[9] = '2';
             case ICC:
-                bDE22[9]='3';
+                bDE22[9] = '3';
         }
 
         switch (toc)
         {
             case Unknown:
-                bDE22[10]='0';
+                bDE22[10] = '0';
                 break;
             case None:
-                bDE22[10]='1';
+                bDE22[10] = '1';
                 break;
             case Printing:
-                bDE22[10]='2';
+                bDE22[10] = '2';
                 break;
             case Display:
-                bDE22[10]='3';
+                bDE22[10] = '3';
                 break;
             case Printing_and_display:
-                bDE22[10]='4';
+                bDE22[10] = '4';
                 break;
         }
 
         switch (pcc)
         {
             case No_PIN_capture_capability:
-                bDE22[11]='0';
+                bDE22[11] = '0';
                 break;
             case Device_PIN_capture_capability_unknown:
-                bDE22[11]='1';
+                bDE22[11] = '1';
                 break;
             case Four_characters:
-                bDE22[11]='4';
+                bDE22[11] = '4';
                 break;
             case Five_characters:
-                bDE22[11]='5';
+                bDE22[11] = '5';
                 break;
             case Six_characters:
-                bDE22[11]='6';
+                bDE22[11] = '6';
                 break;
             case Seven_characters:
-                bDE22[11]='7';
+                bDE22[11] = '7';
                 break;
             case Eight_characters:
-                bDE22[11]='8';
+                bDE22[11] = '8';
                 break;
             case Nine_characters:
-                bDE22[11]='9';
+                bDE22[11] = '9';
                 break;
             case Ten_characters:
-                bDE22[11]='A';
+                bDE22[11] = 'A';
                 break;
             case Eleven_characters:
-                bDE22[11]='B';
+                bDE22[11] = 'B';
                 break;
             case Twelve_characters:
-                bDE22[11]='C';
+                bDE22[11] = 'C';
                 break;
         }
 
-        m_sPOSEntryMode=String.copyValueOf(bDE22);
+        m_sPOSEntryMode = String.copyValueOf(bDE22);
 
 
     }
@@ -2833,6 +2841,7 @@ public class POSTransaction {
         Timeout_waiting_for_response,
         MAC_failure
         }
+
     /**
      * \Function Name: GetDE25Messagereasoncode
      * \Param  : void
@@ -2841,27 +2850,25 @@ public class POSTransaction {
      * \DT		: 5/28/2020
      * \Des    : for getting messeage reason code
      */
-    public void GetDE25_Messagereasoncode()
-    {   Message_reason_code mrc =null;
+    public void GetDE25_Messagereasoncode() {
+        Message_reason_code mrc = null;
 
-            //todo getting original message reason code from authorization request message response
+        //todo getting original message reason code from authorization request message response
 
 
-        switch(m_enmTrxType)
-        {
+        switch (m_enmTrxType) {
             case PURCHASE:
-                      switch(m_card_scheme.m_sCard_Scheme_ID)
-                      {
-                          case "P1":            // For MADA card
+                switch (m_card_scheme.m_sCard_Scheme_ID) {
+                    case "P1":            // For MADA card
 
-                                        switch (m_enmTrxCardType) {
-                                            case ICC:
-                                                mrc=Message_reason_code.On_line_forced_by_ICC_CDF_or_ADF;  //todo condition of other //15xx
-                                                break;
-                                            case CTLS:
-                                                mrc=Message_reason_code.Contactless_Transaction;
-                                                break;
-                                            case MAG:
+                        switch (m_enmTrxCardType) {
+                            case ICC:
+                                mrc = Message_reason_code.On_line_forced_by_ICC_CDF_or_ADF;  //todo condition of other //15xx
+                                break;
+                            case CTLS:
+                                mrc = Message_reason_code.Contactless_Transaction;
+                                break;
+                            case MAG:
 
                                                 break;
                                             case FALLBACK:
@@ -2879,13 +2886,13 @@ public class POSTransaction {
                           default:       // For IBCS
                               switch (m_enmTrxCardType) {
                                   case ICC:
-                                       mrc= Message_reason_code.On_line_forced_by_card_acceptor;
+                                      mrc = Message_reason_code.On_line_forced_by_card_acceptor;
                                       break;
                                   case CTLS:
-                                        mrc=Message_reason_code.Contactless_Transaction;
+                                      mrc = Message_reason_code.Contactless_Transaction;
                                       break;
                                   case MAG:
-                                        mrc= Message_reason_code.On_line_forced_by_card_acceptor;
+                                      mrc = Message_reason_code.On_line_forced_by_card_acceptor;
                                       break;
                                   case FALLBACK:
                                       mrc= Message_reason_code.Fallback_from_chip_to_magnetic_stripe;//1776
@@ -3536,19 +3543,23 @@ public class POSTransaction {
            DE 37 Retrieval Reference Number of the original transaction as keyed by the Retailer.length 12
           Original local transaction date from original transaction receipt. Default value of ‘000000’ if unavailable. length 6
          */
-        if (m_card_scheme.m_sCard_Scheme_ID =="P1" & (m_enmTrxType==TranscationType.REFUND |m_enmTrxType==TranscationType.AUTHORISATION_EXTENSION|m_enmTrxType==TranscationType.AUTHORISATION_EXTENSION|m_enmTrxType==TranscationType.AUTHORISATION_ADVICE|m_enmTrxType==TranscationType.AUTHORISATION_VOID))
-        {
-            if(m_sOrigLocalTrxDate==null)
-                m_sOrigLocalTrxDate="000000";
-            m_sOriginalTrxData= m_sOrigMTI+m_sOrigRRNumber+m_sOrigLocalTrxDate;
+        if (m_card_scheme.m_sCard_Scheme_ID =="P1" & (m_enmTrxType==TranscationType.REFUND |m_enmTrxType==TranscationType.AUTHORISATION_EXTENSION|m_enmTrxType==TranscationType.AUTHORISATION_EXTENSION|m_enmTrxType==TranscationType.AUTHORISATION_ADVICE|m_enmTrxType==TranscationType.AUTHORISATION_VOID)) {
+            if (m_sOrigLocalTrxDate == null)
+                m_sOrigLocalTrxDate = "000000";
+            m_sOriginalTrxData = m_sOrigMTI + m_sOrigRRNumber + m_sOrigLocalTrxDate;
         }
 
         //todo check DE65 page 103 in manaual entry IBCS will be 3 sub fields not 6 subfields
 
     }
 
+    public RegistrationData getTerminalRegistrationData() {
+        return terminalRegistrationData;
+    }
 
-
+    public void setTerminalRegistrationData(RegistrationData terminalRegistrationData) {
+        this.terminalRegistrationData = terminalRegistrationData;
+    }
 }
 
 

@@ -15,6 +15,7 @@ public class TMSManager {
     private static final String TAG = Utils.TAGPUBLIC + TMSManager.class.getSimpleName();
     private static TMSManager mInstance;
     private static DBManager dbManager;
+    private Connection_Parameters mConnectionParameters;
 
     public static TMSManager getInstance() {
         if (mInstance == null) {
@@ -38,6 +39,8 @@ public class TMSManager {
     }
 
     public void insert(Connection_Parameters connectionParameters) {
+        // set cached connection parameters to null to ensure we get the up-to-date data
+        mConnectionParameters = null;
         insertConnection(connectionParameters.getPrimaryConnectionType(), connectionParameters.getConn_primary());
         insertConnection(connectionParameters.getSecondaryConnectionType(), connectionParameters.getConn_secondary());
         dbManager.getConnectionParametersDao().insert(connectionParameters);
@@ -79,28 +82,33 @@ public class TMSManager {
         return dbManager.getAidDao().getAll();
     }
 
-    public List<Card_Scheme> getAllCardScheme(){
+    public List<Card_Scheme> getAllCardScheme() {
         return dbManager.getCardSchemeDao().getAll();
     }
 
-    public Card_Scheme getCardSchemeByAID(String aid){
+    public Card_Scheme getCardSchemeByAID(String aid) {
         return dbManager.getCardSchemeDao().getByAid(aid);
     }
 
-    public Card_Scheme getCardSchemeByPAN(String pan){
+    public Card_Scheme getCardSchemeByPAN(String pan) {
         return dbManager.getCardSchemeDao().getByPAN(pan);
     }
 
-    public Card_Scheme getCardSchemeByID(String id){
+    public Card_Scheme getCardSchemeByID(String id) {
         return dbManager.getCardSchemeDao().getById(id);
     }
 
-    public Connection_Parameters getConnectionParameters(){
+    public Connection_Parameters getConnectionParameters() {
+        if (mConnectionParameters == null) {
+            mConnectionParameters = dbManager.getConnectionParametersDao().get();
+            if (mConnectionParameters == null) {
+                return null;
+            }
+            mConnectionParameters.setConn_primary(getConnection(mConnectionParameters.getPrimaryConnectionType(), "1"));
+            mConnectionParameters.setConn_secondary(getConnection(mConnectionParameters.getSecondaryConnectionType(), "2"));
 
-        Connection_Parameters connectionParameters = dbManager.getConnectionParametersDao().get();
-        connectionParameters.setConn_primary(getConnection(connectionParameters.getPrimaryConnectionType(), "1"));
-        connectionParameters.setConn_secondary(getConnection(connectionParameters.getSecondaryConnectionType(), "2"));
-        return connectionParameters;
+        }
+        return mConnectionParameters;
     }
 
 
@@ -108,43 +116,43 @@ public class TMSManager {
         return dbManager.getConnectionParametersDao().getPrimaryConnection();
     }
 
-    public Connection getSecondaryConnection(){
+    public Connection getSecondaryConnection() {
         return dbManager.getConnectionParametersDao().getSecondaryConnection();
     }
 
-    public List<Device_Specific> getAllDeviceSpecifics(){
+    public List<Device_Specific> getAllDeviceSpecifics() {
         return dbManager.getDeviceSpecificDao().getAll();
     }
 
-    public Limits getCTLSLimitsByCardScheme(String cardSchemeID){
+    public Limits getCTLSLimitsByCardScheme(String cardSchemeID) {
         return dbManager.getDeviceSpecificDao().getLimits(cardSchemeID);
     }
 
-    public Device_Specific getDeviceSpecific(){
+    public Device_Specific getDeviceSpecific() {
         return dbManager.getDeviceSpecificDao().get();
     }
 
-    public Message_Text getMessage(String actionCode, String displayCode){
+    public Message_Text getMessage(String actionCode, String displayCode) {
         return dbManager.getMessageDao().get(actionCode, displayCode);
     }
 
-    public List<Message_Text> getAllMessages(){
+    public List<Message_Text> getAllMessages() {
         return dbManager.getMessageDao().getAll();
     }
 
-    public Public_Key getPublicKeyByRID(String rid){
+    public Public_Key getPublicKeyByRID(String rid) {
         return dbManager.getPublicKeyDao().getByRid(rid);
     }
 
-    public List<Public_Key> getAllPublicKeys(){
+    public List<Public_Key> getAllPublicKeys() {
         return dbManager.getPublicKeyDao().getAll();
     }
 
-    public Retailer_Data getRetailerData(){
+    public Retailer_Data getRetailerData() {
         return dbManager.getRetailerDataDao().get();
     }
 
-    public List<Revoked_Certificates> getAllRevokedCertificates(){
+    public List<Revoked_Certificates> getAllRevokedCertificates() {
         return dbManager.getRevokedCertificateDao().getAll();
     }
 

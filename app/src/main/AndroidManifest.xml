@@ -36,9 +36,8 @@
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.INTERNET" /> <!-- 往SDCard写入数据权限 -->
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" /> <!-- 在SDCard中创建与删除文件权限 -->
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
-
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission
         android:name="android.permission.MOUNT_UNMOUNT_FILESYSTEMS"
         tools:ignore="ProtectedPermissions" />
@@ -54,10 +53,29 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
+            android:name=".MainActivity"
+            android:label="@string/app_name"
+            android:theme="@style/AppTheme.NoActionBar">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+                <category android:name="android.intent.category.HOME" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+
+            <meta-data
+                android:name="default_launcher_flag"
+                android:value="yes" />
+        </activity>
+        <activity
+            android:name=".registration.view.RegistrationActivity"
+            android:launchMode="singleTask" />
+        <activity
             android:name=".ui.transactions.Authorization.AuthAdvice.authAdviceTypeActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:label="@string/title_activity_auth_advice_type"
-            android:theme="@style/FullscreenTheme"></activity>
+            android:theme="@style/FullscreenTheme" />
         <activity
             android:name=".ui.transactions.Authorization.Auth_menuActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
@@ -138,26 +156,10 @@
         <activity android:name=".ui.CardConfirmActivity" />
         <activity android:name=".ui.admin_settings.SuperAdminActivity" />
         <activity android:name=".ui.admin_settings.OthersSettingActivity" />
-        <activity android:name=".ui.admin_settings.CommunicationSettingActivity" />
+        <activity android:name=".ui.admin_settings.communication.CommunicationSettingActivity" />
         <activity android:name=".ui.admin_settings.ImportKeyActivity" />
         <activity android:name=".ui.ShowResultActivity" />
         <activity android:name=".PanInputActivity" />
-        <activity
-            android:name=".MainActivity"
-            android:label="@string/app_name"
-            android:theme="@style/AppTheme.NoActionBar">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-                <category android:name="android.intent.category.HOME" />
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
-
-            <meta-data
-                android:name="default_launcher_flag"
-                android:value="yes" />
-        </activity>
 
         <service
             android:name=".card.CardMoniterService"
@@ -170,9 +172,10 @@
             android:permission="android.permission.BIND_DEVICE_ADMIN">
             <meta-data
                 android:name="android.app.device_admin"
-                android:resource="@xml/device_owner_receiver"/>
+                android:resource="@xml/device_owner_receiver" />
+
             <intent-filter>
-                <action android:name="android.app.action.ACTION_DEVICE_ADMIN_ENABLED"/>
+                <action android:name="android.app.action.ACTION_DEVICE_ADMIN_ENABLED" />
             </intent-filter>
         </receiver>
     </application>

@@ -6,6 +6,7 @@ public class CommunicationUtils {
     public static final String HOST_SPARE_IP = "host_spare_ip";
     public static final String HOST_SPARE_PORT = "host_spare_port";
     public static final String TPDU = "tpdu_value";
+    public static final String IS_REGISTERED = "registered_value";
 
     public static final String host_ip_default = "192.168.8.104";
     public static final String host_port_default = "2030";

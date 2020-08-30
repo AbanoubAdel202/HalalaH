@@ -313,4 +313,43 @@
     <string name="password">Supervisour PASS</string>
     <string name="Partial">Partial</string>
     <string name="Full">Full</string>
+    <string name="registration_error">registration error</string>
+    <string name="invalid_pki_files">invalid PKI files</string>
+    <string name="vendor_terminal_type">vendor terminal type</string>
+    <string name="terminal_registration">Terminal Registration</string>
+    <string name="terminal_serial_id">terminal_serial_id (TRSMID)</string>
+    <string name="connection_settings">Connection Settings</string>
+    <string name="vendor_key_index">Vendor Key Index</string>
+    <string name="sama_key_index"> Sama Key Index</string>
+    <string name="proceed">Proceed</string>
+    <string name="invalid_trsmid">Invalid TRSMID</string>
+    <string name="random_length">Random length (in bytes)</string>
+    <string name="sending_error">sending error</string>
+    <string name="receiving_error">receiving error</string>
+    <string name="timeout_error">timeout error</string>
+    <string name="connection_error">connection_error</string>
+    <string name="response_timeout">Response Tmeout</string>
+    <string name="stop_bit">Stop Bit</string>
+    <string name="data_bit">Data Bit</string>
+    <string name="parity_bit">Parity Bit</string>
+    <string name="baud_rate_default" >Baud Rate Default</string>
+    <string name="connect_time">Connect Time</string>
+    <string name="dial_attempts">Dial Attempts</string>
+    <string name="phone_number">Phone Number</string>
+    <string name="dial_Number">Dial Number</string>
+    <string name="access_point_name">Access Point Name</string>
+    <string name="network_ip_address">Network IP Address</string>
+    <string name="network_tcp_port">Network TCP Port</string>
+    <string name="ssl_certificate_file">SSL Certificate File</string>
+    <string name="network_tcp_support">Network TCP Port</string>
+    <string name="Count_Access_Retries">Count Access Retries</string>
+    <string name="primary_connection">Primary Connection</string>
+    <string name="secondary_connection">Secondary Connection</string>
+    <string name="connection_type">Connection Type</string>
+
+    <string-array name="connection_types">
+        <item>    Wifi    </item>
+        <item>    Gprs    </item>
+    </string-array>
+
 </resources>

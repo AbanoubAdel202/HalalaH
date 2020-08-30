@@ -2,53 +2,38 @@ package com.example.halalah;
 
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.os.IBinder;
-import android.os.RemoteException;
 import android.util.Log;
-import android.widget.Switch;
 
 import com.example.halalah.TMS.AID_Data;
 import com.example.halalah.TMS.Card_Scheme;
 import com.example.halalah.TMS.Public_Key;
 import com.example.halalah.TMS.SAMA_TMS;
-
-import com.example.halalah.card.CardManager;
 import com.example.halalah.connect.CommunicationsHandler;
 import com.example.halalah.connect.SendReceiveListener;
-import com.example.halalah.iso8583.BCDASCII;
 import com.example.halalah.iso8583.ISO8583;
-import com.example.halalah.packet.UnpackPacket;
 import com.example.halalah.packet.UnpackPurchase;
+import com.example.halalah.registration.view.ITransaction;
 import com.example.halalah.secure.DUKPT_KEY;
 import com.example.halalah.sqlite.database.DBManager;
 import com.example.halalah.storage.CommunicationInfo;
 import com.example.halalah.ui.AmountInputActivity;
-import com.example.halalah.ui.Display_PrintActivity;
-import com.example.halalah.ui.Display_PrintActivity;
 import com.example.halalah.ui.P_NAQD_InputActivity;
 import com.example.halalah.ui.PacketProcessActivity;
 import com.example.halalah.ui.Refund_InputActivity;
-import com.example.halalah.ui.ShowResultActivity;
-import com.example.halalah.util.PacketProcessUtils;
 import com.topwise.cloudpos.aidl.printer.AidlPrinter;
-import com.topwise.cloudpos.aidl.printer.AidlPrinterListener;
-import com.topwise.cloudpos.aidl.printer.PrintItemEnhancedObj;
-import com.topwise.cloudpos.aidl.printer.PrintItemObj;
-import com.topwise.cloudpos.struct.BytesUtil;
 
-import java.util.List;
 import java.util.Locale;
 
-/** Header POS Main
- \Class Name: POS_MAIN
- \Param  :
- \Return :
- \Pre    :
- \Post   :
- \Author	: Mostafa Hussiny
- \DT		: 4/28/2020
- \Des    : main control of transaction flow methods
+/**
+ * Header POS Main
+ * \Class Name: POS_MAIN
+ * \Param  :
+ * \Return :
+ * \Pre    :
+ * \Post   :
+ * \Author	: Mostafa Hussiny
+ * \DT		: 4/28/2020
+ * \Des    : main control of transaction flow methods
  */
 public class POS_MAIN implements SendReceiveListener {
     private static final String TAG = POS_MAIN.class.getSimpleName();
@@ -56,174 +41,14 @@ public class POS_MAIN implements SendReceiveListener {
     private static boolean cont;
 
 
-
-
-    public enum Flowtrxtype {DESAF,
-        RECONSILE,
-        REVERSAL}
+    public Context mcontext;
     public Flowtrxtype m_enumflowtype;
 
 
-
-    public  Context mcontext;
-        public POS_MAIN()
-        {
-
-        }
-
-
-
-
-    public void Start_Transaction(POSTransaction oPos_trans, POSTransaction.TranscationType Trxtype)
-    {
-        PosApplication.getApp().oGPosTransaction.Reset();
-
-
-        Intent AmountACT;
-        switch(Trxtype)
-        {
-            case PURCHASE://purchase
-
-                //get amount
-                AmountACT= new Intent(mcontext, AmountInputActivity.class);
-                AmountACT.putExtra("transaction Type",Trxtype);
-                mcontext.startActivity(AmountACT);
-                break;
-            case PURCHASE_WITH_NAQD://PURCHASE_WITH_NAQD
-                //get amount
-                 AmountACT = new Intent(mcontext, P_NAQD_InputActivity.class);
-                 AmountACT.putExtra("transaction Type",Trxtype);
-                mcontext.startActivity(AmountACT);
-
-                break;
-            case REFUND://REFUND
-
-
-
-
-                // TODO get original transaction Type
-                AmountACT = new Intent(mcontext, Refund_InputActivity.class);
-                AmountACT.putExtra("transaction Type",Trxtype);
-                mcontext.startActivity(AmountACT);
-
-                break;
-            case AUTHORISATION://AUTHORISATION:
-
-
-                //get amount
-                AmountACT = new Intent(mcontext, AmountInputActivity.class);
-                AmountACT.putExtra("transaction Type",Trxtype);
-                mcontext.startActivity(AmountACT);
-
-                break;
-            case AUTHORISATION_ADVICE://AUTHORISATION_ADVICE:
-                //get amount
-                AmountACT = new Intent(mcontext, AmountInputActivity.class);
-                AmountACT.putExtra("transaction Type",Trxtype);
-                mcontext.startActivity(AmountACT);
-                break;
-            case AUTHORISATION_VOID://AUTHORISATION_VOID:
-                AmountACT = new Intent(mcontext, AmountInputActivity.class);
-                AmountACT.putExtra("transaction Type",Trxtype);
-                break;
-            case AUTHORISATION_EXTENSION://AUTHORISATION_EXTENSION
-                AmountACT = new Intent(mcontext, AmountInputActivity.class);
-                AmountACT.putExtra("transaction Type",Trxtype);
-                break;
-            case PURCHASE_ADVICE://PURCHASE_ADVICE:
-                 AmountACT = new Intent(mcontext, AmountInputActivity.class);
-                AmountACT.putExtra("transaction Type",Trxtype);
-
-                break;
-
-            case CASH_ADVANCE://CASH_ADVANCE:
-                //todo start cash advance
-                AmountACT = new Intent(mcontext, AmountInputActivity.class);
-                AmountACT.putExtra("transaction Type",Trxtype);
-                break;
-            case REVERSAL://REVERSAL
-                //todo check host transaction
-                //todo check reversal time out
-                //todo check Transaction mode
-                POSTransaction oReversal_Trx = null;
-                perform_reversal(oPos_trans,oReversal_Trx);
-
-
-                break;
-            case SADAD_BILL://SADAD_BILL:
-                //todo  sadad
-                break;
-            case RECONCILIATION://RECONCILIATION:
-                //todo
-                break;
-            case TMS_FILE_DOWNLOAD://TMS_FILE_DOWNLOAD:
-
-                Intent TMSprocess= new Intent(mcontext, PacketProcessActivity.class);
-                TMSprocess.putExtra("transaction Type",Trxtype);
-
-                break;
-            case TERMINAL_REGISTRATION://TREMINAL_REGISTRATION:
-
-                // based on Moamen Ahmed Registeration file , Terminal_Registeration.java also
-
-                PosApplication.getApp().oGTerminal_Registeration.LoadTerminalRegistrationData();
-
-                if( PosApplication.getApp().oGTerminal_Registeration.ValidatePKIFiles(1,1) != 0)
-                    //while(true)
-                      //  DisplayErrorMessage("INVALID PKI")
-
-                do
-                {
-                    if (PosApplication.getApp().oGTerminal_Registeration.StartRegistrationProcess(PosApplication.getApp().oGPosTransaction) ==  0)
-                    {
-                        PosApplication.getApp().oGTerminal_Registeration.bRegistered = true;
-                    }
-                    else
-                    {
-                        //todo
-                        //DisplayError();
-
-                        PosApplication.getApp().oGTerminal_Registeration.PromptRegisterationSetting();
-                    }
-                } while(PosApplication.getApp().oGTerminal_Registeration.bRegistered != true);
-
-
-                // todo TMSDownloadProcess();
-                Start_Transaction(oPos_trans, POSTransaction.TranscationType.TMS_FILE_DOWNLOAD);
-                break;
-            case ADMIN://ADMIN:
-                break;
-
-
-
-
-        }
-
+    public POS_MAIN() {
 
     }
 
-    /** Header POS Main
-     \function Name: Perform_reversal
-     \Param  :
-     \Return :
-     \Pre    :
-     \Post   :
-     \Author	: Mostafa Hussiny
-     \DT		: 6/00/2020
-     \Des    : will start collection and performe reversal transaction
-     */
-    public boolean perform_reversal(POSTransaction oOriginal_Transaction,POSTransaction oReversal_Transaction)
-    {
-        oReversal_Transaction=SAF_Info.BuildSAFOriginals(oReversal_Transaction,oOriginal_Transaction);
-        oReversal_Transaction.m_enmTrxType= POSTransaction.TranscationType.REVERSAL;
-        oReversal_Transaction.m_sMTI=PosApplication.MTI_Reversal_Advice;
-        //todo copy nessasrry data from original transaction to oRevesal transaction
-        //todo  save in saf the reversal advice then printing copy of reversal then performe DESAF
-
-
-
-        return true;
-    }
     /** Header recognise card
      \function Name: recognise card
      \Param  :
@@ -234,102 +59,18 @@ public class POS_MAIN implements SendReceiveListener {
      \DT		: 4/28/2020  modified 1/7/2020
      \Des    : will get the card AID and check if this card is MAda based on AID or PAN
      */
-    public static int Recognise_card(){
-           int istate=-1;
-            if(PosApplication.getApp().oGPosTransaction.m_enmTrxCardType==POSTransaction.CardType.MANUAL || PosApplication.getApp().oGPosTransaction.m_enmTrxCardType==POSTransaction.CardType.MAG )
-            {
-                istate= SAMA_TMS.Get_card_scheme_BY_PAN(PosApplication.getApp().oGPosTransaction.m_sPAN);
-                            if (Check_MADA_Card())
-                              PosApplication.getApp().oGPosTransaction.m_is_mada=true;
-                            else
-                                PosApplication.getApp().oGPosTransaction.m_is_mada=false;
+    public static int Recognise_card() {
+        int istate = -1;
+        if (PosApplication.getApp().oGPosTransaction.m_enmTrxCardType == POSTransaction.CardType.MANUAL || PosApplication.getApp().oGPosTransaction.m_enmTrxCardType == POSTransaction.CardType.MAG) {
+            istate = SAMA_TMS.Get_card_scheme_BY_PAN(PosApplication.getApp().oGPosTransaction.m_sPAN);
+            PosApplication.getApp().oGPosTransaction.m_is_mada = Check_MADA_Card();
 
 
-            }
-            else
-                istate=SAMA_TMS.Get_card_scheme_BY_AID(PosApplication.getApp().oGPosTransaction.m_sAID);
+        } else
+            istate = SAMA_TMS.Get_card_scheme_BY_AID(PosApplication.getApp().oGPosTransaction.m_sAID);
 
-           return istate;
+        return istate;
 
-    }
-
-    /** Header  Check_transaction_allowed
-     \function Name: Check_transaction_allowed
-     \Param  : Transaction Type
-     \Return : boolean Transaction allowed or not
-     \Pre    :
-     \Post   :
-     \Author	: Mostafa Hussiny
-     \DT		: 6/00/2020
-     \Des    : check transaction allowed flag for each transaction
-     */
-    public static boolean Check_transaction_allowed(POSTransaction.TranscationType Trxtype) {
-
-            //note : Pre-authorization (includes PreAuthorization Extension), Purchase Advice (for Pre-Authorization Capture or Completion )
-            // and Correction/Reversal (including PreAuthorization Void/Partial Void)
-            // shall be configured for the mada scheme for POS terminals that support the Pre-Authorization and Capture service
-
-        switch (Trxtype) {
-            case PURCHASE://purchase  offset 0
-                if ("1".equals(PosApplication.getApp().oGPosTransaction.m_card_scheme.m_sTransactions_Allowed.charAt(0)))
-                return true;
-                break;
-            case PURCHASE_WITH_NAQD://PURCHASE_WITH_NAQD                                 offset 1
-                if ("1".equals(PosApplication.getApp().oGPosTransaction.m_card_scheme.m_sTransactions_Allowed.charAt(1)))
-                return true;
-                break;
-            case PURCHASE_ADVICE://PURCHASE_ADVICE:                                      offset 2
-            case AUTHORISATION_ADVICE://AUTHORISATION_ADVICE:
-                if ("1".equals(PosApplication.getApp().oGPosTransaction.m_card_scheme.m_sTransactions_Allowed.charAt(2)))
-                return true;
-                break;
-            case REFUND://REFUND                                                         offset 3
-                if ("1".equals(PosApplication.getApp().oGPosTransaction.m_card_scheme.m_sTransactions_Allowed.charAt(3)))
-                return true;
-                break;
-            case AUTHORISATION://AUTHORISATION:                                          offset 4
-                if ("1".equals(PosApplication.getApp().oGPosTransaction.m_card_scheme.m_sTransactions_Allowed.charAt(4)))
-                return true;
-                break;
-            case CASH_ADVANCE://CASH_ADVANCE:                                            offset 5
-                if ("1".equals(PosApplication.getApp().oGPosTransaction.m_card_scheme.m_sTransactions_Allowed.charAt(5)))
-                return true;
-                break;
-            case REVERSAL://REVERSAL:                                                    offset 6
-                if ("1".equals(PosApplication.getApp().oGPosTransaction.m_card_scheme.m_sTransactions_Allowed.charAt(6)))
-                return true;
-                break;
-            case AUTHORISATION_EXTENSION://AUTHORISATION_EXTENSION                       offset 7
-                if ("1".equals(PosApplication.getApp().oGPosTransaction.m_card_scheme.m_sTransactions_Allowed.charAt(7))) {
-                    return true;
-                }else if(PosApplication.getApp().oGPosTransaction.m_is_mada)
-                {
-
-                    return true;
-                }
-                break;
-            case AUTHORISATION_VOID://AUTHORISATION_VOID:                                offset 8
-                if ("1".equals(PosApplication.getApp().oGPosTransaction.m_card_scheme.m_sTransactions_Allowed.charAt(8)))
-                return true;
-                else if(PosApplication.getApp().oGPosTransaction.m_is_mada)
-                {
-
-                    return true;
-                }
-                break;
-            case SADAD_BILL://SADAD_BILL:                                                offset 9
-                if ("1".equals(PosApplication.getApp().oGPosTransaction.m_card_scheme.m_sTransactions_Allowed.charAt(9)))
-                return true;
-                else if(PosApplication.getApp().oGPosTransaction.m_is_mada)
-                {
-
-                    return true;
-                }
-                break;
-
-
-        }
-        return false;  // transaction not allowed
     }
 
     /** Header  Check_transaction_limit
@@ -413,47 +154,509 @@ public class POS_MAIN implements SendReceiveListener {
 
         }
 
-        if(istate==1) {
+        if (istate == 1) {
 
-            if (Integer.parseInt(PosApplication.getApp().oGPosTransaction.m_sTrxAmount)>Integer.parseInt(PosApplication.getApp().oGTerminal_Operation_Data.m_sMaximum_transaction_amount))
-                istate=0;
+            if (Integer.parseInt(PosApplication.getApp().oGPosTransaction.m_sTrxAmount) > Integer.parseInt(PosApplication.getApp().oGTerminal_Operation_Data.m_sMaximum_transaction_amount))
+                istate = 0;
             else
-                istate=-1;
+                istate = -1;
         }
-
 
 
         return istate;
     }
-    public boolean Check_manual_allowed()
-    {
-        if(PosApplication.getApp().oGPosTransaction.m_card_scheme.m_sManual_entry_allowed=="1")
-            return true;
-        else
-            return false;
-    }
-    public int Check_max_cashback(int cashbackamount)
-    {
-        //todo get max cash back
 
-        return 0;
-    }
-    /** Header  Check_MADA_Card
-     \function Name: Check_MADA_Card
-     \Param  :
-     \Return : boolean for true is mada
-     \Pre    :
-     \Post   :
-     \Author	: Mostafa Hussiny
-     \DT		: 6/00/2020
-     \Des    : check card is mada or ICS
+    /**
+     * Header  Check_MADA_Card
+     * \function Name: Check_MADA_Card
+     * \Param  :
+     * \Return : boolean for true is mada
+     * \Pre    :
+     * \Post   :
+     * \Author	: Mostafa Hussiny
+     * \DT		: 6/00/2020
+     * \Des    : check card is mada or ICS
      */
-    public static boolean Check_MADA_Card()
-    {
-        if(PosApplication.getApp().oGPosTransaction.m_card_scheme.m_sCard_Scheme_ID=="P1")
-        return true;
+    public static boolean Check_MADA_Card() {
+        return PosApplication.getApp().oGPosTransaction.m_card_scheme.m_sCard_Scheme_ID == "P1";
+    }
 
-        return false;
+    public static String FormatCAKeys(Public_Key CAKeyObj) {
+        int iRetRes = 0;
+        StringBuilder strFormatedCAKey = new StringBuilder();
+
+        if (CAKeyObj == null) {
+            // log an error message
+            return String.valueOf(iRetRes);
+        }
+
+        // Adding RID
+        if (CAKeyObj.RID.length() > 0)
+            strFormatedCAKey.append("9F06" + String.format(Locale.ENGLISH, "%02d", CAKeyObj.RID.length() / 2) + CAKeyObj.RID);
+        else {
+            //Todo Log message showing can not format sent key due to incorrect length of RID
+            return String.valueOf(iRetRes);
+        }
+
+
+        // Adding Key_Index
+        if (CAKeyObj.Key_Index.length() > 0)
+            strFormatedCAKey.append("9F22" + String.format(Locale.ENGLISH, "%02d", CAKeyObj.Key_Index.length() / 2) + CAKeyObj.Key_Index);
+        else {
+            //Todo Log message showing can not format sent key due to incorrect length of Key_Index
+            return String.valueOf(iRetRes);
+        }
+
+        // Adding CA_Public_Key_Expiry_Date
+        if (CAKeyObj.CA_Public_Key_Expiry_Date.length() > 0)
+            strFormatedCAKey.append("DF05" +/*String.format(Locale.ENGLISH,"%02d",CAKeyObj.CA_Public_Key_Expiry_Date.length()/2)*/"0420" + CAKeyObj.CA_Public_Key_Expiry_Date);
+        else {
+            //Todo Log message showing can not format sent key due to incorrect length of CA_Public_Key_Expiry_Date
+            return String.valueOf(iRetRes);
+        }
+        // Adding Hash_ID
+        if (CAKeyObj.Hash_ID.length() > 0)
+            strFormatedCAKey.append("DF06" + String.format(Locale.ENGLISH, "%02d", CAKeyObj.Hash_ID.length() / 2) + CAKeyObj.Hash_ID);
+        else {
+            //Todo Log message showing can not format sent key due to incorrect length of Hash_ID
+            return String.valueOf(iRetRes);
+        }
+
+
+        // Adding Digital_Signature_ID
+        if (CAKeyObj.Digital_Signature_ID.length() > 0)
+            strFormatedCAKey.append("DF07" + String.format(Locale.ENGLISH, "%02d", CAKeyObj.Digital_Signature_ID.length() / 2) + CAKeyObj.Digital_Signature_ID);
+        else {
+            //Todo Log message showing can not format sent key due to incorrect length of Digital_Signature_ID
+            return String.valueOf(iRetRes);
+        }
+
+
+        // formating  Public Key Value  and Public_Key length
+        if (CAKeyObj.Public_Key.length() > 0 && CAKeyObj.CA_Public_Key_Length.length() > 0)
+            strFormatedCAKey.append("DF0281" + Integer.toHexString(CAKeyObj.Public_Key.length() / 2) + CAKeyObj.Public_Key);
+        else {
+            //Todo Log message showing can not format sent key due to incorrect length of Public_Key
+            return String.valueOf(iRetRes);
+        }
+
+        // Adding Exponent
+        if (CAKeyObj.Exponent.length() > 0)
+            strFormatedCAKey.append("DF04" + String.format(Locale.ENGLISH, "%02d", CAKeyObj.Exponent.length() / 2) + CAKeyObj.Exponent);
+        else {
+            //Todo Log message showing can not format sent key due to incorrect length of Exponent
+            return String.valueOf(iRetRes);
+        }
+
+        // Adding Check_Sum
+        if (CAKeyObj.Check_Sum.length() > 0)
+            strFormatedCAKey.append("DF03" + Integer.toHexString(CAKeyObj.Check_Sum.length() / 2)/*String.format(Locale.ENGLISH,"%02d",CAKeyObj.Check_Sum.length()/2)*/ + CAKeyObj.Check_Sum);
+        else {
+            //Todo Log message showing can not format sent key due to incorrect length of Check_Sum
+            return String.valueOf(iRetRes);
+        }
+
+
+        // Todo log Formated string for debugging
+
+        return strFormatedCAKey.toString();
+
+    }
+
+    public static boolean ValidateHostMAC() {
+        ISO8583 oResponseTrx = PosApplication.getApp().oGPosTransaction.m_ResponseISOMsg;
+
+        String sMAC = "";
+
+        switch (PosApplication.getApp().oGPosTransaction.m_enmTrxType) {
+            case AUTHORISATION:
+            case AUTHORISATION_EXTENSION:
+
+
+                //0.Messa   ge Type Identifier
+                sMAC = PosApplication.MTI_Authorisation_Request;
+                //1. Primary bitmap   todo get bitmap
+                sMAC = new String(oResponseTrx.Getbitmap());
+                //2.Primary Account Number (PAN)
+                sMAC.concat(new String(oResponseTrx.getDataElement(2)));
+                //3.Processing Code
+                sMAC.concat(new String(oResponseTrx.getDataElement(3)));
+                //4.Amount, Transaction
+                sMAC.concat(new String(oResponseTrx.getDataElement(4)));
+                //11.System Trace Audit Number
+                sMAC.concat(new String(oResponseTrx.getDataElement(11)));
+                //12.Date and Time, Local Transaction
+                sMAC.concat(new String(oResponseTrx.getDataElement(12)));
+                //39 Action code
+                sMAC.concat(new String(oResponseTrx.getDataElement(39)));
+                //47.National Data
+                sMAC.concat(new String(oResponseTrx.getDataElement(47)));
+                //53.Security Related Control Information
+                sMAC.concat(new String(oResponseTrx.getDataElement(53)));
+                //55.EMV Data
+                if (PosApplication.getApp().oGPosTransaction.m_enmTrxCardType == POSTransaction.CardType.ICC | PosApplication.getApp().oGPosTransaction.m_enmTrxCardType == POSTransaction.CardType.CTLS)
+                    sMAC.concat(new String(oResponseTrx.getDataElement(55)));
+                break;
+            case AUTHORISATION_ADVICE:
+                //0.Messa   ge Type Identifier
+                sMAC = PosApplication.MTI_Authorisation_Advice;
+                //1. Primary bitmap
+                sMAC = new String(oResponseTrx.Getbitmap());
+                //2.Primary Account Number (PAN)
+                sMAC.concat(new String(oResponseTrx.getDataElement(2)));
+                //3.Processing Code
+                sMAC.concat(new String(oResponseTrx.getDataElement(3)));
+                //4.Amount, Transaction
+                sMAC.concat(new String(oResponseTrx.getDataElement(4)));
+                //11.System Trace Audit Number
+                sMAC.concat(new String(oResponseTrx.getDataElement(11)));
+                //12.Date and Time, Local Transaction
+                sMAC.concat(new String(oResponseTrx.getDataElement(12)));
+                //39 Action code
+                sMAC.concat(new String(oResponseTrx.getDataElement(39)));
+                //47.National Data
+                sMAC.concat(new String(oResponseTrx.getDataElement(47)));
+                //53.Security Related Control Information
+                sMAC.concat(new String(oResponseTrx.getDataElement(53)));
+                //55.EMV Data
+                if (PosApplication.getApp().oGPosTransaction.m_enmTrxCardType == POSTransaction.CardType.ICC | PosApplication.getApp().oGPosTransaction.m_enmTrxCardType == POSTransaction.CardType.CTLS)
+                    sMAC.concat(new String(oResponseTrx.getDataElement(55)));
+
+                break;
+            case REFUND:
+            case CASH_ADVANCE:
+            case PURCHASE_WITH_NAQD:
+            case PURCHASE:
+                //0.Messa   ge Type Identifier
+                sMAC = PosApplication.MTI_Financial_Request;
+                //1. Primary bitmap
+                sMAC = new String(oResponseTrx.Getbitmap());
+                //2.Primary Account Number (PAN)
+                sMAC.concat(new String(oResponseTrx.getDataElement(2)));
+                //3.Processing Code
+                sMAC.concat(new String(oResponseTrx.getDataElement(3)));
+                //4.Amount, Transaction
+                sMAC.concat(new String(oResponseTrx.getDataElement(4)));
+                //11.System Trace Audit Number
+                sMAC.concat(new String(oResponseTrx.getDataElement(11)));
+                //12.Date and Time, Local Transaction
+                sMAC.concat(new String(oResponseTrx.getDataElement(12)));
+                //39 Action code
+                sMAC.concat(new String(oResponseTrx.getDataElement(39)));
+                //47.National Data
+                sMAC.concat(new String(oResponseTrx.getDataElement(47)));
+                //53.Security Related Control Information
+                sMAC.concat(new String(oResponseTrx.getDataElement(53)));
+                //55.EMV Data
+                if (PosApplication.getApp().oGPosTransaction.m_enmTrxCardType == POSTransaction.CardType.ICC | PosApplication.getApp().oGPosTransaction.m_enmTrxCardType == POSTransaction.CardType.CTLS)
+                    sMAC.concat(new String(oResponseTrx.getDataElement(55)));
+                break;
+            case PURCHASE_ADVICE:
+                //0.Messa   ge Type Identifier
+                sMAC = PosApplication.MTI_Financial_Transaction_Advice;
+                //1. Primary bitmap
+                sMAC = new String(oResponseTrx.Getbitmap());
+                //2.Primary Account Number (PAN)
+                sMAC.concat(new String(oResponseTrx.getDataElement(2)));
+                //3.Processing Code
+                sMAC.concat(new String(oResponseTrx.getDataElement(3)));
+                //4.Amount, Transaction
+                sMAC.concat(new String(oResponseTrx.getDataElement(4)));
+                //11.System Trace Audit Number
+                sMAC.concat(new String(oResponseTrx.getDataElement(11)));
+                //12.Date and Time, Local Transaction
+                sMAC.concat(new String(oResponseTrx.getDataElement(12)));
+                //39 Action code
+                sMAC.concat(new String(oResponseTrx.getDataElement(39)));
+                //47.National Data
+                sMAC.concat(new String(oResponseTrx.getDataElement(47)));
+                //53.Security Related Control Information
+                sMAC.concat(new String(oResponseTrx.getDataElement(53)));
+                //55.EMV Data
+                if (PosApplication.getApp().oGPosTransaction.m_enmTrxCardType == POSTransaction.CardType.ICC | PosApplication.getApp().oGPosTransaction.m_enmTrxCardType == POSTransaction.CardType.CTLS)
+                    sMAC.concat(new String(oResponseTrx.getDataElement(55)));
+
+                break;
+            case REVERSAL:
+                //0.Messa   ge Type Identifier
+                sMAC = PosApplication.MTI_Reversal_Advice;
+                //1. Primary bitmap
+                sMAC = new String(oResponseTrx.Getbitmap());
+                //2.Primary Account Number (PAN)
+                sMAC.concat(new String(oResponseTrx.getDataElement(2)));
+                //3.Processing Code
+                sMAC.concat(new String(oResponseTrx.getDataElement(3)));
+                //4.Amount, Transaction
+                sMAC.concat(new String(oResponseTrx.getDataElement(4)));
+                //11.System Trace Audit Number
+                sMAC.concat(new String(oResponseTrx.getDataElement(11)));
+                //12.Date and Time, Local Transaction
+                sMAC.concat(new String(oResponseTrx.getDataElement(12)));
+                //39 Action code
+                sMAC.concat(new String(oResponseTrx.getDataElement(39)));
+                //47.National Data
+                sMAC.concat(new String(oResponseTrx.getDataElement(47)));
+                //53.Security Related Control Information
+                sMAC.concat(new String(oResponseTrx.getDataElement(53)));
+                //55.EMV Data
+                if (PosApplication.getApp().oGPosTransaction.m_enmTrxCardType == POSTransaction.CardType.ICC | PosApplication.getApp().oGPosTransaction.m_enmTrxCardType == POSTransaction.CardType.CTLS)
+                    sMAC.concat(new String(oResponseTrx.getDataElement(55)));
+                break;
+
+            case TMS_FILE_DOWNLOAD:
+                break;
+            case RECONCILIATION:
+        }
+        //0.Messa   ge Type Identifier
+        //2.Primary Account Number (PAN)
+        //3.Processing Code
+        //4.Amount, Transaction
+        //11.System Trace Audit Number
+        //12.Date and Time, Local Transaction
+        //39.Action Code
+        //47.National Data
+        //53.Security Related Control Information
+        //55.EMV Data
+        //72.Data Record
+        //124.Private - (POS Terminal Reconciliation)
+        byte[] bMac = sMAC.getBytes();
+
+        if (bMac.length % 8 != 0) {
+            for (int i = 0; i < bMac.length % 8; i++) {
+                sMAC = sMAC + 0x00;
+            }
+        }
+
+        sMAC = DUKPT_KEY.CaluclateMACBlock(sMAC);
+
+        //removinglast 4 bytes
+        sMAC = sMAC.substring(0, 4);
+        sMAC = sMAC.concat("ÿÿÿÿ");
+
+
+        return sMAC.equals(oResponseTrx.getDataElement(64));
+    }
+
+    /**
+     * Header  Check_transaction_allowed
+     * \function Name: Check_transaction_allowed
+     * \Param  : Transaction Type
+     * \Return : boolean Transaction allowed or not
+     * \Pre    :
+     * \Post   :
+     * \Author	: Mostafa Hussiny
+     * \DT		: 6/00/2020
+     * \Des    : check transaction allowed flag for each transaction
+     */
+    public static boolean Check_transaction_allowed(POSTransaction.TranscationType Trxtype) {
+
+        //note : Pre-authorization (includes PreAuthorization Extension), Purchase Advice (for Pre-Authorization Capture or Completion )
+        // and Correction/Reversal (including PreAuthorization Void/Partial Void)
+        // shall be configured for the mada scheme for POS terminals that support the Pre-Authorization and Capture service
+
+        switch (Trxtype) {
+            case PURCHASE://purchase  offset 0
+                if ("1".equals(PosApplication.getApp().oGPosTransaction.m_card_scheme.m_sTransactions_Allowed.charAt(0)))
+                    return true;
+                break;
+            case PURCHASE_WITH_NAQD://PURCHASE_WITH_NAQD                                 offset 1
+                if ("1".equals(PosApplication.getApp().oGPosTransaction.m_card_scheme.m_sTransactions_Allowed.charAt(1)))
+                    return true;
+                break;
+            case PURCHASE_ADVICE://PURCHASE_ADVICE:                                      offset 2
+            case AUTHORISATION_ADVICE://AUTHORISATION_ADVICE:
+                if ("1".equals(PosApplication.getApp().oGPosTransaction.m_card_scheme.m_sTransactions_Allowed.charAt(2)))
+                    return true;
+                break;
+            case REFUND://REFUND                                                         offset 3
+                if ("1".equals(PosApplication.getApp().oGPosTransaction.m_card_scheme.m_sTransactions_Allowed.charAt(3)))
+                    return true;
+                break;
+            case AUTHORISATION://AUTHORISATION:                                          offset 4
+                if ("1".equals(PosApplication.getApp().oGPosTransaction.m_card_scheme.m_sTransactions_Allowed.charAt(4)))
+                    return true;
+                break;
+            case CASH_ADVANCE://CASH_ADVANCE:                                            offset 5
+                if ("1".equals(PosApplication.getApp().oGPosTransaction.m_card_scheme.m_sTransactions_Allowed.charAt(5)))
+                    return true;
+                break;
+            case REVERSAL://REVERSAL:                                                    offset 6
+                if ("1".equals(PosApplication.getApp().oGPosTransaction.m_card_scheme.m_sTransactions_Allowed.charAt(6)))
+                    return true;
+                break;
+            case AUTHORISATION_EXTENSION://AUTHORISATION_EXTENSION                       offset 7
+                if ("1".equals(PosApplication.getApp().oGPosTransaction.m_card_scheme.m_sTransactions_Allowed.charAt(7))) {
+                    return true;
+                } else if (PosApplication.getApp().oGPosTransaction.m_is_mada) {
+
+                    return true;
+                }
+                break;
+            case AUTHORISATION_VOID://AUTHORISATION_VOID:                                offset 8
+                if ("1".equals(PosApplication.getApp().oGPosTransaction.m_card_scheme.m_sTransactions_Allowed.charAt(8)))
+                    return true;
+                else if (PosApplication.getApp().oGPosTransaction.m_is_mada) {
+
+                    return true;
+                }
+                break;
+            case SADAD_BILL://SADAD_BILL:                                                offset 9
+                if ("1".equals(PosApplication.getApp().oGPosTransaction.m_card_scheme.m_sTransactions_Allowed.charAt(9)))
+                    return true;
+                else if (PosApplication.getApp().oGPosTransaction.m_is_mada) {
+
+                    return true;
+                }
+                break;
+
+
+        }
+        return false;  // transaction not allowed
+    }
+
+    /**
+     * \Function Name: load_Terminal_configuration_file
+     * \Param  : POSTransaction POSTrx
+     * \Return : double
+     * \Pre    :
+     * \Post   :
+     * \Author	: mostafa hussiny
+     * \DT		: 00/08/2020
+     * \Des    : loading Terminal operation data from saved file of terminal configuration data
+     */
+    public static void load_Terminal_configuration_file() {
+        // to copy initial terminal operation data
+        SAMA_TMS Default_TMS = new SAMA_TMS();
+
+        // default retailer data
+        Default_TMS.retailer_data.m_sArabic_Receipt_1 = "Arabic_Receipt_1";
+        Default_TMS.retailer_data.m_sArabic_Receipt_2 = "m_sArabic_Receipt_2";
+        Default_TMS.retailer_data.m_sAutomatic_Load = "0";
+        Default_TMS.retailer_data.m_sTerminal_Capability = "0000000";
+        Default_TMS.retailer_data.m_sAdditional_Terminal_Capabilities = "000000";
+        Default_TMS.retailer_data.m_sCurrency_Symbol_Arabic = "ريال";
+        Default_TMS.retailer_data.m_sCurrency_Symbol_English = "SAR";
+        Default_TMS.retailer_data.m_sTerminal_Currency_Code = "0682";
+        Default_TMS.retailer_data.m_sTerminal_Country_Code = "0682";
+        Default_TMS.retailer_data.m_sTransaction_Currency_Exponent = "2";
+        Default_TMS.retailer_data.m_sSAF_Default_Message_Transmission_Number = "2";
+        Default_TMS.retailer_data.m_sSAF_Retry_Limit = "3";
+        Default_TMS.retailer_data.m_sDownload_Phone_Number = "+01061456840";
+        Default_TMS.retailer_data.m_sEMV_Terminal_Type = "22";
+        Default_TMS.retailer_data.m_sNext_load = "0";
+        Default_TMS.retailer_data.m_sReconciliation_time = "233000";
+        Default_TMS.retailer_data.m_sEnglish_Receipt_1 = "English_Receipt_1";
+        Default_TMS.retailer_data.m_sEnglish_Receipt_2 = "English_Receipt_2";
+        Default_TMS.retailer_data.m_sRetailer_Address_1_Arabic = "هلا، المملكه العربيه السعوديه1 ";
+        Default_TMS.retailer_data.m_sRetailer_Address_2_Arabic = "هلا، المملكه العربيه السعوديه2 ";
+        Default_TMS.retailer_data.m_sRetailer_Address_1_English = "hala , saudiarabia 1";
+        Default_TMS.retailer_data.m_sRetailer_Address_2_English = "hala , saudiarabia 2";
+        Default_TMS.retailer_data.m_sRetailer_Name_Arabic = "تاجر مؤقت";
+        Default_TMS.retailer_data.m_sRetailer_Name_English = "temp Merchant";
+
+
+        PosApplication.getApp().oGSama_TMS = Default_TMS;
+
+
+    }
+
+    /**
+     * \Function Name: check_hardware
+     * \Param  : POSTransaction POSTrx
+     * \Return : double
+     * \Pre    :
+     * \Post   :
+     * \Author	: mostafa hussiny
+     * \DT		: 00/08/2020
+     * \Des    : check_hardware printer contactless reader , chip , mag ,...etc
+     */
+
+    public static void check_hardware() {
+
+        AidlPrinter mPrinterManager;
+        mPrinterManager = DeviceTopUsdkServiceManager.getInstance().getPrintManager();
+        int printState = -1;
+        try {
+            printState = mPrinterManager.getPrinterState();
+            Log.i(TAG, "printState = " + printState);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        switch (printState) {
+            case 0://PRINTER_STATE_Normal             // for mada '0' = No printer. '1' = Out of paper. '2' = Plain paper receipt.
+                break;
+            case 1://PRINTER_STATE_NOPAPER
+                PosApplication.getApp().oGTerminal_Operation_Data.Printer_Status = "1";
+            case 2:
+        }
+
+
+    }
+
+    public static boolean CheckHostActionCode(String sDE39) {
+        boolean bRetRes = false;
+        switch (sDE39) {
+            case "000":
+            case "001":
+            case "003":
+            case "007":
+            case "060":
+            case "087":
+            case "089":
+            case "400": // Reversal
+            case "913": // Reversal Duplicate transmission , Specification part b Section 4.3.16 Reversal Transaction Timeout
+            case "500": // Reconciliation
+            case "800": // Network
+                return true; // Approved transaction
+            default:
+                return bRetRes;
+        }
+
+    }
+
+    /**
+     * \Function Name: GetTrxCumulativeAmount
+     * \Param  : POSTransaction POSTrx
+     * \Return : double
+     * \Pre    :
+     * \Post   :
+     * \Author	: Moamen Ahmed
+     * \DT		: 13/07/2020
+     * \Des    : Get Transaction amout to be updated on  m_dTermReconciliationAmount buffer for SAF Checking , not including Authorization amount
+     */
+
+    public static double GetTrxCumulativeAmount(POSTransaction POSTrx) {
+        double dAmount = 0;
+        // Todo Log Start message
+
+        switch (POSTrx.m_enmTrxType) {
+            case PURCHASE:
+            case PURCHASE_WITH_NAQD:
+            case PURCHASE_ADVICE:
+            case CASH_ADVANCE:
+            case REFUND: {
+                if (POSTrx.m_sProcessCode.equals("00") ||
+                        POSTrx.m_sProcessCode.equals("01") ||
+                        POSTrx.m_sProcessCode.equals("09")) {
+                    dAmount = Double.parseDouble(POSTrx.m_sTrxAmount);
+                } else if (POSTrx.m_sProcessCode.equals("20"))
+                    dAmount = Double.parseDouble(POSTrx.m_sTrxAmount) * -1;
+            }
+            break;
+            case REVERSAL: {
+                if (POSTrx.m_sProcessCode.equals("00") ||
+                        POSTrx.m_sProcessCode.equals("01") ||
+                        POSTrx.m_sProcessCode.equals("09")) {
+                    dAmount = Double.parseDouble(POSTrx.m_sTrxAmount) * -1;
+                } else if (POSTrx.m_sProcessCode.equals("20"))
+                    dAmount = Double.parseDouble(POSTrx.m_sTrxAmount);
+            }
+            break;
+        }
+        // Todo Log Endmessage with  return value
+
+        return dAmount;
     }
 
 
@@ -721,105 +924,9 @@ DF03 Check Sum                                [20]   >> 4410C6D51C2F83ADFD92528F
 
 */
 
-
-
-
-    public static String FormatCAKeys(Public_Key CAKeyObj)
-    {
-        int iRetRes = 0;
-        StringBuilder strFormatedCAKey = new StringBuilder();
-
-        if (CAKeyObj == null)
-        {
-            // log an error message
-            return String.valueOf(iRetRes);
-        }
-
-        // Adding RID
-        if (CAKeyObj.RID.length() > 0)
-            strFormatedCAKey.append("9F06" +String.format(Locale.ENGLISH,"%02d",CAKeyObj.RID.length()/2)+CAKeyObj.RID.toString());
-        else
-        {
-            //Todo Log message showing can not format sent key due to incorrect length of RID
-            return String.valueOf(iRetRes) ;
-        }
-
-
-        // Adding Key_Index
-        if (CAKeyObj.Key_Index.length() > 0)
-            strFormatedCAKey.append("9F22" +String.format(Locale.ENGLISH,"%02d",CAKeyObj.Key_Index.length()/2)+CAKeyObj.Key_Index.toString());
-        else
-        {
-            //Todo Log message showing can not format sent key due to incorrect length of Key_Index
-            return String.valueOf(iRetRes);
-        }
-
-        // Adding CA_Public_Key_Expiry_Date
-        if (CAKeyObj.CA_Public_Key_Expiry_Date.length() > 0)
-            strFormatedCAKey.append("DF05" +/*String.format(Locale.ENGLISH,"%02d",CAKeyObj.CA_Public_Key_Expiry_Date.length()/2)*/"0420"+CAKeyObj.CA_Public_Key_Expiry_Date.toString());
-        else
-        {
-            //Todo Log message showing can not format sent key due to incorrect length of CA_Public_Key_Expiry_Date
-            return String.valueOf(iRetRes);
-        }
-        // Adding Hash_ID
-        if (CAKeyObj.Hash_ID.length() > 0)
-            strFormatedCAKey.append("DF06" +String.format(Locale.ENGLISH,"%02d",CAKeyObj.Hash_ID.length()/2)+CAKeyObj.Hash_ID.toString());
-        else
-        {
-            //Todo Log message showing can not format sent key due to incorrect length of Hash_ID
-            return String.valueOf(iRetRes);
-        }
-
-
-        // Adding Digital_Signature_ID
-        if (CAKeyObj.Digital_Signature_ID.length() > 0)
-            strFormatedCAKey.append("DF07" +String.format(Locale.ENGLISH,"%02d",CAKeyObj.Digital_Signature_ID.length()/2)+CAKeyObj.Digital_Signature_ID.toString());
-        else
-        {
-            //Todo Log message showing can not format sent key due to incorrect length of Digital_Signature_ID
-            return String.valueOf(iRetRes);
-        }
-
-
-        // formating  Public Key Value  and Public_Key length
-        if (CAKeyObj.Public_Key.length() > 0 && CAKeyObj.CA_Public_Key_Length.length() > 0 )
-            strFormatedCAKey.append("DF0281" + Integer.toHexString(CAKeyObj.Public_Key.toString().length()/2)+CAKeyObj.Public_Key.toString());
-        else
-        {
-            //Todo Log message showing can not format sent key due to incorrect length of Public_Key
-            return String.valueOf(iRetRes);
-        }
-
-        // Adding Exponent
-        if (CAKeyObj.Exponent.length() > 0)
-            strFormatedCAKey.append("DF04" +String.format(Locale.ENGLISH,"%02d",CAKeyObj.Exponent.length()/2)+CAKeyObj.Exponent.toString());
-        else
-        {
-            //Todo Log message showing can not format sent key due to incorrect length of Exponent
-            return String.valueOf(iRetRes);
-        }
-
-        // Adding Check_Sum
-        if (CAKeyObj.Check_Sum.length() > 0)
-            strFormatedCAKey.append("DF03" +Integer.toHexString(CAKeyObj.Check_Sum.toString().length()/2)/*String.format(Locale.ENGLISH,"%02d",CAKeyObj.Check_Sum.length()/2)*/+CAKeyObj.Check_Sum.toString());
-        else
-        {
-            //Todo Log message showing can not format sent key due to incorrect length of Check_Sum
-            return String.valueOf(iRetRes);
-        }
-
-
-
-
-        // Todo log Formated string for debugging
-
-        return strFormatedCAKey.toString();
-
+    public void Start_Transaction(POSTransaction oPos_trans, POSTransaction.TranscationType Trxtype) {
+        Start_Transaction(oPos_trans, Trxtype, null);
     }
-
-
-
 
 
     /**
@@ -1040,7 +1147,7 @@ DF03 Check Sum                                [20]   >> 4410C6D51C2F83ADFD92528F
 
     public static boolean Process_Rece_Packet(byte[] recePacket) {
         boolean bRetRes;
-        Log.i(TAG, "Process_Rece_Packet("+recePacket+")");
+        Log.i(TAG, "Process_Rece_Packet(" + recePacket + ")");
 
 
         if (PosApplication.getApp().oGPosTransaction.m_enmTrxType == POSTransaction.TranscationType.PURCHASE) {
@@ -1051,214 +1158,131 @@ DF03 Check Sum                                [20]   >> 4410C6D51C2F83ADFD92528F
         return false;
 
 
-
-    }
-    public static boolean CheckHostActionCode(String sDE39)
-    {
-        boolean bRetRes = false ;
-        switch(sDE39)
-        {
-            case "000":
-            case "001":
-            case "003":
-            case "007":
-            case "060":
-            case "087":
-            case "089":
-            case "400": // Reversal
-            case "913": // Reversal Duplicate transmission , Specification part b Section 4.3.16 Reversal Transaction Timeout
-            case "500": // Reconciliation
-            case "800": // Network
-                return true; // Approved transaction
-            default :
-                return bRetRes;
-        }
-
     }
 
-    public static boolean ValidateHostMAC()
-    {
-        ISO8583 oResponseTrx = PosApplication.getApp().oGPosTransaction.m_ResponseISOMsg;
+    public void Start_Transaction(POSTransaction oPos_trans, POSTransaction.TranscationType Trxtype, ITransaction.View transactionView) {
+        PosApplication.getApp().oGPosTransaction.Reset();
 
-        String sMAC="";
+        Intent AmountACT;
+        switch (Trxtype) {
+            case PURCHASE://purchase
 
-        switch(PosApplication.getApp().oGPosTransaction.m_enmTrxType){
-            case AUTHORISATION:
-            case AUTHORISATION_EXTENSION:
-
-
-                //0.Messa   ge Type Identifier
-                sMAC=PosApplication.MTI_Authorisation_Request;
-                //1. Primary bitmap   todo get bitmap
-                sMAC=new String(oResponseTrx.Getbitmap());
-                //2.Primary Account Number (PAN)
-                sMAC.concat(new String(oResponseTrx.getDataElement(2)));
-                //3.Processing Code
-                sMAC.concat(new String(oResponseTrx.getDataElement(3)));
-                //4.Amount, Transaction
-                sMAC.concat(new String(oResponseTrx.getDataElement(4)));
-                //11.System Trace Audit Number
-                sMAC.concat(new String(oResponseTrx.getDataElement(11)));
-                //12.Date and Time, Local Transaction
-                sMAC.concat(new String(oResponseTrx.getDataElement(12)));
-                //39 Action code
-                sMAC.concat(new String(oResponseTrx.getDataElement(39)));
-                //47.National Data
-                sMAC.concat(new String(oResponseTrx.getDataElement(47)));
-                //53.Security Related Control Information
-                sMAC.concat(new String(oResponseTrx.getDataElement(53)));
-                //55.EMV Data
-                if(PosApplication.getApp().oGPosTransaction.m_enmTrxCardType== POSTransaction.CardType.ICC|PosApplication.getApp().oGPosTransaction.m_enmTrxCardType== POSTransaction.CardType.CTLS)
-                    sMAC.concat(new String(oResponseTrx.getDataElement(55)));
+                //get amount
+                AmountACT = new Intent(mcontext, AmountInputActivity.class);
+                AmountACT.putExtra("transaction Type", Trxtype);
+                mcontext.startActivity(AmountACT);
                 break;
-            case AUTHORISATION_ADVICE:
-                //0.Messa   ge Type Identifier
-                sMAC=PosApplication.MTI_Authorisation_Advice;
-                //1. Primary bitmap
-                sMAC=new String(oResponseTrx.Getbitmap());
-                //2.Primary Account Number (PAN)
-                sMAC.concat(new String(oResponseTrx.getDataElement(2)));
-                //3.Processing Code
-                sMAC.concat(new String(oResponseTrx.getDataElement(3)));
-                //4.Amount, Transaction
-                sMAC.concat(new String(oResponseTrx.getDataElement(4)));
-                //11.System Trace Audit Number
-                sMAC.concat(new String(oResponseTrx.getDataElement(11)));
-                //12.Date and Time, Local Transaction
-                sMAC.concat(new String(oResponseTrx.getDataElement(12)));
-                //39 Action code
-                sMAC.concat(new String(oResponseTrx.getDataElement(39)));
-                //47.National Data
-                sMAC.concat(new String(oResponseTrx.getDataElement(47)));
-                //53.Security Related Control Information
-                sMAC.concat(new String(oResponseTrx.getDataElement(53)));
-                //55.EMV Data
-                if(PosApplication.getApp().oGPosTransaction.m_enmTrxCardType== POSTransaction.CardType.ICC|PosApplication.getApp().oGPosTransaction.m_enmTrxCardType== POSTransaction.CardType.CTLS)
-                    sMAC.concat(new String(oResponseTrx.getDataElement(55)));
+            case PURCHASE_WITH_NAQD://PURCHASE_WITH_NAQD
+                //get amount
+                AmountACT = new Intent(mcontext, P_NAQD_InputActivity.class);
+                AmountACT.putExtra("transaction Type", Trxtype);
+                mcontext.startActivity(AmountACT);
 
                 break;
-            case REFUND:
-            case CASH_ADVANCE:
-            case PURCHASE_WITH_NAQD:
-            case PURCHASE:
-                //0.Messa   ge Type Identifier
-                sMAC=PosApplication.MTI_Financial_Request;
-                //1. Primary bitmap
-                sMAC=new String(oResponseTrx.Getbitmap());
-                //2.Primary Account Number (PAN)
-                sMAC.concat(new String(oResponseTrx.getDataElement(2)));
-                //3.Processing Code
-                sMAC.concat(new String(oResponseTrx.getDataElement(3)));
-                //4.Amount, Transaction
-                sMAC.concat(new String(oResponseTrx.getDataElement(4)));
-                //11.System Trace Audit Number
-                sMAC.concat(new String(oResponseTrx.getDataElement(11)));
-                //12.Date and Time, Local Transaction
-                sMAC.concat(new String(oResponseTrx.getDataElement(12)));
-                //39 Action code
-                sMAC.concat(new String(oResponseTrx.getDataElement(39)));
-                //47.National Data
-                sMAC.concat(new String(oResponseTrx.getDataElement(47)));
-                //53.Security Related Control Information
-                sMAC.concat(new String(oResponseTrx.getDataElement(53)));
-                //55.EMV Data
-                if(PosApplication.getApp().oGPosTransaction.m_enmTrxCardType== POSTransaction.CardType.ICC|PosApplication.getApp().oGPosTransaction.m_enmTrxCardType== POSTransaction.CardType.CTLS)
-                    sMAC.concat(new String(oResponseTrx.getDataElement(55)));
-                break;
-            case PURCHASE_ADVICE:
-                //0.Messa   ge Type Identifier
-                sMAC=PosApplication.MTI_Financial_Transaction_Advice;
-                //1. Primary bitmap
-                sMAC=new String(oResponseTrx.Getbitmap());
-                //2.Primary Account Number (PAN)
-                sMAC.concat(new String(oResponseTrx.getDataElement(2)));
-                //3.Processing Code
-                sMAC.concat(new String(oResponseTrx.getDataElement(3)));
-                //4.Amount, Transaction
-                sMAC.concat(new String(oResponseTrx.getDataElement(4)));
-                //11.System Trace Audit Number
-                sMAC.concat(new String(oResponseTrx.getDataElement(11)));
-                //12.Date and Time, Local Transaction
-                sMAC.concat(new String(oResponseTrx.getDataElement(12)));
-                //39 Action code
-                sMAC.concat(new String(oResponseTrx.getDataElement(39)));
-                //47.National Data
-                sMAC.concat(new String(oResponseTrx.getDataElement(47)));
-                //53.Security Related Control Information
-                sMAC.concat(new String(oResponseTrx.getDataElement(53)));
-                //55.EMV Data
-                if(PosApplication.getApp().oGPosTransaction.m_enmTrxCardType== POSTransaction.CardType.ICC|PosApplication.getApp().oGPosTransaction.m_enmTrxCardType== POSTransaction.CardType.CTLS)
-                    sMAC.concat(new String(oResponseTrx.getDataElement(55)));
+            case REFUND://REFUND
+
+
+                // TODO get original transaction Type
+                AmountACT = new Intent(mcontext, Refund_InputActivity.class);
+                AmountACT.putExtra("transaction Type", Trxtype);
+                mcontext.startActivity(AmountACT);
 
                 break;
-            case REVERSAL:
-                //0.Messa   ge Type Identifier
-                sMAC=PosApplication.MTI_Reversal_Advice;
-                //1. Primary bitmap
-                sMAC=new String(oResponseTrx.Getbitmap());
-                //2.Primary Account Number (PAN)
-                sMAC.concat(new String(oResponseTrx.getDataElement(2)));
-                //3.Processing Code
-                sMAC.concat(new String(oResponseTrx.getDataElement(3)));
-                //4.Amount, Transaction
-                sMAC.concat(new String(oResponseTrx.getDataElement(4)));
-                //11.System Trace Audit Number
-                sMAC.concat(new String(oResponseTrx.getDataElement(11)));
-                //12.Date and Time, Local Transaction
-                sMAC.concat(new String(oResponseTrx.getDataElement(12)));
-                //39 Action code
-                sMAC.concat(new String(oResponseTrx.getDataElement(39)));
-                //47.National Data
-                sMAC.concat(new String(oResponseTrx.getDataElement(47)));
-                //53.Security Related Control Information
-                sMAC.concat(new String(oResponseTrx.getDataElement(53)));
-                //55.EMV Data
-                if(PosApplication.getApp().oGPosTransaction.m_enmTrxCardType== POSTransaction.CardType.ICC|PosApplication.getApp().oGPosTransaction.m_enmTrxCardType== POSTransaction.CardType.CTLS)
-                    sMAC.concat(new String(oResponseTrx.getDataElement(55)));
+            case AUTHORISATION://AUTHORISATION:
+
+
+                //get amount
+                AmountACT = new Intent(mcontext, AmountInputActivity.class);
+                AmountACT.putExtra("transaction Type", Trxtype);
+                mcontext.startActivity(AmountACT);
+
+                break;
+            case AUTHORISATION_ADVICE://AUTHORISATION_ADVICE:
+                //get amount
+                AmountACT = new Intent(mcontext, AmountInputActivity.class);
+                AmountACT.putExtra("transaction Type", Trxtype);
+                mcontext.startActivity(AmountACT);
+                break;
+            case AUTHORISATION_VOID://AUTHORISATION_VOID:
+                AmountACT = new Intent(mcontext, AmountInputActivity.class);
+                AmountACT.putExtra("transaction Type", Trxtype);
+                break;
+            case AUTHORISATION_EXTENSION://AUTHORISATION_EXTENSION
+                AmountACT = new Intent(mcontext, AmountInputActivity.class);
+                AmountACT.putExtra("transaction Type", Trxtype);
+                break;
+            case PURCHASE_ADVICE://PURCHASE_ADVICE:
+                AmountACT = new Intent(mcontext, AmountInputActivity.class);
+                AmountACT.putExtra("transaction Type", Trxtype);
+
                 break;
 
-            case TMS_FILE_DOWNLOAD:
+            case CASH_ADVANCE://CASH_ADVANCE:
+                //todo start cash advance
+                AmountACT = new Intent(mcontext, AmountInputActivity.class);
+                AmountACT.putExtra("transaction Type", Trxtype);
                 break;
-            case RECONCILIATION:
-        }
-        //0.Messa   ge Type Identifier
-        //2.Primary Account Number (PAN)
-        //3.Processing Code
-        //4.Amount, Transaction
-        //11.System Trace Audit Number
-        //12.Date and Time, Local Transaction
-        //39.Action Code
-        //47.National Data
-        //53.Security Related Control Information
-        //55.EMV Data
-        //72.Data Record
-        //124.Private - (POS Terminal Reconciliation)
-        byte[] bMac = sMAC.getBytes();
+            case REVERSAL://REVERSAL
+                //todo check host transaction
+                //todo check reversal time out
+                //todo check Transaction mode
+                POSTransaction oReversal_Trx = null;
+                perform_reversal(oPos_trans, oReversal_Trx);
 
-        if (bMac.length%8!=0) {
-            for(int i=0 ;i<bMac.length%8;i++)
-            {
-                sMAC=sMAC+0x00;
-            }
+
+                break;
+            case SADAD_BILL://SADAD_BILL:
+                //todo  sadad
+                break;
+            case RECONCILIATION://RECONCILIATION:
+                //todo
+                break;
+            case TMS_FILE_DOWNLOAD://TMS_FILE_DOWNLOAD:
+
+                Intent TMSprocess = new Intent(mcontext, PacketProcessActivity.class);
+                TMSprocess.putExtra("transaction Type", Trxtype);
+
+                break;
+            case TERMINAL_REGISTRATION://TREMINAL_REGISTRATION:
+
+                // based on Moamen Ahmed Registeration file , Terminal_Registeration.java also
+                PosApplication.getApp().oGTerminal_Registeration.StartRegistrationProcess(
+                        PosApplication.getApp().oGPosTransaction, transactionView);
+
+                break;
+            case ADMIN://ADMIN:
+                break;
+
+
         }
 
-        sMAC= DUKPT_KEY.CaluclateMACBlock(sMAC);
 
-        //removinglast 4 bytes
-        sMAC=sMAC.substring(0,4);
-        sMAC=sMAC.concat("ÿÿÿÿ");
+    }
+
+    /**
+     * Header POS Main
+     * \function Name: Perform_reversal
+     * \Param  :
+     * \Return :
+     * \Pre    :
+     * \Post   :
+     * \Author	: Mostafa Hussiny
+     * \DT		: 6/00/2020
+     * \Des    : will start collection and performe reversal transaction
+     */
+    public boolean perform_reversal(POSTransaction oOriginal_Transaction, POSTransaction oReversal_Transaction) {
+        oReversal_Transaction = SAF_Info.BuildSAFOriginals(oReversal_Transaction, oOriginal_Transaction);
+        oReversal_Transaction.m_enmTrxType = POSTransaction.TranscationType.REVERSAL;
+        oReversal_Transaction.m_sMTI = PosApplication.MTI_Reversal_Advice;
+        //todo copy nessasrry data from original transaction to oRevesal transaction
+        //todo  save in saf the reversal advice then printing copy of reversal then performe DESAF
 
 
-        if(sMAC.equals(oResponseTrx.getDataElement(64)))
-            return true;
-        else
-            return false;
+        return true;
     }
 
 
-
-
-    public static int     GetTMSTranResponseMessage(String sActionCode){
+    public static int GetTMSTranResponseMessage(String sActionCode){
         int iRetRes=-1;
 
         return iRetRes;
@@ -1527,162 +1551,31 @@ DF03 Check Sum                                [20]   >> 4410C6D51C2F83ADFD92528F
 
         // Checking Number approved transaction  4.17
 
-        if(PosApplication.getApp().oGTerminal_Operation_Data.m_iTermApprovedTrxCounter >= Integer.parseInt(PosApplication.getApp().oGSama_TMS.device_specific.m_sMax_Transactions_Processed ))
-        {
+        if(PosApplication.getApp().oGTerminal_Operation_Data.m_iTermApprovedTrxCounter >= Integer.parseInt(PosApplication.getApp().oGSama_TMS.device_specific.m_sMax_Transactions_Processed)) {
             //Todo Log message
 
-            bRetRes = true ;
+            bRetRes = true;
 
 
         }
         return bRetRes;
     }
 
-/**
-	\Function Name: GetTrxCumulativeAmount
-	\Param  : POSTransaction POSTrx
-	\Return : double
-	\Pre    :
-	\Post   :
-	\Author	: Moamen Ahmed
-	\DT		: 13/07/2020
-	\Des    : Get Transaction amout to be updated on  m_dTermReconciliationAmount buffer for SAF Checking , not including Authorization amount
-*/
-
-    public static double GetTrxCumulativeAmount(POSTransaction POSTrx)
-
-
-    {
-        double dAmount =0;
-        // Todo Log Start message
-
-        switch (POSTrx.m_enmTrxType)
-        {
-            case PURCHASE :
-            case PURCHASE_WITH_NAQD :
-            case PURCHASE_ADVICE:
-            case CASH_ADVANCE:
-            case REFUND :
-            {
-                if(POSTrx.m_sProcessCode.equals("00") ||
-                        POSTrx.m_sProcessCode.equals("01") ||
-                        POSTrx.m_sProcessCode.equals("09"))
-                {
-                    dAmount = Double.parseDouble(POSTrx.m_sTrxAmount);
-                }
-                else  if(POSTrx.m_sProcessCode.equals("20"))
-                    dAmount = Double.parseDouble(POSTrx.m_sTrxAmount) * -1;
-            }
-            break;
-            case REVERSAL :
-            {
-                if(POSTrx.m_sProcessCode.equals("00") ||
-                        POSTrx.m_sProcessCode.equals("01") ||
-                        POSTrx.m_sProcessCode.equals("09"))
-                {
-                    dAmount = Double.parseDouble(POSTrx.m_sTrxAmount) * -1;
-                }
-                else  if(POSTrx.m_sProcessCode.equals("20"))
-                    dAmount = Double.parseDouble(POSTrx.m_sTrxAmount);
-            }
-            break;
-        }
-        // Todo Log Endmessage with  return value
-
-        return dAmount;
+    public boolean Check_manual_allowed() {
+        return PosApplication.getApp().oGPosTransaction.m_card_scheme.m_sManual_entry_allowed == "1";
     }
 
+    public int Check_max_cashback(int cashbackamount) {
+        //todo get max cash back
 
-    /**
-     \Function Name: load_Terminal_configuration_file
-     \Param  : POSTransaction POSTrx
-     \Return : double
-     \Pre    :
-     \Post   :
-     \Author	: mostafa hussiny
-     \DT		: 00/08/2020
-     \Des    : loading Terminal operation data from saved file of terminal configuration data
-     */
-    public static void load_Terminal_configuration_file() {
-        // to copy initial terminal operation data
-        SAMA_TMS Default_TMS = new SAMA_TMS();
-
-        // default retailer data
-        Default_TMS.retailer_data.m_sArabic_Receipt_1="Arabic_Receipt_1";
-        Default_TMS.retailer_data.m_sArabic_Receipt_2="m_sArabic_Receipt_2";
-        Default_TMS.retailer_data.m_sAutomatic_Load="0";
-        Default_TMS.retailer_data.m_sTerminal_Capability="0000000";
-        Default_TMS.retailer_data.m_sAdditional_Terminal_Capabilities="000000";
-        Default_TMS.retailer_data.m_sCurrency_Symbol_Arabic="ريال";
-        Default_TMS.retailer_data.m_sCurrency_Symbol_English="SAR";
-        Default_TMS.retailer_data.m_sTerminal_Currency_Code="0682";
-        Default_TMS.retailer_data.m_sTerminal_Country_Code="0682";
-        Default_TMS.retailer_data.m_sTransaction_Currency_Exponent="2";
-        Default_TMS.retailer_data.m_sSAF_Default_Message_Transmission_Number="2";
-        Default_TMS.retailer_data.m_sSAF_Retry_Limit="3";
-        Default_TMS.retailer_data.m_sDownload_Phone_Number="+01061456840";
-        Default_TMS.retailer_data.m_sEMV_Terminal_Type="22";
-        Default_TMS.retailer_data.m_sNext_load="0";
-        Default_TMS.retailer_data.m_sReconciliation_time="233000";
-        Default_TMS.retailer_data.m_sEnglish_Receipt_1="English_Receipt_1";
-        Default_TMS.retailer_data.m_sEnglish_Receipt_2="English_Receipt_2";
-        Default_TMS.retailer_data.m_sRetailer_Address_1_Arabic="هلا، المملكه العربيه السعوديه1 ";
-        Default_TMS.retailer_data.m_sRetailer_Address_2_Arabic="هلا، المملكه العربيه السعوديه2 ";
-        Default_TMS.retailer_data.m_sRetailer_Address_1_English="hala , saudiarabia 1";
-        Default_TMS.retailer_data.m_sRetailer_Address_2_English="hala , saudiarabia 2";
-        Default_TMS.retailer_data.m_sRetailer_Name_Arabic="تاجر مؤقت";
-        Default_TMS.retailer_data.m_sRetailer_Name_English="temp Merchant";
-
-
-
-
-
-
-
-        PosApplication.getApp().oGSama_TMS=Default_TMS;
-
-
-
-
-
-
+        return 0;
     }
 
-    /**
-     \Function Name: check_hardware
-     \Param  : POSTransaction POSTrx
-     \Return : double
-     \Pre    :
-     \Post   :
-     \Author	: mostafa hussiny
-     \DT		: 00/08/2020
-     \Des    : check_hardware printer contactless reader , chip , mag ,...etc
-     */
-
-    public static void check_hardware() {
-
-        AidlPrinter mPrinterManager;
-        mPrinterManager = DeviceTopUsdkServiceManager.getInstance().getPrintManager();
-        int printState=-1;
-                try {
-                           printState = mPrinterManager.getPrinterState();
-                          Log.i(TAG, "printState = " + printState);
-                    }
-                     catch (Exception e)
-                    {
-                          e.printStackTrace();
-                    }
-
-                switch (printState) {
-                    case 0://PRINTER_STATE_Normal             // for mada '0' = No printer. '1' = Out of paper. '2' = Plain paper receipt.
-                    break;
-                    case 1://PRINTER_STATE_NOPAPER
-                           PosApplication.getApp().oGTerminal_Operation_Data.Printer_Status = "1";
-                    case 2:
-                }
-
-
-        }
+    public enum Flowtrxtype {
+        DESAF,
+        RECONSILE,
+        REVERSAL
+    }
 
     /**
      \Function Name: Get_Terminal_Transaction_limits

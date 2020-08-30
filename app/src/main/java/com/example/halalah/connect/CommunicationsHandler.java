@@ -7,10 +7,8 @@ import android.os.Message;
 import android.util.Log;
 
 import com.example.halalah.Utils;
-import com.example.halalah.iso8583.BCDASCII;
 import com.example.halalah.storage.CommunicationInfo;
 import com.example.halalah.util.PacketProcessUtils;
-
 
 import java.io.InputStream;
 
@@ -58,6 +56,9 @@ public class CommunicationsHandler {
     }
 
     private CommunicationsHandler(CommunicationInfo communicationInfo, InputStream certificateIS) {
+        if (communicationInfo == null) {
+            return;
+        }
         mCommunicationInfo = communicationInfo;
         mHostIp = mCommunicationInfo.getHostIP();
         mHostPort = mCommunicationInfo.getHostPort();
@@ -68,7 +69,7 @@ public class CommunicationsHandler {
         }
     }
 
-    public void preConnect() {
+    public void connect() {
         BehaviorSubject<Integer> connectionStatusBS = BehaviorSubject.create();
         Observable o = Observable.fromCallable(() -> mSocketManager.connect(mCommunicationInfo.getHostIP(), mCommunicationInfo.getHostPort()))
                 .subscribeOn(Schedulers.io())
@@ -165,7 +166,7 @@ public class CommunicationsHandler {
             timeoutCounter = new CountDownTimer(timesToReconnect * connectionTimeOut, connectionTimeOut) {
                 @Override
                 public void onTick(long millisUntilFinished) {
-                    preConnect();
+                    connect();
                     Log.d(TAG, "reconnect seconds remaining: " + millisUntilFinished / 1000);
                     if (isConnected()) {
                         this.onFinish();
@@ -176,7 +177,7 @@ public class CommunicationsHandler {
                 public void onFinish() {
                     Log.d(TAG, "reconnect Timeout Counter DONE! ");
                     if (isConnected()) {
-                        sendReceive();
+                        sendReceive(mSendPacket);
                     } else {
                         updateUI(UI_STATUS_FAILED);
                     }
@@ -202,7 +203,7 @@ public class CommunicationsHandler {
                 public void onFinish() {
                     Log.d(TAG, "waitForCurrentCall Timeout Counter DONE! ");
                     if (isConnected()) {
-                        sendReceive();
+                        sendReceive(mSendPacket);
                     } else {
                         updateUI(UI_STATUS_FAILED);
                         reconnect(5000, 3);
