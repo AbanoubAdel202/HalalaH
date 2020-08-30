@@ -4,24 +4,31 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.Button;
-import android.widget.EditText;
+import android.widget.Spinner;
 
 import androidx.fragment.app.Fragment;
 
 import com.example.halalah.R;
-import com.example.halalah.storage.CommunicationInfo;
+import com.example.halalah.TMS.Connection;
+import com.example.halalah.TMS.Gprs;
+import com.example.halalah.TMS.Wifi;
+import com.example.halalah.storage.SharedPreferencesManager;
 
-public class DefaultCommunicationSettingsFragment extends Fragment implements View.OnClickListener {
+import static com.example.halalah.ui.admin_settings.communication.ISaveConnection.SAVE_MODE_DEFAULT;
 
-    private EditText mHostIp1;
-    private EditText mHostPort1;
-    private EditText mHostIp2;
-    private EditText mHostPort2;
-    private EditText mTPDU;
+public class DefaultCommunicationSettingsFragment extends Fragment implements View.OnClickListener, AdapterView.OnItemSelectedListener {
+
+    ISaveConnection iSaveConnection;
+
     private Button cancelBtn;
     private Button saveBtn;
-    private CommunicationInfo mCommunicationInfo;
+    private Spinner connectionTypeSp;
+    private GPRSFragment gprsFragment;
+    private WifiFragment wifiFragment;
+    private SharedPreferencesManager sharedPreferencesManager;
+    private Connection connection;
 
     public DefaultCommunicationSettingsFragment() {
         // Required empty public constructor
@@ -32,18 +39,27 @@ public class DefaultCommunicationSettingsFragment extends Fragment implements Vi
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View rootView = inflater.inflate(R.layout.communication_setting_default, container, false);
-        mCommunicationInfo = new CommunicationInfo(getActivity().getApplicationContext());
+        connectionTypeSp = rootView.findViewById(R.id.connection_type_sp);
+        connectionTypeSp.setOnItemSelectedListener(this);
 
-        mHostIp1 = rootView.findViewById(R.id.host_ip_1);
-        mHostIp1.setText(mCommunicationInfo.getHostIP());
-        mHostPort1 = rootView.findViewById(R.id.host_port_1);
-        mHostPort1.setText(mCommunicationInfo.getHostPort());
-        mHostIp2 = rootView.findViewById(R.id.host_ip_2);
-        mHostIp2.setText(mCommunicationInfo.getSpareHostIP());
-        mHostPort2 = rootView.findViewById(R.id.host_port_2);
-        mHostPort2.setText(mCommunicationInfo.getSpareHostPort());
-        mTPDU = rootView.findViewById(R.id.tpdu_value);
-        mTPDU.setText(mCommunicationInfo.getTPDU());
+        sharedPreferencesManager = new SharedPreferencesManager(getActivity());
+
+        if (rootView.findViewById(R.id.container) != null) {
+            // if we are being restored from a previous state, then we dont need to do anything and should
+            // return or else we could end up with overlapping fragments.
+            if (savedInstanceState == null) {
+
+                connection = sharedPreferencesManager.getConnection();
+                if (connection instanceof Gprs) {
+                    connectionTypeSp.setSelection(1);
+                } else {
+                    connectionTypeSp.setSelection(0);
+                }
+
+                getChildFragmentManager().beginTransaction()
+                        .add(R.id.container, getFragment()).commit();
+            }
+        }
 
         saveBtn = rootView.findViewById(R.id.commu_para_save);
         saveBtn.setOnClickListener(this);
@@ -53,6 +69,43 @@ public class DefaultCommunicationSettingsFragment extends Fragment implements Vi
         return rootView;
     }
 
+    private Fragment getFragment() {
+
+        String connectionType = connectionTypeSp.getSelectedItem().toString().trim();
+
+        if (connectionType.equalsIgnoreCase("gprs")) {
+
+            if (gprsFragment != null) {
+                iSaveConnection = gprsFragment;
+                return gprsFragment;
+            }
+
+            if (connection instanceof Gprs) {
+                gprsFragment = GPRSFragment.newInstance((Gprs) connection);
+            } else {
+                gprsFragment = GPRSFragment.newInstance(null);
+            }
+
+            iSaveConnection = gprsFragment;
+            return gprsFragment;
+        } else {
+
+            if (wifiFragment != null) {
+                iSaveConnection = wifiFragment;
+                return wifiFragment;
+            }
+
+            if (connection instanceof Wifi) {
+                wifiFragment = WifiFragment.newInstance((Wifi) connection);
+            } else {
+                wifiFragment = WifiFragment.newInstance(null);
+            }
+
+            iSaveConnection = wifiFragment;
+            return wifiFragment;
+        }
+    }
+
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
@@ -60,15 +113,26 @@ public class DefaultCommunicationSettingsFragment extends Fragment implements Vi
                 getActivity().finish();
                 break;
             case R.id.commu_para_save:
-                mCommunicationInfo.setHostIP(mHostIp1.getText().toString());
-                mCommunicationInfo.setHostPort(mHostPort1.getText().toString());
-                mCommunicationInfo.setSpareHostIP(mHostIp2.getText().toString());
-                mCommunicationInfo.setSpareHostPort(mHostPort2.getText().toString());
-                mCommunicationInfo.setTPDU(mTPDU.getText().toString());
-                getActivity().finish();
+                if (iSaveConnection != null) {
+                    iSaveConnection.onSaveClicked(SAVE_MODE_DEFAULT);
+                }
                 break;
+
             default:
                 break;
         }
+    }
+
+    @Override
+    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+
+        getChildFragmentManager().beginTransaction()
+                .replace(R.id.container, getFragment()).commit();
+
+    }
+
+    @Override
+    public void onNothingSelected(AdapterView<?> parent) {
+
     }
 }

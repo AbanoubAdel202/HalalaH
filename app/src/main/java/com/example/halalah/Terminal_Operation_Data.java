@@ -3,28 +3,27 @@ package com.example.halalah;
 
 import com.example.halalah.iso8583.BCDASCII;
 
-/** Header Terminal operation Data
- \Class Name: Terminal_Operation_Data
- \Param  :
- \Return :
- \Pre    :
- \Post   :
- \Author	: mostafa hussiny
- \DT		: 5/31/2020
- \Des    : Container for Terminal operation DATA
+/**
+ * Header Terminal operation Data
+ * \Class Name: Terminal_Operation_Data
+ * \Param  :
+ * \Return :
+ * \Pre    :
+ * \Post   :
+ * \Author	: mostafa hussiny
+ * \DT		: 5/31/2020
+ * \Des    : Container for Terminal operation DATA
  */
 public class Terminal_Operation_Data {
 
 
-
-
-        public int TerminalType;
-        public  boolean m_bregistered;
-        public  int m_iSTAN;
-        public int m_iTransactionCounter;
-        public  String m_sTerminalID;
-        public  String m_sMerchantID;
-        public String m_sCurrencycode;
+    public int TerminalType;
+    public boolean m_bregistered;
+    public int m_iSTAN;
+    public int m_iTransactionCounter;
+    public String m_sTerminalID;
+    public String m_sMerchantID;
+    public String m_sCurrencycode;
     public String m_sCountrycode;
     public int Mada_Auto_Selection;
     public int m_iPinKeyboardMode; // 1 for out of order 0 for inorder

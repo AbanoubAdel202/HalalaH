@@ -10,11 +10,30 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <LinearLayout
+        <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="60dp"
             android:layout_marginTop="10dp"
-            android:background="@drawable/btn_background"
+            android:orientation="horizontal">
+
+            <EditText
+                android:id="@+id/et_tpdu"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_alignParentBottom="true"
+                android:layout_marginLeft="4dp"
+                android:layout_toRightOf="@+id/host_port_2_tip"
+                android:hint="@string/tpdu_value"
+                android:inputType="number"
+                android:singleLine="true"
+                android:textSize="20sp" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:layout_marginTop="10dp"
             android:orientation="horizontal">
 
             <EditText
@@ -22,19 +41,16 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_alignParentBottom="true"
-                android:layout_marginLeft="20dp"
                 android:layout_toRightOf="@+id/host_ip_1_tip"
-                android:background="@null"
                 android:hint="@string/dial_Number"
                 android:singleLine="true"
                 android:textSize="20sp" />
-        </LinearLayout>
+        </com.google.android.material.textfield.TextInputLayout>
 
-        <LinearLayout
+        <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="60dp"
             android:layout_marginTop="10dp"
-            android:background="@drawable/btn_background"
             android:orientation="horizontal">
 
             <EditText
@@ -42,19 +58,16 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_alignParentBottom="true"
-                android:layout_marginLeft="20dp"
                 android:layout_toRightOf="@+id/host_port_1_tip"
-                android:background="@null"
                 android:hint="@string/access_point_name"
                 android:singleLine="true"
                 android:textSize="20sp" />
-        </LinearLayout>
+        </com.google.android.material.textfield.TextInputLayout>
 
-        <LinearLayout
+        <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
-            android:layout_height="60dp"
+            android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
-            android:background="@drawable/btn_background"
             android:orientation="horizontal">
 
             <EditText
@@ -62,19 +75,16 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_alignParentBottom="true"
-                android:layout_marginLeft="20dp"
                 android:layout_toRightOf="@+id/host_ip_2_tip"
-                android:background="@null"
                 android:hint="@string/connect_time"
                 android:singleLine="true"
                 android:textSize="20sp" />
-        </LinearLayout>
+        </com.google.android.material.textfield.TextInputLayout>
 
-        <LinearLayout
+        <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="60dp"
             android:layout_marginTop="10dp"
-            android:background="@drawable/btn_background"
             android:orientation="horizontal">
 
             <EditText
@@ -82,19 +92,16 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_alignParentBottom="true"
-                android:layout_marginLeft="20dp"
                 android:layout_toRightOf="@+id/host_port_2_tip"
-                android:background="@null"
                 android:hint="@string/network_ip_address"
                 android:singleLine="true"
                 android:textSize="20sp" />
-        </LinearLayout>
+        </com.google.android.material.textfield.TextInputLayout>
 
-        <LinearLayout
+        <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="60dp"
             android:layout_marginTop="10dp"
-            android:background="@drawable/btn_background"
             android:orientation="horizontal">
 
             <EditText
@@ -102,20 +109,17 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_alignParentBottom="true"
-                android:layout_marginLeft="20dp"
                 android:layout_toRightOf="@+id/tpdu_tip"
-                android:background="@null"
                 android:hint="@string/network_tcp_port"
                 android:singleLine="true"
                 android:textSize="20sp" />
 
-        </LinearLayout>
+        </com.google.android.material.textfield.TextInputLayout>
 
-        <LinearLayout
+        <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="60dp"
             android:layout_marginTop="10dp"
-            android:background="@drawable/btn_background"
             android:orientation="horizontal">
 
             <EditText
@@ -123,19 +127,16 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_alignParentBottom="true"
-                android:layout_marginLeft="20dp"
                 android:layout_toRightOf="@+id/tpdu_tip"
-                android:background="@null"
                 android:hint="@string/dial_attempts"
                 android:singleLine="true"
                 android:textSize="20sp" />
-        </LinearLayout>
+        </com.google.android.material.textfield.TextInputLayout>
 
-        <LinearLayout
+        <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="60dp"
             android:layout_marginTop="10dp"
-            android:background="@drawable/btn_background"
             android:orientation="horizontal">
 
             <EditText
@@ -143,34 +144,29 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_alignParentBottom="true"
-                android:layout_marginLeft="20dp"
                 android:layout_toRightOf="@+id/tpdu_tip"
-                android:background="@null"
                 android:hint="@string/response_timeout"
                 android:singleLine="true"
                 android:textSize="20sp" />
-        </LinearLayout>
+        </com.google.android.material.textfield.TextInputLayout>
 
-        <LinearLayout
+        <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="60dp"
             android:layout_marginTop="10dp"
-            android:layout_marginBottom="16dp"
-            android:background="@drawable/btn_background"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:visibility="gone">
 
             <EditText
                 android:id="@+id/et_ssl_certificate_file"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_alignParentBottom="true"
-                android:layout_marginLeft="20dp"
                 android:layout_toRightOf="@+id/tpdu_tip"
-                android:background="@null"
                 android:hint="@string/ssl_certificate_file"
                 android:singleLine="true"
                 android:textSize="20sp" />
-        </LinearLayout>
+        </com.google.android.material.textfield.TextInputLayout>
 
     </LinearLayout>
 </ScrollView>

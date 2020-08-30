@@ -27,15 +27,18 @@ public class CommunicationSettingActivity extends AppCompatActivity {
             Connection_Parameters mConnectionParameters = tmsManager.getConnectionParameters();
 //            mConnectionParameters = new Connection_Parameters();
 
-            if (mConnectionParameters == null) {
-                // add fragment to the fragment container layout
-                getSupportFragmentManager().beginTransaction()
-                        .add(R.id.container, new DefaultCommunicationSettingsFragment()).commit();
-            } else {
-                // add fragment to the fragment container layout
-                getSupportFragmentManager().beginTransaction()
-                        .add(R.id.container, new ConnectionParametersFragment()).commit();
-            }
+//            if (mConnectionParameters == null) {
+//                // add fragment to the fragment container layout
+//                getSupportFragmentManager().beginTransaction()
+//                        .add(R.id.container, new DefaultCommunicationSettingsFragment()).commit();
+//            } else {
+//                // add fragment to the fragment container layout
+//                getSupportFragmentManager().beginTransaction()
+//                        .add(R.id.container, new ConnectionParametersFragment()).commit();
+//            }
+
+            getSupportFragmentManager().beginTransaction()
+                    .add(R.id.container, new DefaultCommunicationSettingsFragment()).commit();
         }
     }
 }

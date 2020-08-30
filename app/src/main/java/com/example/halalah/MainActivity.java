@@ -388,7 +388,7 @@ public class MainActivity extends AppCompatActivity implements ITransaction.View
         if (mProgressDialog == null) {
             mProgressDialog = new ProgressDialog(this);
         }
-        mProgressDialog.setCancelable(false);
+        mProgressDialog.setCancelable(true);
         mProgressDialog.setMessage(message);
         mProgressDialog.show();
     }

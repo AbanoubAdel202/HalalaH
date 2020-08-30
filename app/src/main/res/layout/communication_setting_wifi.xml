@@ -10,6 +10,27 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:layout_marginTop="10dp"
+            android:orientation="horizontal">
+
+            <EditText
+                android:id="@+id/et_tpdu"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_alignParentBottom="true"
+                android:layout_marginLeft="4dp"
+                android:layout_toRightOf="@+id/host_port_2_tip"
+                android:hint="@string/tpdu_value"
+                android:inputType="number"
+                android:singleLine="true"
+                android:textSize="20sp" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
         <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="60dp"
@@ -23,7 +44,6 @@
                 android:layout_alignParentBottom="true"
                 android:layout_marginLeft="4dp"
                 android:layout_toRightOf="@+id/host_port_2_tip"
-                android:background="@null"
                 android:digits="0123456789."
                 android:hint="@string/network_ip_address"
                 android:inputType="number"
@@ -39,14 +59,14 @@
             android:orientation="horizontal">
 
             <EditText
-                android:id="@+id/et_network_tcp_support"
+                android:id="@+id/et_network_tcp_port"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_alignParentBottom="true"
                 android:layout_marginLeft="4dp"
                 android:layout_toRightOf="@+id/host_ip_1_tip"
-                android:background="@null"
                 android:hint="@string/network_tcp_support"
+                android:inputType="number"
                 android:singleLine="true"
                 android:textSize="20sp" />
         </com.google.android.material.textfield.TextInputLayout>
@@ -64,8 +84,8 @@
                 android:layout_alignParentBottom="true"
                 android:layout_marginLeft="4dp"
                 android:layout_toRightOf="@+id/host_port_1_tip"
-                android:background="@null"
                 android:hint="@string/Count_Access_Retries"
+                android:inputType="number"
                 android:singleLine="true"
                 android:textSize="20sp" />
 
@@ -84,8 +104,8 @@
                 android:layout_alignParentBottom="true"
                 android:layout_marginLeft="4dp"
                 android:layout_toRightOf="@+id/tpdu_tip"
-                android:background="@null"
                 android:hint="@string/response_timeout"
+                android:inputType="number"
                 android:singleLine="true"
                 android:textSize="20sp" />
         </com.google.android.material.textfield.TextInputLayout>
@@ -95,7 +115,8 @@
             android:layout_height="60dp"
             android:layout_marginTop="10dp"
             android:layout_marginBottom="16dp"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:visibility="gone">
 
             <EditText
                 android:id="@+id/et_ssl_certificate_file"

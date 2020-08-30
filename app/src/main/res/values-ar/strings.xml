@@ -345,5 +345,11 @@
     <string name="Count_Access_Retries">Count Access Retries</string>
     <string name="primary_connection">Primary Connection</string>
     <string name="secondary_connection">Secondary Connection</string>
+    <string name="connection_type">Connection Type</string>
+
+    <string-array name="connection_types">
+        <item>    Wifi    </item>
+        <item>    Gprs    </item>
+    </string-array>
 
 </resources>

@@ -41,8 +41,6 @@ public class Terminal_Registeration implements SendReceiveListener {
      */
 
     public void StartRegistrationProcess(POSTransaction POSTrx, ITransaction.View transactionView) {
-        int iStatus = -1;
-        int iCounter = 0;
 
 
         /* Fill required values*/
@@ -58,12 +56,11 @@ public class Terminal_Registeration implements SendReceiveListener {
 
         mCommunicationsHandler = CommunicationsHandler.getInstance(new CommunicationInfo(PosApplication.getApp().getApplicationContext()));
         CommunicationsHandler communicationsHandler = CommunicationsHandler.getInstance(new CommunicationInfo(PosApplication.getApp().getApplicationContext()));
-//        communicationsHandler.connect();
+        communicationsHandler.connect();
 
         PosApplication.getApp().oGPosTransaction.Reset();
         String de48Str = POSTrx.ComposeTerminalRegistrationData(POSTrx.getTerminalRegistrationData());
         POSTrx.m_sHostData_DE48 = de48Str;
-//        POSTrx.m_sFunctionCode = "814";
         PosApplication.getApp().oGPosTransaction.m_enmTrxType = POSTransaction.TranscationType.TERMINAL_REGISTRATION;
         POSTrx.ComposeNetworkMessage();
 
@@ -71,8 +68,6 @@ public class Terminal_Registeration implements SendReceiveListener {
 
         communicationsHandler.setSendReceiveListener(this);
         communicationsHandler.sendReceive(mSendPacket);
-
-        iCounter++;
     }
 
 /*

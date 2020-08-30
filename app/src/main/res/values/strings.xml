@@ -102,7 +102,7 @@
     <string name="host_port_1">Host Port:</string>
     <string name="host_ip_2">Second IP:</string>
     <string name="host_port_2">Second Port:</string>
-    <string name="tpdu_value">TPDU:</string>
+    <string name="tpdu_value">TPDU</string>
     <string name="tip_mer_id_changed_error">The length of merchant number must be 15 </string>
     <string name="tip_term_id_changed_error">The length of device number must be 8 </string>
     <string name="communication_para_cancle">Cancel</string>
@@ -358,17 +358,23 @@
     <string name="phone_number">Phone Number</string>
     <string name="dial_Number">Dial Number</string>
     <string name="access_point_name">Access Point Name</string>
-    <string name="network_ip_address">Network IP Address:192.168.1.124</string>
+    <string name="network_ip_address">Network IP Address</string>
     <string name="network_tcp_port">Network TCP Port</string>
     <string name="ssl_certificate_file">SSL Certificate File</string>
     <string name="network_tcp_support">Network TCP Port</string>
     <string name="Count_Access_Retries">Count Access Retries</string>
     <string name="primary_connection">Primary Connection</string>
     <string name="secondary_connection">Secondary Connection</string>
+    <string name="connection_type">Connection Type</string>
 
     <string-array name="key_indicies">
         <item>    00    </item>
         <item>    01    </item>
+    </string-array>
+
+    <string-array name="connection_types">
+        <item>    Wifi    </item>
+        <item>    Gprs    </item>
     </string-array>
 
 </resources>
