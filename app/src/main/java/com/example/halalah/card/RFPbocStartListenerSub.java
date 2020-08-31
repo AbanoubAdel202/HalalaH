@@ -42,6 +42,11 @@ public class RFPbocStartListenerSub implements OnEmvProcessListener {
         String[] AIDs = new String[]{"4F"};
         bAIDs= getTlv(AIDs);
 
+        //for test
+        byte[] bkernelID;
+        String[] kerneltag = new String[]{"9F2A"};
+        bkernelID= getTlv(kerneltag);
+
         PosApplication.getApp().oGPosTransaction.m_sAID= BCDASCII.bytesToHexString(bAIDs).replace("4F07",""); //todo function generc remove tag and leangth
 
         //todo success validation
@@ -196,6 +201,8 @@ public class RFPbocStartListenerSub implements OnEmvProcessListener {
             case 0x1F:
             case 0x5F:
                 PosApplication.getApp().oGPosTransaction.m_enmTrxCVM = POSTransaction.CVM.NO_CVM;
+            case 0x3F:
+                PosApplication.getApp().oGPosTransaction.m_enmTrxCVM = POSTransaction.CVM.UNKOWN;
                 break;
 
 
@@ -245,13 +252,13 @@ public class RFPbocStartListenerSub implements OnEmvProcessListener {
     }
 
     /**
-     * 交易结果
-     * 批准: 0x01
-     * 拒绝: 0x02
-     * 终止: 0x03
+     * transaction result
+     * approve: 0x01
+     * declined: 0x02
+     * end: 0x03
      * FALLBACK: 0x04
-     * 采用其他界面: 0x05
-     * 其他：0x06
+     * use other functions : 0x05
+     * otherr：0x06
      * EMV简易流程不回调此方法
      */
     @Override

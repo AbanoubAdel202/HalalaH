@@ -47,7 +47,7 @@ public class ContactCardProcess {
     private EmvTerminalInfo emvTerminalInfo;
     private CountDownLatch countDownLatch;
     private boolean isEndEmv;
-    private boolean isTxnStarted;
+
 
 
     //importAidSelectRes()
@@ -107,7 +107,7 @@ public class ContactCardProcess {
 
     private void initTransData() {
         isEndEmv = false;
-        isTxnStarted = false;
+
         importAidSelectIndex = -1;
         importMsgConfirmResult = false;
         importFixedAmount = null;
@@ -176,11 +176,13 @@ public class ContactCardProcess {
                 return 0;
             }
 
+            Log.d(TAG, "cGetPlainTextPin, importPinStr: " + importPinStr);
             if (importPinStr.equals("bypass")) {
                 booleans[0] = true;
             } else {
-                booleans[0] = false;          
+                booleans[0] = false;
             }
+
 
             byte[] pinBlock = getOfflinePinBlock(importPinStr);
             System.arraycopy(pinBlock, 0, bytes, 0, pinBlock.length);
@@ -325,7 +327,7 @@ public class ContactCardProcess {
             return emvRet;
         }
 
-
+//todo terminal info EMV data fililing from TMS
         emvTerminalInfo.setUnTerminalFloorLimit(00000);
         emvTerminalInfo.setUnThresholdValue(10000);
         emvTerminalInfo.setAucTerminalID("00000001");
@@ -383,7 +385,7 @@ public class ContactCardProcess {
 
         emvTransData = transData;
         emvListener = listener;
-        isTxnStarted = true;
+
         initTransData();
 
         int emvRet = 0;
@@ -418,7 +420,7 @@ public class ContactCardProcess {
             for (Aid aid : mList) {
                 Log.d(TAG, "aid.getAid(): " + aid.getAid());
                 byte[] aucAid = BytesUtil.hexString2Bytes(aid.getAid());
-                emvL2.EMV_AddAIDList(aucAid, (byte) aucAid.length, (byte) 1);
+                emvRet= emvL2.EMV_AddAIDList(aucAid, (byte) aucAid.length, (byte) 1);
             }
         }
 
@@ -769,6 +771,9 @@ public class ContactCardProcess {
         }
 
         emvListener.onTransResult(getAppEmvtransResult(emvRet));
+        getTlvData("95");
+        getTlvData("9F34");
+
         endEmv();
     }
 
@@ -890,7 +895,7 @@ public class ContactCardProcess {
         Log.d(TAG, "EMV_AddCAPK emvRet : " + emvRet);
         if (emvRet != 0) {
             Log.d(TAG, "EMV_AddCAPK failed!");
-            return 0;
+            return -1;
         }
 
         //Add CAPK Revocation list
@@ -996,7 +1001,8 @@ public class ContactCardProcess {
         }
 
         String strAid = BytesUtil.bytes2HexString(aid);
-        Aid aidParam = db.getAidDao().findByAid(strAid);
+        Aid aidParam = db.getAidDao().findByAidAndAsi(strAid);
+
 
         //emvL2.EMV_SetTLVData(0x9F09, aidParam.getVersion());
         //emvL2.EMV_SetTLVData(0x9F1B, aidParam.getFloorLimit());

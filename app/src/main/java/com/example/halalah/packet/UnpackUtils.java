@@ -31,26 +31,7 @@ public class UnpackUtils {
         packetlen = Integer.parseInt(lenSrc, 16);
         Log.d(TAG, "Packet Len = "+packetlen);
         
-        //TPDU
-        srcDataOffset = 2;
-        String tmpstr = BCDASCII.fromBCDToASCIIString(srcData, srcDataOffset, 10, false);
-        Log.d(TAG, "TPDU = "+tmpstr);
-        
-        
-        //Header
-        srcDataOffset = 2+5;
-        tmpstr = BCDASCII.fromBCDToASCIIString(srcData, srcDataOffset, 12, false);
-        Log.d(TAG, "Header = "+tmpstr);
 
-
-
-        srcDataOffset = 2+5+6;
-        
-        tmpstr = new String(srcData, srcDataOffset, 8);
-        Log.d(TAG, "8583Len = "+tmpstr);
-
-        // unpack 8583 packet
-        srcDataOffset = 2 + 5 + 6 + 15 + 8 + 15 + 8 + 15 + 8;
         int length = srcDataLen - srcDataOffset;
         byte[] data8583 = new byte[length];
         System.arraycopy(srcData, srcDataOffset, data8583, 0, length);

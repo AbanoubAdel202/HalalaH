@@ -124,6 +124,9 @@ public class SearchCardActivity extends Activity{
         public void callBackTransResult(int result) {
             Log.d(TAG, "callBackTransResult result : " + result);
             String resultDetail = null;
+            if (result == CardSearchErrorUtil.TRANS_APPROVE) {
+                resultDetail = "Transaction Approval";
+            }
             if (result == CardSearchErrorUtil.TRANS_REASON_REJECT) {
                 resultDetail = getString(R.string.search_card_trans_result_reject);
             } else if (result == CardSearchErrorUtil.TRANS_REASON_STOP) {
@@ -150,6 +153,10 @@ public class SearchCardActivity extends Activity{
         Intent intent = new Intent(this, ShowResultActivity.class);
         intent.putExtra(PacketProcessUtils.PACKET_PROCESS_TYPE, PacketProcessUtils.PACKET_PROCESS_PURCHASE);
         intent.putExtra("result_resDetail", detail);
+        if(detail.equals("Transaction Approval")){
+            intent.putExtra("result_errReason", 0);
+            intent.putExtra("result_response", "00");
+        }
         startActivity(intent);
         this.finish();
     }

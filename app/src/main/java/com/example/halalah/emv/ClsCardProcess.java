@@ -2,6 +2,7 @@ package com.example.halalah.emv;
 
 import android.os.Bundle;
 import android.os.RemoteException;
+import android.renderscript.Script;
 import android.text.TextUtils;
 
 import com.example.halalah.DeviceTopUsdkServiceManager;
@@ -624,6 +625,7 @@ public class ClsCardProcess {
                     kernelId=0x03;
                 else if(aid.getAid().equals("A0000002281010"))
                     kernelId=0x02;
+
                 combination.setAucKernelID(new byte[]{kernelId});
                 if (aid.isFloorLimitFlg()) {
                     combination.setUcTermFLmtFlg(PayDataUtil.CLSS_TAG_EXIST_WITHVAL);
@@ -631,24 +633,28 @@ public class ClsCardProcess {
                 } else {
                     combination.setUcTermFLmtFlg(PayDataUtil.CLSS_TAG_NOT_EXIST);
                 }
+
                 if (aid.isRdCVMLimitFlg()) {
                     combination.setUcRdCVMLmtFlg(PayDataUtil.CLSS_TAG_EXIST_WITHVAL);
-                    combination.setAucRdCVMLmt(BytesUtil.int2Bytes(aid.getRdCVMLimit(),true));
+                    combination.setAucRdCVMLmt(BytesUtil.hexString2Bytes(String.format("%012d", aid.getRdCVMLimit())));
                 } else {
                     combination.setUcRdCVMLmtFlg(PayDataUtil.CLSS_TAG_NOT_EXIST);
                 }
+
                 if (aid.isRdClssTxnLimitFlg()) {
                     combination.setUcRdClssTxnLmtFlg(PayDataUtil.CLSS_TAG_EXIST_WITHVAL);
-                    combination.setAucRdClssTxnLmt(BytesUtil.int2Bytes(aid.getRdClssTxnLimit(),true));
+                    combination.setAucRdClssTxnLmt(BytesUtil.hexString2Bytes(String.format("%012d", aid.getRdClssTxnLimit())));
                 } else {
                     combination.setUcRdClssTxnLmtFlg(PayDataUtil.CLSS_TAG_NOT_EXIST);
                 }
+
                 if (aid.isRdClssFloorLimitFlg()) {
                     combination.setUcRdClssFLmtFlg(PayDataUtil.CLSS_TAG_EXIST_WITHVAL);
-                    combination.setAucRdClssFLmt(BytesUtil.int2Bytes(aid.getRdClssFloorLimit(),true));
+                    combination.setAucRdClssFLmt(BytesUtil.hexString2Bytes(String.format("%012d", aid.getRdClssFloorLimit())));
                 } else {
                     combination.setUcRdClssFLmtFlg(PayDataUtil.CLSS_TAG_NOT_EXIST);
                 }
+
                 combination.setUcZeroAmtNoAllowed(0);
                 combination.setUcStatusCheckFlg(0);
                 combination.setUcCrypto17Flg(1);
@@ -769,85 +775,108 @@ public class ClsCardProcess {
                 list.addTlv(entry.getValue());
             }
         }
-        //trade data
-        //授权金额（数字） //trade amt
-        SDKLog.d(TAG, "trade amount: " + mAmount);
+        //Amount, Authorised (Numeric)
+        SDKLog.d(TAG, "txn amount: " + mAmount);
         if (mAmount != null) {
             list.addTlv("9F02",mAmount);
         }
-        //金融交易的类型 //trade type
+
+        //Transaction Type
         String tradeType = BytesUtil.bytes2HexString(new byte[]{mEmvTransData.getTransType()});
-        SDKLog.d(TAG, "trade type: " + tradeType);
+        SDKLog.d(TAG, "txn type: " + tradeType);
         list.addTlv("9C",tradeType);
-        //交易序列计数器
+
+        //Transaction Sequence Counter
         list.addTlv("9F41",dataUtil.getSequenceCounter());
+
+        //Transaction Date
         list.addTlv("9A",dataUtil.getTransDateTime(PayDataUtil.TRANS_DATE_YYMMDD));
+
+        //Transaction Time
         list.addTlv("9F21",dataUtil.getTransDateTime(PayDataUtil.TRANS_TIME_HHMMSS));
-        //aid 参数
+
+        //aid parameters
         TlvList aidList = new TlvList();
         aidList.fromBytes(aid);
-        //读卡器非接脱机上限 (DF8123)
+
+        //Reader Contactless Floor Limit
         String data = null;
-        if(aidList.getTlv("9F7B")!=null)
-            data = aidList.getTlv("9F7B").getHexValue();
-        SDKLog.d(TAG, "DF8123 data: " + data);
+        if(aidList.getTlv("DF19")!=null)
+            data = aidList.getTlv("DF19").getHexValue();
+        SDKLog.d(TAG, "DF8123(DF19) data: " + data);
         if (!TextUtils.isEmpty(data)) {
             list.addTlv("DF8123",data);
         } else {
-            list.addTlv("DF8123","000000030000");  //todo update default
+            list.addTlv("DF8123","000000030000");
         }
-        //非接交易限额（卡的）
+
+        //Reader Contactless Transaction Limit (No On-device CVM)
         data = null;
         if(aidList.getTlv("DF20")!=null)
             data = aidList.getTlv("DF20").getHexValue();
-        SDKLog.d(TAG, "DF8124 data: " + data);
+        SDKLog.d(TAG, "DF8124(DF20) data: " + data);
         if (!TextUtils.isEmpty(data)) {
             list.addTlv("DF8124",data);
         } else {
-            list.addTlv("DF8124","000000030000"); //todo update default
+            list.addTlv("DF8124","000099999999");
         }
-        //非接交易限额（手机pay的）
-        list.addTlv("DF8125","000000050000");//todo update default
-        //非接免密限额
+
+        //Reader Contactless Transaction Limit (On-device CVM)
+        data = null;
+        if(aidList.getTlv("DF20")!=null)
+            data = aidList.getTlv("DF20").getHexValue();
+        SDKLog.d(TAG, "DF8125(DF20) data: " + data);
+        if (!TextUtils.isEmpty(data)) {
+            list.addTlv("DF8125",data);
+        } else {
+            list.addTlv("DF8125","000099999999");
+        }
+
+        //Reader CVM Required Limit
         data = null;
         if(aidList.getTlv("DF21")!=null)
             data = aidList.getTlv("DF21").getHexValue();
-        SDKLog.d(TAG, "DF8126 data: " + data);
+        SDKLog.d(TAG, "DF8126(DF21) data: " + data);
         if (!TextUtils.isEmpty(data)) {
             list.addTlv("DF8126",data);
         } else {
-            list.addTlv("DF8126","000000005000");//todo update default
+            list.addTlv("DF8126","000000030000");
         }
-        //终端操作代码–默认
+
+        //TAC-Default
         data = null;
         if(aidList.getTlv("DF11")!=null)
             data = aidList.getTlv("DF11").getHexValue();
-        SDKLog.d(TAG, "DF8120 data: " + data);
+        SDKLog.d(TAG, "DF8120(DF11) data: " + data);
         if (!TextUtils.isEmpty(data)) {
-            list.addTlv("DF812005",data);
+            list.addTlv("DF8120",data);
         } else {
             list.addTlv("DF8120","0000000000");
         }
-        //终端操作代码-在线
+
+        //TAC-Online
         data = null;
         if(aidList.getTlv("DF12")!=null)
             data = aidList.getTlv("DF12").getHexValue();
-        SDKLog.d(TAG, "DF8122 data: " + data);
+        SDKLog.d(TAG, "DF8122(DF12) data: " + data);
         if (!TextUtils.isEmpty(data)) {
-            list.addTlv("DF812205",data);
+            list.addTlv("DF8122",data);
         } else {
             list.addTlv("DF8122","0000000000");
         }
-        //终端操作代码-拒绝
+
+        //TAC-Denial
         data = null;
         if(aidList.getTlv("DF13")!=null)
             data = aidList.getTlv("DF13").getHexValue();
-        SDKLog.d(TAG, "DF8121 data: " + data);
+        SDKLog.d(TAG, "DF8121(DF13) data: " + data);
         if (!TextUtils.isEmpty(data)) {
-            list.addTlv("DF812105",data);
+            list.addTlv("DF8121",data);
         } else {
             list.addTlv("DF8121","0000000000");
         }
+
         return list;
+
     }
 }

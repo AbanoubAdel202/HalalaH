@@ -264,6 +264,8 @@ class PayDataUtil {
             default:
                 break;
         }
+        SDKLog.d(TAG, "getTransDateTime: " + result);
+
         return result;
     }
 

@@ -120,6 +120,11 @@ public class Terminal_Operation_Data {
         m_sMaximum_transaction_amount_indicator="1111111111";
         m_sMaximum_transaction_amount="999999999999";
         Mada_Auto_Selection=1;
+
+        m_sTerminal_Contactless_Floor_Limit="000000001000";
+        m_sTerminal_Contactless_Transaction_Limit="000000100000";
+        m_sTerminal_CVM_Required_Limit="000000015000";
+
         //TerminalStatus
         //Terminal Dial Indicator
          terminal_dial_indicator ="1";// '1'-9', 'A' - 'F' (i.e. total range is '1'-'F').

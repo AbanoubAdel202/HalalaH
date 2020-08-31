@@ -137,8 +137,8 @@ public class PosApplication extends Application{
 
         mContext = getApplicationContext();
         oGTerminal_Operation_Data.communicationInfo=new CommunicationInfo(this);
-        oGTerminal_Operation_Data.communicationInfo.setHostIP("192.168.8.133");
-        oGTerminal_Operation_Data.communicationInfo.setHostPort("2030");
+        oGTerminal_Operation_Data.communicationInfo.setHostIP("192.168.8.136");
+        oGTerminal_Operation_Data.communicationInfo.setHostPort("1000");
         mPosApplication = this;
 
 

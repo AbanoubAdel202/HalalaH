@@ -7,6 +7,7 @@ import android.os.IBinder;
 import android.os.RemoteException;
 import android.util.Log;
 import android.widget.Switch;
+import android.widget.Toast;
 
 import com.example.halalah.TMS.AID_Data;
 import com.example.halalah.TMS.Card_Scheme;
@@ -31,12 +32,13 @@ import com.example.halalah.ui.PacketProcessActivity;
 import com.example.halalah.ui.Refund_InputActivity;
 import com.example.halalah.ui.SearchCardActivity;
 import com.example.halalah.ui.ShowResultActivity;
+import com.example.halalah.util.BytesUtil;
+import com.example.halalah.util.ExtraUtil;
 import com.example.halalah.util.PacketProcessUtils;
 import com.topwise.cloudpos.aidl.printer.AidlPrinter;
 import com.topwise.cloudpos.aidl.printer.AidlPrinterListener;
 import com.topwise.cloudpos.aidl.printer.PrintItemEnhancedObj;
 import com.topwise.cloudpos.aidl.printer.PrintItemObj;
-import com.topwise.cloudpos.struct.BytesUtil;
 
 import java.util.List;
 import java.util.Locale;
@@ -661,65 +663,89 @@ public class POS_MAIN implements SendReceiveListener {
             // log an error message
             return String.valueOf(iRetRes);
         }
-
+        //ex. 9F0607A0000002282010
         // Adding AID
-        if (AIDObj.AID.length() > 0)
-            strFormatedAIDData.append("9f06" +String.format(Locale.ENGLISH,"%02d",AIDObj.AID.length()/2)+AIDObj.AID);
-
+        if (AIDObj.AID.length() > 0) {
+            AIDObj.AID= AIDObj.AID.replaceAll(" ", "");
+            strFormatedAIDData.append("9F06" + String.format(Locale.ENGLISH, "%02d", AIDObj.AID.length()/2) + AIDObj.AID);
+        }
+        //ex.DF010100
         // Adding ApplicationSelectionIndicator(0:PartMatch,1:ExactMatch)
-        strFormatedAIDData.append("df010100");
-
+        strFormatedAIDData.append("DF010100");
+        //ex.9F08020084
         // Adding ApplicationVersionNumber
         if (AIDObj.Terminal_AID_version_numbers.length() > 0)
-            strFormatedAIDData.append("9f09" +"02"+AIDObj.Terminal_AID_version_numbers.substring(0,4));
-
+            strFormatedAIDData.append("9F08" +"02"+AIDObj.Terminal_AID_version_numbers.substring(0,4));
+        //ex.DF1105FC408CA800
         // Adding Default_action_code
         if (AIDObj.Denial_action_code.length() > 0)
-            strFormatedAIDData.append("df11" +String.format(Locale.ENGLISH,"%02d",AIDObj.Default_action_code.length()/2)+AIDObj.Default_action_code);
+        {
+            AIDObj.Default_action_code=AIDObj.Default_action_code.replaceAll(" ","");
+            strFormatedAIDData.append("DF11" +String.format(Locale.ENGLISH,"%02d",AIDObj.Default_action_code.length()/2)+AIDObj.Default_action_code);
+
+        }
 
 
+        //ex.DF1205FC408CF800
         // Adding Online_action_code
-        if (AIDObj.Denial_action_code.length() > 0)
-            strFormatedAIDData.append("df12" +String.format(Locale.ENGLISH,"%02d",AIDObj.Online_action_code.length()/2)+AIDObj.Online_action_code);
-
-
+        if (AIDObj.Denial_action_code.length() > 0) {
+            AIDObj.Online_action_code=AIDObj.Online_action_code.replaceAll(" ","");
+            strFormatedAIDData.append("DF12" + String.format(Locale.ENGLISH, "%02d", AIDObj.Online_action_code.length() / 2) + AIDObj.Online_action_code);
+        }
+        //ex.DF13050010000000
         // Adding Denial_action_code
-        if (AIDObj.Denial_action_code.length() > 0)
-            strFormatedAIDData.append("df13" +String.format(Locale.ENGLISH,"%02d",AIDObj.Denial_action_code.length()/2)+AIDObj.Denial_action_code);
-
-            strFormatedAIDData.append("9f1b"+String.format(Locale.ENGLISH,"%02d","00000000".length()/2)+"00000000");
-
+        if (AIDObj.Denial_action_code.length() > 0) {
+            AIDObj.Denial_action_code=AIDObj.Denial_action_code.replaceAll(" ","");
+            strFormatedAIDData.append("DF13" + String.format(Locale.ENGLISH, "%02d", AIDObj.Denial_action_code.length() / 2) + AIDObj.Denial_action_code);
+        }
+        //ex.9F1B0400000000
+        strFormatedAIDData.append("9F1B"+String.format(Locale.ENGLISH,"%02d","00000000".length()/2)+"00000000");
+        //ex.DF150400000290
         // Adding ThresholdValueforBiasedRandomSelection
         if (AIDObj.Threshold_Value_for_Biased_Random_Selection.length() > 0)
-            strFormatedAIDData.append("df15" +String.format(Locale.ENGLISH,"%02d",AIDObj.Threshold_Value_for_Biased_Random_Selection.length()/2)+AIDObj.Threshold_Value_for_Biased_Random_Selection);
-
+            strFormatedAIDData.append("DF15" +String.format(Locale.ENGLISH,"%02d",AIDObj.Threshold_Value_for_Biased_Random_Selection.length()/2)+AIDObj.Threshold_Value_for_Biased_Random_Selection);
+        //ex.DF160199
         // Adding Maximum_Target_Percentage_for_Biased_Random_Selection
         if (AIDObj.Maximum_Target_Percentage_for_Biased_Random_Selection.length() > 0)
-            strFormatedAIDData.append("df16" +String.format(Locale.ENGLISH,"%02d",AIDObj.Maximum_Target_Percentage_for_Biased_Random_Selection.length()/2)+AIDObj.Maximum_Target_Percentage_for_Biased_Random_Selection);
-
+            strFormatedAIDData.append("DF16" +String.format(Locale.ENGLISH,"%02d",AIDObj.Maximum_Target_Percentage_for_Biased_Random_Selection.length()/2)+AIDObj.Maximum_Target_Percentage_for_Biased_Random_Selection);
+        //ex.DF170199
         // Adding Target_Percentage
         if (AIDObj.Target_Percentage.length() > 0)
-            strFormatedAIDData.append("df17" +String.format(Locale.ENGLISH,"%02d",AIDObj.Target_Percentage.length()/2)+AIDObj.Target_Percentage);
-
+            strFormatedAIDData.append("DF17" +String.format(Locale.ENGLISH,"%02d",AIDObj.Target_Percentage.length()/2)+AIDObj.Target_Percentage);
+        //ex.DF14039F3704
         // Adding Default_DDOL
-        if (AIDObj.Default_DDOL.length() > 0)
-            strFormatedAIDData.append("df14" +String.format(Locale.ENGLISH,"%02d",AIDObj.Default_DDOL.length()/2)+AIDObj.Default_DDOL);
+        if (AIDObj.Default_DDOL.length() > 0) {
+            AIDObj.Default_DDOL=AIDObj.Default_DDOL.replaceAll(" ", "");
+            strFormatedAIDData.append("DF14" + String.format(Locale.ENGLISH, "%02d", AIDObj.Default_DDOL.length() / 2) + AIDObj.Default_DDOL);
+        }
+        //ex.DF180101
         // Adding Default_TDOL
-        if (AIDObj.Default_TDOL.length() > 0)
-            strFormatedAIDData.append("df8102" +String.format(Locale.ENGLISH,"%02d",AIDObj.Default_TDOL.length()/2)+AIDObj.Default_TDOL);
+        if (AIDObj.Default_TDOL.length() > 0) {
+            AIDObj.Default_TDOL=AIDObj.Default_TDOL.replaceAll(" ","");
+            strFormatedAIDData.append("DF8101" + String.format(Locale.ENGLISH, "%02d", AIDObj.Default_TDOL.length() / 2) + AIDObj.Default_TDOL);
+        }
+        //ex.9F7B06000000100000
+        strFormatedAIDData.append("9F7B06000000100000");
 
+
+
+        //DF1906000000100000
         // Adding Contactless floor limit
         //"DF19" ClssFloorLimit
         if(PosApplication.getApp().oGTerminal_Operation_Data.m_sTerminal_Contactless_Floor_Limit!=null)
-        strFormatedAIDData.append("DF19"+String.format(Locale.ENGLISH,"%02d",PosApplication.getApp().oGTerminal_Operation_Data.m_sTerminal_Contactless_Floor_Limit.length()/2)+PosApplication.getApp().oGTerminal_Operation_Data.m_sTerminal_Contactless_Floor_Limit);
+            strFormatedAIDData.append("DF19"+String.format(Locale.ENGLISH,"%02d",PosApplication.getApp().oGTerminal_Operation_Data.m_sTerminal_Contactless_Floor_Limit.length()/2)+PosApplication.getApp().oGTerminal_Operation_Data.m_sTerminal_Contactless_Floor_Limit);
+
+        //DF2006000000100000
         //adding Contactless Transaction limit
         //"DF20" ClssTxnLimit
         if(PosApplication.getApp().oGTerminal_Operation_Data.m_sTerminal_Contactless_Transaction_Limit!=null)
-        strFormatedAIDData.append("DF20"+String.format(Locale.ENGLISH,"%02d",PosApplication.getApp().oGTerminal_Operation_Data.m_sTerminal_Contactless_Transaction_Limit.length()/2)+PosApplication.getApp().oGTerminal_Operation_Data.m_sTerminal_Contactless_Transaction_Limit);
+            strFormatedAIDData.append("DF20"+String.format(Locale.ENGLISH,"%02d",PosApplication.getApp().oGTerminal_Operation_Data.m_sTerminal_Contactless_Transaction_Limit.length()/2)+PosApplication.getApp().oGTerminal_Operation_Data.m_sTerminal_Contactless_Transaction_Limit);
+
+        //DF2106000000100000
         //adding Contactless CVM limit
         //"DF21" ClssCVMLimit
         if(PosApplication.getApp().oGTerminal_Operation_Data.m_sTerminal_CVM_Required_Limit!=null)
-        strFormatedAIDData.append("DF21"+String.format(Locale.ENGLISH,"%02d",PosApplication.getApp().oGTerminal_Operation_Data.m_sTerminal_CVM_Required_Limit.length()/2)+PosApplication.getApp().oGTerminal_Operation_Data.m_sTerminal_CVM_Required_Limit);
+            strFormatedAIDData.append("DF21"+String.format(Locale.ENGLISH,"%02d",PosApplication.getApp().oGTerminal_Operation_Data.m_sTerminal_CVM_Required_Limit.length()/2)+PosApplication.getApp().oGTerminal_Operation_Data.m_sTerminal_CVM_Required_Limit);
 
 
 	/*
@@ -1095,6 +1121,7 @@ DF03 Check Sum                                [20]   >> 4410C6D51C2F83ADFD92528F
         switch(sDE39)
         {
             case "000":
+
             case "001":
             case "003":
             case "007":
@@ -1118,9 +1145,8 @@ DF03 Check Sum                                [20]   >> 4410C6D51C2F83ADFD92528F
 
         String sMAC="";
 
-        switch(PosApplication.getApp().oGPosTransaction.m_enmTrxType){
-            case AUTHORISATION:
-            case AUTHORISATION_EXTENSION:
+        if(PosApplication.getApp().oGPosTransaction.m_sMTI.equals(PosApplication.MTI_Authorisation_Request))
+        {
 
 
                 //0.Messa   ge Type Identifier
@@ -1146,8 +1172,8 @@ DF03 Check Sum                                [20]   >> 4410C6D51C2F83ADFD92528F
                 //55.EMV Data
                 if(PosApplication.getApp().oGPosTransaction.m_enmTrxCardType== POSTransaction.CardType.ICC|PosApplication.getApp().oGPosTransaction.m_enmTrxCardType== POSTransaction.CardType.CTLS)
                     sMAC.concat(new String(oResponseTrx.getDataElement(55)));
-                break;
-            case AUTHORISATION_ADVICE:
+        }
+        else if(PosApplication.getApp().oGPosTransaction.m_sMTI.equals(PosApplication.MTI_Authorisation_Advice)) {
                 //0.Messa   ge Type Identifier
                 sMAC=PosApplication.MTI_Authorisation_Advice;
                 //1. Primary bitmap
@@ -1171,12 +1197,9 @@ DF03 Check Sum                                [20]   >> 4410C6D51C2F83ADFD92528F
                 //55.EMV Data
                 if(PosApplication.getApp().oGPosTransaction.m_enmTrxCardType== POSTransaction.CardType.ICC|PosApplication.getApp().oGPosTransaction.m_enmTrxCardType== POSTransaction.CardType.CTLS)
                     sMAC.concat(new String(oResponseTrx.getDataElement(55)));
+        }
 
-                break;
-            case REFUND:
-            case CASH_ADVANCE:
-            case PURCHASE_WITH_NAQD:
-            case PURCHASE:
+        else if(PosApplication.getApp().oGPosTransaction.m_sMTI.equals(PosApplication.MTI_Financial_Request)) {
                 //0.Messa   ge Type Identifier
                 sMAC=PosApplication.MTI_Financial_Request;
                 //1. Primary bitmap
@@ -1200,8 +1223,9 @@ DF03 Check Sum                                [20]   >> 4410C6D51C2F83ADFD92528F
                 //55.EMV Data
                 if(PosApplication.getApp().oGPosTransaction.m_enmTrxCardType== POSTransaction.CardType.ICC|PosApplication.getApp().oGPosTransaction.m_enmTrxCardType== POSTransaction.CardType.CTLS)
                     sMAC.concat(new String(oResponseTrx.getDataElement(55)));
-                break;
-            case PURCHASE_ADVICE:
+        }
+
+        else if(PosApplication.getApp().oGPosTransaction.m_sMTI.equals(PosApplication.MTI_Financial_Transaction_Advice)) {
                 //0.Messa   ge Type Identifier
                 sMAC=PosApplication.MTI_Financial_Transaction_Advice;
                 //1. Primary bitmap
@@ -1226,8 +1250,9 @@ DF03 Check Sum                                [20]   >> 4410C6D51C2F83ADFD92528F
                 if(PosApplication.getApp().oGPosTransaction.m_enmTrxCardType== POSTransaction.CardType.ICC|PosApplication.getApp().oGPosTransaction.m_enmTrxCardType== POSTransaction.CardType.CTLS)
                     sMAC.concat(new String(oResponseTrx.getDataElement(55)));
 
-                break;
-            case REVERSAL:
+        }
+
+        else if(PosApplication.getApp().oGPosTransaction.m_sMTI.equals(PosApplication.MTI_Reversal_Advice)) {
                 //0.Messa   ge Type Identifier
                 sMAC=PosApplication.MTI_Reversal_Advice;
                 //1. Primary bitmap
@@ -1251,12 +1276,25 @@ DF03 Check Sum                                [20]   >> 4410C6D51C2F83ADFD92528F
                 //55.EMV Data
                 if(PosApplication.getApp().oGPosTransaction.m_enmTrxCardType== POSTransaction.CardType.ICC|PosApplication.getApp().oGPosTransaction.m_enmTrxCardType== POSTransaction.CardType.CTLS)
                     sMAC.concat(new String(oResponseTrx.getDataElement(55)));
-                break;
-
-            case TMS_FILE_DOWNLOAD:
-                break;
-            case RECONCILIATION:
         }
+        else if(PosApplication.getApp().oGPosTransaction.m_sMTI.equals(PosApplication.MTI_File_Action_Request)) {
+            //0.Messa   ge Type Identifier
+            sMAC = PosApplication.MTI_File_Action_Request;
+            //1. Primary bitmap
+            sMAC = new String(oResponseTrx.Getbitmap());
+            //11.System Trace Audit Number
+            sMAC.concat(new String(oResponseTrx.getDataElement(11)));
+
+            //12.Date and Time, Local Transaction
+            sMAC.concat(new String(oResponseTrx.getDataElement(12)));
+            //53.Security Related Control Information
+            sMAC.concat(new String(oResponseTrx.getDataElement(53)));
+        }
+
+            else if(PosApplication.getApp().oGPosTransaction.m_sMTI.equals(PosApplication.MTI_Terminal_Reconciliation_Advice))
+            {
+
+            }
         //0.Messa   ge Type Identifier
         //2.Primary Account Number (PAN)
         //3.Processing Code
@@ -1271,21 +1309,32 @@ DF03 Check Sum                                [20]   >> 4410C6D51C2F83ADFD92528F
         //124.Private - (POS Terminal Reconciliation)
         byte[] bMac = sMAC.getBytes();
 
-        if (bMac.length%8!=0) {
-            for(int i=0 ;i<bMac.length%8;i++)
-            {
-                sMAC=sMAC+0x00;
+            if (bMac.length%8!=0) {
+                for(int i=0 ;i<bMac.length%8;i++)
+                {
+
+                    if(i==0) {
+                        bMac = BytesUtil.add(bMac, (byte) 0x80);
+                    }
+                    else
+                        bMac = BytesUtil.add(bMac, (byte) 0x00);
+
+
+                }
             }
-        }
+            else
+            {
+                bMac = BytesUtil.add(bMac, (byte) 0x80);
+            }
 
         sMAC= DUKPT_KEY.CaluclateMACBlock(bMac);
 
-        //removinglast 4 bytes
-        sMAC=sMAC.substring(0,4);
-        sMAC=sMAC.concat("ÿÿÿÿ");
+            //removinglast 4 bytes
+            sMAC=sMAC.substring(0,8);
 
+            sMAC=sMAC.concat("FFFFFFFF");
 
-        if(sMAC.equals(oResponseTrx.getDataElement(64)))
+            if(sMAC.equals(oResponseTrx.getDataElement(64)))
             return true;
         else
             return false;

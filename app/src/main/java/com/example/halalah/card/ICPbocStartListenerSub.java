@@ -19,9 +19,12 @@ import com.example.halalah.emv.OnEmvProcessListener;
 import com.example.halalah.iso8583.BCDASCII;
 import com.example.halalah.util.PacketProcessUtils;
 
+
 import com.topwise.cloudpos.aidl.emv.CardInfo;
 import com.topwise.cloudpos.aidl.emv.PCardLoadLog;
 import com.topwise.cloudpos.aidl.emv.PCardTransLog;
+import com.topwise.cloudpos.struct.BytesUtil;
+
 
 public class ICPbocStartListenerSub implements OnEmvProcessListener {
     private static final String TAG = Utils.TAGPUBLIC + ICPbocStartListenerSub.class.getSimpleName();
@@ -212,6 +215,8 @@ public class ICPbocStartListenerSub implements OnEmvProcessListener {
 
         }
 
+        setTVR();
+        setTSI();
 
         setExpired();
         setSeqNum();
@@ -313,6 +318,10 @@ public class ICPbocStartListenerSub implements OnEmvProcessListener {
     @Override
     public void onTransResult(int result) throws RemoteException {
         Log.d(TAG, "onTransResult result: " + result + isOnline);
+
+        setTVR();
+        setTSI();
+
         if (!isOnline) {
             CardManager.getInstance().callBackTransResult(result);
         }
@@ -498,6 +507,53 @@ public class ICPbocStartListenerSub implements OnEmvProcessListener {
 
     }
 
+    private void setTVR() {
+        Log.i(TAG, "setTVR()");
+
+        String[] tags = new String[]{"95"};
+        byte[] tlvBuf = new byte[7];
+        int tlvLength = 0;
+
+        try {
+            tlvLength = emvManager.readKernelData(tags, tlvBuf);
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+        Log.i(TAG, "------TVR tlvLength: " + tlvLength);
+        Log.i(TAG, "------TVR tlvBuf: " + BytesUtil.bytes2HexString(tlvBuf));
+
+        if (tlvLength == 7) {
+            byte[] value = new byte[5];
+            System.arraycopy(tlvBuf, 2, value, 0, 5);
+            PosApplication.getApp().oGPosTransaction.mTVR=value;
+        } else {
+            PosApplication.getApp().oGPosTransaction.mTVR=null;
+        }
+    }
+
+    private void setTSI() {
+        Log.i(TAG, "setTSI()");
+
+        String[] tags = new String[]{"9B"};
+        byte[] tlvBuf = new byte[4];
+        int tlvLength = 0;
+
+        try {
+            tlvLength = emvManager.readKernelData(tags, tlvBuf);
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+        Log.i(TAG, "------TSI tlvLength: " + tlvLength);
+        Log.i(TAG, "------TSI tlvBuf: " + BytesUtil.bytes2HexString(tlvBuf));
+
+        if (tlvLength == 4) {
+            byte[] value = new byte[2];
+            System.arraycopy(tlvBuf, 2, value, 0, 2);
+            PosApplication.getApp().oGPosTransaction.mTSI=value;
+        } else {
+            PosApplication.getApp().oGPosTransaction.mTSI=null;
+        }
+    }
 
 
     private byte[] getTlv(String[] tags) {

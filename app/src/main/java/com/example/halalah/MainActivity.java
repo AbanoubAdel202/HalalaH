@@ -428,7 +428,10 @@ return true;
     private void Load_Terminal_operation_data()
     {
         //todo Load Terminal operation data from database
+
+
     }
+
 
 
 

@@ -145,6 +145,14 @@ public class PayWaveProcess extends BasePayProcess {
                 }
             }
 
+            //VISA CDET needs
+          /*  if (PayDataUtil.AC_ARQC == ucAcType[0]) {
+                SDKLog.d(TAG, "ARQC online, request Pin");
+                Bundle bundle = new Bundle();
+                bundle.putInt(PayDataUtil.CardCode.IMPORT_PIN_TYPE, PayDataUtil.PINTYPE_ONLINE);
+                listener.nextTransStep(PayDataUtil.CallbackSort.REQUEST_IMPORT_PIN, bundle);
+            }*/
+
             switch (ucAcType[0]) {
                 case PayDataUtil.AC_TC:
                     //offline success

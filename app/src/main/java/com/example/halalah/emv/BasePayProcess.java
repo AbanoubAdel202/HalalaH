@@ -95,8 +95,10 @@ abstract class BasePayProcess {
         SDKLog.d(TAG, "getCurrentCapk rid: " + BytesUtil.bytes2HexString(rid));
         SDKLog.d(TAG, "getCurrentCapk index: " + BytesUtil.bytes2HexString(index));
 
-        Capk capk = db.getCapkDao().findByRidIndex(BytesUtil.bytes2HexString(rid),index[0]);
+        byte[] ridData = new byte[5];
+        System.arraycopy(rid, 0, ridData, 0, ridData.length);
 
+        Capk capk = db.getCapkDao().findByRidIndex(BytesUtil.bytes2HexString(ridData),index[0]);
         if (capk != null) {
             SDKLog.d(TAG, "capk: " + capk.toString());
             EmvCapk emvCapk = new EmvCapk();
@@ -125,7 +127,10 @@ abstract class BasePayProcess {
             }
             SDKLog.d(TAG, "return emvCapk: " + emvCapk.toString());
             return emvCapk;
+        } else {
+            SDKLog.d(TAG, "capk is null !!!");
         }
+
         return null;
     }
 
@@ -137,12 +142,13 @@ abstract class BasePayProcess {
      */
     byte[] getCurrentAidData(String aidHex) {
         SDKLog.d(TAG, "getCurrentAidData aidHex: " + aidHex);
-        Aid aid = db.getAidDao().findByAid(aidHex);
+        Aid aid = db.getAidDao().findByAidAndAsi(aidHex);
         SDKLog.d(TAG, "aid:" + aid.toString());
         byte[] aidData = null;
         if (aid != null) {
             aidData = aid.getTlvList().getBytes();
         }
+        SDKLog.d(TAG, "aidData: " + BytesUtil.bytes2HexString(aidData));
         return aidData;
     }
 }
