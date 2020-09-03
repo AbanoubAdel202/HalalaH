@@ -50,8 +50,9 @@ public class PacketProcessActivity extends Activity implements SendReceiveListen
 
     private Bundle mBundle;
     private int mProcType;
-    private int mProcTime = 60;
+    private int mProcTime = 20;
     private int mProcNum = 1;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -115,8 +116,11 @@ public class PacketProcessActivity extends Activity implements SendReceiveListen
         if (receivedPacket != null)
         {
             mRecePacket = receivedPacket;
-            PosApplication.getApp().oGPOS_MAIN.PerfomTermHostResponseFlow(mRecePacket,0);
+            PosApplication.getApp().oGPOS_MAIN.PerfomTermHostResponseFlow(mRecePacket,0,this);
+            CommunicationsHandler.getInstance(mCommunicationInfo).closeConnection();
             //PerfomTermHostResponseFlow(PacketProcessUtils.SUCCESS); //old flow
+
+
 
         }
 
@@ -140,7 +144,7 @@ public class PacketProcessActivity extends Activity implements SendReceiveListen
     private void PerfomTermHostResponseFlow(int errReason) {
 
 
-        PosApplication.getApp().oGPOS_MAIN.PerfomTermHostResponseFlow(mRecePacket,errReason);
+        PosApplication.getApp().oGPOS_MAIN.PerfomTermHostResponseFlow(mRecePacket,errReason,this);
         CommunicationsHandler.getInstance(mCommunicationInfo).closeConnection();
 
 
@@ -261,18 +265,26 @@ public class PacketProcessActivity extends Activity implements SendReceiveListen
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == 100) {
            // PerfomTermHostResponseFlow(0);old flow
-            PosApplication.getApp().oGPOS_MAIN.PerfomTermHostResponseFlow(mRecePacket,0);
+            PosApplication.getApp().oGPOS_MAIN.PerfomTermHostResponseFlow(mRecePacket,0,this);
+            CommunicationsHandler.getInstance(mCommunicationInfo).closeConnection();
         }
     }
 
     @Override
     protected void onStop() {
         super.onStop();
+
     }
 
     @Override
     protected void onDestroy() {
         CommunicationsHandler.getInstance(mCommunicationInfo).closeConnection();
         super.onDestroy();
+    }
+
+    @Override
+    public void onBackPressed() {
+        CommunicationsHandler.getInstance(mCommunicationInfo).closeConnection();
+        super.onBackPressed();
     }
 }

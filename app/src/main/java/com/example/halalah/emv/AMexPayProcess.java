@@ -37,6 +37,9 @@ class AMexPayProcess extends BasePayProcess {
             String rid = getCurrentRid();
             byte[] aidData = getCurrentAidData(rid);
             listener.setKernalData(PayDataUtil.KERNTYPE_AMEX, aidData);
+            /*******ljz add 20200709 *********/
+            byte[] aucECRC = {(byte) 0x9F, 0x6E, 0x04, (byte)0x9C, (byte)0xA0, 0x00, 0x03};
+            amex.setTLVDataList(aucECRC, aucECRC.length);
 
             PreProcResult preProcResult = param.getParcelable(PayDataUtil.CardCode.PREPROC_RESULT);
             if (preProcResult != null) {

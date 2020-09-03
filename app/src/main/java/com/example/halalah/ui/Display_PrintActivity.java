@@ -14,6 +14,7 @@ import android.view.View;
 import android.widget.TextView;
 
 import com.example.halalah.DeviceTopUsdkServiceManager;
+import com.example.halalah.POSTransaction;
 import com.example.halalah.PosApplication;
 import com.example.halalah.R;
 import com.example.halalah.Utils;
@@ -73,8 +74,10 @@ public class Display_PrintActivity extends Activity implements View.OnClickListe
         mTransactiontime = (TextView) findViewById(R.id.consume_time);
         mPinBlock = (TextView) findViewById(R.id.pin_block);
         mKsnValue = (TextView) findViewById(R.id.ksn_value);
-
-        byte[] pin = PosApplication.getApp().oGPosTransaction.m_sTrxPIN.getBytes();
+        byte[] pin = new byte[0];
+        if (PosApplication.getApp().oGPosTransaction.m_sTrxPIN!=null) {
+            pin = PosApplication.getApp().oGPosTransaction.m_sTrxPIN.getBytes();
+        }
         byte[] ksnValue = DUKPT_KEY.getKSN();
         Log.i(TAG, "pin: " + BCDASCII.bytesToHexString(pin));
         Log.d(TAG, "ksnValue: " + BCDASCII.bytesToHexString(ksnValue));
@@ -101,9 +104,9 @@ public class Display_PrintActivity extends Activity implements View.OnClickListe
 
         mAlertDialog = new AlertDialog.Builder(this);
 
-        //add by zongli for fake data
-        showConsumeData(mShowMsg);
-        //showConsumeFakeData(mShowMsg);
+
+        filldisplaydata();
+
         //add end
 
         mHandle.sendEmptyMessage(MSG_TIME_UPDATE);
@@ -132,7 +135,7 @@ public class Display_PrintActivity extends Activity implements View.OnClickListe
                     if (printState == PrinterConstant.PrinterState.PRINTER_STATE_NOPAPER) {
                         showDialog(null, getString(R.string.result_need_paper));
                     } else {
-                        mPurchasePrint.printDetail(mPrintHolder);
+                        mPurchasePrint.printDetail();
                     }
                 } catch (RemoteException e) {
                     e.printStackTrace();
@@ -255,36 +258,21 @@ public class Display_PrintActivity extends Activity implements View.OnClickListe
         }
     }
 
-    private void showConsumeData(String printMsg) {
-        String[] print = printMsg.replace("~", "").split("\\n");
-        String data;
-        String[] datas;
-        for (int i = 0; i < print.length; i++) {
-            if (print[i].indexOf("Amount") != -1) {
-                data = print[i].replace("Amount:", "");
-                datas = data.split(" ");
-                mAmount.setText(datas[1]);
-            } else if (print[i].indexOf("Transaction Type\n") != -1) {
-                data = print[i].replace("Transaction Type\n:", "");
-                mTransactionType.setText(data);
-            } else if (print[i].indexOf("card number\n") != -1) {
-                data = print[i].replace("card number\n:", "");
-                mPANno.setText(data);
-            } else if (print[i].indexOf("Voucher number") != -1) {
-                data = print[i].replace("Voucher number:", "");
-                datas = data.split(" ");
-                mRecieptno.setText(datas[0]);
-            } else if (print[i].indexOf("operator") != -1) {
-                data = print[i].substring(print[i].length() - 2, print[i].length());
-                mOperatorNum.setText(data);
-            } else if (print[i].indexOf("Transaction reference number\n") != -1) {
-                data = print[i].replace("Transaction reference number\n:", "");
-                mRRN.setText(data);
-            } else if (print[i].indexOf("time") != -1) {
-                data = print[i].replace("time:", "");
-                mTransactiontime.setText(data);
-            }
-        }
+    private void filldisplaydata() {
+
+                mAmount.setText(PosApplication.getApp().oGPosTransaction.m_sTrxAmount);
+                mTransactionType.setText(PosApplication.getApp().oGPosTransaction.m_enmTrxType.toString());
+
+                mPANno.setText(PosApplication.getApp().oGPosTransaction.m_sPAN);
+
+                mRecieptno.setText(PosApplication.getApp().oGPosTransaction.m_sSTAN);
+
+                mOperatorNum.setText(PosApplication.getApp().oGPosTransaction.m_sTerminalID);
+
+                mRRN.setText(PosApplication.getApp().oGPosTransaction.m_sRRNumber);
+                mTransactiontime.setText(PosApplication.getApp().oGPosTransaction.m_sTrxDateTime);
+
+
     }
 
     /**
@@ -384,7 +372,7 @@ public class Display_PrintActivity extends Activity implements View.OnClickListe
                         if (printState == PrinterConstant.PrinterState.PRINTER_STATE_NOPAPER) {
                             showDialog(null, getString(R.string.result_need_paper));
                         } else {
-                            mPurchasePrint.printDetail(mPrintMerchant + mPrintBank);
+                            mPurchasePrint.printDetail();
                         }
                     } catch (RemoteException e) {
                         e.printStackTrace();

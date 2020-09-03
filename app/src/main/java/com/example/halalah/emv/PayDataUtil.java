@@ -47,7 +47,7 @@ class PayDataUtil {
     static final byte KERNTYPE_ZIP = 0x06; //Discover ZIP or 16
     static final byte KERNTYPE_DPAS = 0x06;//Discover DPAS
     static final byte KERNTYPE_RUPAY = 0x0D;
-    static final byte  KERNTYPE_PURE = 0x12;
+    static final byte  KERNTYPE_PURE = 0x2D;
     /**
      * auth handle response code
      */
@@ -264,6 +264,8 @@ class PayDataUtil {
             default:
                 break;
         }
+        SDKLog.d(TAG, "getTransDateTime: " + result);
+
         return result;
     }
 

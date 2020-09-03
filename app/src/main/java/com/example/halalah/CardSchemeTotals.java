@@ -81,7 +81,7 @@ public class CardSchemeTotals {
             \DT		: 25/06/2020
             \Des    : PUpdate Terminal Totals
         */
-        public int UpdateTerminalTotals(POSTransaction POSTrx) {
+        public static int UpdateTerminalTotals(POSTransaction POSTrx) {
                 int iRetRes = -1;
                 int iSchemeIndex = -1;
 
@@ -274,16 +274,14 @@ public class CardSchemeTotals {
 
                         // Save Operation Data
                         //todo mohamed to SaveTerminalOperationData
-                        iRetRes = SaveTerminalOperationData();
+                       //todo iRetRes = SaveTerminalOperationData();
 
 
                 }
                 return iRetRes;
         }
 
-        private int SaveTerminalOperationData() {
-                return 0;
-        }
+
 
 
 }

@@ -1,6 +1,7 @@
 package com.example.halalah.database.table;
 
 import android.content.Context;
+import android.util.Log;
 
 import com.example.halalah.database.BaseDaoImpl;
 
@@ -34,6 +35,26 @@ public class AidDaoImpl extends BaseDaoImpl<Aid> {
             return null;
         }
         return aidlist.get(0);
+    }
+
+    /**
+     * select aid from database
+     * @param aid	the hexstring of aid
+     * @return
+     */
+    public Aid findByAidAndAsi(String aid){
+        List<Aid> mList = findAllAid();
+        if (mList == null || mList.size() == 0) {
+            return null;
+        } else {
+            for (Aid cAid : mList) {
+                Log.d("findByAidAndAsi", "aid.getAid(): " + cAid.getAid());
+                if (aid.startsWith(cAid.getAid())) {
+                    return cAid;
+                }
+            }
+        }
+        return null;
     }
 
 }

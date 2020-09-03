@@ -76,7 +76,8 @@ public class POSTransaction {
         NO_CVM,
         CDCVM,
         OFFLINE_PIN_SIGNATURE,
-        ONLINE_PIN_SIGNATURE
+        ONLINE_PIN_SIGNATURE,
+        UNKOWN
 
     }
 
@@ -245,6 +246,8 @@ public class POSTransaction {
     public int                 m_TransactionStaus;      /* Approved or Rejected */
 
     /********************************************/
+    public byte[]           mTVR;       //TAG 95, 5 Bytes
+    public byte[]           mTSI;       //TAG 9B, 2 Bytes
 
 
 
@@ -2423,6 +2426,18 @@ public class POSTransaction {
             cam=Cardholder_authentication_method.Not_authenticated;
             //todo if transaction below floor limit and offline to be ICC or online by Authorization agent
             cae=Cardholder_authentication_entity.ICC;
+        }
+        else if(m_enmTrxCVM==CVM.ONLINE_PIN_SIGNATURE)
+        {
+            cac=Cardholder_authentication_capability.PIN;
+            cam=Cardholder_authentication_method.PIN;
+            cae=Cardholder_authentication_entity.Authorising_agent;
+        }
+        else if(m_enmTrxCVM==CVM.UNKOWN)
+        {
+            cac=Cardholder_authentication_capability.PIN;
+            cam=Cardholder_authentication_method.PIN;
+            cae=Cardholder_authentication_entity.Authorising_agent;
         }
 
     }

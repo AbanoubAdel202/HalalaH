@@ -141,6 +141,7 @@
         <activity android:name=".ui.admin_settings.CommunicationSettingActivity" />
         <activity android:name=".ui.admin_settings.ImportKeyActivity" />
         <activity android:name=".ui.ShowResultActivity" />
+        <activity android:name=".ui.Display_PrintActivity" />
         <activity android:name=".PanInputActivity" />
         <activity
             android:name=".MainActivity"
