@@ -201,6 +201,7 @@ public class RFPbocStartListenerSub implements OnEmvProcessListener {
             case 0x1F:
             case 0x5F:
                 PosApplication.getApp().oGPosTransaction.m_enmTrxCVM = POSTransaction.CVM.NO_CVM;
+                break;
             case 0x3F:
                 PosApplication.getApp().oGPosTransaction.m_enmTrxCVM = POSTransaction.CVM.UNKOWN;
                 break;

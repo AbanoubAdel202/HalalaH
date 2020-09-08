@@ -26,6 +26,7 @@ import com.example.halalah.packet.UnpackPurchase;
 import com.example.halalah.secure.DUKPT_KEY;
 import com.example.halalah.sqlite.database.DBManager;
 import com.example.halalah.storage.CommunicationInfo;
+import com.example.halalah.storage.SaveLoadFile;
 import com.example.halalah.ui.AmountInputActivity;
 import com.example.halalah.ui.Display_PrintActivity;
 import com.example.halalah.ui.Display_PrintActivity;
@@ -34,6 +35,7 @@ import com.example.halalah.ui.PacketProcessActivity;
 import com.example.halalah.ui.Refund_InputActivity;
 import com.example.halalah.ui.SearchCardActivity;
 import com.example.halalah.ui.ShowResultActivity;
+import com.example.halalah.util.ArrayUtils;
 import com.example.halalah.util.BytesUtil;
 import com.example.halalah.util.ExtraUtil;
 import com.example.halalah.util.PacketProcessUtils;
@@ -42,6 +44,7 @@ import com.topwise.cloudpos.aidl.printer.AidlPrinterListener;
 import com.topwise.cloudpos.aidl.printer.PrintItemEnhancedObj;
 import com.topwise.cloudpos.aidl.printer.PrintItemObj;
 
+import java.lang.reflect.Array;
 import java.util.List;
 import java.util.Locale;
 
@@ -953,12 +956,14 @@ DF03 Check Sum                                [20]   >> 4410C6D51C2F83ADFD92528F
         }
         else {
             PosApplication.getApp().oGPosTransaction.m_sApprovalCode = BCDASCII.asciiByteArray2String(PosApplication.getApp().oGPosTransaction.m_ResponseISOMsg.getDataElement(38)) ;
+
             Check_DE44(PosApplication.getApp().oGPosTransaction.m_ResponseISOMsg.getDataElement(44));
             Check_DE47(PosApplication.getApp().oGPosTransaction.m_ResponseISOMsg.getDataElement(47));
             //todo Update LEDs with tranasction status (Approved) Green Contactless
             Check_DE55(PosApplication.getApp().oGPosTransaction.m_ResponseISOMsg.getDataElement(55));
             //todo Perform 2nd Generation and issuer script if exist
             SaveLastTransaction(PosApplication.getApp().oGPosTransaction, CurrentSaving.REMOVE);
+            Savetransaction(PosApplication.getApp().oGPosTransaction);
             Display_printResult(activity,PosApplication.getApp().oGPosTransaction.m_sApprovalCode, PosApplication.getApp().oGPosTransaction.m_sApprovalCode, PosApplication.getApp().oGPosTransaction);
         }
 
@@ -1000,6 +1005,18 @@ DF03 Check Sum                                [20]   >> 4410C6D51C2F83ADFD92528F
         return 0;
     }
 
+    private void Savetransaction(POSTransaction oGPosTransaction) {
+
+        POSTransaction temp[] = SaveLoadFile.LoadAllTransaction();
+
+        POSTransaction transactions[] = new POSTransaction[temp.length+1];
+        transactions=temp;
+        transactions[temp.length]= oGPosTransaction;
+
+        SaveLoadFile.Savetransactions(transactions);
+
+
+    }
 
 
     /**
@@ -1031,9 +1048,27 @@ DF03 Check Sum                                [20]   >> 4410C6D51C2F83ADFD92528F
     }
 
     private static void Check_DE47(byte[] dataElement) {
+       byte[] length =BytesUtil.subBytes(dataElement,0,3);
+       int len = BytesUtil.bytes2Int(length,true);
+
+        //A 04  Card Scheme Sponsor ID
+        byte[] Card_Scheme_Sponsor_ID = BytesUtil.subBytes(dataElement,3,7);
+        PosApplication.getApp().oGPosTransaction.m_sCardSchemeSponsorID=BCDASCII.asciiByteArray2String(Card_Scheme_Sponsor_ID);
+        //A 02 Card Scheme ID
+        byte[] Card_Scheme_ID =BytesUtil.subBytes(dataElement,7,9);
+        PosApplication.getApp().oGPosTransaction.m_card_scheme.m_sCard_Scheme_ID=BCDASCII.asciiByteArray2String(Card_Scheme_ID);
+
+        //var ANS ..97  Additional Data;        including Bill / Fee Payment Data and future data as required.
+        byte[] Additional_Data=BytesUtil.subBytes(dataElement,9,len);
     }
 
     private static void Check_DE44(byte[] dataElement) {
+
+        if(dataElement !=null)
+        {
+            String Payment_Account_Reference = BCDASCII.asciiByteArray2String(dataElement).substring(2,31);
+            String FPAN_Suffix =BCDASCII.asciiByteArray2String(dataElement).substring(32,36);
+        }
     }
 
 

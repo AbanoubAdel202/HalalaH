@@ -166,7 +166,7 @@ public class Purchase_Print {
         mPrintObjs.add(getPrintItemObjs(mContext.getString(R.string.print_confirm_transaction), 8, true, PrintItemObj.ALIGN.LEFT));
         mPrintObjs.add(getPrintItemObjs("\n\n\n\n",PrinterConstant.FontSize.NORMAL,true,PrintItemObj.ALIGN.CENTER));
         mPrintObjs.add(getPrintItemObjs("going ICC DATA:"+PosApplication.getApp().oGPosTransaction.m_sICCRelatedTags,PrinterConstant.FontSize.NORMAL,false,PrintItemObj.ALIGN.LEFT));
-        
+
     }
 
 
