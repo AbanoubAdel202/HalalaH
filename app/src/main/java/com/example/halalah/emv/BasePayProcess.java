@@ -2,6 +2,7 @@ package com.example.halalah.emv;
 
 import android.os.Bundle;
 import android.os.RemoteException;
+import android.util.Log;
 
 import com.example.halalah.DeviceTopUsdkServiceManager;
 import com.example.halalah.database.table.Aid;
@@ -116,7 +117,9 @@ abstract class BasePayProcess {
             }
             emvCapk.setHashInd(capk.getHashInd());
             emvCapk.setArithInd(capk.getArithInd());
-            emvCapk.setCheckSum(capk.getCheckSum());
+            byte[] sha1 = PayDataUtil.getCAPKChecksum(capk);
+            Log.d(TAG, "sha1: " + BytesUtil.bytes2HexString(sha1));
+            emvCapk.setCheckSum(sha1);
             orgData = capk.getModul();
             if (orgData != null) {
                 emvCapk.setModul(orgData);

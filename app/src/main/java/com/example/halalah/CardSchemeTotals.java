@@ -44,33 +44,37 @@ package com.example.halalah;
 
 public class CardSchemeTotals {
         // Card Scheme ID
-        char[] m_szCardSchmID = new char[2];        /* Card scheme ID*/
-        char[] m_szCardSchemeAcqID = new char[4];        /* Card Scheme Acquirer ID*/
+        public String m_szCardSchmID;        /* Card scheme ID*/
+        public String m_szCardSchemeAcqID;        /* Card Scheme Acquirer ID*/
 
         // Trx Totals
-        long m_lDebitCount;        /* Debit Count*/
-        double m_dDebitAmount;        /* Debit Amount*/
-        long m_lCreditCount;        /* Credit Count*/
-        double m_dCreditAmount;        /* Credit Amount*/
-        double m_dCashBackAmount;        /* Cash Back Amount*/
-        double m_dCashAdvanceAmount;        /* Cash Advance Amount*/
-        long m_lAuthorisationCount;        /* Authorisation Count*/
+        public  long m_lDebitCount;        /* Debit Count*/
+        public  double m_dDebitAmount;        /* Debit Amount*/
+        public  long m_lCreditCount;        /* Credit Count*/
+        public  double m_dCreditAmount;        /* Credit Amount*/
+        public  double m_dCashBackAmount;        /* Cash Back Amount*/
+        public  double m_dCashAdvanceAmount;        /* Cash Advance Amount*/
+        public  long m_lAuthorisationCount;        /* Authorisation Count*/
 
         // Card Scheme Trx totals Details
-        long m_lOfflinePurchaseCount;        /* Off Purchase Count*/
-        double m_dOfflinePurchaseAmount;        /* Off Purchase Amount*/
-        long m_lOnlinePurchaseCount;            /* Online Purchase Count*/
-        double m_dOnlinePurchaseAmount;        /* Online Purchase Amount*/
-        long m_lReversalCount;                /* Reversal Count*/
-        double m_dReversalAmount;                /* Reversal Amount*/
-        long m_lRefundCount;                    /* Refund Count*/
-        double m_dRefundAmount;                /* Refund Amount*/
-        long m_lPurcAdvCompCount;            /* Purchase Advice Complition Count*/
-        double m_dPurAdvCompAmount;            /* Purchase Advice Ccomplition Amount*/
-        long m_lPurWCashBackCount;            /* Purchase With cash back Count*/
-        double m_dPurWCashBackAmount;            /* Purchase With cash back Amount*/
+        public   long m_lOfflinePurchaseCount;        /* Off Purchase Count*/
+        public   double m_dOfflinePurchaseAmount;        /* Off Purchase Amount*/
+        public   long m_lOnlinePurchaseCount;            /* Online Purchase Count*/
+        public   double m_dOnlinePurchaseAmount;        /* Online Purchase Amount*/
+        public   long m_lReversalCount;                /* Reversal Count*/
+        public   double m_dReversalAmount;                /* Reversal Amount*/
+        public   long m_lRefundCount;                    /* Refund Count*/
+        public   double m_dRefundAmount;                /* Refund Amount*/
+        public   long m_lPurcAdvCompCount;            /* Purchase Advice Complition Count*/
+        public   double m_dPurAdvCompAmount;            /* Purchase Advice Ccomplition Amount*/
+        public   long m_lPurWCashBackCount;            /* Purchase With cash back Count*/
+        public   double m_dPurWCashBackAmount;            /* Purchase With cash back Amount*/
 
-
+        public CardSchemeTotals()
+        {
+                m_szCardSchmID="ID";
+                m_szCardSchemeAcqID="ACID";
+        }
         /*
             \Function Name: UpdateTerminalTotals
             \Param  : POSTransaction POSTrx

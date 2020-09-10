@@ -39,7 +39,7 @@ public class Terminal_Operation_Data {
         public boolean bTMS_flag;
         public int MaxConRetry;   //max connection Retry count
         public  int g_NumberOfCardSchemes;    /* Number of supported card scheme is 10 */
-        public  CardSchemeTotals [] g_TerminalTotals = new CardSchemeTotals[g_NumberOfCardSchemes]; /* Terminal Totals */
+        public  CardSchemeTotals [] g_TerminalTotals; /* Terminal Totals */
         public double    m_dTermReconciliationAmount;  // Adding All approved/accepted transaction amount
         public int       m_iTermApprovedTrxCounter;    // Counter of approved transaction usded to for checking number of approved trx against reconcilation trx limit
         public String m_sTerminal_Contactless_Floor_Limit;
@@ -154,10 +154,12 @@ public class Terminal_Operation_Data {
         mada_EFTPOS_specification_release_version="060009"; //The POS should send the version number without dots, and with 2 digits each with a leading zero, if applicable, for the Major, Minor and Patch specification version numbers i.e. Version 6.0.3 should be expressed as 060003 and Version 10.2.0 should be expressed as 100200
         //Connection Details
         Connection_Details="01010101"; //Connection Priority ‘01’ Primary ‘02’ Secondary,   Network Service Provider (NSP) ‘01’ iNET ‘02’ Mobily ‘03’ Zain ‘04’ Sky Band ‘05’ Geidea ,   Provider ‘01’ STC ‘02’ Mobily ‘03’ Zain ‘04’ Sky Band  , Connection Method ‘01’ Dial-up ‘02’ SIM ‘03’ TCP/IP ‘04’ VSAT ‘05’ DSL ‘06’ WiFi
-
+        g_TerminalTotals = new CardSchemeTotals[10];
         //TMSHEADER
         m_sTMSHeader="3060000";
         //communication
+
+
 
     }
 

@@ -46,7 +46,7 @@ public final class DBManager {
 		list.fromHex("9F0607A0000005241010DF0101009F08020140DF1105D84000A800DF1205D84004F800DF130500100000009F1B0400006000DF150400000000DF160199DF170199DF14039F3704DF180100DF1906000000003000DF2006000000010000DF2106000000007500");
 		aid.fromTlvList(list);
 		aidDao.insert(aid);
-/*
+
 		aid = new Aid((byte)0x00); //mada
 		list = new TlvList();
 		list.fromHex("9F0607A0000002282010DF0101009F08020084DF1105FC408CA800DF1205FC408CF800DF130500100000009F1B0400006000DF150400000290DF160199DF170199DF14039F3704DF1801019F7B06000000100000DF1906000000003000DF2006000000010000DF2106000000007500");
@@ -117,7 +117,7 @@ public final class DBManager {
 		list.fromHex("9F0606A00000002501DF0101009F08020002DF1105FC5080A000DF1205F85080F800DF130500100000009F1B0400006000DF150400000000DF160199DF170199DF14039F3704DF180100DF1906000000030000DF2006000000010000DF2106000000007500");
 		aid.fromTlvList(list);
 		aidDao.insert(aid);
-*/
+
 
 
 //todo remove comment when TMS is enabled
@@ -306,7 +306,7 @@ public final class DBManager {
 //todo remove comment when TMS is enabled
 
 
-		/*Public_Key CAPK[] = TMSManager.getInstance().getAllPublicKeys().toArray(new Public_Key[0]);
+		Public_Key CAPK[] = TMSManager.getInstance().getAllPublicKeys().toArray(new Public_Key[0]);
 	if(CAPK.length>0) {
 		for (int i = 0; i < CAPK.length; i++)
 			{
@@ -317,7 +317,7 @@ public final class DBManager {
 				capk.fromTlvList(list);
 				capkDao.insert(capk);
 			}
-		}*/
+		}
 
 	}
 	

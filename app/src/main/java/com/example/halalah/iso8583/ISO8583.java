@@ -9,6 +9,7 @@ import com.example.halalah.POS_MAIN;
 import com.example.halalah.PosApplication;
 import com.example.halalah.packet.PackUtils;
 
+import java.io.Serializable;
 import java.lang.reflect.Array;
 import java.util.Arrays;
 import java.util.BitSet;
@@ -25,7 +26,7 @@ import java.util.Locale;
  \Des    : create Iso8583 Engine that create buffer for sending and recviving and allocating data fields.
  */
 
-public class ISO8583 {
+public class ISO8583 implements Serializable {
     private static final String TAG = ISO8583.class.getSimpleName();
 
     public final static int ISO8583_MAX_LENGTH = 128; /*Maximum number of fields in ISO858 package*/
@@ -48,7 +49,7 @@ public class ISO8583 {
     private byte[] mDataBuffer;
     private byte[] mMessageId;
 
-    private class ISO8583Domain { /*8583每个域的定义*/
+    private class ISO8583Domain implements Serializable { /*8583每个域的定义*/
         public int mMaxLength; /* data element max length */
         public byte mType; /* bit0,bit1暂留，bit2:为0时左对齐,为1时右对齐，bit3:为0时BCD码,为1时ASC码，type:0,1,2,3三种*//*bit0, bit1 stay, bit2: left aligned when 0, right aligned when 1, bit3: BCD code when 0, ASC code when 1, type: 0, 1, 2, 3*/
 		public byte mFlag; /* length field length: 0--FIX_LEN型 1--LLVAR_LEN型 2--LLLVAR_LEN型*/

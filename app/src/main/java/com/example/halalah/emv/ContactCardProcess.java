@@ -736,8 +736,9 @@ public class ContactCardProcess {
                 tlv = tlvList.getTlv("72");
                 if(tlv!=null)
                     issueScript72 = tlv.getValue();
-
-                emvRet = emvL2.EMV_ProcessOnlineRespData(onlineResult, issueAuthData, authRespCode, authCode);
+                byte[] authCodenull=new byte[0];
+                emvRet = emvL2.EMV_ProcessOnlineRespData(onlineResult, issueAuthData, authRespCode, authCodenull);
+                emvRet = EmvDefinition.EMV_DECLINED;
                 Log.d(TAG, "EMV_ProcessOnlineRespData emvRet : " + emvRet);
             }
 
@@ -888,6 +889,9 @@ public class ContactCardProcess {
         emvCapk.setExponent(capk.getExponent());
         emvCapk.setModul(capk.getModul());
         emvCapk.setExpDate(capk.getExpDate());
+
+
+
         emvCapk.setCheckSum(capk.getCheckSum());
 
         emvL2.EMV_DelAllCAPK();

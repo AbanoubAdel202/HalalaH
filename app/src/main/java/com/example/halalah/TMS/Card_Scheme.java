@@ -5,13 +5,14 @@ import com.example.halalah.sqlite.database.Column;
 import com.example.halalah.sqlite.database.Table;
 import com.example.halalah.util.ArrayUtils;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
 
 /**********************************************************************/
 @Table(name = "Card_Scheme")
-public class Card_Scheme extends BaseModel {
+public class Card_Scheme extends BaseModel implements Serializable {
     /////////////////
     //Segment1
     ////////////////

@@ -304,7 +304,8 @@ Load Last Terminal Data from Terminal Operation Data Table
 
         byte[] byteCurrentKSN ;
         boolean bNewksnflag=false;
-        if(PosApplication.getApp().oGPosTransaction.m_sTrxPIN==null || PosApplication.getApp().oGPosTransaction.m_enmTrxType== POSTransaction.TranscationType.TMS_FILE_DOWNLOAD )
+        if(PosApplication.getApp().oGPosTransaction.m_sTrxPIN==null || PosApplication.getApp().oGPosTransaction.m_enmTrxType== POSTransaction.TranscationType.TMS_FILE_DOWNLOAD
+                || PosApplication.getApp().oGPosTransaction.m_enmTrxType== POSTransaction.TranscationType.AUTHORISATION_ADVICE || PosApplication.getApp().oGPosTransaction.m_enmTrxType== POSTransaction.TranscationType.PURCHASE_ADVICE)
             bNewksnflag=true;
 
         try {

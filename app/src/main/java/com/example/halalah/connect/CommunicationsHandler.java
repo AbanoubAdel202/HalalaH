@@ -213,7 +213,7 @@ public class CommunicationsHandler {
         });
     }
 
-    private boolean isConnected() {
+    public boolean isConnected() {
         Log.d(TAG, "isConnected = " + (mSocketManager.getConnectionStatus() == iConnect.CONNECTION_STATUS_CONNECTED));
         return mSocketManager.getConnectionStatus() == iConnect.CONNECTION_STATUS_CONNECTED;
     }

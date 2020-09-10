@@ -14,6 +14,7 @@ import com.example.halalah.secure.DUKPT_KEY;
 import com.example.halalah.util.BytesUtil;
 import com.example.halalah.util.ExtraUtil;
 
+import java.io.Serializable;
 import java.lang.reflect.Array;
 import java.util.Locale;
 
@@ -27,7 +28,7 @@ import java.util.Locale;
 	\DT		: 4/28/2020
 	\Des    : Container for Transaction data fields
 */
-public class POSTransaction {
+public class POSTransaction implements Serializable {
     private static final String TAG = Utils.TAGPUBLIC + POSTransaction.class.getSimpleName();
 
 
@@ -1797,10 +1798,11 @@ public class POSTransaction {
             m_RequestISOMsg.SetDataElement(53, m_sTrxSecurityControl, m_sTrxSecurityControl.length);
             Log.i(TAG, "DE 53 [m_sTrxSecurityControl]= " + m_sTrxSecurityControl + "Length =" + m_sTrxSecurityControl.length);
         }
-        //54. Additional amounts
-        m_RequestISOMsg.SetDataElement(54, m_sAdditionalAmount.getBytes(), m_sAdditionalAmount.length());
-        Log.i(TAG, "DE 54 [m_sAdditionalAmount]= " + m_sAdditionalAmount+"Length ="+m_sAdditionalAmount.length());
-
+        if(m_sAdditionalAmount!=null) {
+            //54. Additional amounts
+            m_RequestISOMsg.SetDataElement(54, m_sAdditionalAmount.getBytes(), m_sAdditionalAmount.length());
+            Log.i(TAG, "DE 54 [m_sAdditionalAmount]= " + m_sAdditionalAmount + "Length =" + m_sAdditionalAmount.length());
+        }
         //55. ICC related Data
         if (m_enmTrxCardType == CardType.ICC || m_enmTrxCardType == CardType.CTLS ) {
             byte[] ICCdata = BCDASCII.fromASCIIToBCD(m_sICCRelatedTags, 0, m_sICCRelatedTags.length(), true);
@@ -1808,7 +1810,7 @@ public class POSTransaction {
             Log.i(TAG, "DE 55 [m_sICCRelatedTags]= " + m_sICCRelatedTags + "Length =" + m_sICCRelatedTags.length());
         }
         //56.original Transaction data
-        if(m_enmTrxType==TrxType.REFUND ||m_enmTrxType==TrxType.PURCHASE_ADVICE)
+        if(m_enmTrxType==TrxType.REFUND )
         {
             GetDE56_Original_TRX_Data();
             m_RequestISOMsg.SetDataElement(56, m_sOriginalTrxData.getBytes(), m_sOriginalTrxData.length());
@@ -3126,13 +3128,12 @@ public class POSTransaction {
                     default:       // For IBCS
                         switch (m_enmTrxCardType) {
                             case ICC:
-
+                                mrc= Message_reason_code.ICC_or_contactless_application_processed;//1004
                                 break;
                             case CTLS:
-
+                                mrc= Message_reason_code.Contactless_Transaction;//1004
                                 break;
-                            case MAG:
-
+                            case MAG:mrc= Message_reason_code.Terminal_processed;
                                 break;
                             case FALLBACK:
                                 mrc= Message_reason_code.Fallback_from_chip_to_magnetic_stripe;//1776
@@ -3710,14 +3711,17 @@ public class POSTransaction {
         available, the length of these sub-fields is set to zero.*/
         if((m_card_scheme.m_sCard_Scheme_ID!="P1" & m_enmTrxType==TranscationType.REFUND & m_enmTrxCardType==CardType.ICC) ||
                 (m_card_scheme.m_sCard_Scheme_ID!="P1"/*not include GCC should be 1200*/ & m_enmTrxType==TranscationType.REVERSAL & m_enmTrxCardType==CardType.ICC) ||
-                (m_enmTrxType==TranscationType.AUTHORISATION_ADVICE || m_enmTrxType==TranscationType.AUTHORISATION_VOID || m_enmTrxType==TranscationType.AUTHORISATION_EXTENSION) )  //todo GCC should be implemented
-        {    m_sOrigMTI="1100";
+                (m_enmTrxType==TranscationType.AUTHORISATION_ADVICE || m_enmTrxType==TranscationType.AUTHORISATION_VOID || m_enmTrxType==TranscationType.AUTHORISATION_EXTENSION)
+       ||m_enmTrxType==TranscationType.PURCHASE_ADVICE )  //todo GCC should be implemented
+        {
+            m_sOrigMTI="1100";
         }
         else if (m_enmTrxType==TranscationType.REFUND)
         {
             m_sOrigMTI="1200";
         }
-        if((m_card_scheme.m_sCard_Scheme_ID!="P1" & m_enmTrxType==TranscationType.REFUND)  |  m_enmTrxType==TranscationType.REVERSAL | (m_card_scheme.m_sCard_Scheme_ID!="P1" & m_enmTrxType==TranscationType.AUTHORISATION_ADVICE)) {
+        if((m_card_scheme.m_sCard_Scheme_ID!="P1" & m_enmTrxType==TranscationType.REFUND)  ||  m_enmTrxType==TranscationType.REVERSAL
+                || (m_card_scheme.m_sCard_Scheme_ID!="P1" & m_enmTrxType==TranscationType.AUTHORISATION_ADVICE)) {
 
             if (m_sOrigSTAN == null)
                 m_sOrigSTAN="000000";

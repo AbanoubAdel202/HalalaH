@@ -1,5 +1,8 @@
 package com.example.halalah;
 
+import com.example.halalah.TMS.Card_Scheme;
+import com.example.halalah.TMS.Public_Key;
+import com.example.halalah.TMS.TMSManager;
 import com.example.halalah.emv.EmvManager;
 import com.example.halalah.storage.CommunicationInfo;
 import com.topwise.cloudpos.aidl.emv.level2.EmvTerminalInfo;
@@ -355,6 +358,18 @@ return true;
         }
 
         com.example.halalah.database.table.DBManager.getInstance().init(this);   //load AIDs and CAPK
+        POS_MAIN.load_TermData();
+        //setting totals
+        Card_Scheme[] card_schemes = TMSManager.getInstance().getAllCardScheme().toArray(new Card_Scheme[0]);
+        PosApplication.getApp().oGTerminal_Operation_Data.g_NumberOfCardSchemes=card_schemes.length;
+        //PosApplication.getApp().oGTerminal_Operation_Data.g_TerminalTotals=new CardSchemeTotals[card_schemes.length];
+        for(int i = 0 ;i<card_schemes.length;i++)
+        {
+            PosApplication.getApp().oGTerminal_Operation_Data.g_TerminalTotals[i]= new CardSchemeTotals();
+            PosApplication.getApp().oGTerminal_Operation_Data.g_TerminalTotals[i].m_szCardSchmID=card_schemes[i].m_sCard_Scheme_ID;
+            PosApplication.getApp().oGTerminal_Operation_Data.g_TerminalTotals[i].m_szCardSchemeAcqID=card_schemes[i].m_sCard_Scheme_Acquirer_ID;
+        }
+
     }
 
 

@@ -93,6 +93,7 @@ public class Display_PrintActivity extends Activity implements View.OnClickListe
         }
 
         mPurchasePrint = new Purchase_Print(this);
+        Log.d(TAG, "Printing: Purchase_Print ");
         mPurchasePrint.setCurTime(getCurTime());
         mBundle = this.getIntent().getExtras();
 

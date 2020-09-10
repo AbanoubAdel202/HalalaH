@@ -116,7 +116,9 @@ public class PacketProcessActivity extends Activity implements SendReceiveListen
         if (receivedPacket != null)
         {
             mRecePacket = receivedPacket;
+            mHandle.removeMessages(MSG_TIME_UPDATE);
             PosApplication.getApp().oGPOS_MAIN.PerfomTermHostResponseFlow(mRecePacket,0,this);
+
             CommunicationsHandler.getInstance(mCommunicationInfo).closeConnection();
             //PerfomTermHostResponseFlow(PacketProcessUtils.SUCCESS); //old flow
 
