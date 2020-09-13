@@ -7,10 +7,8 @@ import android.os.Message;
 import android.util.Log;
 
 import com.example.halalah.Utils;
-import com.example.halalah.iso8583.BCDASCII;
 import com.example.halalah.storage.CommunicationInfo;
 import com.example.halalah.util.PacketProcessUtils;
-
 
 import java.io.InputStream;
 
@@ -42,7 +40,8 @@ public class CommunicationsHandler {
     private static String mHostIp;
     private static String mHostPort;
     private CountDownTimer timeoutCounter;
-    private static BehaviorSubject<Boolean> sendReceiveBS;
+    private BehaviorSubject<Boolean> sendReceiveBS;
+    private Observable observable;
     private boolean mIsFinancialMessage = true;
     private HeadersInterceptor headersInterceptor = new HeadersInterceptor();
 
@@ -58,6 +57,9 @@ public class CommunicationsHandler {
     }
 
     private CommunicationsHandler(CommunicationInfo communicationInfo, InputStream certificateIS) {
+        if (communicationInfo == null) {
+            return;
+        }
         mCommunicationInfo = communicationInfo;
         mHostIp = mCommunicationInfo.getHostIP();
         mHostPort = mCommunicationInfo.getHostPort();
@@ -68,7 +70,7 @@ public class CommunicationsHandler {
         }
     }
 
-    public void preConnect() {
+    public void connect() {
         BehaviorSubject<Integer> connectionStatusBS = BehaviorSubject.create();
         Observable o = Observable.fromCallable(() -> mSocketManager.connect(mCommunicationInfo.getHostIP(), mCommunicationInfo.getHostPort()))
                 .subscribeOn(Schedulers.io())
@@ -85,10 +87,10 @@ public class CommunicationsHandler {
         sendReceiveBS = BehaviorSubject.create();
 
         mSendPacket = packetToSend;
-        Observable o = Observable.fromCallable(() -> sendReceive())
+        observable = Observable.fromCallable(() -> sendReceive())
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread());
-        o.subscribe(sendReceiveBS);
+        observable.subscribe(sendReceiveBS);
         return sendReceiveBS;
     }
 
@@ -165,7 +167,7 @@ public class CommunicationsHandler {
             timeoutCounter = new CountDownTimer(timesToReconnect * connectionTimeOut, connectionTimeOut) {
                 @Override
                 public void onTick(long millisUntilFinished) {
-                    preConnect();
+                    connect();
                     Log.d(TAG, "reconnect seconds remaining: " + millisUntilFinished / 1000);
                     if (isConnected()) {
                         this.onFinish();
