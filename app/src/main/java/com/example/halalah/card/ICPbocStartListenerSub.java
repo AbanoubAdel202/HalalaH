@@ -236,38 +236,45 @@ public class ICPbocStartListenerSub implements OnEmvProcessListener {
             switch(PosApplication.getApp().oGPosTransaction.m_enmTrxType) {
                 case PURCHASE:
                     bundle.putInt(PacketProcessUtils.PACKET_PROCESS_TYPE, PacketProcessUtils.PACKET_PROCESS_PURCHASE);
-                CardManager.getInstance().startActivity(mContext, bundle, PacketProcessActivity.class);
+                    CardManager.getInstance().startActivity(mContext, bundle, PacketProcessActivity.class);
                 break;
                 case REFUND:
                     bundle.putInt(PacketProcessUtils.PACKET_PROCESS_TYPE, PacketProcessUtils.PACKET_PROCESS_REFUND);
                     CardManager.getInstance().startActivity(mContext, bundle, PacketProcessActivity.class);
+                    break;
                 case AUTHORISATION:
                     bundle.putInt(PacketProcessUtils.PACKET_PROCESS_TYPE, PacketProcessUtils.PACKET_PROCESS_AUTHORISATION);
                     CardManager.getInstance().startActivity(mContext, bundle, PacketProcessActivity.class);
+                    break;
 
                 case AUTHORISATION_VOID:
                     bundle.putInt(PacketProcessUtils.PACKET_PROCESS_TYPE, PacketProcessUtils.PACKET_PROCESS_AUTHORISATION_VOID);
                     CardManager.getInstance().startActivity(mContext, bundle, PacketProcessActivity.class);
+                    break;
                 case AUTHORISATION_ADVICE:
                     bundle.putInt(PacketProcessUtils.PACKET_PROCESS_TYPE, PacketProcessUtils.PACKET_PROCESS_AUTHORISATION_ADVICE);
                     CardManager.getInstance().startActivity(mContext, bundle, PacketProcessActivity.class);
-
+                    break;
                 case CASH_ADVANCE:
                     bundle.putInt(PacketProcessUtils.PACKET_PROCESS_TYPE, PacketProcessUtils.PACKET_PROCESS_CASH_ADVANCE);
                     CardManager.getInstance().startActivity(mContext, bundle, PacketProcessActivity.class);
+                    break;
                 case SADAD_BILL:
                     bundle.putInt(PacketProcessUtils.PACKET_PROCESS_TYPE, PacketProcessUtils.PACKET_PROCESS_SADAD_BILL);
                     CardManager.getInstance().startActivity(mContext, bundle, PacketProcessActivity.class);
+                    break;
                 case AUTHORISATION_EXTENSION:
                     bundle.putInt(PacketProcessUtils.PACKET_PROCESS_TYPE, PacketProcessUtils.PACKET_PROCESS_AUTHORISATION_EXTENSION);
                     CardManager.getInstance().startActivity(mContext, bundle, PacketProcessActivity.class);
-
+                    break;
                 case PURCHASE_WITH_NAQD:
                     bundle.putInt(PacketProcessUtils.PACKET_PROCESS_TYPE, PacketProcessUtils.PACKET_PROCESS_PURCHASE_WITH_NAQD);
                     CardManager.getInstance().startActivity(mContext, bundle, PacketProcessActivity.class);
+                    break;
                 case PURCHASE_ADVICE:
                     bundle.putInt(PacketProcessUtils.PACKET_PROCESS_TYPE, PacketProcessUtils.PACKET_PROCESS_PURCHASE_ADVICE);
                     CardManager.getInstance().startActivity(mContext, bundle, PacketProcessActivity.class);
+                    break;
             }
 
         }

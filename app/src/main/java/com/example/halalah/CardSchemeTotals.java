@@ -27,6 +27,8 @@ package com.example.halalah;
 */
 
 
+import java.io.Serializable;
+
 /**
 	\class Name: CardSchemeTotals
 	\Param  :
@@ -42,7 +44,7 @@ package com.example.halalah;
 
 
 
-public class CardSchemeTotals {
+public class CardSchemeTotals implements Serializable {
         // Card Scheme ID
         public String m_szCardSchmID;        /* Card scheme ID*/
         public String m_szCardSchemeAcqID;        /* Card Scheme Acquirer ID*/

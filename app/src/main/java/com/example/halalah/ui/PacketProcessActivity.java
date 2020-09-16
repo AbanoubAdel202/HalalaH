@@ -103,9 +103,12 @@ public class PacketProcessActivity extends Activity implements SendReceiveListen
 
         mSendPacket=mPackPacket.getSendPacket();
         Log.d(TAG, "getPacketAndSend: mSendPacket = "+ BCDASCII.bytesToHexString(mSendPacket));
-        CommunicationsHandler communicationsHandler = CommunicationsHandler.getInstance(new CommunicationInfo(this));
-        communicationsHandler.setSendReceiveListener(this);
-        communicationsHandler.sendReceive(mSendPacket);
+        PosApplication.getApp().oGcommunicationsHandler = PosApplication.getApp().oGcommunicationsHandler.getInstance(new CommunicationInfo(this));
+        PosApplication.getApp().oGcommunicationsHandler.setSendReceiveListener(this);
+        POS_MAIN.SaveLastTransaction(PosApplication.getApp().oGPosTransaction, POS_MAIN.CurrentSaving.SAVE);
+        PosApplication.getApp().oGcommunicationsHandler.sendReceive(mSendPacket);
+
+
     }
 
     @Override
@@ -113,10 +116,12 @@ public class PacketProcessActivity extends Activity implements SendReceiveListen
     {
         Log.i(TAG, "onSuccess");
 
+       
         if (receivedPacket != null)
         {
             mRecePacket = receivedPacket;
             mHandle.removeMessages(MSG_TIME_UPDATE);
+            PosApplication.getApp().oGTerminal_Operation_Data.breversal_flg=false;
             PosApplication.getApp().oGPOS_MAIN.PerfomTermHostResponseFlow(mRecePacket,0,this);
 
             CommunicationsHandler.getInstance(mCommunicationInfo).closeConnection();
@@ -132,7 +137,9 @@ public class PacketProcessActivity extends Activity implements SendReceiveListen
     @Override
     public void onFailure(int errorCode)
     {
+        Log.d(TAG, "onFailure: start");
         showResult(mResponse, mResponseDetail, errorCode);
+
     }
 
     @Override
@@ -221,6 +228,7 @@ public class PacketProcessActivity extends Activity implements SendReceiveListen
                         mHandle.sendEmptyMessageDelayed(MSG_TIME_UPDATE, MSG_TIME_UPDATE_DALAY);
                     } else {
                         showResult(mResponse, mResponseDetail, PacketProcessUtils.SOCKET_PROC_ERROR_REASON_RECE_TIME_OUT);
+
                         finish();
                     }
                     break;

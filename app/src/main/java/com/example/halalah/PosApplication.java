@@ -6,6 +6,7 @@ import android.util.Log;
 
 import androidx.room.Room;
 
+import com.example.halalah.connect.CommunicationsHandler;
 import com.example.halalah.sqlite.database.DBManager;
 import com.example.halalah.TMS.SAMA_TMS;
 import com.example.halalah.storage.CommunicationInfo;
@@ -28,6 +29,7 @@ public class PosApplication extends Application{
     private Context mContext;
     private static PosApplication mPosApplication=new PosApplication();
 
+    public static CommunicationsHandler oGcommunicationsHandler;
     /*******************
      *   Message types *
      *******************/
@@ -134,10 +136,11 @@ public class PosApplication extends Application{
         super.onCreate();
         Log.i(TAG, "onCreate");
 		DBManager.getInstance().init(this);
+        com.example.halalah.database.table.DBManager.getInstance().init(this);
 
         mContext = getApplicationContext();
         oGTerminal_Operation_Data.communicationInfo=new CommunicationInfo(this);
-        oGTerminal_Operation_Data.communicationInfo.setHostIP("192.168.8.141");
+        oGTerminal_Operation_Data.communicationInfo.setHostIP("192.168.8.116");
         oGTerminal_Operation_Data.communicationInfo.setHostPort("2030");
         mPosApplication = this;
 

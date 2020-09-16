@@ -10,7 +10,7 @@ import com.example.halalah.iso8583.ISO8583;
 public class    UnpackPurchase {
     private static final String TAG = Utils.TAGPUBLIC + UnpackPurchase.class.getSimpleName();
 
-    private byte[] mField47 = null;
+
     private String resMsg = null;
     private String resDetail = null;
 
@@ -25,51 +25,9 @@ public class    UnpackPurchase {
             {
                 PosApplication.getApp().oGPosTransaction.m_ResponseISOMsg = mIso;
                 resMsg = new String(mIso.getDataElement(39));
+                PosApplication.getApp().oGPosTransaction.m_sApprovalCode = new String(mIso.getDataElement(38));
+                resDetail =PosApplication.getApp().oGPosTransaction.m_sApprovalCode;
         }
-        /*resMsg = new String(mIso.getDataElement(39));
-        if(PosApplication.testapp)
-        resMsg = new String(mIso.getDataElement_original(39));
-        Log.d(TAG,"field 39 is：" + resMsg);
-        resDetail = unpack.processField46(mIso.getDataElement_original(46), resMsg);
-
-        if(resMsg.equals("00")) {  ////
-
-
-            Log.d(TAG, "#########37####################");
-            byte[] field37 = mIso.getDataElement(37);
-            Log.d(TAG, "37:" + field37.length);
-            Log.d(TAG, "37  ASCII: " + new String(field37));
-            PosApplication.getApp().oGPosTransaction.m_sRRNumber = (new String(field37));
-
-            Log.d(TAG, "###########38###################");
-            byte[] field38 = mIso.getDataElement(38);
-            if (field38 != null) {
-                Log.d(TAG, "38:" + field38.length);
-                Log.d(TAG, "38 ASCII: " + new String(field38));
-                if (field38.length > 0) {
-                    PosApplication.getApp().oGPosTransaction.m_sApprovalCode = (new String(field38));
-                }
-            }
-
-
-            Log.d(TAG, "###########47####################");
-            mField47 = mIso.getDataElement(47);
-            Log.i(TAG, "field47 m_sCardSchemeSponsorID: " + BCDASCII.bytesToHexString(mField47));
-
-//
-
-            Log.d(TAG, "###########60####################");
-            byte[] field60 = mIso.getDataElement(60);
-            Log.d(TAG, "60 ASCII: " + new String(field60));
-            ParseDE60();
-            Log.d(TAG, "###########64####################");
-            byte[] field64 = mIso.getDataElement(64);
-            String Balance = new String(field64);
-            Log.d(TAG, "64" + Balance);
-
-
-            }*/
-            ///////////////////test//////////////////////////////
 
     }
 

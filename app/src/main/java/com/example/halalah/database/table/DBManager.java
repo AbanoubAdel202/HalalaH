@@ -40,13 +40,13 @@ public final class DBManager {
 			return;
 		hasinit = true;
 		initDaoImpl(context);
-
+/*
 		Aid aid = new Aid((byte)0x00);
 		TlvList list = new TlvList();
 		list.fromHex("9F0607A0000005241010DF0101009F08020140DF1105D84000A800DF1205D84004F800DF130500100000009F1B0400006000DF150400000000DF160199DF170199DF14039F3704DF180100DF1906000000003000DF2006000000010000DF2106000000007500");
 		aid.fromTlvList(list);
-		aidDao.insert(aid);
-
+		aidDao.insert(aid);*/
+/*
 		aid = new Aid((byte)0x00); //mada
 		list = new TlvList();
 		list.fromHex("9F0607A0000002282010DF0101009F08020084DF1105FC408CA800DF1205FC408CF800DF130500100000009F1B0400006000DF150400000290DF160199DF170199DF14039F3704DF1801019F7B06000000100000DF1906000000003000DF2006000000010000DF2106000000007500");
@@ -116,12 +116,12 @@ public final class DBManager {
 		list = new TlvList();
 		list.fromHex("9F0606A00000002501DF0101009F08020002DF1105FC5080A000DF1205F85080F800DF130500100000009F1B0400006000DF150400000000DF160199DF170199DF14039F3704DF180100DF1906000000030000DF2006000000010000DF2106000000007500");
 		aid.fromTlvList(list);
-		aidDao.insert(aid);
+		aidDao.insert(aid);*/
 
 
 
 //todo remove comment when TMS is enabled
-		/*AID_Data AIDdata[] = TMSManager.getInstance().getAidDataList().toArray(new AID_Data[0]);
+	/*	AID_Data AIDdata[] = TMSManager.getInstance().getAidDataList().toArray(new AID_Data[0]);
 		if(AIDdata.length>0)
 		{
 			for (int i = 0; i < AIDdata.length; i++) {
@@ -133,16 +133,16 @@ public final class DBManager {
 				aidDao.insert(aid);
 
 			}
-		}*/
+		}
+*/
 
 
-
-		//JCB CAPK
+/*		//JCB CAPK
 		Capk capk = new Capk();
 		list = new TlvList();
 		list.fromHex("9F0605A0000000659F220109DF05083230303931323331DF060101DF070101DF028180B72A8FEF5B27F2B550398FDCC256F714BAD497FF56094B7408328CB626AA6F0E6A9DF8388EB9887BC930170BCC1213E90FC070D52C8DCD0FF9E10FAD36801FE93FC998A721705091F18BC7C98241CADC15A2B9DA7FB963142C0AB640D5D0135E77EBAE95AF1B4FEFADCF9C012366BDDA0455C1564A68810D7127676D493890BDDF040103DF03144410C6D51C2F83ADFD92528FA6E38A32DF048D0A");
 		capk.fromTlvList(list);
-		capkDao.insert(capk);
+		capkDao.insert(capk);*/
 /*
 		capk = new Capk();
 		list = new TlvList();
@@ -305,7 +305,7 @@ public final class DBManager {
 
 //todo remove comment when TMS is enabled
 
-
+/*
 		Public_Key CAPK[] = TMSManager.getInstance().getAllPublicKeys().toArray(new Public_Key[0]);
 	if(CAPK.length>0) {
 		for (int i = 0; i < CAPK.length; i++)
@@ -317,10 +317,51 @@ public final class DBManager {
 				capk.fromTlvList(list);
 				capkDao.insert(capk);
 			}
-		}
+		}*/
 
 	}
-	
+
+	public void addTMSCapkAIDtoDB()
+	{
+		Aid aid = new Aid((byte)0x00);
+		TlvList list = new TlvList();
+		list.fromHex("9F0607A0000005241010DF0101009F08020140DF1105D84000A800DF1205D84004F800DF130500100000009F1B0400006000DF150400000000DF160199DF170199DF14039F3704DF180100DF1906000000003000DF2006000000010000DF2106000000007500");
+		aid.fromTlvList(list);
+		aidDao.insert(aid);
+
+		AID_Data AIDdata[] = TMSManager.getInstance().getAidDataList().toArray(new AID_Data[0]);
+		if(AIDdata.length>0)
+		{
+			for (int i = 0; i < AIDdata.length; i++) {
+				String sAIDdata = POS_MAIN.FormatAIDData(AIDdata[i]);
+				aid = new Aid((byte) 0x00);
+				list = new TlvList();
+				list.fromHex(sAIDdata);
+				aid.fromTlvList(list);
+				aidDao.insert(aid);
+
+			}
+		}
+
+		Capk capk = new Capk();
+		list = new TlvList();
+		list.fromHex("9F0605A0000000659F220109DF05083230303931323331DF060101DF070101DF028180B72A8FEF5B27F2B550398FDCC256F714BAD497FF56094B7408328CB626AA6F0E6A9DF8388EB9887BC930170BCC1213E90FC070D52C8DCD0FF9E10FAD36801FE93FC998A721705091F18BC7C98241CADC15A2B9DA7FB963142C0AB640D5D0135E77EBAE95AF1B4FEFADCF9C012366BDDA0455C1564A68810D7127676D493890BDDF040103DF03144410C6D51C2F83ADFD92528FA6E38A32DF048D0A");
+		capk.fromTlvList(list);
+		capkDao.insert(capk);
+
+		Public_Key CAPK[] = TMSManager.getInstance().getAllPublicKeys().toArray(new Public_Key[0]);
+		if(CAPK.length>0) {
+			for (int i = 0; i < CAPK.length; i++)
+			{
+				String sCAPK = POS_MAIN.FormatCAKeys(CAPK[i]);
+				capk = new Capk();
+				list = new TlvList();
+				list.fromHex(sCAPK);
+				capk.fromTlvList(list);
+				capkDao.insert(capk);
+			}
+		}
+	}
 	public void initDaoImpl(Context context){
 		setAidDao(new AidDaoImpl(context));
 		setCapkDao(new CapkDaoImpl(context));

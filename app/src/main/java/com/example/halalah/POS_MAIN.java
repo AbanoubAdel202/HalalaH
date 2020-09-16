@@ -105,6 +105,7 @@ public class POS_MAIN implements SendReceiveListener {
                 mcontext.startActivity(AmountACT);*/
                 PosApplication.getApp().oGPosTransaction.m_sTrxAmount="500.35";
                 PosApplication.getApp().oGPosTransaction.m_sAdditionalAmount="200.80";
+
                 PosApplication.getApp().oGPosTransaction.m_enmTrxType= POSTransaction.TranscationType.PURCHASE_WITH_NAQD;
                 intent= new Intent(mcontext, SearchCardActivity.class);
                 mcontext.startActivity(intent);
@@ -135,7 +136,7 @@ public class POS_MAIN implements SendReceiveListener {
                 break;
             case AUTHORISATION://AUTHORISATION:
 
-
+                PosApplication.getApp().oGPosTransaction.m_enmTrxType= POSTransaction.TranscationType.AUTHORISATION;
                 //get amount
                 intent = new Intent(mcontext, AmountInputActivity.class);
                 intent.putExtra("transaction Type",Trxtype);
@@ -152,9 +153,13 @@ public class POS_MAIN implements SendReceiveListener {
                /* AmountACT = new Intent(mcontext, AmountInputActivity.class);
                 AmountACT.putExtra("transaction Type",Trxtype);
                 mcontext.startActivity(AmountACT);*/
+
                 PosApplication.getApp().oGPosTransaction.m_sTrxAmount="500.35";
                 PosApplication.getApp().oGPosTransaction.m_sOrigRRNumber="121323";
                 PosApplication.getApp().oGPosTransaction.m_sApprovalCode="123456";
+                PosApplication.getApp().oGPosTransaction.m_sOrigRRNumber="2233445566";
+                PosApplication.getApp().oGPosTransaction.m_sOrigTrxDateTime="2008251212";
+                PosApplication.getApp().oGPosTransaction.m_sActionCode="000";
                 PosApplication.getApp().oGPosTransaction.m_enmTrxType= POSTransaction.TranscationType.AUTHORISATION_ADVICE;
                 intent= new Intent(mcontext, SearchCardActivity.class);
                 mcontext.startActivity(intent);
@@ -173,24 +178,41 @@ public class POS_MAIN implements SendReceiveListener {
             case AUTHORISATION_EXTENSION://AUTHORISATION_EXTENSION
                 intent = new Intent(mcontext, AmountInputActivity.class);
                 intent.putExtra("transaction Type",Trxtype);
+                mcontext.startActivity(intent);
                 break;
             case PURCHASE_ADVICE://PURCHASE_ADVICE:
+
+                PosApplication.getApp().oGPosTransaction.m_sApprovalCode="ABCDEFG";
+                PosApplication.getApp().oGPosTransaction.m_sActionCode="107";
+                PosApplication.getApp().oGPosTransaction.m_is_final=true;
+                PosApplication.getApp().oGPosTransaction.m_sOrigRRNumber="2233445566";
+                PosApplication.getApp().oGPosTransaction.m_sOrigTrxDateTime="2008251212";
                 intent = new Intent(mcontext, AmountInputActivity.class);
                 intent.putExtra("transaction Type",Trxtype);
+                mcontext.startActivity(intent);
 
                 break;
 
             case CASH_ADVANCE://CASH_ADVANCE:
-                //todo start cash advance
+
                 intent = new Intent(mcontext, AmountInputActivity.class);
                 intent.putExtra("transaction Type",Trxtype);
+                mcontext.startActivity(intent);
                 break;
             case REVERSAL://REVERSAL
-                //todo check host transaction
+
                 //todo check reversal time out
                 //todo check Transaction mode
+                PosApplication.getApp().oGPosTransaction=SaveLoadFile.Loadlasttransaction();
+                if(!Check_transaction_allowed(POSTransaction.TranscationType.REVERSAL))
+                {
+                    //todo reversal not allowed for this transaction
+                }
+
+                PosApplication.getApp().oGPosTransaction.m_sLocalTrxDateTime = ExtraUtil.Get_Local_Date_Time();
+                PosApplication.getApp().oGPosTransaction.reversal_status=1;
                 POSTransaction oReversal_Trx = null;
-                perform_reversal(oPos_trans,oReversal_Trx);
+                perform_reversal(PosApplication.getApp().oGPosTransaction,oReversal_Trx);
 
 
                 break;
@@ -259,10 +281,20 @@ public class POS_MAIN implements SendReceiveListener {
      */
     public boolean perform_reversal(POSTransaction oOriginal_Transaction,POSTransaction oReversal_Transaction)
     {
+
+        //todo check reversal allowed for the original transaction or not
+        oReversal_Transaction=oOriginal_Transaction;
         oReversal_Transaction=SAF_Info.BuildSAFOriginals(oReversal_Transaction,oOriginal_Transaction);
         oReversal_Transaction.m_enmTrxType= POSTransaction.TranscationType.REVERSAL;
         oReversal_Transaction.m_sMTI=PosApplication.MTI_Reversal_Advice;
-        //todo copy nessasrry data from original transaction to oRevesal transaction
+
+
+        oReversal_Transaction.ComposeReversalMessage();
+        byte[] mSendPacket=oReversal_Transaction.m_RequestISOMsg.isotostr();
+        CommunicationsHandler communicationsHandler = CommunicationsHandler.getInstance(new CommunicationInfo(PosApplication.getApp().getApplicationContext()));
+        communicationsHandler.setSendReceiveListener(this);
+        communicationsHandler.sendReceive(mSendPacket);
+
         //todo  save in saf the reversal advice then printing copy of reversal then performe DESAF
 
 
@@ -944,11 +976,13 @@ DF03 Check Sum                                [20]   >> 4410C6D51C2F83ADFD92528F
 
         Process_Rece_Packet( recePacket);
         Log.i(TAG, "Process_Rece_Packet: ");
+
         if(!ValidateHostMAC())
         {
             //todo go to invalid macing process
         }
         String mResponse= BCDASCII.asciiByteArray2String(PosApplication.getApp().oGPosTransaction.m_ResponseISOMsg.getDataElement(39));
+
         if(!CheckHostActionCode(mResponse))
         {
             //todo declined transaction check response code and print message+
@@ -956,7 +990,7 @@ DF03 Check Sum                                [20]   >> 4410C6D51C2F83ADFD92528F
         }
         else {
             PosApplication.getApp().oGPosTransaction.m_sApprovalCode = BCDASCII.asciiByteArray2String(PosApplication.getApp().oGPosTransaction.m_ResponseISOMsg.getDataElement(38)) ;
-
+            SaveLastTransaction(PosApplication.getApp().oGPosTransaction,CurrentSaving.SAVE);
             Check_DE44(PosApplication.getApp().oGPosTransaction.m_ResponseISOMsg.getDataElement(44));
             Check_DE47(PosApplication.getApp().oGPosTransaction.m_ResponseISOMsg.getDataElement(47));
             //todo Update LEDs with tranasction status (Approved) Green Contactless
@@ -1098,6 +1132,14 @@ DF03 Check Sum                                [20]   >> 4410C6D51C2F83ADFD92528F
     @Override
     public void onSuccess(byte[] receivedPacket) {
 
+        Log.d(TAG, "POS_MAIN onSuccess: start");
+        if( BytesUtil.subBytes(receivedPacket,0,3)== new byte[]{0x31, 0x34,0x33, 0x30});
+        { //parse reversal
+
+            Parse_reversal_Response(receivedPacket);
+            CommunicationsHandler.getInstance(new CommunicationInfo(PosApplication.getApp().getApplicationContext())).closeConnection();
+        }
+
         if(PosApplication.getApp().oGTerminal_Operation_Data.bDeSAF_flag&!PosApplication.getApp().oGTerminal_Operation_Data.breconsile_flag) {
             Parse_DeSAF_Response(receivedPacket);
 
@@ -1133,6 +1175,7 @@ DF03 Check Sum                                [20]   >> 4410C6D51C2F83ADFD92528F
 
     }
 
+   
 
 
     @Override
@@ -1171,12 +1214,12 @@ DF03 Check Sum                                [20]   >> 4410C6D51C2F83ADFD92528F
         Log.i(TAG, "Process_Rece_Packet("+recePacket+")");
 
 
-        if (PosApplication.getApp().oGPosTransaction.m_enmTrxType == POSTransaction.TranscationType.PURCHASE) {
+
             UnpackPurchase unpackpurchase = new UnpackPurchase(recePacket, recePacket.length);
             PosApplication.getApp().oGPosTransaction.m_sActionCode = unpackpurchase.getResponse();
             return true;
-        }
-        return false;
+
+
 
 
 
@@ -1186,9 +1229,10 @@ DF03 Check Sum                                [20]   >> 4410C6D51C2F83ADFD92528F
 
         SaveLoadFile.SAVETeminal_operation_Data(PosApplication.getApp().oGTerminal_Operation_Data);
     }
-    public static void load_TermData() {
+    public static boolean load_TermData() {
 
         PosApplication.getApp().oGTerminal_Operation_Data=SaveLoadFile.loadTeminal_operation_Data();
+        return true;
     }
 
     public static boolean CheckHostActionCode(String sDE39)
@@ -1464,18 +1508,18 @@ DF03 Check Sum                                [20]   >> 4410C6D51C2F83ADFD92528F
                         PosApplication.getApp().oGTerminal_Operation_Data.saf_info.m_iSAFTrxNumber--;
                             switch (SAF_transaction.m_enmTrxType) {
                                 case PURCHASE_ADVICE: //1220
-                                    PosApplication.getApp().oGPosTransaction.ComposeFinancialAdviseMessage(SAF_transaction.m_enmTrxType);
+                                    SAF_transaction.ComposeFinancialAdviseMessage(SAF_transaction.m_enmTrxType);
                                     break;
                                 case AUTHORISATION_ADVICE://1120
-                                    PosApplication.getApp().oGPosTransaction.ComposeAuthorisationAdviseMessage(SAF_transaction.m_enmTrxType);
+                                    SAF_transaction.ComposeAuthorisationAdviseMessage(SAF_transaction.m_enmTrxType);
                                     break;
                             }
-                        byte[] sendPacket = PosApplication.getApp().oGPosTransaction.m_RequestISOMsg.isotostr();
+                        byte[] sendPacket = SAF_transaction.m_RequestISOMsg.isotostr();
 
-                        CommunicationsHandler communicationsHandler = CommunicationsHandler.getInstance(new CommunicationInfo(PosApplication.getApp().getApplicationContext()));
-                        communicationsHandler.setSendReceiveListener(this);
-                        communicationsHandler.sendReceive(sendPacket);
-
+                        PosApplication.getApp().oGcommunicationsHandler = PosApplication.getApp().oGcommunicationsHandler.getInstance(new CommunicationInfo(PosApplication.getApp().getApplicationContext()));
+                        PosApplication.getApp().oGcommunicationsHandler.setSendReceiveListener(this);
+                       // communicationsHandler.sendReceive(sendPacket);
+                        PosApplication.getApp().oGcommunicationsHandler.sendReceive(sendPacket);
                     }
 
                 }
@@ -1608,7 +1652,14 @@ DF03 Check Sum                                [20]   >> 4410C6D51C2F83ADFD92528F
         int iRetRes=-1;
         PosApplication.getApp().oGTerminal_Operation_Data.breversal_flg=false;
 
-            //todo  mohamed save transaction in DB
+        if (enumsave == CurrentSaving.SAVE)
+        { PosApplication.getApp().oGTerminal_Operation_Data.breversal_flg=true;
+        SaveLoadFile.Savelasttransaction(POSTrx);
+
+        }
+        else{
+            PosApplication.getApp().oGTerminal_Operation_Data.breversal_flg=false;
+        }
         return iRetRes;
     }
 
@@ -1838,6 +1889,25 @@ DF03 Check Sum                                [20]   >> 4410C6D51C2F83ADFD92528F
 
         activity.startActivity(intent);
 
+    }
+
+    private int Parse_reversal_Response(byte[] receivedPacket) {
+        Log.d(TAG, "Parse_reversal_Response: Started");
+        int iRetres=-1;
+
+        Process_Rece_Packet( receivedPacket);
+        Log.i(TAG, "Process_Rece_Packet: ");
+        ValidateHostMAC();
+
+        if(!CheckHostActionCode(BCDASCII.bytesToHexString(PosApplication.getApp().oGPosTransaction.m_ResponseISOMsg.getDataElement(39))))
+        {
+            //todo declined transaction check response code and print message or not for reversal declined
+            return 0;
+        }
+
+        return iRetres;
+        
+        
     }
 }
 

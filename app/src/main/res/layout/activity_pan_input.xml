@@ -46,15 +46,15 @@
     </RelativeLayout>
 
     <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_width="392dp"
+        android:layout_height="312dp"
         android:layout_above="@+id/confirm_button"
         android:layout_marginBottom="10dp"
         android:orientation="vertical">
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="@dimen/button_height"
+            android:layout_height="70dp"
             android:orientation="horizontal">
 
             <ImageButton
@@ -90,7 +90,7 @@
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="@dimen/button_height"
+            android:layout_height="70dp"
             android:orientation="horizontal">
 
             <ImageButton
@@ -126,7 +126,7 @@
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="@dimen/button_height"
+            android:layout_height="70dp"
             android:orientation="horizontal">
 
             <ImageButton
@@ -162,13 +162,13 @@
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="@dimen/button_height"
+            android:layout_height="70dp"
             android:orientation="horizontal">
 
             <ImageButton
                 android:id="@+id/btn_clear"
                 android:layout_width="0dp"
-                android:layout_height="wrap_content"
+                android:layout_height="60dp"
                 android:layout_margin="@dimen/login_num_margin"
                 android:layout_weight="1"
                 android:background="@drawable/drawable_button"

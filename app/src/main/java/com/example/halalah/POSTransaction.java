@@ -37,7 +37,7 @@ public class POSTransaction implements Serializable {
     public boolean m_is_mada;
     public boolean m_is_final;
     public Boolean m_bIsOfflineTrx;
-    private int reversal_status;
+    public int reversal_status;
 
 
     public enum CardType{
@@ -486,6 +486,8 @@ public class POSTransaction implements Serializable {
             sMAC = sMAC.concat(m_sSTAN);
             //12.Date and Time, Local Transaction
             sMAC = sMAC.concat(m_sLocalTrxDateTime);
+            //39. Action code
+            sMAC = sMAC.concat(m_sActionCode);
             //47.National Data
             sMAC = sMAC.concat(m_sCardSchemeSponsorID);
             //53.Security Related Control Information
@@ -1386,7 +1388,7 @@ public class POSTransaction implements Serializable {
         //MAC
         ComposeMACBlockData();
         byte[] mac = BCDASCII.hexStringToBytes(m_sTrxMACBlock);
-        m_RequestISOMsg.SetDataElement(64,mac, mac.length);
+        m_RequestISOMsg.SetDataElement(128,mac, mac.length);
         Log.i(TAG, "DE 64 [m_sTrxMACBlock]= " + mac+"Length ="+mac.length);
 
 
@@ -1810,11 +1812,17 @@ public class POSTransaction implements Serializable {
             Log.i(TAG, "DE 55 [m_sICCRelatedTags]= " + m_sICCRelatedTags + "Length =" + m_sICCRelatedTags.length());
         }
         //56.original Transaction data
-        if(m_enmTrxType==TrxType.REFUND )
+        if(m_enmTrxType==TrxType.REFUND || m_enmTrxType==TrxType.PURCHASE_ADVICE)
         {
-            GetDE56_Original_TRX_Data();
-            m_RequestISOMsg.SetDataElement(56, m_sOriginalTrxData.getBytes(), m_sOriginalTrxData.length());
-            Log.i(TAG, "DE 56 [m_sOriginalTrxData]= " + m_sOriginalTrxData+"Length ="+m_sOriginalTrxData.length());
+            if(m_enum_OrigTRxtype==TranscationType.PURCHASE)
+            {
+                //dont send 56 in desaf as per specification only send in compeletion and refund
+            }
+            else {
+                GetDE56_Original_TRX_Data();
+                m_RequestISOMsg.SetDataElement(56, m_sOriginalTrxData.getBytes(), m_sOriginalTrxData.length());
+                Log.i(TAG, "DE 56 [m_sOriginalTrxData]= " + m_sOriginalTrxData + "Length =" + m_sOriginalTrxData.length());
+            }
         }
 
      /*   //59.Transaport Data
@@ -1876,6 +1884,7 @@ public class POSTransaction implements Serializable {
 
 
         //7.local Transaction Date & time
+        m_sTrxDateTime=ExtraUtil.GetDate_Time();
         m_RequestISOMsg.SetDataElement(7, m_sTrxDateTime.getBytes(), m_sTrxDateTime.length());
         Log.i(TAG, "DE 7 [m_sTrxDateTime]= " + m_sTrxDateTime+"Length ="+m_sTrxDateTime.length());
 
@@ -1889,7 +1898,7 @@ public class POSTransaction implements Serializable {
         //12. Local Transaction time and date
         m_sLocalTrxDateTime=ExtraUtil.Get_Local_Date_Time();
         m_RequestISOMsg.SetDataElement(12, m_sLocalTrxDateTime.getBytes(), m_sLocalTrxDateTime.length());
-        Log.i(TAG, "DE 12 [m_sLocalTrxDateTime]= " + m_sTrxAmount+"Length ="+m_sTrxAmount.length());
+        Log.i(TAG, "DE 12 [m_sLocalTrxDateTime]= " + m_sLocalTrxDateTime+"Length ="+m_sLocalTrxDateTime.length());
 
 
         //14. Card Expiry Date
@@ -2851,12 +2860,14 @@ public class POSTransaction implements Serializable {
                     }
 
                 }
-
+                break;
             case AUTHORISATION:
                 if(m_is_mada & (m_enmTrxCardType==CardType.CTLS|m_enmTrxCardType==CardType.MAG|m_enmTrxCardType==CardType.ICC)) //MADA
                 fc=Function_Code.Original_authorisation_amount_estimated;//101
                 else //ICS
                 fc=Function_Code.Original_authorisation_amount_accurate;
+
+                break;
             case AUTHORISATION_VOID:
                 if(m_is_mada) //MADA
                         fc = Function_Code.Original_authorisation_amount_estimated;  // Original authorisation – amount estimated (used for mada preauthorizations and mada pre-authorization full or partial voids)
@@ -2878,7 +2889,7 @@ public class POSTransaction implements Serializable {
                 else if (m_enum_OrigTRxtype==TranscationType.SADAD_BILL)
                     fc=Function_Code.Full_reversal_transaction_did_not_complete_as_approved_Bill_Payment;
                 else
-                    fc=Function_Code.Full_reversal_transaction_did_not_complete_as_approved_Fee_Payment;
+                    fc=Function_Code.Full_reversal_transaction_did_not_complete_as_approved;
 
                 break;
             case SADAD_BILL:
@@ -3230,7 +3241,7 @@ public class POSTransaction implements Serializable {
                         switch (m_enmTrxCardType) {
                             case ICC:
                             case CTLS:
-                                if(PosApplication.getApp().oGPosTransaction.m_card_scheme.m_sOffline_Refund_PreAuthorization_Capture_Service_Indicator=="1")
+                                if(m_card_scheme.m_sOffline_Refund_PreAuthorization_Capture_Service_Indicator=="1")
                                 mrc=Message_reason_code.Terminal_processed;
                                 else
                                     mrc=Message_reason_code.ICC_or_contactless_application_processed;
@@ -3270,6 +3281,56 @@ public class POSTransaction implements Serializable {
                                 break;
                             case MANUAL:
 
+                                break;
+                        }
+
+
+                        break;
+
+
+                    default:       // For IBCS
+                        switch (m_enmTrxCardType) {
+                            case ICC:
+                                mrc=Message_reason_code.ICC_random_selection;
+                                break;
+                            case CTLS:
+                                mrc=Message_reason_code.Contactless_Transaction;
+                                break;
+                            case MAG:
+
+                                break;
+                            case FALLBACK:
+                                mrc= Message_reason_code.Fallback_from_chip_to_magnetic_stripe;//1776
+                                break;
+
+                            case MANUAL:
+
+                                break;
+                        }
+                        break;
+
+                }
+                break;
+            case AUTHORISATION_ADVICE:
+                switch(m_card_scheme.m_sCard_Scheme_ID)
+                {
+                    case "P1":            // For MADA card
+
+                        switch (m_enmTrxCardType) {
+                            case ICC:
+                                mrc=Message_reason_code.On_line_forced_by_ICC_CDF_or_ADF;  //todo condition of other //15xx
+                                break;
+                            case CTLS:
+                                mrc=Message_reason_code.Contactless_Transaction;
+                                break;
+                            case MAG:
+                                mrc=Message_reason_code.Terminal_processed;
+                                break;
+                            case FALLBACK:
+                                mrc= Message_reason_code.Fallback_from_chip_to_magnetic_stripe;//1776
+                                break;
+                            case MANUAL:
+                                mrc=Message_reason_code.Terminal_processed;
                                 break;
                         }
 
@@ -3351,42 +3412,55 @@ public class POSTransaction implements Serializable {
                 }
                 break;
             case REVERSAL:
-                switch(PosApplication.getApp().oGPosTransaction.reversal_status)
+                switch(reversal_status)
                 {
                         case 1://Customer_cancellation:
                             m_sMsgReasonCode="4000";
+                            mrc=Message_reason_code.Customer_cancellation;
                             break;
                         case 2://Unspecified_no_action_taken:
                             m_sMsgReasonCode="4001";
+                            mrc=Message_reason_code.Unspecified_no_action_taken;
                             break;
                         case 3://Suspected_malfunction:
                             m_sMsgReasonCode="4002";
+                            mrc=Message_reason_code.Suspected_malfunction;
                             break;
                         case 4://Format_error_no_action_taken:
                             m_sMsgReasonCode="4003";
+                            mrc=Message_reason_code.Format_error_no_action_taken;
                             break;
                         case 5://Original_amount_incorrect:
                             m_sMsgReasonCode="4005";
+                            mrc=Message_reason_code.Original_amount_incorrect;
                             break;
                         case 6://Response_received_too_late:
                             m_sMsgReasonCode="4006";
+                            mrc=Message_reason_code.Response_received_too_late;
+
                             break;
                         case 7:// Card_acceptor_device_unable_to_complete_transaction:
                             m_sMsgReasonCode="4007";
+                            mrc=Message_reason_code.Card_acceptor_device_unable_to_complete_transaction;
                             break;
                         case 8://Unable_to_deliver_message_to_point_of_service:
                             m_sMsgReasonCode="4013";
+                            mrc=Message_reason_code.Unable_to_deliver_message_to_point_of_service;
                             break;
                         case 9://Invalid_response_no_action_taken:
                             m_sMsgReasonCode="4020";
+                            mrc=Message_reason_code.Invalid_response_no_action_taken;
                             break;
                         case 10://Timeout_waiting_for_response:
                             m_sMsgReasonCode="4021";
+                            mrc=Message_reason_code.Timeout_waiting_for_response;
                             break;
                         case 11://MAC_failure:
                             m_sMsgReasonCode="4351";
+                            mrc=Message_reason_code.MAC_failure;
 
                             break;
+
                 }
 
 
@@ -3721,7 +3795,7 @@ public class POSTransaction implements Serializable {
             m_sOrigMTI="1200";
         }
         if((m_card_scheme.m_sCard_Scheme_ID!="P1" & m_enmTrxType==TranscationType.REFUND)  ||  m_enmTrxType==TranscationType.REVERSAL
-                || (m_card_scheme.m_sCard_Scheme_ID!="P1" & m_enmTrxType==TranscationType.AUTHORISATION_ADVICE)) {
+                || (m_card_scheme.m_sCard_Scheme_ID!="P1" & m_enmTrxType==TranscationType.AUTHORISATION_ADVICE)||(m_card_scheme.m_sCard_Scheme_ID!="P1" & m_enmTrxType==TranscationType.PURCHASE_ADVICE)) {
 
             if (m_sOrigSTAN == null)
                 m_sOrigSTAN="000000";

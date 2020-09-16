@@ -6,7 +6,9 @@ import android.util.Log;
 
 import com.example.halalah.Utils;
 
-public class CommunicationInfo {
+import java.io.Serializable;
+
+public class CommunicationInfo implements Serializable {
     private static final String TAG = Utils.TAGPUBLIC + CommunicationInfo.class.getSimpleName();
 
     private Context mContext;

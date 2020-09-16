@@ -86,7 +86,7 @@ public class AmountInputActivity extends Activity implements View.OnClickListene
         // open socket to be ready to sending/receiving financial messages
         CommunicationInfo communicationInfo = new CommunicationInfo(this);
         InputStream caInputStream = getResources().openRawResource(R.raw.bks);
-        CommunicationsHandler.getInstance(communicationInfo, caInputStream).preConnect();
+        CommunicationsHandler.getInstance(communicationInfo, caInputStream).connect();
     }
 
     private Handler mHandle = new Handler() {
@@ -179,6 +179,7 @@ public class AmountInputActivity extends Activity implements View.OnClickListene
                     case PURCHASE:
                     case PURCHASE_ADVICE:
                     case AUTHORISATION:
+                    case CASH_ADVANCE:
                         try {
                             Intent intent = new Intent(this, SearchCardActivity.class);
                             startActivity(intent);
@@ -216,10 +217,19 @@ public class AmountInputActivity extends Activity implements View.OnClickListene
                         break;
                     case SADAD_BILL:
                         //todo check SADAD flow
-                    case CASH_ADVANCE:
-                        //todo check Cash advance flow
+
+                       break;
                     case AUTHORISATION_EXTENSION:
                         PosApplication.getApp().oGPosTransaction.m_sTrxAmount="0";
+                        //todo activity extension
+                        PosApplication.getApp().oGPosTransaction.m_sApprovalCode="123456789";
+                        try {
+                            Intent intent = new Intent(this, SearchCardActivity.class);
+                            startActivity(intent);
+                        } catch (Exception e) {
+                            Log.i(TAG, e.toString());
+                        }
+                        break;
 
 
                 }

@@ -12,8 +12,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.Serializable;
 
-public class SAF_Info {
+public class SAF_Info implements Serializable {
 
 
     public static void Load_TRX_from_Reversal() {
@@ -35,7 +36,7 @@ public class SAF_Info {
         return SAFTRX;
     }
 
-    enum DESAFtype{
+   public enum DESAFtype{
         PARTIAL,
         FULL
     }

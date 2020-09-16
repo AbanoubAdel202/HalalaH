@@ -58,7 +58,7 @@ public class Terminal_Registeration implements SendReceiveListener {
         do{
 
 
-            CommunicationsHandler.getInstance(new CommunicationInfo(PosApplication.getApp().getApplicationContext())).preConnect();
+            CommunicationsHandler.getInstance(new CommunicationInfo(PosApplication.getApp().getApplicationContext())).connect();
 
             mSendPacket=mPackPacket.getSendPacket();
             CommunicationsHandler communicationsHandler = CommunicationsHandler.getInstance(new CommunicationInfo(PosApplication.getApp().getApplicationContext()));

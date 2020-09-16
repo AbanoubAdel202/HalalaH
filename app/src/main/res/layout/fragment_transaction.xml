@@ -31,8 +31,8 @@
 
             <Button
                 android:id="@+id/Refund_btn"
-                android:layout_width="100dp"
-                android:layout_height="100dp"
+                android:layout_width="53dp"
+                android:layout_height="103dp"
                 android:layout_gravity="center"
                 android:layout_marginStart="20dp"
                 android:layout_marginTop="32dp"
@@ -139,6 +139,12 @@
                 android:onClick="onClick"
                 android:text="@string/Auth_Advice" />
         </LinearLayout>
+
+        <Button
+            android:id="@+id/desaf_btn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Desaf" />
 
     </LinearLayout>
 

@@ -50,9 +50,12 @@ public class CommunicationsHandler {
     }
 
     public static CommunicationsHandler getInstance(CommunicationInfo communicationInfo, InputStream certificateIS) {
+
+
         if (mInstance == null) {
             mInstance = new CommunicationsHandler(communicationInfo, certificateIS);
         }
+        Log.d(TAG, "getInstance: ");
         return mInstance;
     }
 
@@ -142,6 +145,8 @@ public class CommunicationsHandler {
         Log.d(TAG, "send packet success.");
 
         mRecePacket = mSocketManager.receive();
+
+
         // TODO TIMEOUT
         if ((mRecePacket == null) || (mRecePacket.length <= 0)) {
             Log.d(TAG, "receive packet failed.");

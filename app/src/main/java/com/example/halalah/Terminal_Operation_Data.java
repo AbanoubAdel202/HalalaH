@@ -4,6 +4,8 @@ package com.example.halalah;
 import com.example.halalah.iso8583.BCDASCII;
 import com.example.halalah.storage.CommunicationInfo;
 
+import java.io.Serializable;
+
 /** Header Terminal operation Data
  \Class Name: Terminal_Operation_Data
  \Param  :
@@ -14,13 +16,14 @@ import com.example.halalah.storage.CommunicationInfo;
  \DT		: 5/31/2020
  \Des    : Container for Terminal operation DATA
  */
-public class Terminal_Operation_Data {
+public class Terminal_Operation_Data implements Serializable {
 
 
 
 
         public int TerminalType;
         public  boolean m_bregistered;
+        public  boolean m_TMS_Downloaded;
         public  int m_iSTAN;
         public int m_iTransactionCounter;
         public  String m_sTerminalID;
@@ -141,11 +144,11 @@ public class Terminal_Operation_Data {
         //Contactless Reader Status
         Contactless_Reader_Status="0";// '0'=Okay. '1' = Out of order. '9' = Not supported.
         //Connection Start Time
-        Connection_Start_Time="121212000"; //HHMMSSsss As 24 hour clock
+        Connection_Start_Time="000000000"; //HHMMSSsss As 24 hour clock
         //Connection End Time
-        Connection_End_Time="121212000"; //HHMMSSsss As 24 hour clock
+        Connection_End_Time="000000000"; //HHMMSSsss As 24 hour clock
         //Request Sent Time
-        Request_Sent_Time="121212000"; //HHMMSSsss As 24 hour clock
+        Request_Sent_Time="000000000"; //HHMMSSsss As 24 hour clock
         //Response Received Time
         Response_Received_Time="121212000"; //HHMMSSsss As 24 hour clock
         //Performance Timers Reference

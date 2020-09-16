@@ -78,16 +78,7 @@ public class MainActivity extends AppCompatActivity {
 
         PosApplication.getApp().getDeviceManager();
 
-        // Mostafa 21/4/2020 added to remove bars for full screen application
-        /*View decorView = getWindow().getDecorView();
-        int uiOptions = View.SYSTEM_UI_FLAG_LOW_PROFILE
-                    | View.SYSTEM_UI_FLAG_FULLSCREEN
-                    | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                    | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-                    | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                    | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
-        decorView.setSystemUiVisibility(uiOptions);
-        */
+
 
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         NavigationView navigationView = findViewById(R.id.nav_view);
@@ -170,15 +161,15 @@ public class MainActivity extends AppCompatActivity {
         // todo Terminal initialization
         POS_MAIN.check_hardware();
         POS_MAIN.load_Terminal_configuration_file(); //TMS parameter
-
+        POS_MAIN.load_TermData();
         Getlocation();
 
         new Thread(new Runnable() {
             @Override
             public void run() {
-
-                DownLoadParM();//Dummy TMS download
-                downLoadKeys();
+                if(!PosApplication.getApp().oGTerminal_Operation_Data.m_TMS_Downloaded)
+                    DownLoadParM();//Dummy TMS download
+                //downLoadKeys();
 
 
                 runOnUiThread(new Runnable() {
@@ -358,7 +349,7 @@ return true;
         }
 
         com.example.halalah.database.table.DBManager.getInstance().init(this);   //load AIDs and CAPK
-        POS_MAIN.load_TermData();
+        com.example.halalah.database.table.DBManager.getInstance().addTMSCapkAIDtoDB();
         //setting totals
         Card_Scheme[] card_schemes = TMSManager.getInstance().getAllCardScheme().toArray(new Card_Scheme[0]);
         PosApplication.getApp().oGTerminal_Operation_Data.g_NumberOfCardSchemes=card_schemes.length;
@@ -369,6 +360,8 @@ return true;
             PosApplication.getApp().oGTerminal_Operation_Data.g_TerminalTotals[i].m_szCardSchmID=card_schemes[i].m_sCard_Scheme_ID;
             PosApplication.getApp().oGTerminal_Operation_Data.g_TerminalTotals[i].m_szCardSchemeAcqID=card_schemes[i].m_sCard_Scheme_Acquirer_ID;
         }
+        PosApplication.getApp().oGTerminal_Operation_Data.m_TMS_Downloaded=true;
+        POS_MAIN.Save_TermData();
 
     }
 

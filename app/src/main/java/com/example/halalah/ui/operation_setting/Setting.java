@@ -39,7 +39,7 @@ public class Setting extends Fragment implements View.OnClickListener {
        TMSdownload.setOnClickListener(this);
         CommunicationInfo communicationInfo = new CommunicationInfo(getContext());
         InputStream caInputStream = getResources().openRawResource(R.raw.bks);
-        CommunicationsHandler.getInstance(communicationInfo, caInputStream).preConnect();
+        CommunicationsHandler.getInstance(communicationInfo, caInputStream).connect();
                 return root;
     }
 
