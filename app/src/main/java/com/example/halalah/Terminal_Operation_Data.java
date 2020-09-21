@@ -150,7 +150,7 @@ public class Terminal_Operation_Data implements Serializable {
         //Request Sent Time
         Request_Sent_Time="000000000"; //HHMMSSsss As 24 hour clock
         //Response Received Time
-        Response_Received_Time="121212000"; //HHMMSSsss As 24 hour clock
+        Response_Received_Time="000000000"; //HHMMSSsss As 24 hour clock
         //Performance Timers Reference
         Performance_Timers_Reference="123456789123456"; //original RRN for the online authorization or financial message for which the timers refer to.
         //mada EFTPOS specification release version

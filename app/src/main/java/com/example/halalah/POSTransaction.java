@@ -113,8 +113,8 @@ public class POSTransaction implements Serializable {
             m_sAdditionalResponseData=null;			/* DE 44 - Additional Response Data - Size ans..99 , ag based data elements originating from either the Issuer,mada Switch */
             m_sCardSchemeSponsorID=null;				/* DE 47 – Private - Card Scheme Sponsor ID - Size ans..999 , Used to sent Bank ID(len = 4) and Card Scheme ID(len 2) and other details for Bill Payments*/
             m_sHostData_DE48=null;					/* DE 48 – Private – Additional Data-Size ans..999 ,Used during terminal registation and campaign footer messages */
-            m_sCurrencyCode=null;				    /* DE 49 – Currency Code, Transaction - Size n 3 , fixed value "682" */
-            m_sReconCurrencyCode=null;				/* DE 50 – DE 50 – Currency Code, Reconciliation - Size n 3 , "682" */
+            m_sCurrencyCode="682";				    /* DE 49 – Currency Code, Transaction - Size n 3 , fixed value "682" */
+            m_sReconCurrencyCode="682";				/* DE 50 – DE 50 – Currency Code, Reconciliation - Size n 3 , "682" */
         	m_sTrxPIN=null;							/* DE 52 – Personal Identification Number (PIN) - Size 8 BYTE */
             m_sTrxSecurityControl=null;	            /* DE 53 – Security Related Control Information - Size b..48 , KSN + KSN Descriptor (609)*/
         	m_sAdditionalAmount=null;				/* DE 54 – Additional Amounts Used currently for CashBack  , formated as "0040+CurrencyCode (682)D+ CashBack amount*/
@@ -263,6 +263,7 @@ public class POSTransaction implements Serializable {
     {
         m_is_mada=false;
         m_is_final=false;
+        m_bIsOfflineTrx=false;
         // Transaction Data Elements as per SP Terminal interface specification document 6.0.9
         m_sMTI=null;                                /* MTI*/
         m_sPAN=null;								/* DE2   – Primary account Number -Size 19  –Reconcilation value would be Terminal ID as is present in DE 41*/
@@ -290,7 +291,7 @@ public class POSTransaction implements Serializable {
         m_sCardSchemeSponsorID=null;				/* DE 47 – Private - Card Scheme Sponsor ID - Size ans..999 , Used to sent Bank ID(len = 4) and Card Scheme ID(len 2) and other details for Bill Payments*/
         m_sHostData_DE48=null;					/* DE 48 – Private – Additional Data-Size ans..999 ,Used during terminal registation and campaign footer messages */
         m_sCurrencyCode=null;				    /* DE 49 – Currency Code, Transaction - Size n 3 , fixed value "682" */
-        m_sReconCurrencyCode=null;				/* DE 50 – DE 50 – Currency Code, Reconciliation - Size n 3 , "682" */
+        m_sReconCurrencyCode="682";				/* DE 50 – DE 50 – Currency Code, Reconciliation - Size n 3 , "682" */
         m_sTrxPIN=null;							/* DE 52 – Personal Identification Number (PIN) - Size 8 BYTE */
         m_sTrxSecurityControl=null;	            /* DE 53 – Security Related Control Information - Size b..48 , KSN + KSN Descriptor (609)*/
         m_sAdditionalAmount=null;				/* DE 54 – Additional Amounts Used currently for CashBack  , formated as "0040+CurrencyCode (682)D+ CashBack amount*/
@@ -324,9 +325,9 @@ public class POSTransaction implements Serializable {
         771-866 96 Card Scheme Totals – 09
         867-962 96 Card Scheme Totals – 10
         */
-        String stotalsDE124=null;
+        String stotalsDE124;
 
-        stotalsDE124.concat(String.format(Locale.ENGLISH,"%02D",iNumberOfCardScheme));
+        stotalsDE124=String.format(Locale.ENGLISH,"%02d",iNumberOfCardScheme);
        /* if(iNumberOfCardScheme>99)
             return "number of cards is more than 99";
         if(iNumberOfCardScheme>9)
@@ -338,17 +339,20 @@ public class POSTransaction implements Serializable {
 
 
         for(int i=0; i<iNumberOfCardScheme;i++) {
-            stotalsDE124.concat(oTotalsArray[i].m_szCardSchmID.toString());            /* Card scheme ID*/
-            stotalsDE124.concat(oTotalsArray[i].m_szCardSchemeAcqID.toString());       /* Card Scheme Acquirer ID*/
+            stotalsDE124=stotalsDE124.concat(oTotalsArray[i].m_szCardSchmID.toString());            /* Card scheme ID*/
+            stotalsDE124=stotalsDE124.concat(oTotalsArray[i].m_szCardSchemeAcqID.toString());       /* Card Scheme Acquirer ID*/
             // Trx Totals
-            stotalsDE124.concat(String.format(Locale.ENGLISH,"%010D",oTotalsArray[i].m_lDebitCount));            /* Debit Count*/
-            stotalsDE124.concat(String.format(Locale.ENGLISH,"%015D",oTotalsArray[i].m_dDebitAmount));           /* Debit Amount*/
-            stotalsDE124.concat(String.format(Locale.ENGLISH,"%010D",oTotalsArray[i].m_lCreditCount));           /* Credit Count*/
-            stotalsDE124.concat(String.format(Locale.ENGLISH,"%015D",oTotalsArray[i].m_dCreditAmount));          /* Credit Amount*/
-            stotalsDE124.concat(String.format(Locale.ENGLISH,"%015D",oTotalsArray[i].m_dCashBackAmount));        /* Cash Back Amount*/
-            stotalsDE124.concat(String.format(Locale.ENGLISH,"%015D",oTotalsArray[i].m_dCashAdvanceAmount));     /* Cash Advance Amount*/
-            stotalsDE124.concat(String.format(Locale.ENGLISH,"%010D",oTotalsArray[i].m_lAuthorisationCount));    /* Authorisation Count*/
+            stotalsDE124=stotalsDE124.concat(String.format(Locale.ENGLISH,"%010d",oTotalsArray[i].m_lDebitCount));            /* Debit Count*/
+            stotalsDE124=stotalsDE124.concat(String.format(Locale.ENGLISH,"%016f",oTotalsArray[i].m_dDebitAmount));           /* Debit Amount*/
+            stotalsDE124=stotalsDE124.concat(String.format(Locale.ENGLISH,"%010d",oTotalsArray[i].m_lCreditCount));           /* Credit Count*/
+            stotalsDE124=stotalsDE124.concat(String.format(Locale.ENGLISH,"%016f",oTotalsArray[i].m_dCreditAmount));          /* Credit Amount*/
+            stotalsDE124=stotalsDE124.concat(String.format(Locale.ENGLISH,"%016f",oTotalsArray[i].m_dCashBackAmount));        /* Cash Back Amount*/
+            stotalsDE124=stotalsDE124.concat(String.format(Locale.ENGLISH,"%016f",oTotalsArray[i].m_dCashAdvanceAmount));     /* Cash Advance Amount*/
+            stotalsDE124=stotalsDE124.concat(String.format(Locale.ENGLISH,"%010d",oTotalsArray[i].m_lAuthorisationCount));    /* Authorisation Count*/
+
+            stotalsDE124=stotalsDE124.replace(".","");
         }
+
         return stotalsDE124;
     }
     public String ComposeICCTags(CardType enmCard)
@@ -546,6 +550,22 @@ public class POSTransaction implements Serializable {
 
         else if(m_sMTI.equals(PosApplication.MTI_Terminal_Reconciliation_Advice))
         {
+            //0.Messa   ge Type Identifier
+            sMAC = PosApplication.MTI_Terminal_Reconciliation_Advice;
+            //1. Primary bitmap
+            sMAC = sMAC.concat(new String(m_RequestISOMsg.Getbitmap()));
+            //11.System Trace Audit Number
+            m_sSTAN = ExtraUtil.padLeftZeros(m_sSTAN, 6);
+            sMAC = sMAC.concat(m_sSTAN);
+            //12.Date and Time, Local Transaction
+            sMAC = sMAC.concat(m_sLocalTrxDateTime);
+            //53.Security Related Control Information
+            bMac = sMAC.getBytes();
+            bMac = BytesUtil.mergeBytes(bMac, m_sTrxSecurityControl);
+
+            //124.Private - (POS Terminal Reconciliation)
+            bMac = BytesUtil.mergeBytes(bMac, m_sReconciliationTotals.getBytes());
+
 
         }
         //0.Messa   ge Type Identifier
@@ -1311,8 +1331,9 @@ public class POSTransaction implements Serializable {
         Log.i(TAG, "DE 2 [m_sTerminalID]= " + m_sTerminalID+"Length ="+m_sTerminalID.length());
 
         // Set Transmission Date and Time
+        m_sTrxDateTime=ExtraUtil.GetDate_Time();
         m_RequestISOMsg.SetDataElement(7, m_sTrxDateTime.getBytes(), m_sTrxDateTime.length());
-        Log.i(TAG, " DE 7 [m_sTrxDateTime]= " + m_sTrxDateTime+"Length ="+m_sTrxAmount.length());
+        Log.i(TAG, " DE 7 [m_sTrxDateTime]= " + m_sTrxDateTime+"Length ="+m_sTrxDateTime.length());
 
 
         // Set Transaction STAN
@@ -1941,8 +1962,8 @@ public class POSTransaction implements Serializable {
 
         //30.Original amount
         if(m_sOrigAmount!=null)
-        {
-            m_RequestISOMsg.SetDataElement(26, m_sOrigAmount.getBytes(), m_sOrigAmount.length());
+        {   m_sOrigAmount=m_sOrigAmount.replaceAll(".","");
+            m_RequestISOMsg.SetDataElement(30, m_sOrigAmount.getBytes(), m_sOrigAmount.length());
             Log.i(TAG, "DE 30 [m_sOrigAmount]= " + m_sOrigAmount+"Length ="+m_sOrigAmount.length());
 
         }
@@ -2021,9 +2042,10 @@ public class POSTransaction implements Serializable {
         }
         //56.original Transaction data
         GetDE56_Original_TRX_Data();
-        m_RequestISOMsg.SetDataElement(56, m_sOriginalTrxData.getBytes(), m_sOriginalTrxData.length());
-        Log.i(TAG, "DE 56 [m_sOriginalTrxData]= " + m_sOriginalTrxData+"Length ="+m_sOriginalTrxData.length());
-
+        if(m_sOriginalTrxData!=null) {
+            m_RequestISOMsg.SetDataElement(56, m_sOriginalTrxData.getBytes(), m_sOriginalTrxData.length());
+            Log.i(TAG, "DE 56 [m_sOriginalTrxData]= " + m_sOriginalTrxData + "Length =" + m_sOriginalTrxData.length());
+        }
 
      /*   //59.Transaport Data
         m_RequestISOMsg.SetDataElement(59, m_sTransportData.getBytes(), m_sTransportData.length());
@@ -2149,7 +2171,7 @@ public class POSTransaction implements Serializable {
         903000 Authorisation Only from Credit Card Account
 */
 
-        if(m_card_scheme.m_sCard_Scheme_ID=="P1") {
+        if(m_is_mada) {
             switch (m_enmTrxType) {
                 case PURCHASE:
                 case PURCHASE_ADVICE:
@@ -2203,6 +2225,8 @@ public class POSTransaction implements Serializable {
                     break;
 
                 case PURCHASE_WITH_NAQD:
+                    PosApplication.getApp().oGPosTransaction.m_sProcessCode="090000";
+                    break;
                 case REFUND:
                     PosApplication.getApp().oGPosTransaction.m_sProcessCode="200000";
                     //todo refund with criedit card account
@@ -2220,7 +2244,7 @@ public class POSTransaction implements Serializable {
                 case AUTHORISATION_VOID:
                 case REVERSAL:
                     //todo original processing code
-                    //PosApplication.getApp().oGPosTransaction.m_sProcessCode=;
+                    PosApplication.getApp().oGPosTransaction.m_sProcessCode="900000";
                 case RECONCILIATION:
                 case CASH_ADVANCE:
                     PosApplication.getApp().oGPosTransaction.m_sProcessCode="013000";
@@ -2899,7 +2923,7 @@ public class POSTransaction implements Serializable {
                     fc = Function_Code.Original_authorisation_Bill_Payment;
 
             case RECONCILIATION:
-                if(!POS_MAIN.isforced)
+                if(!PosApplication.getApp().oGPOS_MAIN.isforced)
                     fc=Function_Code.Terminal_reconciliation;
                 else
                     fc=Function_Code.Force_reconciliation;

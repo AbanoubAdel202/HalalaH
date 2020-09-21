@@ -249,8 +249,8 @@ public class PinpadActivity extends Activity {
         @Override
         public void onInputKey(int len, String msg) throws RemoteException {
             Log.i(TAG, "onInputKey(), len = " + len + ", msg = " + msg);
-            AidlBuzzer aidlBuzzer=DeviceTopUsdkServiceManager.getInstance().getBeepManager();
-            aidlBuzzer.beep(BuzzerCode.BUZZER_MODE_NORAML,0);
+          //  AidlBuzzer aidlBuzzer=DeviceTopUsdkServiceManager.getInstance().getBeepManager();
+           // aidlBuzzer.beep(BuzzerCode.BUZZER_MODE_NORAML,0);
 
 
             mPinInput = msg;

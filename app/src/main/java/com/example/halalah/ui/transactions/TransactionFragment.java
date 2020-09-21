@@ -98,15 +98,16 @@ public class TransactionFragment extends Fragment implements View.OnClickListene
                 PosApplication.getApp().oGPOS_MAIN.Start_Transaction(PosApplication.getApp().oGPosTransaction, POSTransaction.TranscationType.PURCHASE);
                 break;
             case R.id.Naqd_btn:
+                preConnect();
                 Toast.makeText(getContext(),R.string.NaQD,Toast.LENGTH_LONG).show();
                 PosApplication.getApp().oGPosTransaction.m_enmTrxType=POSTransaction.TranscationType.PURCHASE_WITH_NAQD;
                 PosApplication.getApp().oGPOS_MAIN.Start_Transaction(PosApplication.getApp().oGPosTransaction,POSTransaction.TranscationType.PURCHASE_WITH_NAQD);
                 break;
             case R.id.auth_btn: // authorization transaction
-             /*   Intent intent = new Intent(getActivity(), Auth_menuActivity.class);
-                this.startActivity(intent);*/
-               PosApplication.getApp().oGPosTransaction.m_enmTrxType=POSTransaction.TranscationType.AUTHORISATION;
-                PosApplication.getApp().oGPOS_MAIN.Start_Transaction(PosApplication.getApp().oGPosTransaction,POSTransaction.TranscationType.AUTHORISATION);
+                Intent intent = new Intent(getActivity(), Auth_menuActivity.class);
+                this.startActivity(intent);
+               /*PosApplication.getApp().oGPosTransaction.m_enmTrxType=POSTransaction.TranscationType.AUTHORISATION;
+                PosApplication.getApp().oGPOS_MAIN.Start_Transaction(PosApplication.getApp().oGPosTransaction,POSTransaction.TranscationType.AUTHORISATION);*/
                 break;
             case R.id.Reversal_btn:
                 //filling dummy data
@@ -129,6 +130,7 @@ public class TransactionFragment extends Fragment implements View.OnClickListene
                 PosApplication.getApp().oGPOS_MAIN.Start_Transaction(PosApplication.getApp().oGPosTransaction,POSTransaction.TranscationType.CASH_ADVANCE);
                 break;
             case R.id.Refund_btn:
+                preConnect();
                 PosApplication.getApp().oGPosTransaction.m_enmTrxType=POSTransaction.TranscationType.REFUND;
                 PosApplication.getApp().oGPOS_MAIN.Start_Transaction(PosApplication.getApp().oGPosTransaction,POSTransaction.TranscationType.REFUND);
                 break;
@@ -174,6 +176,8 @@ public class TransactionFragment extends Fragment implements View.OnClickListene
                 // communicationsHandler.sendReceive(sendPacket);
                 PosApplication.getApp().oGcommunicationsHandler.sendReceive(sendPacket);
 
+
+                break;
 
         }
 

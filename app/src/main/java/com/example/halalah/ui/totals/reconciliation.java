@@ -110,6 +110,12 @@ public class reconciliation extends AppCompatActivity {
         // operations to prevent the jarring behavior of controls going away
         // while interacting with the UI.
         findViewById(R.id.print_recon_btn).setOnTouchListener(mDelayHideTouchListener);
+
+
+        //build screens reconcile data from operation data
+
+
+
     }
 
     @Override

@@ -12,7 +12,14 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProviders;
 
 import com.example.halalah.MainActivity;
+import com.example.halalah.POSTransaction;
+import com.example.halalah.POS_MAIN;
+import com.example.halalah.PosApplication;
 import com.example.halalah.R;
+import com.example.halalah.connect.CommunicationsHandler;
+import com.example.halalah.storage.CommunicationInfo;
+
+import java.io.InputStream;
 
 public class TotalsFragment extends Fragment implements View.OnClickListener {
 
@@ -46,9 +53,13 @@ public class TotalsFragment extends Fragment implements View.OnClickListener {
         switch(v.getId())
         {
             case R.id.recon_btn:
-                Intent reconciliation = new Intent(getActivity(), reconciliation.class);
+                preConnect();
+                PosApplication.getApp().oGPosTransaction.m_enmTrxType= POSTransaction.TranscationType.RECONCILIATION;
+                 PosApplication.getApp().oGPOS_MAIN.StartReconciliation(true);
 
-                startActivity(reconciliation);
+                    Intent reconciliation = new Intent(getActivity(), reconciliation.class);
+                    startActivity(reconciliation);
+
                 break;
             case R.id.run_tot_btn:
                 Intent running = new Intent(getActivity(), running_totals.class);
@@ -68,5 +79,11 @@ public class TotalsFragment extends Fragment implements View.OnClickListener {
 
     }
 
+    private void preConnect() {
+        // open socket to be ready to sending/receiving financial messages
+        CommunicationInfo communicationInfo = new CommunicationInfo(getContext());
+        InputStream caInputStream = getResources().openRawResource(R.raw.bks);
+        CommunicationsHandler.getInstance(communicationInfo, caInputStream).connect();
+    }
 
 }

@@ -342,6 +342,7 @@ return true;
 
 
             PosApplication.getApp().oGSama_TMS.Get_Sama_param(DE72buffer[i]);
+            DUKPT_KEY.InitilizeDUKPT("0123456789ABCDEFFEDCBA9876543210", BCDASCII.bytesToHexString(PosApplication.getApp().oGTerminal_Operation_Data.m_CurrentKSN));
 
 
 
@@ -412,7 +413,8 @@ return true;
     }
     private void Initialize_Security()
     {
-        DUKPT_KEY.InitilizeDUKPT("0123456789ABCDEFFEDCBA9876543210","50FFF012345600000000");
+        DUKPT_KEY.InitilizeDUKPT("0123456789ABCDEFFEDCBA9876543210", BCDASCII.bytesToHexString(PosApplication.getApp().oGTerminal_Operation_Data.m_CurrentKSN));
+
 
         //todo initialize security parameter
     }

@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.os.Bundle;
 import android.os.IBinder;
 import android.os.Parcelable;
 import android.os.RemoteException;
@@ -167,17 +168,50 @@ public class POS_MAIN implements SendReceiveListener {
             case AUTHORISATION_VOID://AUTHORISATION_VOID:
                /* AmountACT = new Intent(mcontext, AmountInputActivity.class);
                 AmountACT.putExtra("transaction Type",Trxtype);*/
+                PosApplication.getApp().oGPosTransaction.m_sApprovalCode="AVOIDA";
+                PosApplication.getApp().oGPosTransaction.m_sActionCode="107";
+                PosApplication.getApp().oGPosTransaction.m_is_final=true;
                 PosApplication.getApp().oGPosTransaction.m_sTrxAmount="500.35";
                 PosApplication.getApp().oGPosTransaction.m_sOrigRRNumber="121323";
                 PosApplication.getApp().oGPosTransaction.m_sOrigAmount="500.35";
                 PosApplication.getApp().oGPosTransaction.m_sOrigLocalTrxDateTime="121212121212";
+                PosApplication.getApp().oGPosTransaction.m_sOrigMTI="1100";
+                PosApplication.getApp().oGPosTransaction.m_sOrigSTAN="120";
+                PosApplication.getApp().oGPosTransaction.m_sOrigTrxDateTime="101020201212";
+
+                PosApplication.getApp().oGPosTransaction.m_sOrigAquirerInsIDCode="1234";
+                PosApplication.getApp().oGPosTransaction.m_sOrigFWAquirerInsIDCode="00";
+
+                PosApplication.getApp().oGPosTransaction.m_sOrigLocalTrxDate="12122020";
+                PosApplication.getApp().oGPosTransaction.m_enum_OrigTRxtype= POSTransaction.TranscationType.AUTHORISATION;
                 PosApplication.getApp().oGPosTransaction.m_enmTrxType= POSTransaction.TranscationType.AUTHORISATION_VOID;
+                /*Bundle bundle=new Bundle();
+                bundle.putInt(PacketProcessUtils.PACKET_PROCESS_TYPE, PacketProcessUtils.PACKET_PROCESS_PURCHASE);
                 intent= new Intent(mcontext, PacketProcessActivity.class);
+                intent.putExtras(bundle);
+                mcontext.startActivity(intent);*/
+                intent= new Intent(mcontext, SearchCardActivity.class);
                 mcontext.startActivity(intent);
                 break;
             case AUTHORISATION_EXTENSION://AUTHORISATION_EXTENSION
-                intent = new Intent(mcontext, AmountInputActivity.class);
-                intent.putExtra("transaction Type",Trxtype);
+                PosApplication.getApp().oGPosTransaction.m_sApprovalCode="EXTina";
+                PosApplication.getApp().oGPosTransaction.m_sActionCode="107";
+                PosApplication.getApp().oGPosTransaction.m_is_final=true;
+                PosApplication.getApp().oGPosTransaction.m_sTrxAmount="500.35";
+                PosApplication.getApp().oGPosTransaction.m_sOrigRRNumber="121323";
+                PosApplication.getApp().oGPosTransaction.m_sOrigAmount="500.35";
+                PosApplication.getApp().oGPosTransaction.m_sOrigLocalTrxDateTime="121212121212";
+                PosApplication.getApp().oGPosTransaction.m_sOrigMTI="1100";
+                PosApplication.getApp().oGPosTransaction.m_sOrigSTAN="120";
+                PosApplication.getApp().oGPosTransaction.m_sOrigTrxDateTime="2008251212";
+
+                PosApplication.getApp().oGPosTransaction.m_sOrigAquirerInsIDCode="1234";
+                PosApplication.getApp().oGPosTransaction.m_sOrigFWAquirerInsIDCode="00";
+
+                PosApplication.getApp().oGPosTransaction.m_sOrigLocalTrxDate="12122020";
+                PosApplication.getApp().oGPosTransaction.m_enum_OrigTRxtype= POSTransaction.TranscationType.AUTHORISATION;
+                PosApplication.getApp().oGPosTransaction.m_enmTrxType= POSTransaction.TranscationType.AUTHORISATION_EXTENSION;
+                intent= new Intent(mcontext, SearchCardActivity.class);
                 mcontext.startActivity(intent);
                 break;
             case PURCHASE_ADVICE://PURCHASE_ADVICE:
@@ -1102,15 +1136,15 @@ DF03 Check Sum                                [20]   >> 4410C6D51C2F83ADFD92528F
         }
 
         //A 04  Card Scheme Sponsor ID
-        byte[] Card_Scheme_Sponsor_ID = BytesUtil.subBytes(dataElement,0,3);
+        byte[] Card_Scheme_Sponsor_ID = BytesUtil.subBytes(dataElement,0,4);
         PosApplication.getApp().oGPosTransaction.m_sCardSchemeSponsorID=BCDASCII.asciiByteArray2String(Card_Scheme_Sponsor_ID);
         //A 02 Card Scheme ID
-        byte[] Card_Scheme_ID =BytesUtil.subBytes(dataElement,3,7);
+        byte[] Card_Scheme_ID =BytesUtil.subBytes(dataElement,4,6);
         PosApplication.getApp().oGPosTransaction.m_card_scheme.m_sCard_Scheme_ID=BCDASCII.asciiByteArray2String(Card_Scheme_ID);
 
         //var ANS ..97  Additional Data;        including Bill / Fee Payment Data and future data as required.
         if(dataElement.length>6) {
-            byte[] Additional_Data = BytesUtil.subBytes(dataElement, 7, dataElement.length);
+            byte[] Additional_Data = BytesUtil.subBytes(dataElement, 6, dataElement.length);
         }
     }
 
@@ -1133,15 +1167,15 @@ DF03 Check Sum                                [20]   >> 4410C6D51C2F83ADFD92528F
     public void onSuccess(byte[] receivedPacket) {
 
         Log.d(TAG, "POS_MAIN onSuccess: start");
-        if( BytesUtil.subBytes(receivedPacket,0,3)== new byte[]{0x31, 0x34,0x33, 0x30});
-        { //parse reversal
+            if( BytesUtil.subBytes(receivedPacket,0,3)== new byte[]{0x31, 0x34,0x33, 0x30});
+            { //parse reversal
 
-            Parse_reversal_Response(receivedPacket);
-            CommunicationsHandler.getInstance(new CommunicationInfo(PosApplication.getApp().getApplicationContext())).closeConnection();
-        }
+                Parse_reversal_Response(receivedPacket);
+                CommunicationsHandler.getInstance(new CommunicationInfo(PosApplication.getApp().getApplicationContext())).closeConnection();
+            }
 
-        if(PosApplication.getApp().oGTerminal_Operation_Data.bDeSAF_flag&!PosApplication.getApp().oGTerminal_Operation_Data.breconsile_flag) {
-            Parse_DeSAF_Response(receivedPacket);
+            if(PosApplication.getApp().oGTerminal_Operation_Data.bDeSAF_flag&!PosApplication.getApp().oGTerminal_Operation_Data.breconsile_flag) {
+                Parse_DeSAF_Response(receivedPacket);
 
             if (PosApplication.getApp().oGTerminal_Operation_Data.saf_info.DeSAF_count >0)
                                DeSAF(SAF_Info.DESAFtype.PARTIAL);
@@ -1459,24 +1493,29 @@ DF03 Check Sum                                [20]   >> 4410C6D51C2F83ADFD92528F
         return bRetRes;
     }
 
-    private void StartReconciliation(boolean bForced) {
+    public boolean StartReconciliation(boolean bForced) {
         Log.i(TAG, "StartReconciliation: "+bForced);
         int iResult;
-        if(!bForced)
-        {
-        }
+
+           bForced= isforced;
+
+
        iResult=PosApplication.getApp().oGPosTransaction.CompoaseReconciliationMessage();
         Log.i(TAG, "CompoaseReconciliationMessage: "+iResult);
         byte[]sendtotals = PosApplication.getApp().oGPosTransaction.m_RequestISOMsg.isotostr();
         Log.i(TAG, "Reconciliation buffer: "+sendtotals);
 
+        senddata(sendtotals);
 
+        return true;
+
+    }
+
+    private void senddata(byte[] sendtotals) {
         CommunicationsHandler communicationsHandler = CommunicationsHandler.getInstance(new CommunicationInfo(PosApplication.getApp().getApplicationContext()));
 
         communicationsHandler.setSendReceiveListener(this);
         communicationsHandler.sendReceive(sendtotals);
-
-
 
     }
 
@@ -1733,26 +1772,30 @@ DF03 Check Sum                                [20]   >> 4410C6D51C2F83ADFD92528F
             case CASH_ADVANCE:
             case REFUND :
             {
-                if(POSTrx.m_sProcessCode.equals("00") ||
-                        POSTrx.m_sProcessCode.equals("01") ||
-                        POSTrx.m_sProcessCode.equals("09"))
+                if(POSTrx.m_sProcessCode.equals("000000") ||
+                        POSTrx.m_sProcessCode.equals("010000") ||
+                        POSTrx.m_sProcessCode.equals("090000"))
                 {
                     dAmount = Double.parseDouble(POSTrx.m_sTrxAmount);
+                    dAmount =dAmount/100;
                 }
-                else  if(POSTrx.m_sProcessCode.equals("20"))
+                else  if(POSTrx.m_sProcessCode.equals("200000"))
                     dAmount = Double.parseDouble(POSTrx.m_sTrxAmount) * -1;
+                    dAmount = dAmount/100;
             }
             break;
             case REVERSAL :
             {
-                if(POSTrx.m_sProcessCode.equals("00") ||
-                        POSTrx.m_sProcessCode.equals("01") ||
-                        POSTrx.m_sProcessCode.equals("09"))
+                if(POSTrx.m_sProcessCode.equals("000000") ||
+                        POSTrx.m_sProcessCode.equals("010000") ||
+                        POSTrx.m_sProcessCode.equals("090000"))
                 {
                     dAmount = Double.parseDouble(POSTrx.m_sTrxAmount) * -1;
+                    dAmount = dAmount/100;
                 }
-                else  if(POSTrx.m_sProcessCode.equals("20"))
+                else  if(POSTrx.m_sProcessCode.equals("200000"))
                     dAmount = Double.parseDouble(POSTrx.m_sTrxAmount);
+                    dAmount = dAmount/100;
             }
             break;
         }

@@ -25,10 +25,10 @@
             android:layout_width="344dp"
             android:layout_height="45dp"
             android:layout_marginStart="32dp"
-            android:layout_marginTop="76dp"
+            android:layout_marginTop="68dp"
             android:text="@string/Auth_void"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/auth_btn" />
+            app:layout_constraintTop_toBottomOf="@id/auth_btn" />
 
         <Button
             android:id="@+id/authorization_advice_btn"
@@ -44,8 +44,8 @@
             android:id="@+id/authorization_Extension_btn"
             android:layout_width="252dp"
             android:layout_height="61dp"
-            android:layout_marginStart="76dp"
-            android:layout_marginTop="88dp"
+            android:layout_marginStart="84dp"
+            android:layout_marginTop="32dp"
             android:text="@string/Auth_ext"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/authorization_advice_btn" />

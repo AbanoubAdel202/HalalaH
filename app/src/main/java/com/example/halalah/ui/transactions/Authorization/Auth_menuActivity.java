@@ -9,10 +9,15 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.Button;
 
 import com.example.halalah.POSTransaction;
 import com.example.halalah.PosApplication;
 import com.example.halalah.R;
+import com.example.halalah.connect.CommunicationsHandler;
+import com.example.halalah.storage.CommunicationInfo;
+
+import java.io.InputStream;
 
 /**
  * An example full-screen activity that shows and hides the system UI (i.e.
@@ -71,7 +76,7 @@ public class Auth_menuActivity extends AppCompatActivity implements View.OnClick
     private final Runnable mHideRunnable = new Runnable() {
         @Override
         public void run() {
-            hide();
+           // hide();
         }
     };
     /**
@@ -108,7 +113,15 @@ public class Auth_menuActivity extends AppCompatActivity implements View.OnClick
         mControlsView = findViewById(R.id.fullscreen_content_controls);
         mContentView = findViewById(R.id.fullscreen_content);
 
-        // Set up the user interaction to manually show or hide the system UI.
+        Button auth_btn= (Button) findViewById(R.id.auth_btn);
+        Button authorization_advice_btn= (Button) findViewById(R.id.authorization_advice_btn);
+        Button authorization_Extension_btn= (Button) findViewById(R.id.authorization_Extension_btn);
+        Button authorization_void_btn= (Button) findViewById(R.id.authorization_void_btn);
+        auth_btn.setOnClickListener(this);
+        authorization_advice_btn.setOnClickListener(this);
+        authorization_Extension_btn.setOnClickListener(this);
+        authorization_void_btn.setOnClickListener(this);
+     /*   // Set up the user interaction to manually show or hide the system UI.
         mContentView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -119,7 +132,7 @@ public class Auth_menuActivity extends AppCompatActivity implements View.OnClick
         // Upon interacting with UI controls, delay any scheduled hide()
         // operations to prevent the jarring behavior of controls going away
         // while interacting with the UI.
-        findViewById(R.id.dummy_button).setOnTouchListener(mDelayHideTouchListener);
+        findViewById(R.id.dummy_button).setOnTouchListener(mDelayHideTouchListener);*/
     }
 
     @Override
@@ -180,21 +193,31 @@ public class Auth_menuActivity extends AppCompatActivity implements View.OnClick
        switch(v.getId())
         {
             case R.id.auth_btn:
+                PosApplication.getApp().oGPosTransaction.m_sTrxAmount="1000";
                 PosApplication.getApp().oGPOS_MAIN.Start_Transaction(PosApplication.getApp().oGPosTransaction, POSTransaction.TranscationType.AUTHORISATION);
                 break;
 
             case R.id.authorization_advice_btn://AUTHORISATION_ADVICE:
-                PosApplication.getApp().oGPOS_MAIN.Start_Transaction(PosApplication.getApp().oGPosTransaction, POSTransaction.TranscationType.AUTHORISATION_ADVICE);
+                preConnect();
+                PosApplication.getApp().oGPosTransaction.m_enmTrxType=POSTransaction.TranscationType.AUTHORISATION_ADVICE;
+                PosApplication.getApp().oGPOS_MAIN.Start_Transaction(PosApplication.getApp().oGPosTransaction,POSTransaction.TranscationType.AUTHORISATION_ADVICE);
                 break;
             case R.id.authorization_void_btn://AUTHORISATION_VOID:
+                preConnect();
                 PosApplication.getApp().oGPOS_MAIN.Start_Transaction(PosApplication.getApp().oGPosTransaction, POSTransaction.TranscationType.AUTHORISATION_VOID);
 
                 break;
             case R.id.authorization_Extension_btn://AUTHORISATION_EXTENSION
+                preConnect();
                 PosApplication.getApp().oGPOS_MAIN.Start_Transaction(PosApplication.getApp().oGPosTransaction, POSTransaction.TranscationType.AUTHORISATION_EXTENSION);
 
                 break;
 
         }
+    }private void preConnect() {
+        // open socket to be ready to sending/receiving financial messages
+        CommunicationInfo communicationInfo = new CommunicationInfo(PosApplication.getApp().oGPOS_MAIN.mcontext);
+        InputStream caInputStream = getResources().openRawResource(R.raw.bks);
+        CommunicationsHandler.getInstance(communicationInfo, caInputStream).connect();
     }
 }

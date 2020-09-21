@@ -27,6 +27,8 @@ package com.example.halalah;
 */
 
 
+import com.example.halalah.storage.SaveLoadFile;
+
 import java.io.Serializable;
 
 /**
@@ -76,6 +78,13 @@ public class CardSchemeTotals implements Serializable {
         {
                 m_szCardSchmID="ID";
                 m_szCardSchemeAcqID="ACID";
+                m_lDebitCount=0;        
+                m_dDebitAmount=0;
+                m_lCreditCount=0;
+                m_dCreditAmount=0;
+                m_dCashBackAmount=0;
+                m_dCashAdvanceAmount=0;
+                m_lAuthorisationCount=0;
         }
         /*
             \Function Name: UpdateTerminalTotals
@@ -94,193 +103,200 @@ public class CardSchemeTotals implements Serializable {
                 // Get Transaction Card Scheme total buffer;
                 for (int i = 0; i < PosApplication.getApp().oGTerminal_Operation_Data.g_NumberOfCardSchemes; i++) {
                         if (POSTrx.m_card_scheme.m_sCard_Scheme_ID.equals(PosApplication.getApp().oGTerminal_Operation_Data.g_TerminalTotals[i].m_szCardSchmID)) {
-                                iSchemeIndex = i;
-                                break;
-                        }
+
+                                        iSchemeIndex = i;
 
 
-                        if (iSchemeIndex == -1) {
-                                //Todo Log message "Can not get Card Scheme"
 
-                                return iRetRes;
-                        }
-
-                        // Start Update Totals as per Specification document rules
-                        // Todo Log Message with Matched Trx Card scheme ID
+                                        // Start Update Totals as per Specification document rules
+                                        // Todo Log Message with Matched Trx Card scheme ID
 
 
-                        // 1- Update Transaction totals
-                        switch (POSTrx.m_enmTrxType) {
+                                        // 1- Update Transaction totals
+                                        switch (POSTrx.m_enmTrxType) {
 
-                                case PURCHASE:
-                                case PURCHASE_WITH_NAQD:
-                                case PURCHASE_ADVICE:
-                                case CASH_ADVANCE:
-                                case REFUND: {
-                                        // Update debit Amount and count
-                                        if (POSTrx.m_sProcessCode.startsWith("00") ||
-                                                POSTrx.m_sProcessCode.startsWith("01") ||
-                                                POSTrx.m_sProcessCode.startsWith("09")) {
-                                                // Todo Log Message Current value and updated debit amount  and count values
-                                                // Debit Amount
-                                                PosApplication.getApp().oGTerminal_Operation_Data.g_TerminalTotals[iSchemeIndex].m_dDebitAmount += Double.parseDouble(POSTrx.m_sTrxAmount);
+                                                case PURCHASE:
+                                                case PURCHASE_WITH_NAQD:
+                                                case PURCHASE_ADVICE:
+                                                case CASH_ADVANCE:
+                                                case REFUND: {
+                                                        // Update debit Amount and count
+                                                        if (POSTrx.m_sProcessCode.startsWith("00") ||
+                                                                POSTrx.m_sProcessCode.startsWith("01") ||
+                                                                POSTrx.m_sProcessCode.startsWith("09")) {
+                                                                // Todo Log Message Current value and updated debit amount  and count values
+                                                                // Debit Amount
+                                                                PosApplication.getApp().oGTerminal_Operation_Data.g_TerminalTotals[iSchemeIndex].m_dDebitAmount += Double.parseDouble(POSTrx.m_sTrxAmount);
 
-                                                // Debit Count
-                                                PosApplication.getApp().oGTerminal_Operation_Data.g_TerminalTotals[iSchemeIndex].m_lDebitCount++;
+                                                                // Debit Count
+                                                                PosApplication.getApp().oGTerminal_Operation_Data.g_TerminalTotals[iSchemeIndex].m_lDebitCount++;
+                                                        }
+                                                        // Todo Log Message Current value and updated debit amount  and count values
+
+                                                        // Update Credit amount and count
+                                                        if (POSTrx.m_sProcessCode.startsWith("20")) {
+                                                                // Debit Amount
+                                                                PosApplication.getApp().oGTerminal_Operation_Data.g_TerminalTotals[iSchemeIndex].m_dCreditAmount += Double.parseDouble(POSTrx.m_sTrxAmount);
+
+                                                                // Debit Count
+                                                                PosApplication.getApp().oGTerminal_Operation_Data.g_TerminalTotals[iSchemeIndex].m_lCreditCount++;
+                                                        }
+
+
+                                                        // Update Cash Advance amount (no Cash Advance count)
+                                                        if (POSTrx.m_sProcessCode.startsWith("01")) {
+                                                                // Todo Log Message Current value and updated debit amount  and count values
+                                                                PosApplication.getApp().oGTerminal_Operation_Data.g_TerminalTotals[iSchemeIndex].m_dCashAdvanceAmount += Double.parseDouble(POSTrx.m_sTrxAmount);
+                                                        }
+
+                                                        // Cash Back Amount (no count for Cash back)
+                                                        if (POSTrx.m_sProcessCode.startsWith("09")) {
+                                                                // Todo Log Message Current value and updated debit amount  and count values
+                                                                PosApplication.getApp().oGTerminal_Operation_Data.g_TerminalTotals[iSchemeIndex].m_dCashBackAmount += Double.parseDouble(POSTrx.m_sAdditionalAmount);
+                                                        }
+
+
+                                                }
+                                                break;
+                                                case AUTHORISATION_ADVICE:
+                                                case AUTHORISATION:
+                                                case AUTHORISATION_EXTENSION:
+                                                case AUTHORISATION_VOID: {
+                                                        // Update Auth count
+                                                        if (POSTrx.m_sProcessCode.startsWith("00") ||
+                                                                POSTrx.m_sProcessCode.startsWith("09") ||
+                                                                POSTrx.m_sProcessCode.startsWith("20") ||
+                                                                POSTrx.m_sProcessCode.startsWith("90") ||
+                                                                POSTrx.m_sProcessCode.startsWith("22")) {
+
+                                                                // Todo Log Message Current value and updated debit amount  and count values
+
+                                                                // Auth count
+                                                                PosApplication.getApp().oGTerminal_Operation_Data.g_TerminalTotals[iSchemeIndex].m_lAuthorisationCount++;
+                                                        }
+
+
+                                                }
+                                                break;
+
+                                                case REVERSAL: {
+                                                        // Update Credit amount,check against orignal MTI
+                                                        if ((POSTrx.m_sProcessCode.startsWith("00") || POSTrx.m_sProcessCode.startsWith("01") || POSTrx.m_sProcessCode.startsWith("09")) &&
+                                                                (POSTrx.m_sOrigMTI.equals("1200") || POSTrx.m_sOrigMTI.equals("1220"))
+                                                        ) {
+                                                                // Todo Log Message Current value and updated debit amount  and count values
+
+                                                                // Debit Amount
+                                                                PosApplication.getApp().oGTerminal_Operation_Data.g_TerminalTotals[iSchemeIndex].m_dCreditAmount += Double.parseDouble(POSTrx.m_sTrxAmount);
+
+                                                                // Debit Count
+                                                                PosApplication.getApp().oGTerminal_Operation_Data.g_TerminalTotals[iSchemeIndex].m_lCreditCount++;
+                                                        }
+
+
+                                                        // Update Debit amount, check against orignal MTI
+                                                        if (POSTrx.m_sProcessCode.equals("20") &&
+                                                                (POSTrx.m_sOrigMTI.equals("1200") || POSTrx.m_sOrigMTI.equals("1220"))
+                                                        ) {
+                                                                // Todo Log Message Current value and updated debit amount  and count values
+                                                                // Debit Amount
+                                                                PosApplication.getApp().oGTerminal_Operation_Data.g_TerminalTotals[iSchemeIndex].m_dDebitAmount += Double.parseDouble(POSTrx.m_sTrxAmount);
+
+                                                                // Debit Count
+                                                                PosApplication.getApp().oGTerminal_Operation_Data.g_TerminalTotals[iSchemeIndex].m_lDebitCount++;
+
+                                                        }
+
+                                                        // Substract Additional amount (Cash Advance or Cash Back) note#5
+                                                        if (POSTrx.m_sProcessCode.equals("01") &&
+                                                                (POSTrx.m_sOrigMTI.equals("1200") || POSTrx.m_sOrigMTI.equals("1220"))
+                                                        ) {
+                                                                // Debit Amount
+                                                                PosApplication.getApp().oGTerminal_Operation_Data.g_TerminalTotals[iSchemeIndex].m_dCashAdvanceAmount -= Double.parseDouble(POSTrx.m_sTrxAmount);
+
+                                                                // Todo Log Message Current value and updated debit amount  and count values
+                                                        }
+
+                                                        // Substract Additional amount (Cash Advance or Cash Back) note#5
+                                                        if (POSTrx.m_sProcessCode.equals("09") &&
+                                                                (POSTrx.m_sOrigMTI.equals("1200") || POSTrx.m_sOrigMTI.equals("1220"))
+                                                        ) {
+
+                                                                // Debit Amount
+                                                                PosApplication.getApp().oGTerminal_Operation_Data.g_TerminalTotals[iSchemeIndex].m_dCashBackAmount -= Double.parseDouble(POSTrx.m_sAdditionalAmount);
+
+                                                                // Todo Log Message Current value and updated debit amount  and count values
+                                                        }
+
+
+                                                }
+                                                break;
+                                                default: {
+                                                        // Todo Log error message
+                                                        return iRetRes;
+                                                }
+
                                         }
-                                        // Todo Log Message Current value and updated debit amount  and count values
 
-                                        // Update Credit amount and count
-                                        if (POSTrx.m_sProcessCode.startsWith("20")) {
-                                                // Debit Amount
-                                                PosApplication.getApp().oGTerminal_Operation_Data.g_TerminalTotals[iSchemeIndex].m_dCreditAmount += Double.parseDouble(POSTrx.m_sTrxAmount);
+                                        // 2- Update Transaction details totals
+                                        switch (POSTrx.m_enmTrxType) {
+                                                case PURCHASE: {
+                                                        // Updating Card Scheme  Trx details
+                                                        if (POSTrx.m_bIsOfflineTrx) /*New is offline paramter should be added to POSTransaction class*/ {
+                                                                PosApplication.getApp().oGTerminal_Operation_Data.g_TerminalTotals[iSchemeIndex].m_dOfflinePurchaseAmount += Double.parseDouble(POSTrx.m_sTrxAmount);
+                                                                PosApplication.getApp().oGTerminal_Operation_Data.g_TerminalTotals[iSchemeIndex].m_lOfflinePurchaseCount++;
 
-                                                // Debit Count
-                                                PosApplication.getApp().oGTerminal_Operation_Data.g_TerminalTotals[iSchemeIndex].m_lCreditCount++;
+                                                        } else {
+                                                                PosApplication.getApp().oGTerminal_Operation_Data.g_TerminalTotals[iSchemeIndex].m_dOnlinePurchaseAmount += Double.parseDouble(POSTrx.m_sTrxAmount);
+                                                                PosApplication.getApp().oGTerminal_Operation_Data.g_TerminalTotals[iSchemeIndex].m_lOnlinePurchaseCount++;
+                                                        }
+                                                }
+                                                break;
+                                                case REFUND: {
+                                                        // Log Current and Update Values
+                                                        PosApplication.getApp().oGTerminal_Operation_Data.g_TerminalTotals[iSchemeIndex].m_dRefundAmount += Double.parseDouble(POSTrx.m_sTrxAmount);
+                                                        PosApplication.getApp().oGTerminal_Operation_Data.g_TerminalTotals[iSchemeIndex].m_lRefundCount++;
+
+                                                }
+                                                break;
+                                                case PURCHASE_WITH_NAQD: {
+                                                        // Log Current and Update Values
+                                                        PosApplication.getApp().oGTerminal_Operation_Data.g_TerminalTotals[iSchemeIndex].m_dPurWCashBackAmount += Double.parseDouble(POSTrx.m_sAdditionalAmount);
+                                                        PosApplication.getApp().oGTerminal_Operation_Data.g_TerminalTotals[iSchemeIndex].m_lPurWCashBackCount++;
+
+                                                }
+                                                break;
+                                                case REVERSAL: {
+                                                        // Log Current and Update Values
+                                                        PosApplication.getApp().oGTerminal_Operation_Data.g_TerminalTotals[iSchemeIndex].m_dReversalAmount += Double.parseDouble(POSTrx.m_sTrxAmount);
+                                                        PosApplication.getApp().oGTerminal_Operation_Data.g_TerminalTotals[iSchemeIndex].m_lReversalCount++;
+
+                                                }
+                                                break;
+                                                case PURCHASE_ADVICE: {
+                                                        // Log Current and Update Values
+                                                        PosApplication.getApp().oGTerminal_Operation_Data.g_TerminalTotals[iSchemeIndex].m_dPurAdvCompAmount += Double.parseDouble(POSTrx.m_sTrxAmount);
+                                                        PosApplication.getApp().oGTerminal_Operation_Data.g_TerminalTotals[iSchemeIndex].m_lPurcAdvCompCount++;
+                                                }
+                                                break;
                                         }
 
+                                        // Save Operation Data
 
-                                        // Update Cash Advance amount (no Cash Advance count)
-                                        if (POSTrx.m_sProcessCode.startsWith("01")) {
-                                                // Todo Log Message Current value and updated debit amount  and count values
-                                                PosApplication.getApp().oGTerminal_Operation_Data.g_TerminalTotals[iSchemeIndex].m_dCashAdvanceAmount += Double.parseDouble(POSTrx.m_sTrxAmount);
-                                        }
-
-                                        // Cash Back Amount (no count for Cash back)
-                                        if (POSTrx.m_sProcessCode.startsWith("09")) {
-                                                // Todo Log Message Current value and updated debit amount  and count values
-                                                PosApplication.getApp().oGTerminal_Operation_Data.g_TerminalTotals[iSchemeIndex].m_dCashBackAmount += Double.parseDouble(POSTrx.m_sAdditionalAmount);
-                                        }
-
-
-                                }
-                                break;
-                                case AUTHORISATION_ADVICE:
-                                case AUTHORISATION:
-                                case AUTHORISATION_EXTENSION:
-                                case AUTHORISATION_VOID: {
-                                        // Update Auth count
-                                        if (POSTrx.m_sProcessCode.startsWith("00") ||
-                                                POSTrx.m_sProcessCode.startsWith("09") ||
-                                                POSTrx.m_sProcessCode.startsWith("20") ||
-                                                POSTrx.m_sProcessCode.startsWith("90") ||
-                                                POSTrx.m_sProcessCode.startsWith("22")) {
-
-                                                // Todo Log Message Current value and updated debit amount  and count values
-
-                                                // Auth count
-                                                PosApplication.getApp().oGTerminal_Operation_Data.g_TerminalTotals[iSchemeIndex].m_lAuthorisationCount++;
-                                        }
-
-
-                                }
-                                break;
-
-                                case REVERSAL: {
-                                        // Update Credit amount,check against orignal MTI
-                                        if ((POSTrx.m_sProcessCode.startsWith("00") || POSTrx.m_sProcessCode.startsWith("01") || POSTrx.m_sProcessCode.startsWith("09")) &&
-                                                (POSTrx.m_sOrigMTI.equals("1200") || POSTrx.m_sOrigMTI.equals("1220"))
-                                        ) {
-                                                // Todo Log Message Current value and updated debit amount  and count values
-
-                                                // Debit Amount
-                                                PosApplication.getApp().oGTerminal_Operation_Data.g_TerminalTotals[iSchemeIndex].m_dCreditAmount += Double.parseDouble(POSTrx.m_sTrxAmount);
-
-                                                // Debit Count
-                                                PosApplication.getApp().oGTerminal_Operation_Data.g_TerminalTotals[iSchemeIndex].m_lCreditCount++;
-                                        }
-
-
-                                        // Update Debit amount, check against orignal MTI
-                                        if (POSTrx.m_sProcessCode.equals("20") &&
-                                                (POSTrx.m_sOrigMTI.equals("1200") || POSTrx.m_sOrigMTI.equals("1220"))
-                                        ) {
-                                                // Todo Log Message Current value and updated debit amount  and count values
-                                                // Debit Amount
-                                                PosApplication.getApp().oGTerminal_Operation_Data.g_TerminalTotals[iSchemeIndex].m_dDebitAmount += Double.parseDouble(POSTrx.m_sTrxAmount);
-
-                                                // Debit Count
-                                                PosApplication.getApp().oGTerminal_Operation_Data.g_TerminalTotals[iSchemeIndex].m_lDebitCount++;
-
-                                        }
-
-                                        // Substract Additional amount (Cash Advance or Cash Back) note#5
-                                        if (POSTrx.m_sProcessCode.equals("01") &&
-                                                (POSTrx.m_sOrigMTI.equals("1200") || POSTrx.m_sOrigMTI.equals("1220"))
-                                        ) {
-                                                // Debit Amount
-                                                PosApplication.getApp().oGTerminal_Operation_Data.g_TerminalTotals[iSchemeIndex].m_dCashAdvanceAmount -= Double.parseDouble(POSTrx.m_sTrxAmount);
-
-                                                // Todo Log Message Current value and updated debit amount  and count values
-                                        }
-
-                                        // Substract Additional amount (Cash Advance or Cash Back) note#5
-                                        if (POSTrx.m_sProcessCode.equals("09") &&
-                                                (POSTrx.m_sOrigMTI.equals("1200") || POSTrx.m_sOrigMTI.equals("1220"))
-                                        ) {
-
-                                                // Debit Amount
-                                                PosApplication.getApp().oGTerminal_Operation_Data.g_TerminalTotals[iSchemeIndex].m_dCashBackAmount -= Double.parseDouble(POSTrx.m_sAdditionalAmount);
-
-                                                // Todo Log Message Current value and updated debit amount  and count values
-                                        }
-
-
-                                }
-                                break;
-                                default: {
-                                        // Todo Log error message
+                                         iRetRes = SaveLoadFile.SAVETeminal_operation_Data(PosApplication.getApp().oGTerminal_Operation_Data);
                                         return iRetRes;
                                 }
-
-                        }
-
-                        // 2- Update Transaction details totals
-                        switch (POSTrx.m_enmTrxType) {
-                                case PURCHASE: {
-                                        // Updating Card Scheme  Trx details
-                                        if (POSTrx.m_bIsOfflineTrx == true) /*New is offline paramter should be added to POSTransaction class*/ {
-                                                PosApplication.getApp().oGTerminal_Operation_Data.g_TerminalTotals[iSchemeIndex].m_dOfflinePurchaseAmount += Double.parseDouble(POSTrx.m_sTrxAmount);
-                                                PosApplication.getApp().oGTerminal_Operation_Data.g_TerminalTotals[iSchemeIndex].m_lOfflinePurchaseCount++;
-
-                                        } else {
-                                                PosApplication.getApp().oGTerminal_Operation_Data.g_TerminalTotals[iSchemeIndex].m_dOnlinePurchaseAmount += Double.parseDouble(POSTrx.m_sTrxAmount);
-                                                PosApplication.getApp().oGTerminal_Operation_Data.g_TerminalTotals[iSchemeIndex].m_lOnlinePurchaseCount++;
-                                        }
-                                }
-                                break;
-                                case REFUND: {
-                                        // Log Current and Update Values
-                                        PosApplication.getApp().oGTerminal_Operation_Data.g_TerminalTotals[iSchemeIndex].m_dRefundAmount += Double.parseDouble(POSTrx.m_sTrxAmount);
-                                        PosApplication.getApp().oGTerminal_Operation_Data.g_TerminalTotals[iSchemeIndex].m_lRefundCount++;
+                                else{
 
                                 }
-                                break;
-                                case PURCHASE_WITH_NAQD: {
-                                        // Log Current and Update Values
-                                        PosApplication.getApp().oGTerminal_Operation_Data.g_TerminalTotals[iSchemeIndex].m_dPurWCashBackAmount += Double.parseDouble(POSTrx.m_sAdditionalAmount);
-                                        PosApplication.getApp().oGTerminal_Operation_Data.g_TerminalTotals[iSchemeIndex].m_lPurWCashBackCount++;
 
-                                }
-                                break;
-                                case REVERSAL: {
-                                        // Log Current and Update Values
-                                        PosApplication.getApp().oGTerminal_Operation_Data.g_TerminalTotals[iSchemeIndex].m_dReversalAmount += Double.parseDouble(POSTrx.m_sTrxAmount);
-                                        PosApplication.getApp().oGTerminal_Operation_Data.g_TerminalTotals[iSchemeIndex].m_lReversalCount++;
 
-                                }
-                                break;
-                                case PURCHASE_ADVICE: {
-                                        // Log Current and Update Values
-                                        PosApplication.getApp().oGTerminal_Operation_Data.g_TerminalTotals[iSchemeIndex].m_dPurAdvCompAmount += Double.parseDouble(POSTrx.m_sTrxAmount);
-                                        PosApplication.getApp().oGTerminal_Operation_Data.g_TerminalTotals[iSchemeIndex].m_lPurcAdvCompCount++;
-                                }
-                                break;
-                        }
 
-                        // Save Operation Data
-                        //todo mohamed to SaveTerminalOperationData
-                       //todo iRetRes = SaveTerminalOperationData();
+
+
+                }
+                if (iSchemeIndex == -1) {
+                        //Todo Log message "Can not get Card Scheme"
 
 
                 }
