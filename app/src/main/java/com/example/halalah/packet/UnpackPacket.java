@@ -58,11 +58,9 @@ public class UnpackPacket {
         mRecePacket = recePacket;
 
         if (mProcType == PacketProcessUtils.PACKET_PROCESS_PURCHASE) {
-            UnpackPurchase unpackpurchase = new UnpackPurchase(mRecePacket, mRecePacket.length);
+            UnpackResponse unpackpurchase = new UnpackResponse(mRecePacket, mRecePacket.length);
             mResponse = unpackpurchase.getResponse();
             mResponseDetail = unpackpurchase.getResponseDetail();
-
-
         }
 
    }

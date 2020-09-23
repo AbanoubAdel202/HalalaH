@@ -30,6 +30,7 @@ package com.example.halalah;
 import com.example.halalah.storage.SaveLoadFile;
 
 import java.io.Serializable;
+import java.util.Locale;
 
 /**
 	\class Name: CardSchemeTotals
@@ -100,6 +101,7 @@ public class CardSchemeTotals implements Serializable {
                 int iRetRes = -1;
                 int iSchemeIndex = -1;
 
+
                 // Get Transaction Card Scheme total buffer;
                 for (int i = 0; i < PosApplication.getApp().oGTerminal_Operation_Data.g_NumberOfCardSchemes; i++) {
                         if (POSTrx.m_card_scheme.m_sCard_Scheme_ID.equals(PosApplication.getApp().oGTerminal_Operation_Data.g_TerminalTotals[i].m_szCardSchmID)) {
@@ -126,7 +128,7 @@ public class CardSchemeTotals implements Serializable {
                                                                 POSTrx.m_sProcessCode.startsWith("09")) {
                                                                 // Todo Log Message Current value and updated debit amount  and count values
                                                                 // Debit Amount
-                                                                PosApplication.getApp().oGTerminal_Operation_Data.g_TerminalTotals[iSchemeIndex].m_dDebitAmount += Double.parseDouble(POSTrx.m_sTrxAmount);
+                                                                PosApplication.getApp().oGTerminal_Operation_Data.g_TerminalTotals[iSchemeIndex].m_dDebitAmount += Double.parseDouble(POSTrx.m_sTrxAmount)/100;
 
                                                                 // Debit Count
                                                                 PosApplication.getApp().oGTerminal_Operation_Data.g_TerminalTotals[iSchemeIndex].m_lDebitCount++;
@@ -136,7 +138,7 @@ public class CardSchemeTotals implements Serializable {
                                                         // Update Credit amount and count
                                                         if (POSTrx.m_sProcessCode.startsWith("20")) {
                                                                 // Debit Amount
-                                                                PosApplication.getApp().oGTerminal_Operation_Data.g_TerminalTotals[iSchemeIndex].m_dCreditAmount += Double.parseDouble(POSTrx.m_sTrxAmount);
+                                                                PosApplication.getApp().oGTerminal_Operation_Data.g_TerminalTotals[iSchemeIndex].m_dCreditAmount += Double.parseDouble(POSTrx.m_sTrxAmount)/100;
 
                                                                 // Debit Count
                                                                 PosApplication.getApp().oGTerminal_Operation_Data.g_TerminalTotals[iSchemeIndex].m_lCreditCount++;
@@ -146,13 +148,13 @@ public class CardSchemeTotals implements Serializable {
                                                         // Update Cash Advance amount (no Cash Advance count)
                                                         if (POSTrx.m_sProcessCode.startsWith("01")) {
                                                                 // Todo Log Message Current value and updated debit amount  and count values
-                                                                PosApplication.getApp().oGTerminal_Operation_Data.g_TerminalTotals[iSchemeIndex].m_dCashAdvanceAmount += Double.parseDouble(POSTrx.m_sTrxAmount);
+                                                                PosApplication.getApp().oGTerminal_Operation_Data.g_TerminalTotals[iSchemeIndex].m_dCashAdvanceAmount += Double.parseDouble(POSTrx.m_sTrxAmount)/100;
                                                         }
 
                                                         // Cash Back Amount (no count for Cash back)
                                                         if (POSTrx.m_sProcessCode.startsWith("09")) {
                                                                 // Todo Log Message Current value and updated debit amount  and count values
-                                                                PosApplication.getApp().oGTerminal_Operation_Data.g_TerminalTotals[iSchemeIndex].m_dCashBackAmount += Double.parseDouble(POSTrx.m_sAdditionalAmount);
+                                                                PosApplication.getApp().oGTerminal_Operation_Data.g_TerminalTotals[iSchemeIndex].m_dCashBackAmount += Double.parseDouble(POSTrx.m_sAdditionalAmount)/100;
                                                         }
 
 
@@ -187,7 +189,7 @@ public class CardSchemeTotals implements Serializable {
                                                                 // Todo Log Message Current value and updated debit amount  and count values
 
                                                                 // Debit Amount
-                                                                PosApplication.getApp().oGTerminal_Operation_Data.g_TerminalTotals[iSchemeIndex].m_dCreditAmount += Double.parseDouble(POSTrx.m_sTrxAmount);
+                                                                PosApplication.getApp().oGTerminal_Operation_Data.g_TerminalTotals[iSchemeIndex].m_dCreditAmount += Double.parseDouble(POSTrx.m_sTrxAmount)/100;
 
                                                                 // Debit Count
                                                                 PosApplication.getApp().oGTerminal_Operation_Data.g_TerminalTotals[iSchemeIndex].m_lCreditCount++;
@@ -200,7 +202,7 @@ public class CardSchemeTotals implements Serializable {
                                                         ) {
                                                                 // Todo Log Message Current value and updated debit amount  and count values
                                                                 // Debit Amount
-                                                                PosApplication.getApp().oGTerminal_Operation_Data.g_TerminalTotals[iSchemeIndex].m_dDebitAmount += Double.parseDouble(POSTrx.m_sTrxAmount);
+                                                                PosApplication.getApp().oGTerminal_Operation_Data.g_TerminalTotals[iSchemeIndex].m_dDebitAmount += Double.parseDouble(POSTrx.m_sTrxAmount)/100;
 
                                                                 // Debit Count
                                                                 PosApplication.getApp().oGTerminal_Operation_Data.g_TerminalTotals[iSchemeIndex].m_lDebitCount++;
@@ -212,7 +214,7 @@ public class CardSchemeTotals implements Serializable {
                                                                 (POSTrx.m_sOrigMTI.equals("1200") || POSTrx.m_sOrigMTI.equals("1220"))
                                                         ) {
                                                                 // Debit Amount
-                                                                PosApplication.getApp().oGTerminal_Operation_Data.g_TerminalTotals[iSchemeIndex].m_dCashAdvanceAmount -= Double.parseDouble(POSTrx.m_sTrxAmount);
+                                                                PosApplication.getApp().oGTerminal_Operation_Data.g_TerminalTotals[iSchemeIndex].m_dCashAdvanceAmount -= Double.parseDouble(POSTrx.m_sTrxAmount)/100;
 
                                                                 // Todo Log Message Current value and updated debit amount  and count values
                                                         }
@@ -223,7 +225,7 @@ public class CardSchemeTotals implements Serializable {
                                                         ) {
 
                                                                 // Debit Amount
-                                                                PosApplication.getApp().oGTerminal_Operation_Data.g_TerminalTotals[iSchemeIndex].m_dCashBackAmount -= Double.parseDouble(POSTrx.m_sAdditionalAmount);
+                                                                PosApplication.getApp().oGTerminal_Operation_Data.g_TerminalTotals[iSchemeIndex].m_dCashBackAmount -= Double.parseDouble(POSTrx.m_sAdditionalAmount)/100;
 
                                                                 // Todo Log Message Current value and updated debit amount  and count values
                                                         }
@@ -243,39 +245,39 @@ public class CardSchemeTotals implements Serializable {
                                                 case PURCHASE: {
                                                         // Updating Card Scheme  Trx details
                                                         if (POSTrx.m_bIsOfflineTrx) /*New is offline paramter should be added to POSTransaction class*/ {
-                                                                PosApplication.getApp().oGTerminal_Operation_Data.g_TerminalTotals[iSchemeIndex].m_dOfflinePurchaseAmount += Double.parseDouble(POSTrx.m_sTrxAmount);
+                                                                PosApplication.getApp().oGTerminal_Operation_Data.g_TerminalTotals[iSchemeIndex].m_dOfflinePurchaseAmount += Double.parseDouble(POSTrx.m_sTrxAmount)/100;
                                                                 PosApplication.getApp().oGTerminal_Operation_Data.g_TerminalTotals[iSchemeIndex].m_lOfflinePurchaseCount++;
 
                                                         } else {
-                                                                PosApplication.getApp().oGTerminal_Operation_Data.g_TerminalTotals[iSchemeIndex].m_dOnlinePurchaseAmount += Double.parseDouble(POSTrx.m_sTrxAmount);
+                                                                PosApplication.getApp().oGTerminal_Operation_Data.g_TerminalTotals[iSchemeIndex].m_dOnlinePurchaseAmount += Double.parseDouble(POSTrx.m_sTrxAmount)/100;
                                                                 PosApplication.getApp().oGTerminal_Operation_Data.g_TerminalTotals[iSchemeIndex].m_lOnlinePurchaseCount++;
                                                         }
                                                 }
                                                 break;
                                                 case REFUND: {
                                                         // Log Current and Update Values
-                                                        PosApplication.getApp().oGTerminal_Operation_Data.g_TerminalTotals[iSchemeIndex].m_dRefundAmount += Double.parseDouble(POSTrx.m_sTrxAmount);
+                                                        PosApplication.getApp().oGTerminal_Operation_Data.g_TerminalTotals[iSchemeIndex].m_dRefundAmount += Double.parseDouble(POSTrx.m_sTrxAmount)/100;
                                                         PosApplication.getApp().oGTerminal_Operation_Data.g_TerminalTotals[iSchemeIndex].m_lRefundCount++;
 
                                                 }
                                                 break;
                                                 case PURCHASE_WITH_NAQD: {
                                                         // Log Current and Update Values
-                                                        PosApplication.getApp().oGTerminal_Operation_Data.g_TerminalTotals[iSchemeIndex].m_dPurWCashBackAmount += Double.parseDouble(POSTrx.m_sAdditionalAmount);
+                                                        PosApplication.getApp().oGTerminal_Operation_Data.g_TerminalTotals[iSchemeIndex].m_dPurWCashBackAmount += Double.parseDouble(POSTrx.m_sAdditionalAmount)/100;
                                                         PosApplication.getApp().oGTerminal_Operation_Data.g_TerminalTotals[iSchemeIndex].m_lPurWCashBackCount++;
 
                                                 }
                                                 break;
                                                 case REVERSAL: {
                                                         // Log Current and Update Values
-                                                        PosApplication.getApp().oGTerminal_Operation_Data.g_TerminalTotals[iSchemeIndex].m_dReversalAmount += Double.parseDouble(POSTrx.m_sTrxAmount);
+                                                        PosApplication.getApp().oGTerminal_Operation_Data.g_TerminalTotals[iSchemeIndex].m_dReversalAmount += Double.parseDouble(POSTrx.m_sTrxAmount)/100;
                                                         PosApplication.getApp().oGTerminal_Operation_Data.g_TerminalTotals[iSchemeIndex].m_lReversalCount++;
 
                                                 }
                                                 break;
                                                 case PURCHASE_ADVICE: {
                                                         // Log Current and Update Values
-                                                        PosApplication.getApp().oGTerminal_Operation_Data.g_TerminalTotals[iSchemeIndex].m_dPurAdvCompAmount += Double.parseDouble(POSTrx.m_sTrxAmount);
+                                                        PosApplication.getApp().oGTerminal_Operation_Data.g_TerminalTotals[iSchemeIndex].m_dPurAdvCompAmount += Double.parseDouble(POSTrx.m_sTrxAmount)/100;
                                                         PosApplication.getApp().oGTerminal_Operation_Data.g_TerminalTotals[iSchemeIndex].m_lPurcAdvCompCount++;
                                                 }
                                                 break;

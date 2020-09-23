@@ -371,6 +371,7 @@ public class ClsCardProcess {
                     payProcess.startPay(bundle, mResultListener);
                     break;
                 default:
+                    mResultListener.onProcessResult(false, true, PayDataUtil.CardCode.TRANS_STOP);;
                     break;
             }
         }

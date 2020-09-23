@@ -324,14 +324,15 @@ public class ICPbocStartListenerSub implements OnEmvProcessListener {
      */
     @Override
     public void onTransResult(int result) throws RemoteException {
-        Log.d(TAG, "onTransResult result: " + result + isOnline);
-
+        Log.d(TAG, "onTransResult result: " + result + " isOnline:" + isOnline);
         setTVR();
         setTSI();
+//        if (!isOnline) {
+//            CardManager.getInstance().callBackTransResult(result);
+//        }
 
-        if (!isOnline) {
-            CardManager.getInstance().callBackTransResult(result);
-        }
+        CardManager.getInstance().callBackTransResult(result);
+
     }
 
     @Override

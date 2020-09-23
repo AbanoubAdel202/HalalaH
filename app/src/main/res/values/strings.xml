@@ -189,7 +189,7 @@
     <string name="search_card_error_msr_is_ic">IC card, please insert card</string>
     <string name="search_card_error_ic">Read card failed, please swip card</string>
     <string name="search_card_error_electric_card">This card is electric card, this device is no support electric transaction</string>
-
+    <string name="search_card_trans_result_approval">Traansaction Approved</string>
     <string name="search_card_trans_result_reject">Transaction refused</string>
     <string name="search_card_trans_result_stop">Transaction is stoped</string>
     <string name="search_card_trans_result_fallback">FALLBACK</string>

@@ -33,6 +33,7 @@ public class SearchCardActivity extends Activity{
     private String mAmount;
     private Toast mToast;
     private Button  mmanualbtn;
+    private Activity searchactivity;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,6 +65,7 @@ public class SearchCardActivity extends Activity{
 
         CardManager.getInstance().startCardDealService(this);
         CardManager.getInstance().initCardExceptionCallBack(exceptionCallBack);
+        searchactivity=this;
     }
 
     @Override
@@ -126,6 +128,8 @@ public class SearchCardActivity extends Activity{
             String resultDetail = null;
             if (result == CardSearchErrorUtil.TRANS_APPROVE) {
                 resultDetail = "Transaction Approval";
+                //should we add final flow here
+                PosApplication.getApp().oGPOS_MAIN.finalizing_EMV_transaction(searchactivity);
             }
             if (result == CardSearchErrorUtil.TRANS_REASON_REJECT) {
                 resultDetail = getString(R.string.search_card_trans_result_reject);
@@ -138,6 +142,9 @@ public class SearchCardActivity extends Activity{
             } else if (result == CardSearchErrorUtil.TRANS_REASON_STOP_OTHERS) {
                 resultDetail = getString(R.string.search_card_trans_result_others);
             }
+
+
+
             showResult(resultDetail);
         }
 
@@ -150,15 +157,19 @@ public class SearchCardActivity extends Activity{
 
     private void showResult(String detail) {
         Log.i(TAG, "showResult(), detail = "+detail);
-        Intent intent = new Intent(this, ShowResultActivity.class);
-        intent.putExtra(PacketProcessUtils.PACKET_PROCESS_TYPE, PacketProcessUtils.PACKET_PROCESS_PURCHASE);
-        intent.putExtra("result_resDetail", detail);
-        if(detail.equals("Transaction Approval")){
+        if(detail.equals(getString(R.string.search_card_trans_result_approval))){
+            Intent intent = new Intent(this, Display_PrintActivity.class);
             intent.putExtra("result_errReason", 0);
             intent.putExtra("result_response", "00");
+
+            startActivity(intent);
+        } else {
+            Intent intent = new Intent(this, ShowResultActivity.class);
+            intent.putExtra(PacketProcessUtils.PACKET_PROCESS_TYPE, PacketProcessUtils.PACKET_PROCESS_PURCHASE);
+            intent.putExtra("result_resDetail", detail);
+            startActivity(intent);
         }
-        startActivity(intent);
-        this.finish();
+            this.finish();
     }
 
     @Override

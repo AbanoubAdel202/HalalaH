@@ -738,7 +738,7 @@ public class ContactCardProcess {
                     issueScript72 = tlv.getValue();
                 byte[] authCodenull=new byte[0];
                 emvRet = emvL2.EMV_ProcessOnlineRespData(onlineResult, issueAuthData, authRespCode, authCodenull);
-                emvRet = EmvDefinition.EMV_DECLINED;
+                //emvRet = EmvDefinition.EMV_DECLINED;
                 Log.d(TAG, "EMV_ProcessOnlineRespData emvRet : " + emvRet);
             }
 
@@ -749,6 +749,7 @@ public class ContactCardProcess {
             }
 
             if (emvRet != EmvDefinition.EMV_TERMINATED) {
+                if(issueScript71!=null)
                 emvL2.EMV_IssueToCardScript((byte)1, issueScript71);
             }
 
@@ -767,6 +768,7 @@ public class ContactCardProcess {
             }
 
             if (emvRet != EmvDefinition.EMV_TERMINATED) {
+                if(issueScript71!=null)
                 emvL2.EMV_IssueToCardScript((byte) 0, issueScript72);
             }
         }

@@ -24,7 +24,7 @@ public class UnpackUtils {
 			return null;
 		}
 		
-		//packet len
+		//packet len   // not used as it not recieved with the data from communication handler
 		int packetlen = 0;
 		String lenSrc = BCDASCII.fromBCDToASCIIString(srcData, srcDataOffset, 4, false);
 		Log.d(TAG, "lenSrc = "+lenSrc);

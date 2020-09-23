@@ -182,7 +182,7 @@ public class Display_PrintActivity extends Activity implements View.OnClickListe
         }
     };
 
-    private void getPrintMessage(byte[] field47) {
+  /*  private void getPrintMessage(byte[] field47) {
         Log.i(TAG, "getPrintMessage, field47 " + BCDASCII.bytesToHexString(field47));
 
         byte[] printData = null;
@@ -257,7 +257,7 @@ public class Display_PrintActivity extends Activity implements View.OnClickListe
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-    }
+    }*/
 
     private void filldisplaydata() {
 
@@ -276,65 +276,8 @@ public class Display_PrintActivity extends Activity implements View.OnClickListe
 
     }
 
-    /**
-     * add by zongli for fake show data
-     */
-    private void showConsumeFakeData(String printMsg) {
-        String[] print = printMsg.replace("~", "").split("\\n");
-        String data;
-        String[] datas;
-        String cardNo = PosApplication.getApp().oGPosTransaction.m_sPAN;
-        String amount = PosApplication.getApp().oGPosTransaction.m_sTrxAmount;
-        String firCardNo = null;
-        String mid = null;
-        String lastCardNo = null;
-        if (cardNo != null) {
-            int cardLength = cardNo.length();
-            firCardNo = cardNo.substring(0, 6);
-            lastCardNo = cardNo.substring(cardLength - 4);
-            mid = "******";
-            cardNo = firCardNo + mid + lastCardNo;
-        }
 
-        for (int i = 0; i < print.length; i++) {
-            if (print[i].indexOf("金额") != -1) {
-                data = print[i].replace("金额:", "");
-                datas = data.split(" ");
-                if (amount != null) {
-                    mAmount.setText(amount);
-                } else {
-                    mAmount.setText(datas[1]);
-                }
-            } else if (print[i].indexOf("交易类型") != -1) {
-                data = print[i].replace("交易类型:", "");
-                mTransactionType.setText(R.string.text_consume);
-            } else if (print[i].indexOf("卡号") != -1) {
-                data = print[i].replace("卡号:", "");
-                if (cardNo != null) {
-                    mPANno.setText(cardNo);
-                } else {
-                    mPANno.setText(data);
-                }
-            } else if (print[i].indexOf("凭证号") != -1) {
-                data = print[i].replace("凭证号:", "");
-                datas = data.split(" ");
-                mRecieptno.setText(datas[0]);
-            } else if (print[i].indexOf("操作员") != -1) {
-                data = print[i].substring(print[i].length() - 2, print[i].length());
-                mOperatorNum.setText(data);
-            } else if (print[i].indexOf("交易参考号") != -1) {
-                data = print[i].replace("交易参考号:", "");
-                mRRN.setText(data);
-            } else if (print[i].indexOf("时间") != -1) {
-                data = print[i].replace("时间:", "");
-                if (mPurchasePrint != null && mPurchasePrint.getCurTime() != null) {
-                    mTransactiontime.setText(mPurchasePrint.getCurTime());
-                } else {
-                    mTransactiontime.setText(data);
-                }
-            }
-        }
-    }
+
 
     private String getCurTime() {
         Date date = new Date(System.currentTimeMillis());

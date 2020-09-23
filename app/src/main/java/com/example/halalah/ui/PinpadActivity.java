@@ -55,6 +55,8 @@ public class PinpadActivity extends Activity {
 
     private boolean mIsCancleInputKey = false;
 
+    Activity pinpadact;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -88,6 +90,7 @@ public class PinpadActivity extends Activity {
 
         CardManager.getInstance().finishPreActivity();
         CardManager.getInstance().initCardExceptionCallBack(mCallBack);
+        pinpadact=this;
     }
 
     private Handler mHandler = new Handler() {
@@ -451,7 +454,14 @@ public class PinpadActivity extends Activity {
                 return;
             }
             String resultDetail = null;
-            if (result == CardSearchErrorUtil.TRANS_REASON_REJECT) {
+            if (result == CardSearchErrorUtil.TRANS_APPROVE) {
+
+                //todo check if this offline approved transcation
+                if(PosApplication.getApp().oGPosTransaction.m_enmTrxCardType== POSTransaction.CardType.ICC)
+                PosApplication.getApp().oGPOS_MAIN.finalizing_EMV_transaction(pinpadact);
+                resultDetail = getString(R.string.search_card_trans_result_approval);
+            } else if (result == CardSearchErrorUtil.TRANS_REASON_REJECT) {
+
                 resultDetail = getString(R.string.search_card_trans_result_reject);
             } else if (result == CardSearchErrorUtil.TRANS_REASON_STOP) {
                 resultDetail = getString(R.string.search_card_trans_result_stop);
@@ -476,10 +486,19 @@ public class PinpadActivity extends Activity {
     private void showResult(String detail) {
         Log.i(TAG, "showResult(), detail = " + detail);
 
-        Intent intent = new Intent(this, ShowResultActivity.class);
-        intent.putExtra(PacketProcessUtils.PACKET_PROCESS_TYPE, PacketProcessUtils.PACKET_PROCESS_PURCHASE);
-        intent.putExtra("result_resDetail", detail);
-        startActivity(intent);
+        if(detail.equals(getString(R.string.search_card_trans_result_approval))){
+            Intent intent = new Intent(this, Display_PrintActivity.class);
+            intent.putExtra("result_errReason", 0);
+            intent.putExtra("result_response", "00");
+
+            startActivity(intent);
+        } else {
+            Intent intent = new Intent(this, ShowResultActivity.class);
+            intent.putExtra(PacketProcessUtils.PACKET_PROCESS_TYPE, PacketProcessUtils.PACKET_PROCESS_PURCHASE);
+            intent.putExtra("result_resDetail", detail);
+            startActivity(intent);
+        }
+
         this.finish();
     }
 }
