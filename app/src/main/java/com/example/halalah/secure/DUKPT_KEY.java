@@ -238,7 +238,7 @@ Load Last Terminal Data from Terminal Operation Data Table
 **************************************/
 
 
-    public static String CaluclateMACBlock(byte[] bMACInputData)//String strMACInputData)
+    public static String CaluclateMACBlock(String strMACInputData)
     {
 
         int    iRetRes         = -1;
@@ -247,12 +247,11 @@ Load Last Terminal Data from Terminal Operation Data Table
         String strMACBLOCK ;
         byte[] byteCurrentKSN;
 
-        Log.i(TAG," CaluclateMACBlock STarted Input Data  [ "+bMACInputData+ " ]");
+        Log.i(TAG," CaluclateMACBlock STarted Input Data  [ "+strMACInputData+ " ]");
 
         macBundle.putInt("wkeyid", m_WorkKey);
         macBundle.putInt("key_type", PosApplication.DUKPT_MAK);
-        //byte[]x=HexUtil.StringToByte(strMACInputData);
-        macBundle.putByteArray("data", bMACInputData);//HexUtil.StringToByte(strMACInputData));
+        macBundle.putByteArray("data",HexUtil.hexStringToByte(strMACInputData));
         macBundle.putByteArray("random", null);
         macBundle.putInt("type", 0x00);
 
@@ -290,8 +289,7 @@ Load Last Terminal Data from Terminal Operation Data Table
         {
             //showMessage(getResources().getString(R.string.pin_mac_919_mac_success1) + HexUtil.bcd2str(mac));
 
-            //strMACBLOCK = HexUtil.bcd2str(byteMACBlock);
-            strMACBLOCK=BCDASCII.bytesToHexString(byteMACBlock);
+            strMACBLOCK = HexUtil.bcd2str(byteMACBlock);
             Log.i(TAG,"getMac Succeed with return [ "+R.string.MAC_Success+"] and Value ["+strMACBLOCK+"]");
         }
 

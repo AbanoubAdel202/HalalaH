@@ -6,15 +6,16 @@ import com.example.halalah.storage.CommunicationInfo;
 
 import java.io.Serializable;
 
-/** Header Terminal operation Data
- \Class Name: Terminal_Operation_Data
- \Param  :
- \Return :
- \Pre    :
- \Post   :
- \Author	: mostafa hussiny
- \DT		: 5/31/2020
- \Des    : Container for Terminal operation DATA
+/**
+ * Header Terminal operation Data
+ * \Class Name: Terminal_Operation_Data
+ * \Param  :
+ * \Return :
+ * \Pre    :
+ * \Post   :
+ * \Author	: mostafa hussiny
+ * \DT		: 5/31/2020
+ * \Des    : Container for Terminal operation DATA
  */
 public class Terminal_Operation_Data implements Serializable {
 
@@ -164,6 +165,15 @@ public class Terminal_Operation_Data implements Serializable {
 
 
 
+    }
+
+
+    /*******************
+     * Terminal retailer options *
+     *******************/
+    public enum Terminallanguage {
+        Arabic,
+        English
     }
 
 

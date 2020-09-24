@@ -51,9 +51,9 @@ public class AmountInputActivity extends Activity implements View.OnClickListene
         setContentView(R.layout.activity_amount_input);
         /*ActionBar actionBar = this.getActionBar();
         actionBar.setTitle(R.string.title_consume);*/
-        mBtnConfirm = (Button) findViewById(R.id.btn_search_card);
-        mTextAmount = (TextView) findViewById(R.id.edit_amount);
-      //  mTextAmount2 = (TextView) findViewById(R.id.edit_naqd_amount);
+        mBtnConfirm = findViewById(R.id.btn_search_card);
+        mTextAmount = findViewById(R.id.edit_amount);
+        //  mTextAmount2 = (TextView) findViewById(R.id.edit_naqd_amount);
 
         mAmountBuilder = new StringBuilder("R");
 
@@ -173,7 +173,7 @@ public class AmountInputActivity extends Activity implements View.OnClickListene
                 String sAmount = mAmount.substring(1);
 
 
-                PosApplication.getApp().oGPosTransaction.m_sTrxAmount= sAmount;
+                PosApplication.getApp().oGPosTransaction.m_sTrxAmount = sAmount;
 
                 switch (PosApplication.getApp().oGPosTransaction.m_enmTrxType) {
                     case PURCHASE:

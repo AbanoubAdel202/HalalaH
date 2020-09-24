@@ -29,7 +29,6 @@ public class PosApplication extends Application{
     private Context mContext;
     private static PosApplication mPosApplication=new PosApplication();
 
-    public static CommunicationsHandler oGcommunicationsHandler;
     /*******************
      *   Message types *
      *******************/
@@ -84,7 +83,6 @@ public class PosApplication extends Application{
      * Terminal opertation DATA *
      **************************/
    public Terminal_Operation_Data oGTerminal_Operation_Data =new Terminal_Operation_Data();
-
 
     /**********************
      * Terminal Regestration  *

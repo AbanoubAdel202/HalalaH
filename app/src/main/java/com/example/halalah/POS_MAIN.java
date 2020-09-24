@@ -9,12 +9,13 @@ import com.example.halalah.TMS.AID_Data;
 import com.example.halalah.TMS.Card_Scheme;
 import com.example.halalah.TMS.Public_Key;
 import com.example.halalah.TMS.SAMA_TMS;
-
+import com.example.halalah.registration.view.ITransaction;
 import com.example.halalah.card.CardManager;
 import com.example.halalah.connect.CommunicationsHandler;
 import com.example.halalah.connect.SendReceiveListener;
 import com.example.halalah.iso8583.BCDASCII;
 import com.example.halalah.iso8583.ISO8583;
+import com.example.halalah.packet.UnpackPacket;
 import com.example.halalah.packet.UnpackResponse;
 import com.example.halalah.print.Purchase_Print;
 import com.example.halalah.print.Reconsile_Print;
@@ -24,10 +25,12 @@ import com.example.halalah.storage.CommunicationInfo;
 import com.example.halalah.storage.SaveLoadFile;
 import com.example.halalah.ui.AmountInputActivity;
 import com.example.halalah.ui.Display_PrintActivity;
+import com.example.halalah.ui.P_NAQD_InputActivity;
 import com.example.halalah.ui.PacketProcessActivity;
 import com.example.halalah.ui.SearchCardActivity;
 import com.example.halalah.util.BytesUtil;
 import com.example.halalah.util.ExtraUtil;
+import com.example.halalah.ui.Refund_InputActivity;
 import com.topwise.cloudpos.aidl.printer.AidlPrinter;
 
 import java.util.Locale;
@@ -66,7 +69,7 @@ public class POS_MAIN implements SendReceiveListener {
 
 
 
-    public void Start_Transaction(POSTransaction oPos_trans, POSTransaction.TranscationType Trxtype)
+    public void Start_Transaction(POSTransaction oPos_trans, POSTransaction.TranscationType Trxtype, ITransaction.View transactionView)
     {
         PosApplication.getApp().oGPosTransaction.Reset();
 
@@ -248,32 +251,12 @@ public class POS_MAIN implements SendReceiveListener {
                 break;
             case TERMINAL_REGISTRATION://TREMINAL_REGISTRATION:
 
+            case TERMINAL_REGISTRATION://TREMINAL_REGISTRATION:
+
                 // based on Moamen Ahmed Registeration file , Terminal_Registeration.java also
+                PosApplication.getApp().oGTerminal_Registeration.StartRegistrationProcess(
+                        PosApplication.getApp().oGPosTransaction, transactionView);
 
-                PosApplication.getApp().oGTerminal_Registeration.LoadTerminalRegistrationData();
-
-                if( PosApplication.getApp().oGTerminal_Registeration.ValidatePKIFiles(1,1) != 0)
-                    //while(true)
-                      //  DisplayErrorMessage("INVALID PKI")
-
-                do
-                {
-                    if (PosApplication.getApp().oGTerminal_Registeration.StartRegistrationProcess(PosApplication.getApp().oGPosTransaction) ==  0)
-                    {
-                        PosApplication.getApp().oGTerminal_Registeration.bRegistered = true;
-                    }
-                    else
-                    {
-                        //todo
-                        //DisplayError();
-
-                        PosApplication.getApp().oGTerminal_Registeration.PromptRegisterationSetting();
-                    }
-                } while(PosApplication.getApp().oGTerminal_Registeration.bRegistered != true);
-
-
-                // todo TMSDownloadProcess();
-                Start_Transaction(oPos_trans, POSTransaction.TranscationType.TMS_FILE_DOWNLOAD);
                 break;
             case ADMIN://ADMIN:
                 break;
@@ -512,7 +495,6 @@ public class POS_MAIN implements SendReceiveListener {
             else
                 istate=-1;
         }
-
 
 
         return istate;
@@ -2109,8 +2091,8 @@ DF03 Check Sum                                [20]   >> 4410C6D51C2F83ADFD92528F
         }
 
         return iRetres;
-        
-        
+
+
     }
 }
 

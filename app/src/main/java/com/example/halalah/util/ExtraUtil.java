@@ -36,7 +36,6 @@ public class ExtraUtil {
     }
 
 
-
     public static String getCustomVersionMsg(String originalMsg) {
         StringBuilder version = new StringBuilder();
         if (originalMsg != null) {

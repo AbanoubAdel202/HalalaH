@@ -6,6 +6,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Typeface;
 import android.os.RemoteException;
 import android.util.Log;
+
 import com.example.halalah.DeviceTopUsdkServiceManager;
 import com.example.halalah.PosApplication;
 import com.example.halalah.R;
@@ -16,12 +17,8 @@ import com.topwise.cloudpos.aidl.printer.AidlPrinterListener;
 import com.topwise.cloudpos.aidl.printer.PrintItemEnhancedObj;
 import com.topwise.cloudpos.aidl.printer.PrintItemObj;
 import com.topwise.cloudpos.data.PrinterConstant;
-import com.topwise.template.Align;
-import com.topwise.template.PrintTemplate;
-import com.topwise.template.TextUnit;
 
 import java.util.ArrayList;
-import java.util.List;
 
 public class Purchase_Print {
     private static final String TAG = Utils.TAGPUBLIC + Purchase_Print.class.getSimpleName();
@@ -64,14 +61,14 @@ public class Purchase_Print {
 
         Log.i(TAG, "startPrint ");
         try {
-            Typeface typeface = Typeface.createFromAsset(mContext.getAssets(),"hwzs.ttf");
+            Typeface typeface = Typeface.createFromAsset(mContext.getAssets(), "hwzs.ttf");
             String startTime = getCurTime();
 
-            PrintTemplate template = new PrintTemplate(mContext,typeface);
-            template.setStrokeWidth(0.1f);
-            int textSize = TextUnit.TextSize.NORMAL;
-
-          template.add(new TextUnit("هلا للمدفوعات",24, Align.CENTER).setLineSpacing(10));
+//            PrintTemplate template = new PrintTemplate(mContext,typeface);
+//            template.setStrokeWidth(0.1f);
+//            int textSize = TextUnit.TextSize.NORMAL;
+//
+//          template.add(new TextUnit("هلا للمدفوعات",24, Align.CENTER).setLineSpacing(10));
 
             try {
                 Bitmap bitmap = BitmapFactory.decodeResource(mContext.getResources(), R.drawable.halalah);

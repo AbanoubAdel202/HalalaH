@@ -17,6 +17,8 @@ import com.example.halalah.ui.PinpadActivity;
 import com.example.halalah.emv.EmvManager;
 import com.example.halalah.emv.OnEmvProcessListener;
 import com.example.halalah.iso8583.BCDASCII;
+import com.example.halalah.ui.PacketProcessActivity;
+import com.example.halalah.ui.PinpadActivity;
 import com.example.halalah.util.PacketProcessUtils;
 
 

@@ -19,14 +19,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.Toast;
-
+import androidx.fragment.app.Fragment;
 import com.example.halalah.TMS.AID_Data;
 import com.example.halalah.TMS.Public_Key;
 import com.example.halalah.connect.connectivity.ConnectionManager;
-
 import com.example.halalah.TMS.SAMA_TMS;
 import com.example.halalah.emv.EmvManager;
-
 import com.example.halalah.iso8583.BCDASCII;
 import com.example.halalah.secure.DUKPT_KEY;
 import com.example.halalah.ui.AmountInputActivity;
@@ -141,8 +139,6 @@ View root =inflater.inflate(R.layout.fragment_home_transaction, container, false
         {
             //Home screen btn for default transaction
             case R.id.Mada1_btn:
-
-
 
                 Toast.makeText(getContext(),"Purshase Transaction",Toast.LENGTH_LONG).show();
                /* SAMA_TMS sama_tms = new SAMA_TMS();

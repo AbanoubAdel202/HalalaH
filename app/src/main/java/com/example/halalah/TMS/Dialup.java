@@ -1,11 +1,11 @@
 package com.example.halalah.TMS;
 
-import androidx.annotation.NonNull;
-import androidx.room.PrimaryKey;
-
 import com.example.halalah.sqlite.database.Column;
 import com.example.halalah.sqlite.database.Table;
 
+import org.parceler.Parcel;
+
+@Parcel
 @Table(name = "Dialup")
 public class Dialup extends Connection {
 

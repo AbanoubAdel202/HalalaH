@@ -54,6 +54,25 @@
         android:theme="@style/AppTheme">
         <activity android:name=".ui.reports.displayhosttransaction"></activity>
         <activity
+            android:name=".MainActivity"
+            android:label="@string/app_name"
+            android:theme="@style/AppTheme.NoActionBar">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+                <category android:name="android.intent.category.HOME" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+
+            <meta-data
+                android:name="default_launcher_flag"
+                android:value="yes" />
+        </activity>
+        <activity
+            android:name=".registration.view.RegistrationActivity"
+            android:launchMode="singleTask" />
+        <activity
             android:name=".ui.transactions.Authorization.AuthAdvice.authAdviceTypeActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:label="@string/title_activity_auth_advice_type"
@@ -137,27 +156,11 @@
         <activity android:name=".ui.CardConfirmActivity" />
         <activity android:name=".ui.admin_settings.SuperAdminActivity" />
         <activity android:name=".ui.admin_settings.OthersSettingActivity" />
-        <activity android:name=".ui.admin_settings.CommunicationSettingActivity" />
+        <activity android:name=".ui.admin_settings.communication.CommunicationSettingActivity" />
         <activity android:name=".ui.admin_settings.ImportKeyActivity" />
         <activity android:name=".ui.ShowResultActivity" />
         <activity android:name=".ui.Display_PrintActivity" />
         <activity android:name=".PanInputActivity" />
-        <activity
-            android:name=".MainActivity"
-            android:label="@string/app_name"
-            android:theme="@style/AppTheme.NoActionBar">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-                <category android:name="android.intent.category.HOME" />
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
-
-            <meta-data
-                android:name="default_launcher_flag"
-                android:value="yes" />
-        </activity>
 
         <service
             android:name=".card.CardMoniterService"

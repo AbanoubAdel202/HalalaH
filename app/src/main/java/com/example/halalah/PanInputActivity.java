@@ -10,10 +10,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
-import com.example.halalah.ui.P_NAQD_InputActivity;
 import com.example.halalah.ui.PinpadActivity;
-import com.example.halalah.ui.Refund_InputActivity;
-import com.example.halalah.ui.SearchCardActivity;
 
 public class PanInputActivity extends Activity implements View.OnClickListener{
     private static final String TAG = PanInputActivity.class.getSimpleName();
@@ -38,10 +35,10 @@ public class PanInputActivity extends Activity implements View.OnClickListener{
 
         /*ActionBar actionBar = this.getActionBar();
         actionBar.setTitle(R.string.title_consume);*/
-        mBtnConfirm = (Button) findViewById(R.id.btn_search_card);
-        mTextPAN = (TextView) findViewById(R.id.edit_pan);
+        mBtnConfirm = findViewById(R.id.btn_search_card);
+        mTextPAN = findViewById(R.id.edit_pan);
 
-        mPANBuilder = new StringBuilder("");
+        mPANBuilder = new StringBuilder();
 
         mBtnConfirm.setText(R.string.amount_input_search_card);
         mHandle.sendEmptyMessage(MSG_TIME_UPDATE);
@@ -115,26 +112,21 @@ public class PanInputActivity extends Activity implements View.OnClickListener{
             case R.id.btn_search_card:
 
 
-
-
-                    PosApplication.getApp().oGPosTransaction.m_sPAN = mPAN.toString();
-                if (POS_MAIN.Recognise_card()!=0)
-                {
+                PosApplication.getApp().oGPosTransaction.m_sPAN = mPAN.toString();
+                if (POS_MAIN.Recognise_card() != 0) {
                     //todo do activity error CArd not recognised
                 }
-                if(!POS_MAIN.Check_transaction_allowed(PosApplication.getApp().oGPosTransaction.m_enmTrxType))
-                {
+                if (!POS_MAIN.Check_transaction_allowed(PosApplication.getApp().oGPosTransaction.m_enmTrxType)) {
                     //todo do transaction not allowed Activity
                 }
-                if(POS_MAIN.Check_transaction_limits(PosApplication.getApp().oGPosTransaction.m_enmTrxType)==0)
-                {
+                if (POS_MAIN.Check_transaction_limits(PosApplication.getApp().oGPosTransaction.m_enmTrxType) == 0) {
                     //todo alert dialog for limit exeeded
                 }
                 POS_MAIN.supervisor_pass_required();
 
-                Intent Pinpadact=new Intent(getApplicationContext(), PinpadActivity.class);
-            startActivity(Pinpadact);
-                    finish();
+                Intent Pinpadact = new Intent(getApplicationContext(), PinpadActivity.class);
+                startActivity(Pinpadact);
+                finish();
 
             default:
                 break;

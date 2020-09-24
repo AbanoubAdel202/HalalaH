@@ -10,6 +10,7 @@ import com.topwise.cloudpos.aidl.emv.level2.EmvTerminalInfo;
 import android.Manifest;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Address;
 import android.location.Geocoder;
@@ -25,16 +26,30 @@ import android.view.Menu;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.halalah.TMS.SAMA_TMS;
-import com.example.halalah.iso8583.BCDASCII;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.ActivityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.navigation.NavController;
+import androidx.navigation.Navigation;
+import androidx.navigation.ui.AppBarConfiguration;
+import androidx.navigation.ui.NavigationUI;
 
+import com.example.halalah.TMS.SAMA_TMS;
+import com.example.halalah.cloudpos.data.PinpadConstant;
+import com.example.halalah.emv.EmvManager;
+import com.example.halalah.iso8583.BCDASCII;
+import com.example.halalah.registration.RegistrationData;
+import com.example.halalah.registration.view.ITransaction;
+import com.example.halalah.registration.view.RegistrationActivity;
 import com.example.halalah.secure.DUKPT_KEY;
 import com.google.android.material.navigation.NavigationView;
-
+import com.topwise.cloudpos.aidl.emv.level2.EmvTerminalInfo;
 import com.topwise.cloudpos.aidl.led.AidlLed;
 import com.topwise.cloudpos.aidl.pinpad.AidlPinpad;
 import com.topwise.cloudpos.data.PinpadConstant;
-
+import org.parceler.Parcels;
 import androidx.core.app.ActivityCompat;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
@@ -50,11 +65,13 @@ import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.CountDownLatch;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements ITransaction.View {
 
+    private static final int REGISTRATION_REQUEST_CODE = 1000;
     private AppBarConfiguration mAppBarConfiguration;
     Context context;
     ProgressDialog mProgressDialog;
+    private boolean isRegistrationInProgress;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,8 +79,10 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
-
+//        CommunicationInfo communicationInfo = new CommunicationInfo(this);
+//        communicationInfo.setHostIP("192.168.8.124");
+//        communicationInfo.setHostPort("1001");
+//        communicationInfo.setTPDU("6000230000");
 
         TextView date = findViewById(R.id.Date);
         TextView time =findViewById(R.id.TIME);
@@ -78,7 +97,16 @@ public class MainActivity extends AppCompatActivity {
 
         PosApplication.getApp().getDeviceManager();
 
-
+        // Mostafa 21/4/2020 added to remove bars for full screen application
+        /*View decorView = getWindow().getDecorView();
+        int uiOptions = View.SYSTEM_UI_FLAG_LOW_PROFILE
+                    | View.SYSTEM_UI_FLAG_FULLSCREEN
+                    | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                    | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                    | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                    | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
+        decorView.setSystemUiVisibility(uiOptions);
+        */
 
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         NavigationView navigationView = findViewById(R.id.nav_view);
@@ -92,17 +120,11 @@ public class MainActivity extends AppCompatActivity {
         NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);
         NavigationUI.setupWithNavController(navigationView, navController);
 
-
-        mProgressDialog = new ProgressDialog(this);
-        mProgressDialog.setCancelable(false);
-        mProgressDialog.setMessage("Terminal Initializing please wait...");
-        mProgressDialog.show();
-
+        showLoading("Terminal Initializing please wait...");
 
         Terminal_Initialization();
 
-
-       // StartMADA_APP();
+        StartMADA_APP();
 
 
 
@@ -131,8 +153,6 @@ public class MainActivity extends AppCompatActivity {
        Toast.makeText(this,"This is Home Screen",Toast.LENGTH_LONG).show();
 
 
-
-
     }
     @Override
     public void onUserInteraction(){
@@ -147,6 +167,7 @@ public class MainActivity extends AppCompatActivity {
         super.onResume();
         PosApplication.getApp().oGPosTransaction.Reset();
         AidlLed mAidlLed = DeviceTopUsdkServiceManager.getInstance().getLedManager();
+        checkRegistration();
         try {
             if(mAidlLed != null){
                 mAidlLed.setLed(0 , false);
@@ -156,7 +177,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private boolean Terminal_Initialization(){
+    private boolean Terminal_Initialization() {
 
         // todo Terminal initialization
         POS_MAIN.check_hardware();
@@ -164,27 +185,21 @@ public class MainActivity extends AppCompatActivity {
         POS_MAIN.load_TermData();
         Getlocation();
 
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                if(!PosApplication.getApp().oGTerminal_Operation_Data.m_TMS_Downloaded)
-                    DownLoadParM();//Dummy TMS download
-                //downLoadKeys();
+        new Thread(() -> {
+            SystemClock.sleep(1000);
+            if(!PosApplication.getApp().oGTerminal_Operation_Data.m_TMS_Downloaded)
+                DownLoadParM();//Dummy TMS download
+            //downLoadKeys();
 
-
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        if(mProgressDialog!= null && mProgressDialog.isShowing()){
-                            mProgressDialog.dismiss();
-                        }
-
-                    }
-                });
-            }
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    hideLoading();
+                }
+            });
         }).start();
 
-return true;
+        return true;
 
 
     }
@@ -394,21 +409,35 @@ return true;
     private void StartMADA_APP()
     {   Load_Terminal_operation_data();
         POS_MAIN.Get_Terminal_Transaction_limits();
+    }
 
-        boolean bRegistered=PosApplication.getApp().oGTerminal_Operation_Data.m_bregistered;
-        Initialize_Security();
-        if(bRegistered==true) {
+    private void checkRegistration() {
+        if (isRegistrationInProgress) {
+            showLoading("Registering terminal. Please wait ...");
+            return;
+        }
+        boolean bRegistered = PosApplication.getApp().oGTerminal_Operation_Data.m_bregistered;
+//        Initialize_Security();
+        if (bRegistered == true) {
             //Initialize_EMV_Configuration();
             Initialize_CTLS_configuration();
+        } else {
+            showRegistrationScreen();
         }
-        else{
+    }
 
-            while (!PosApplication.getApp().oGTerminal_Operation_Data.m_bregistered)  //todo add tries counter due to connection failures
-            {
-                POS_MAIN oPos_Main = new POS_MAIN();
-                oPos_Main.Start_Transaction(PosApplication.getApp().oGPosTransaction,POSTransaction.TranscationType.TERMINAL_REGISTRATION);
+    private void showLoading(String message) {
+        if (mProgressDialog == null) {
+            mProgressDialog = new ProgressDialog(this);
+        }
+        mProgressDialog.setCancelable(true);
+        mProgressDialog.setMessage(message);
+        mProgressDialog.show();
+    }
 
-            }
+    private void hideLoading() {
+        if (mProgressDialog != null && mProgressDialog.isShowing()) {
+            mProgressDialog.dismiss();
         }
     }
     private void Initialize_Security()
@@ -438,14 +467,59 @@ return true;
     private void Load_Terminal_operation_data()
     {
         //todo Load Terminal operation data from database
-
-
+    }
+    @Override
+    public void showRegistrationScreen() {
+        Intent intent = new Intent(this, RegistrationActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        startActivityForResult(intent, REGISTRATION_REQUEST_CODE);
     }
 
 
 
+    @Override
+    public void showError(int errorMessageId) {
+        hideLoading();
+        Toast.makeText(context, getString(errorMessageId), Toast.LENGTH_SHORT).show();
+        checkRegistration();
+    }
 
+    @Override
+    public void showError(String errorMessageString) {
+        hideLoading();
+        Toast.makeText(context, errorMessageString, Toast.LENGTH_SHORT).show();
+        checkRegistration();
+    }
 
+    @Override
+    public void showConnectionStatus(int connectionStatus) {
+        Toast.makeText(context, "Connection code = " + connectionStatus, Toast.LENGTH_SHORT).show();
+    }
 
+    @Override
+    public void showRegistrationSuccess() {
+        hideLoading();
+        Toast.makeText(context, "Terminal registered successfully !! ", Toast.LENGTH_SHORT).show();
+    }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        Log.d("onActivityResult", "onActivityResult");
+        switch (requestCode) {
+            case REGISTRATION_REQUEST_CODE:
+                if (resultCode == RESULT_OK && data != null && data.hasExtra("registrationData")) {
+                    RegistrationData registrationData = Parcels.unwrap(data.getParcelableExtra("registrationData"));
+                    PosApplication.getApp().oGPosTransaction.setTerminalRegistrationData(registrationData);
+                    // based on Moamen Ahmed Registeration file , Terminal_Registeration.java also
+                    isRegistrationInProgress = true;
+                    PosApplication.getApp().oGTerminal_Registeration.StartRegistrationProcess(
+                            PosApplication.getApp().oGPosTransaction, this);
+                } else {
+                    showError(R.string.registration_error);
+                }
+                break;
+        }
+    }
 }

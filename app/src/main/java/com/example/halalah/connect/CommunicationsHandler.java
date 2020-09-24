@@ -183,7 +183,7 @@ public class CommunicationsHandler {
                 public void onFinish() {
                     Log.d(TAG, "reconnect Timeout Counter DONE! ");
                     if (isConnected()) {
-                        sendReceive();
+                        sendReceive(mSendPacket);
                     } else {
                         updateUI(UI_STATUS_FAILED);
                     }
@@ -209,7 +209,7 @@ public class CommunicationsHandler {
                 public void onFinish() {
                     Log.d(TAG, "waitForCurrentCall Timeout Counter DONE! ");
                     if (isConnected()) {
-                        sendReceive();
+                        sendReceive(mSendPacket);
                     } else {
                         updateUI(UI_STATUS_FAILED);
                         reconnect(5000, 3);

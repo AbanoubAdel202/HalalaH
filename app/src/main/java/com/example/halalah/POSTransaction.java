@@ -1,4 +1,5 @@
 package com.example.halalah;
+
 import android.util.Log;
 import android.widget.Switch;
 
@@ -8,7 +9,7 @@ import com.example.halalah.TMS.Card_Scheme;
 import com.example.halalah.TMS.SAMA_TMS;
 import com.example.halalah.iso8583.BCDASCII;
 import com.example.halalah.iso8583.ISO8583;
-
+import com.example.halalah.registration.RegistrationData;
 import com.example.halalah.packet.PackUtils;
 import com.example.halalah.secure.DUKPT_KEY;
 import com.example.halalah.util.BytesUtil;
@@ -31,8 +32,7 @@ import java.util.Locale;
 public class POSTransaction implements Serializable {
     private static final String TAG = Utils.TAGPUBLIC + POSTransaction.class.getSimpleName();
 
-
-
+    private RegistrationData terminalRegistrationData;
 
     public boolean m_is_mada;
     public boolean m_is_final;
@@ -355,21 +355,36 @@ public class POSTransaction implements Serializable {
 
         return stotalsDE124;
     }
-
-
     public String ComposeICCTags(CardType enmCard)
     {
         return "0";
     }
 
-    public String ComposeTerminalRegistrationData() // use ComposeNetworkMessage instead
-    {
 
 
-        return "0";
+
+
+    public String ComposeTerminalRegistrationData(RegistrationData terminalRegistrationData) {
+
+        StringBuilder registrationDataBuilder = new StringBuilder();
+
+        registrationDataBuilder.append(terminalRegistrationData.getVendorId());
+        registrationDataBuilder.append(terminalRegistrationData.getVendorTerminalType());
+        registrationDataBuilder.append(terminalRegistrationData.getTrsmid());
+        registrationDataBuilder.append(terminalRegistrationData.getVendorKeyIndex());
+        registrationDataBuilder.append(terminalRegistrationData.getSamaKeyIndex());
+        registrationDataBuilder.append(terminalRegistrationData.getRandomLengthIndicatorHex());
+        registrationDataBuilder.append(terminalRegistrationData.getRandomStringSequence());
+        registrationDataBuilder.append(terminalRegistrationData.getVendorKeyLength());
+
+        String signature = terminalRegistrationData.getVendorSignature();
+
+        registrationDataBuilder.append(signature);
+
+        return registrationDataBuilder.toString();
     }
-    public int    ParseICCTags(String ICCHostTags)
-    {
+
+    public int ParseICCTags(String ICCHostTags) {
         return 0;
     }
 
@@ -1111,7 +1126,7 @@ public class POSTransaction implements Serializable {
 
         ComposeTerminalStatusData();
         m_RequestISOMsg.SetDataElement(62, m_sTerminalStatus.getBytes(), m_sTerminalStatus.length());
-        Log.i(TAG, "DE 62 [m_sTerminalStatus]= " + m_sTerminalStatus+"Length ="+m_sTerminalStatus.length());
+        Log.i(TAG, "DE 62 [m_sTerminalStatus]= " + m_sTerminalStatus + "Length =" + m_sTerminalStatus.length());
 
         ComposeMACBlockData();
         byte[] mac = BCDASCII.hexStringToBytes(m_sTrxMACBlock);
@@ -1452,7 +1467,7 @@ public class POSTransaction implements Serializable {
 
 
         // Set Date & Time, Local Transaction
-        m_sLocalTrxDateTime=ExtraUtil.Get_Local_Date_Time();
+        m_sLocalTrxDateTime = ExtraUtil.Get_Local_Date_Time();
         m_RequestISOMsg.SetDataElement(12, m_sLocalTrxDateTime.getBytes(), m_sLocalTrxDateTime.length());
         Log.i(TAG, " DE 12 [m_sLocalTrxDateTime]= " + m_sLocalTrxDateTime+"Length ="+m_sLocalTrxDateTime.length());
 
@@ -3069,6 +3084,7 @@ public class POSTransaction implements Serializable {
         Timeout_waiting_for_response,
         MAC_failure
         }
+
     /**
      * \Function Name: GetDE25Messagereasoncode
      * \Param  : void
@@ -3856,8 +3872,13 @@ public class POSTransaction implements Serializable {
 
     }
 
+    public RegistrationData getTerminalRegistrationData() {
+        return terminalRegistrationData;
+    }
 
-
+    public void setTerminalRegistrationData(RegistrationData terminalRegistrationData) {
+        this.terminalRegistrationData = terminalRegistrationData;
+    }
 }
 
 
