@@ -255,7 +255,8 @@ public class PinpadActivity extends Activity {
           //  AidlBuzzer aidlBuzzer=DeviceTopUsdkServiceManager.getInstance().getBeepManager();
            // aidlBuzzer.beep(BuzzerCode.BUZZER_MODE_NORAML,0);
 
-
+            AudioManager mAudioMgr = (AudioManager) getSystemService(AUDIO_SERVICE);
+            mAudioMgr.playSoundEffect(AudioManager.FX_KEY_CLICK);
             mPinInput = msg;
             mHandler.sendEmptyMessage(1);
         }
