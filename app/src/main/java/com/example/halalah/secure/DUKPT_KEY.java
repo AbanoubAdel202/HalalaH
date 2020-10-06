@@ -226,19 +226,19 @@ Load Last Terminal Data from Terminal Operation Data Table
     }
 
 
-/************************
-	\Function Name: CaluclateMACBlock
-	\Param        : string strMACInputData
-	\Return       : string
-	\Pre          :
-	\Post         :
-	\Author	      : MoamenAhmed
-	\DT		      : 07/06/2020
-	\Des: Used to generate MAC block for  passing input data
-**************************************/
+    /************************
+     \Function Name: CaluclateMACBlock
+     \Param        : string strMACInputData
+     \Return       : string
+     \Pre          :
+     \Post         :
+     \Author	      : MoamenAhmed
+     \DT		      : 07/06/2020
+     \Des: Used to generate MAC block for  passing input data
+     **************************************/
 
 
-    public static String CaluclateMACBlock(String strMACInputData)
+    public static String CaluclateMACBlock(byte[] bMACInputData)//String strMACInputData)
     {
 
         int    iRetRes         = -1;
@@ -247,11 +247,12 @@ Load Last Terminal Data from Terminal Operation Data Table
         String strMACBLOCK ;
         byte[] byteCurrentKSN;
 
-        Log.i(TAG," CaluclateMACBlock STarted Input Data  [ "+strMACInputData+ " ]");
+        Log.i(TAG," CaluclateMACBlock STarted Input Data  [ "+bMACInputData+ " ]");
 
         macBundle.putInt("wkeyid", m_WorkKey);
         macBundle.putInt("key_type", PosApplication.DUKPT_MAK);
-        macBundle.putByteArray("data",HexUtil.hexStringToByte(strMACInputData));
+        //byte[]x=HexUtil.StringToByte(strMACInputData);
+        macBundle.putByteArray("data", bMACInputData);//HexUtil.StringToByte(strMACInputData));
         macBundle.putByteArray("random", null);
         macBundle.putInt("type", 0x00);
 
@@ -262,16 +263,16 @@ Load Last Terminal Data from Terminal Operation Data Table
             Log.i(TAG,"getDUKPTKsn for MAC with KSN Value [ "+HexUtil.bcd2str(byteCurrentKSN)+" ] and m_WorkingKey  ["+m_WorkKey+" ]");
 
         }
-            catch (RemoteException e) {
+        catch (RemoteException e) {
             e.printStackTrace();
         }
-       try {
-           iRetRes = pinpad.getMac(macBundle, byteMACBlock);
-           // MAC block should be padded with FF after firt four bytes A8451D92FFFFFFFF
-           Log.i(TAG,"getMac  Returned ["+iRetRes+" ]");
-       }catch (RemoteException e) {
-           e.printStackTrace();
-       }
+        try {
+            iRetRes = pinpad.getMac(macBundle, byteMACBlock);
+            // MAC block should be padded with FF after firt four bytes A8451D92FFFFFFFF
+            Log.i(TAG,"getMac  Returned ["+iRetRes+" ]");
+        }catch (RemoteException e) {
+            e.printStackTrace();
+        }
 
 
 
@@ -289,7 +290,8 @@ Load Last Terminal Data from Terminal Operation Data Table
         {
             //showMessage(getResources().getString(R.string.pin_mac_919_mac_success1) + HexUtil.bcd2str(mac));
 
-            strMACBLOCK = HexUtil.bcd2str(byteMACBlock);
+            //strMACBLOCK = HexUtil.bcd2str(byteMACBlock);
+            strMACBLOCK=BCDASCII.bytesToHexString(byteMACBlock);
             Log.i(TAG,"getMac Succeed with return [ "+R.string.MAC_Success+"] and Value ["+strMACBLOCK+"]");
         }
 

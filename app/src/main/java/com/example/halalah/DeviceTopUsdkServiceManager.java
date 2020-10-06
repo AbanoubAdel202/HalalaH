@@ -24,6 +24,8 @@ import com.topwise.cloudpos.aidl.printer.AidlPrinter;
 import com.topwise.cloudpos.aidl.rfcard.AidlRFCard;
 import com.topwise.cloudpos.aidl.shellmonitor.AidlShellMonitor;
 import com.topwise.cloudpos.aidl.system.AidlSystem;
+import com.topwise.cloudpos.aidl.emv.level2.AidlQpboc;
+
 
 /**
  * @author xukun
@@ -363,4 +365,15 @@ public class DeviceTopUsdkServiceManager {
         }
         return null;
     }
+    public AidlQpboc getL2Qpboc() {
+        try {
+            if (mDeviceService != null) {
+                return AidlQpboc.Stub.asInterface(mDeviceService.getL2Qpboc());
+            }
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
 }

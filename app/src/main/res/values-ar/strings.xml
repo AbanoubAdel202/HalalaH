@@ -348,6 +348,11 @@
     <string name="secondary_connection">Secondary Connection</string>
     <string name="connection_type">Connection Type</string>
 
+    <string-array name="key_indicies">
+        <item>    00    </item>
+        <item>    01    </item>
+    </string-array>
+
     <string-array name="connection_types">
         <item>    Wifi    </item>
         <item>    Gprs    </item>

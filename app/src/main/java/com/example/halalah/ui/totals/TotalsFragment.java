@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.EditText;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
@@ -17,14 +18,16 @@ import com.example.halalah.POS_MAIN;
 import com.example.halalah.PosApplication;
 import com.example.halalah.R;
 import com.example.halalah.connect.CommunicationsHandler;
+import com.example.halalah.connect.TCPCommunicator;
+import com.example.halalah.connect.TCPListener;
 import com.example.halalah.storage.CommunicationInfo;
 
 import java.io.InputStream;
 
-public class TotalsFragment extends Fragment implements View.OnClickListener {
+public class TotalsFragment extends Fragment implements View.OnClickListener  {
 
     private TotalsViewModel totalsViewModel;
-
+    private TCPCommunicator tcpClient;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -39,13 +42,10 @@ public class TotalsFragment extends Fragment implements View.OnClickListener {
         snapshot_btn.setOnClickListener(this);
         Button back_btn = (Button)root.findViewById(R.id.back_btn);
         snapshot_btn.setOnClickListener(this);
-
+       // preConnect();
         return root;
     }
-    public void onClick()
-    {
 
-    }
 
     @Override
     public void onClick(View v) {
@@ -54,13 +54,21 @@ public class TotalsFragment extends Fragment implements View.OnClickListener {
         {
             case R.id.recon_btn:
                 preConnect();
+
                 PosApplication.getApp().oGPosTransaction.m_enmTrxType= POSTransaction.TranscationType.RECONCILIATION;
                  PosApplication.getApp().oGPOS_MAIN.StartReconciliation(true);
 
                     Intent reconciliation = new Intent(getActivity(), reconciliation.class);
                     startActivity(reconciliation);
 
-                break;
+
+                disconnect();
+
+
+
+
+
+            break;
             case R.id.run_tot_btn:
                 Intent running = new Intent(getActivity(), running_totals.class);
 
@@ -79,11 +87,20 @@ public class TotalsFragment extends Fragment implements View.OnClickListener {
 
     }
 
+    private void disconnect() {
+        TCPCommunicator.closeStreams();
+    }
+
     private void preConnect() {
         // open socket to be ready to sending/receiving financial messages
-        CommunicationInfo communicationInfo = new CommunicationInfo(getContext());
+    /*   CommunicationInfo communicationInfo = new CommunicationInfo(getContext());
         InputStream caInputStream = getResources().openRawResource(R.raw.bks);
-        CommunicationsHandler.getInstance(communicationInfo, caInputStream).connect();
+       CommunicationsHandler.getInstance(communicationInfo, caInputStream).connect();*/
+
+       tcpClient = TCPCommunicator.getInstance();
+        tcpClient.init("192.168.8.145", 2030);
+        TCPCommunicator.closeStreams();
     }
+
 
 }

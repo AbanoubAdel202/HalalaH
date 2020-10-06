@@ -12,18 +12,24 @@ public class Capk extends BaseModel {
     private String ridindex = "";
     @Column(name = "rid",style = "0,10")
     private String rid = "";
-    @Column(name = "rindex")
-    private byte index;
-    @Column(name = "hashInd")
-    private byte hashInd;
-    @Column(name = "arithInd")
-    private byte arithInd;
+    @Column(name = "rindex",style = "0,1")
+    private byte[] rindex = new byte[0];
+
+    @Column(name = "hashInd",style = "0,1")
+    private byte[] hashInd = new byte[0];
+
+    @Column(name = "arithInd",style = "0,1")
+    private byte[] arithInd = new byte[0];
+
     @Column(name = "modul",style = "0,248")
     private byte[] modul = new byte[0];
+
     @Column(name = "exponent",style = "0,3")
     private byte[] exponent = new byte[0];
-    @Column(name = "expDate",style = "0,3")
+
+    @Column(name = "expDate",style = "0,8")
     private byte[] expDate = new byte[0];
+
     @Column(name = "checkSum",style = "0,32")
     private byte[] checkSum = new byte[0];
 
@@ -32,27 +38,34 @@ public class Capk extends BaseModel {
     }
 
     public void fromTlvList(TlvList tlvList){
-        Tlv tlv = tlvList.getTlv("9F06");
+        Tlv tlv = tlvList.getTlv("9F22");
+        if(tlv!=null)
+            setIndex(tlv.getValue());
+
+        tlv = tlvList.getTlv("9F06");
         if(tlv!=null)
             setRid(tlv.getHexValue());
-        tlv = tlvList.getTlv("9F22");
-        if(tlv!=null)
-            setIndex(tlv.getValue()[0]);
+
         tlv = tlvList.getTlv("DF06");
         if(tlv!=null)
-            setHashInd(tlv.getValue()[0]);
+            setHashInd(tlv.getValue());
+
         tlv = tlvList.getTlv("DF07");
         if(tlv!=null)
-            setArithInd(tlv.getValue()[0]);
+            setArithInd(tlv.getValue());
+
         tlv = tlvList.getTlv("DF02");
         if(tlv!=null)
             setModul(tlv.getValue());
+
         tlv = tlvList.getTlv("DF04");
         if(tlv!=null)
             setExponent(tlv.getValue());
+
         tlv = tlvList.getTlv("DF05");
         if(tlv!=null)
             setExpDate(tlv.getValue());
+
         tlv = tlvList.getTlv("DF03");
         if(tlv!=null)
             setCheckSum(tlv.getValue());
@@ -61,9 +74,9 @@ public class Capk extends BaseModel {
     public TlvList getTlvList(){
         TlvList tlvList = new TlvList();
         tlvList.addTlv("9F06",rid);
-        tlvList.addTlv("9F22",new byte[]{index});
-        tlvList.addTlv("DF06",new byte[]{hashInd});
-        tlvList.addTlv("DF07",new byte[]{arithInd});
+        tlvList.addTlv("9F22",rindex);
+        tlvList.addTlv("DF06",hashInd);
+        tlvList.addTlv("DF07",arithInd);
         tlvList.addTlv("DF02",modul);
         tlvList.addTlv("DF04",exponent);
         tlvList.addTlv("DF05",expDate);
@@ -78,32 +91,32 @@ public class Capk extends BaseModel {
     public void setRid(String rid) {
         this.rid = rid;
         if(rid!=null&&rid.length()!=0)
-            this.ridindex = new StringBuffer(rid).append(Integer.toHexString(index & 0xFF)).toString().toUpperCase();
+            this.ridindex = new StringBuffer(rid).append(Integer.toHexString(rindex[0] & 0xFF)).toString().toUpperCase();
     }
 
     public byte getIndex() {
-        return this.index;
+        return this.rindex[0];
     }
 
-    public void setIndex(byte index) {
-        this.index = index;
+    public void setIndex(byte[] index) {
+        this.rindex = index;
         if(rid!=null&&rid.length()!=0)
-            this.ridindex = new StringBuffer(rid).append(Integer.toHexString(index & 0xFF)).toString().toUpperCase();
+            this.ridindex = new StringBuffer(rid).append(Integer.toHexString(index[0] & 0xFF)).toString().toUpperCase();
     }
 
     public byte getHashInd() {
-        return this.hashInd;
+        return this.hashInd[0];
     }
 
-    public void setHashInd(byte hashInd) {
+    public void setHashInd(byte[] hashInd) {
         this.hashInd = hashInd;
     }
 
     public byte getArithInd() {
-        return this.arithInd;
+        return this.arithInd[0];
     }
 
-    public void setArithInd(byte arithInd) {
+    public void setArithInd(byte[] arithInd) {
         this.arithInd = arithInd;
     }
 

@@ -75,7 +75,7 @@ public class PinpadActivity extends Activity {
         mPinTips = (TextView) findViewById(R.id.input_amount_tip);
 
         mPin = (TextView) findViewById(R.id.pin_num);
-        mPin.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_VARIATION_PASSWORD);
+       // mPin.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_VARIATION_PASSWORD);
 
         mTestCardNo.setText(getString(R.string.pin_tip_card_num) + mCardNo);
         mTestAmount.setText(getString(R.string.pin_tip_amount) + mAmount);

@@ -51,8 +51,12 @@ class PayDataUtil {
     static final byte KERNTYPE_JCB = 0x05;
     static final byte KERNTYPE_ZIP = 0x06; //Discover ZIP or 16
     static final byte KERNTYPE_DPAS = 0x06;//Discover DPAS
+    static final byte KERNTYPE_QPBOC = 0x07;
+
     static final byte KERNTYPE_RUPAY = 0x0D;
     static final byte  KERNTYPE_PURE = 0x2D;
+
+
     /**
      * auth handle response code
      */
@@ -173,6 +177,8 @@ class PayDataUtil {
         static final byte TRANS_SECOND_READ = 0x18;
         static final byte TRANS_OTHER = 0x06;
         static final byte CDCVM_SECOND_READ_CARD = 0x19;
+        static final byte TRANS_AGAIN_CHECK_CARD = 0x20;
+
     }
 
     /**

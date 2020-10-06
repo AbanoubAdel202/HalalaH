@@ -194,22 +194,22 @@ public class Auth_menuActivity extends AppCompatActivity implements View.OnClick
         {
             case R.id.auth_btn:
                 PosApplication.getApp().oGPosTransaction.m_sTrxAmount="1000";
-                PosApplication.getApp().oGPOS_MAIN.Start_Transaction(PosApplication.getApp().oGPosTransaction, POSTransaction.TranscationType.AUTHORISATION);
+                PosApplication.getApp().oGPOS_MAIN.Start_Transaction(PosApplication.getApp().oGPosTransaction, POSTransaction.TranscationType.AUTHORISATION,null);
                 break;
 
             case R.id.authorization_advice_btn://AUTHORISATION_ADVICE:
                 preConnect();
                 PosApplication.getApp().oGPosTransaction.m_enmTrxType=POSTransaction.TranscationType.AUTHORISATION_ADVICE;
-                PosApplication.getApp().oGPOS_MAIN.Start_Transaction(PosApplication.getApp().oGPosTransaction,POSTransaction.TranscationType.AUTHORISATION_ADVICE);
+                PosApplication.getApp().oGPOS_MAIN.Start_Transaction(PosApplication.getApp().oGPosTransaction,POSTransaction.TranscationType.AUTHORISATION_ADVICE,null);
                 break;
             case R.id.authorization_void_btn://AUTHORISATION_VOID:
                 preConnect();
-                PosApplication.getApp().oGPOS_MAIN.Start_Transaction(PosApplication.getApp().oGPosTransaction, POSTransaction.TranscationType.AUTHORISATION_VOID);
+                PosApplication.getApp().oGPOS_MAIN.Start_Transaction(PosApplication.getApp().oGPosTransaction, POSTransaction.TranscationType.AUTHORISATION_VOID,null);
 
                 break;
             case R.id.authorization_Extension_btn://AUTHORISATION_EXTENSION
                 preConnect();
-                PosApplication.getApp().oGPOS_MAIN.Start_Transaction(PosApplication.getApp().oGPosTransaction, POSTransaction.TranscationType.AUTHORISATION_EXTENSION);
+                PosApplication.getApp().oGPOS_MAIN.Start_Transaction(PosApplication.getApp().oGPosTransaction, POSTransaction.TranscationType.AUTHORISATION_EXTENSION,null);
 
                 break;
 

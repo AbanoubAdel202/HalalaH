@@ -883,6 +883,21 @@ public class ContactCardProcess {
         Log.d(TAG, "getExpDate(): " + BytesUtil.bytes2HexString(capk.getExpDate()));
         Log.d(TAG, "getCheckSum(): " + BytesUtil.bytes2HexString(capk.getCheckSum()));
 
+        byte[] tempExpDate = new byte[3]; //YYMMDD
+        if (4 == capk.getExpDate().length) {
+            System.arraycopy(capk.getExpDate(), 1, tempExpDate, 0, 3);
+        } else if (8 == capk.getExpDate().length) {
+            String strExpDate = new String(capk.getExpDate());
+            byte[] bcdExpDate =  BytesUtil.hexString2Bytes(strExpDate);
+            System.arraycopy(bcdExpDate, 1, tempExpDate, 0, 3);
+        } else {
+            //301231
+            tempExpDate[0] = 0x30;
+            tempExpDate[1] = 0x12;
+            tempExpDate[2] = 0x31;
+        }
+        Log.d(TAG, "tempExpDate(): " + BytesUtil.bytes2HexString(tempExpDate));
+
         EmvCapk emvCapk = new EmvCapk();
         emvCapk.setRID(BytesUtil.hexString2Bytes(capk.getRid()));
         emvCapk.setKeyID(capk.getIndex());
@@ -890,11 +905,13 @@ public class ContactCardProcess {
         emvCapk.setHashInd(capk.getHashInd());
         emvCapk.setExponent(capk.getExponent());
         emvCapk.setModul(capk.getModul());
-        emvCapk.setExpDate(capk.getExpDate());
+        emvCapk.setExpDate(tempExpDate);
+        emvCapk.setCheckSum(PayDataUtil.getCAPKChecksum(capk));
 
 
 
-        emvCapk.setCheckSum(capk.getCheckSum());
+
+
 
         emvL2.EMV_DelAllCAPK();
         emvRet = emvL2.EMV_AddCAPK(emvCapk);

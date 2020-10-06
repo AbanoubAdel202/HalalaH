@@ -105,7 +105,9 @@ abstract class BasePayProcess {
             EmvCapk emvCapk = new EmvCapk();
             emvCapk.setRID(rid);
             emvCapk.setKeyID(index[0]);
-            byte[] orgData = capk.getExpDate();
+
+
+          /*  byte[] orgData = capk.getExpDate();
             if (orgData != null && orgData.length>0) {
                 byte[] date = new byte[3];
                 if (orgData.length > 3) {
@@ -114,13 +116,33 @@ abstract class BasePayProcess {
                     System.arraycopy(orgData, 0, date, 0, orgData.length);
                 }
                 emvCapk.setExpDate(date);
+            }*/
+            byte[] tempExpDate = new byte[3]; //YYMMDD
+            if (4 == capk.getExpDate().length) {
+                System.arraycopy(capk.getExpDate(), 1, tempExpDate, 0, 3);
+            } else if (8 == capk.getExpDate().length) {
+                String strExpDate = new String(capk.getExpDate());
+                byte[] bcdExpDate =  BytesUtil.hexString2Bytes(strExpDate);
+                System.arraycopy(bcdExpDate, 1, tempExpDate, 0, 3);
+            } else {
+                //301231
+                tempExpDate[0] = 0x30;
+                tempExpDate[1] = 0x12;
+                tempExpDate[2] = 0x31;
             }
+            Log.d(TAG, "tempExpDate(): " + BytesUtil.bytes2HexString(tempExpDate));
+            emvCapk.setExpDate(tempExpDate);
+
             emvCapk.setHashInd(capk.getHashInd());
             emvCapk.setArithInd(capk.getArithInd());
-            byte[] sha1 = PayDataUtil.getCAPKChecksum(capk);
-            Log.d(TAG, "sha1: " + BytesUtil.bytes2HexString(sha1));
-            emvCapk.setCheckSum(sha1);
-            orgData = capk.getModul();
+            //byte[] sha1 = PayDataUtil.getCAPKChecksum(capk);
+            // Log.d(TAG, "sha1: " + BytesUtil.bytes2HexString(sha1));
+            // emvCapk.setCheckSum(sha1);
+            emvCapk.setCheckSum(PayDataUtil.getCAPKChecksum(capk));
+
+
+            byte[] orgData = capk.getModul();
+
             if (orgData != null) {
                 emvCapk.setModul(orgData);
             }
@@ -144,7 +166,8 @@ abstract class BasePayProcess {
      * @return AID参数
      */
     byte[] getCurrentAidData(String aidHex) {
-        SDKLog.d(TAG, "getCurrentAidData aidHex: " + aidHex);
+        SDKLog.d(TAG, "getCurrentAidData() aidHex: " + aidHex);
+
         Aid aid = db.getAidDao().findByAidAndAsi(aidHex);
         SDKLog.d(TAG, "aid:" + aid.toString());
         byte[] aidData = null;

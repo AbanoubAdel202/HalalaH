@@ -21,6 +21,7 @@ import com.example.halalah.DeviceTopUsdkServiceManager;
 import com.example.halalah.PosApplication;
 import com.example.halalah.R;
 import com.example.halalah.connect.CommunicationsHandler;
+import com.example.halalah.connect.TCPCommunicator;
 import com.example.halalah.storage.CommunicationInfo;
 import com.topwise.cloudpos.aidl.AidlDeviceService;
 import com.topwise.cloudpos.aidl.buzzer.AidlBuzzer;
@@ -43,7 +44,7 @@ public class AmountInputActivity extends Activity implements View.OnClickListene
     private AidlLed mAidlLed = DeviceTopUsdkServiceManager.getInstance().getLedManager();
     private AidlBuzzer beepManager = DeviceTopUsdkServiceManager.getInstance().getBeepManager();
     private int mTime = 30;
-
+    private TCPCommunicator tcpClient;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -84,9 +85,13 @@ public class AmountInputActivity extends Activity implements View.OnClickListene
 
     private void preConnect() {
         // open socket to be ready to sending/receiving financial messages
-        CommunicationInfo communicationInfo = new CommunicationInfo(this);
+      /*  CommunicationInfo communicationInfo = new CommunicationInfo(this);
         InputStream caInputStream = getResources().openRawResource(R.raw.bks);
-        CommunicationsHandler.getInstance(communicationInfo, caInputStream).connect();
+        CommunicationsHandler.getInstance(communicationInfo, caInputStream).connect();*/
+
+        tcpClient = TCPCommunicator.getInstance();
+        tcpClient.init("192.168.8.145", 2030);
+        TCPCommunicator.closeStreams();
     }
 
     private Handler mHandle = new Handler() {

@@ -3,12 +3,20 @@ package com.example.halalah;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Handler;
 import android.util.Log;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.Toast;
 
 import com.example.halalah.TMS.AID_Data;
 import com.example.halalah.TMS.Card_Scheme;
 import com.example.halalah.TMS.Public_Key;
 import com.example.halalah.TMS.SAMA_TMS;
+import com.example.halalah.cloudpos.data.AidlErrorCode;
+import com.example.halalah.connect.HeadersInterceptor;
+import com.example.halalah.connect.TCPCommunicator;
+import com.example.halalah.connect.TCPListener;
 import com.example.halalah.registration.view.ITransaction;
 import com.example.halalah.card.CardManager;
 import com.example.halalah.connect.CommunicationsHandler;
@@ -24,15 +32,19 @@ import com.example.halalah.sqlite.database.DBManager;
 import com.example.halalah.storage.CommunicationInfo;
 import com.example.halalah.storage.SaveLoadFile;
 import com.example.halalah.ui.AmountInputActivity;
+
+import com.example.halalah.ui.Declined_Display_Print;
 import com.example.halalah.ui.Display_PrintActivity;
 import com.example.halalah.ui.P_NAQD_InputActivity;
 import com.example.halalah.ui.PacketProcessActivity;
+import com.example.halalah.ui.PinpadActivity;
 import com.example.halalah.ui.SearchCardActivity;
 import com.example.halalah.util.BytesUtil;
 import com.example.halalah.util.ExtraUtil;
 import com.example.halalah.ui.Refund_InputActivity;
 import com.topwise.cloudpos.aidl.printer.AidlPrinter;
 
+import java.util.Arrays;
 import java.util.Locale;
 
 /** Header POS Main
@@ -45,12 +57,82 @@ import java.util.Locale;
  \DT		: 4/28/2020
  \Des    : main control of transaction flow methods
  */
-public class POS_MAIN implements SendReceiveListener {
+public class POS_MAIN implements SendReceiveListener , TCPListener {
     private static final String TAG = POS_MAIN.class.getSimpleName();
     public static boolean isforced;
     private static boolean cont;
 
+    private HeadersInterceptor headersInterceptor = new HeadersInterceptor();
+    private static CommunicationInfo mCommunicationInfo;
 
+
+    private Handler UIHandler = new Handler();
+
+    @Override
+    public void onTCPMessageRecieved(byte[] receivedPacket) {
+
+        receivedPacket=Arrays.copyOfRange(receivedPacket, 7, receivedPacket.length);
+
+        Log.d(TAG, "POS_MAIN onSuccess: start");
+        byte[] responseMTI=BytesUtil.subBytes(receivedPacket, 0, 4);
+        String sresponseMTI=BCDASCII.asciiByteArray2String(responseMTI);
+        if(sresponseMTI.equals("1434"))
+        { //parse reversal
+
+            Parse_reversal_Response(receivedPacket);
+            CommunicationsHandler.getInstance(new CommunicationInfo(PosApplication.getApp().getApplicationContext())).closeConnection();
+        }
+        else if(sresponseMTI.equals("1534"))
+        {
+            Parse_RECONSILE_response(receivedPacket);
+
+            //printing reconciliation
+            CommunicationsHandler.getInstance(new CommunicationInfo(PosApplication.getApp().getApplicationContext())).closeConnection();
+
+        }
+
+
+        if(PosApplication.getApp().oGTerminal_Operation_Data.bDeSAF_flag&!PosApplication.getApp().oGTerminal_Operation_Data.breconsile_flag) {
+            Parse_DeSAF_Response(receivedPacket);
+
+            if (PosApplication.getApp().oGTerminal_Operation_Data.saf_info.m_iSAFTrxNumber >0)
+                DeSAF(SAF_Info.DESAFtype.PARTIAL);
+        }
+
+        if(PosApplication.getApp().oGTerminal_Operation_Data.bDeSAF_flag&PosApplication.getApp().oGTerminal_Operation_Data.breconsile_flag)// RECONSILE
+            if(PosApplication.getApp().oGTerminal_Operation_Data.saf_info.m_iSAFTrxNumber>0)
+            {
+                Parse_DeSAF_Response(receivedPacket);
+                DeSAF(SAF_Info.DESAFtype.FULL);
+            }
+            else
+            {
+
+                Parse_DeSAF_Response(receivedPacket);
+                PosApplication.getApp().oGTerminal_Operation_Data.bDeSAF_flag=false;
+                StartReconciliation(false);
+            }
+        if(!PosApplication.getApp().oGTerminal_Operation_Data.bDeSAF_flag&PosApplication.getApp().oGTerminal_Operation_Data.breconsile_flag)
+            StartReconciliation(false);
+        if (PosApplication.getApp().oGTerminal_Operation_Data.bDeSAF_flag&PosApplication.getApp().oGTerminal_Operation_Data.bTMS_flag) {
+            if (PosApplication.getApp().oGTerminal_Operation_Data.saf_info.m_iSAFTrxNumber > 0) {
+                DeSAF(SAF_Info.DESAFtype.FULL);
+            } else {
+                StartTMSDownload(false);
+            }
+        }
+        if(!PosApplication.getApp().oGTerminal_Operation_Data.bDeSAF_flag&PosApplication.getApp().oGTerminal_Operation_Data.bTMS_flag)
+            StartTMSDownload(false);
+
+
+
+    }
+
+    @Override
+    public void onTCPConnectionStatusChanged(boolean isConnectedNow) {
+
+
+    }
 
 
     public enum Flowtrxtype {DESAF,
@@ -251,7 +333,7 @@ public class POS_MAIN implements SendReceiveListener {
                 break;
             case TERMINAL_REGISTRATION://TREMINAL_REGISTRATION:
 
-            case TERMINAL_REGISTRATION://TREMINAL_REGISTRATION:
+
 
                 // based on Moamen Ahmed Registeration file , Terminal_Registeration.java also
                 PosApplication.getApp().oGTerminal_Registeration.StartRegistrationProcess(
@@ -291,9 +373,10 @@ public class POS_MAIN implements SendReceiveListener {
 
         oReversal_Transaction.ComposeReversalMessage();
         byte[] mSendPacket=oReversal_Transaction.m_RequestISOMsg.isotostr();
-        CommunicationsHandler communicationsHandler = CommunicationsHandler.getInstance(new CommunicationInfo(PosApplication.getApp().getApplicationContext()));
+  /*      CommunicationsHandler communicationsHandler = CommunicationsHandler.getInstance(new CommunicationInfo(PosApplication.getApp().getApplicationContext()));
         communicationsHandler.setSendReceiveListener(this);
-        communicationsHandler.sendReceive(mSendPacket);
+        communicationsHandler.sendReceive(mSendPacket);*/
+        senddata(mSendPacket);
 
         //todo  save in saf the reversal advice then printing copy of reversal then performe DESAF
 
@@ -970,50 +1053,72 @@ DF03 Check Sum                                [20]   >> 4410C6D51C2F83ADFD92528F
      */
     public int PerfomTermHostResponseFlow(byte[] recePacket, int errReason, Activity activity)
     {
-        int bRetRes;
+        int bRetRes = 0;
 
 
         Process_Rece_Packet( recePacket);
         Log.i(TAG, "Process_Rece_Packet: ");
-
+        POSTransaction current_postrx = PosApplication.getApp().oGPosTransaction;
         if(!ValidateHostMAC())
         {
             //todo go to invalid macing process
         }
-        String mResponse= BCDASCII.asciiByteArray2String(PosApplication.getApp().oGPosTransaction.m_ResponseISOMsg.getDataElement(39));
-
-
-        if(!CheckHostActionCode(mResponse))
-        {
-            //todo declined transaction check response code and print message+
-            //todo Update LEDs with tranasction status (DEcline) Red  Contactless
-        }
         else {
-            PosApplication.getApp().oGPosTransaction.m_sApprovalCode = BCDASCII.asciiByteArray2String(PosApplication.getApp().oGPosTransaction.m_ResponseISOMsg.getDataElement(38)) ;
-            SaveLastTransaction(PosApplication.getApp().oGPosTransaction,CurrentSaving.SAVE);
-            Check_DE44(PosApplication.getApp().oGPosTransaction.m_ResponseISOMsg.getDataElement(44));
-            Check_DE47(PosApplication.getApp().oGPosTransaction.m_ResponseISOMsg.getDataElement(47));
-            //todo Update LEDs with tranasction status (Approved) Green Contactless
-            if(PosApplication.getApp().oGPosTransaction.m_enmTrxCardType== POSTransaction.CardType.ICC) {
-                byte[] icc = PosApplication.getApp().oGPosTransaction.m_ResponseISOMsg.getDataElement(55);
-                String ICCresp = BCDASCII.fromBCDToASCIIString(icc, 0, icc.length * 2, true);
-                Check_DE55(PosApplication.getApp().oGPosTransaction.m_ResponseISOMsg.getDataElement(55));
-                // go do 2nd AC and Issuer if exist
-                CardManager.getInstance().setRequestOnline(true, mResponse, ICCresp);
+            String mResponse = BCDASCII.asciiByteArray2String(PosApplication.getApp().oGPosTransaction.m_ResponseISOMsg.getDataElement(39));
 
-            }
 
-          //  if(PosApplication.getApp().oGPosTransaction.m_enmTrxCardType!= POSTransaction.CardType.ICC) {
+            if (!CheckHostActionCode(mResponse)) {
+                if(mResponse.equals("112") ||mResponse.equals("117") || mResponse.equals("127"))
+                {
+                    Intent intent = new Intent(activity, PinpadActivity.class);
+                    intent.putExtra("response code", mResponse);
+                    activity.startActivity(intent);
+                    bRetRes =1;
+                }
+                else if (mResponse.equals("196"))
+                {
+                    //todo max commulitive amount exeeded warning
+                    Intent intent = new Intent(activity, PinpadActivity.class);
+                    intent.putExtra("response code", mResponse);
+                    activity.startActivity(intent);
+                    bRetRes =1;
+
+                }
+                else{
+                    Intent intent = new Intent(activity, Declined_Display_Print.class);
+                    intent.putExtra("response code", mResponse);
+                    activity.startActivity(intent);
+
+                    DeSAF(SAF_Info.DESAFtype.PARTIAL);
+                }
+                //todo Update LEDs with tranasction status (DEcline) Red  Contactless
+            } else {
+                PosApplication.getApp().oGPosTransaction.m_sApprovalCode = BCDASCII.asciiByteArray2String(PosApplication.getApp().oGPosTransaction.m_ResponseISOMsg.getDataElement(38));
+                SaveLastTransaction(PosApplication.getApp().oGPosTransaction, CurrentSaving.SAVE);
+                Check_DE44(PosApplication.getApp().oGPosTransaction.m_ResponseISOMsg.getDataElement(44));
+                Check_DE47(PosApplication.getApp().oGPosTransaction.m_ResponseISOMsg.getDataElement(47));
+                //todo Update LEDs with tranasction status (Approved) Green Contactless
+                if (PosApplication.getApp().oGPosTransaction.m_enmTrxCardType == POSTransaction.CardType.ICC) {
+                    byte[] icc = PosApplication.getApp().oGPosTransaction.m_ResponseISOMsg.getDataElement(55);
+                    String ICCresp = BCDASCII.fromBCDToASCIIString(icc, 0, icc.length * 2, true);
+                    Check_DE55(PosApplication.getApp().oGPosTransaction.m_ResponseISOMsg.getDataElement(55));
+                    // go do 2nd AC and Issuer if exist
+                    CardManager.getInstance().setRequestOnline(true, mResponse, ICCresp);
+
+                }
+
+                //  if(PosApplication.getApp().oGPosTransaction.m_enmTrxCardType!= POSTransaction.CardType.ICC) {
 
                 SaveLastTransaction(PosApplication.getApp().oGPosTransaction, CurrentSaving.REMOVE);
-                Savetransaction(PosApplication.getApp().oGPosTransaction);
+                SaveLoadFile.Savetransaction(PosApplication.getApp().oGPosTransaction);
                 PosApplication.getApp().oGTerminal_Operation_Data.m_iTransactionCounter++;
+
                 Display_printResult(activity, PosApplication.getApp().oGPosTransaction.m_sApprovalCode, PosApplication.getApp().oGPosTransaction.m_sApprovalCode, PosApplication.getApp().oGPosTransaction);
-         //   }
+                //   }
 
-        }
 
-       /// if(PosApplication.getApp().oGPosTransaction.m_enmTrxCardType!= POSTransaction.CardType.ICC) {
+
+            /// if(PosApplication.getApp().oGPosTransaction.m_enmTrxCardType!= POSTransaction.CardType.ICC) {
             bRetRes = Update_Terminal_totals();
             Log.d(TAG, "PerfomTermHostResponseFlow:Update_Terminal_totals : bRetRes= " + bRetRes);
 
@@ -1030,7 +1135,10 @@ DF03 Check Sum                                [20]   >> 4410C6D51C2F83ADFD92528F
                 if (!CheckForTMSDownload()) {
                     if (PosApplication.getApp().oGTerminal_Operation_Data.bDeSAF_flag) {
                         PosApplication.getApp().oGTerminal_Operation_Data.saf_info.DeSAF_partial_count = 2;
-                        DeSAF(SAF_Info.DESAFtype.PARTIAL);
+
+                            DeSAF(SAF_Info.DESAFtype.PARTIAL);
+
+
                     } else {
                         Save_TermData();
                     }
@@ -1038,24 +1146,25 @@ DF03 Check Sum                                [20]   >> 4410C6D51C2F83ADFD92528F
 
                 //clear flags
 
-
             }
-      //  }
+            }
+            //  }
 
-        //todo GetDateTime(int iFormat);           // iFormat , All , HHSS,YYMM,
+            //todo GetDateTime(int iFormat);           // iFormat , All , HHSS,YYMM,
 
+        }
+            activity.finish();
+            ////////////////////////////////////////////////////
 
+            return bRetRes;
 
-        activity.finish();
-        ////////////////////////////////////////////////////
-        return 0;
     }
 
 
     public void finalizing_EMV_transaction(Activity activity)
     {
         SaveLastTransaction(PosApplication.getApp().oGPosTransaction, CurrentSaving.REMOVE);
-        Savetransaction(PosApplication.getApp().oGPosTransaction);
+        SaveLoadFile.Savetransaction(PosApplication.getApp().oGPosTransaction);
         PosApplication.getApp().oGTerminal_Operation_Data.m_iTransactionCounter++;
         Display_printResult(activity,PosApplication.getApp().oGPosTransaction.m_sApprovalCode, PosApplication.getApp().oGPosTransaction.m_sApprovalCode, PosApplication.getApp().oGPosTransaction);
         int bRetRes = Update_Terminal_totals();
@@ -1088,25 +1197,7 @@ DF03 Check Sum                                [20]   >> 4410C6D51C2F83ADFD92528F
 
 
     }
-    private void Savetransaction(POSTransaction oGPosTransaction) {
 
-        POSTransaction temp[]=null;
-        POSTransaction transactions[]=null;
-        if (PosApplication.getApp().oGTerminal_Operation_Data.m_iTransactionCounter>0) {
-            temp = SaveLoadFile.LoadAllTransaction();
-             transactions = new POSTransaction[temp.length + 1];
-            System.arraycopy(temp, 0, transactions, 0, temp.length);
-            transactions[temp.length] = oGPosTransaction;
-        }
-        else {
-            transactions = new POSTransaction[1];
-            transactions[0] = oGPosTransaction;
-        }
-
-
-        SaveLoadFile.Savetransactions(transactions);
-
-    }
 
 
     /**
@@ -1195,7 +1286,7 @@ DF03 Check Sum                                [20]   >> 4410C6D51C2F83ADFD92528F
             if(PosApplication.getApp().oGTerminal_Operation_Data.bDeSAF_flag&!PosApplication.getApp().oGTerminal_Operation_Data.breconsile_flag) {
                 Parse_DeSAF_Response(receivedPacket);
 
-            if (PosApplication.getApp().oGTerminal_Operation_Data.saf_info.DeSAF_count >0)
+            if (PosApplication.getApp().oGTerminal_Operation_Data.saf_info.m_iSAFTrxNumber >0)
                                DeSAF(SAF_Info.DESAFtype.PARTIAL);
         }
 
@@ -1207,6 +1298,7 @@ DF03 Check Sum                                [20]   >> 4410C6D51C2F83ADFD92528F
                 }
                 else
                 {
+
                     Parse_DeSAF_Response(receivedPacket);
                     PosApplication.getApp().oGTerminal_Operation_Data.bDeSAF_flag=false;
                     StartReconciliation(false);
@@ -1548,78 +1640,92 @@ DF03 Check Sum                                [20]   >> 4410C6D51C2F83ADFD92528F
 
     }
 
-    private void senddata(byte[] sendtotals) {
-        CommunicationsHandler communicationsHandler = CommunicationsHandler.getInstance(new CommunicationInfo(PosApplication.getApp().getApplicationContext()));
-
+    private void senddata(byte[] Buffer) {
+      /*  CommunicationsHandler communicationsHandler = CommunicationsHandler.getInstance(new CommunicationInfo(PosApplication.getApp().getApplicationContext()));
         communicationsHandler.setSendReceiveListener(this);
-        communicationsHandler.sendReceive(sendtotals);
+        communicationsHandler.sendReceive(sendtotals);*/
+
+        TCPCommunicator.addListener(this);
+        mCommunicationInfo= new CommunicationInfo(PosApplication.getApp().getApplicationContext());
+        Buffer = headersInterceptor.addHeaders(Buffer, mCommunicationInfo.getTPDU());
+        TCPCommunicator.writeToSocket(Buffer, UIHandler, mcontext);
 
     }
+
 
     public int DeSAF(SAF_Info.DESAFtype en_Type) // iType full , partial (only 2 transaction)
     {   POSTransaction SAF_transaction=null;
         int iRetRes=-1;
+        CommunicationsHandler communicationsHandler=null;
 
         switch (en_Type)
         {
             case PARTIAL:
-                if (PosApplication.getApp().oGTerminal_Operation_Data.saf_info.DeSAF_partial_count==0)
-                {
-                    //partial SAF finished nex transaction checks after SAF
-                }
-                else {
-                    if (PosApplication.getApp().oGTerminal_Operation_Data.breversal_flg) {
-                        SAF_transaction = SAF_Info.Load_from_Reversal();
-                        PosApplication.getApp().oGTerminal_Operation_Data.saf_info.DeSAF_partial_count--;
-                        PosApplication.getApp().oGTerminal_Operation_Data.saf_info.m_iSAFTrxNumber--;
-                        PosApplication.getApp().oGPosTransaction.ComposeReversalMessage(); //1420
-                        byte[] sendPacket = PosApplication.getApp().oGPosTransaction.m_RequestISOMsg.isotostr();
-                        CommunicationsHandler communicationsHandler = CommunicationsHandler.getInstance(new CommunicationInfo(PosApplication.getApp().getApplicationContext()));
-                        communicationsHandler.setSendReceiveListener(this);
-                        communicationsHandler.sendReceive(sendPacket);
+                    if (PosApplication.getApp().oGTerminal_Operation_Data.saf_info.DeSAF_partial_count==0)
+                    {
+                        //partial SAF finished nex transaction checks after SAF
                     }
                     else {
-                        SAF_transaction = SAF_Info.Load_trx_from_SAF();
-                        PosApplication.getApp().oGTerminal_Operation_Data.saf_info.DeSAF_partial_count--;
-                        PosApplication.getApp().oGTerminal_Operation_Data.saf_info.m_iSAFTrxNumber--;
-                            switch (SAF_transaction.m_enmTrxType) {
-                                case PURCHASE_ADVICE: //1220
-                                    SAF_transaction.ComposeFinancialAdviseMessage(SAF_transaction.m_enmTrxType);
-                                    break;
-                                case AUTHORISATION_ADVICE://1120
-                                    SAF_transaction.ComposeAuthorisationAdviseMessage(SAF_transaction.m_enmTrxType);
-                                    break;
+                        if (PosApplication.getApp().oGTerminal_Operation_Data.breversal_flg) {
+                            SAF_transaction = SAF_Info.Load_from_Reversal();
+                            PosApplication.getApp().oGTerminal_Operation_Data.saf_info.DeSAF_partial_count--;
+
+
+
+                            PosApplication.getApp().oGPosTransaction.ComposeReversalMessage(); //1420
+                            byte[] sendPacket = PosApplication.getApp().oGPosTransaction.m_RequestISOMsg.isotostr();
+/*                            communicationsHandler = CommunicationsHandler.getInstance(new CommunicationInfo(PosApplication.getApp().getApplicationContext()));
+                            communicationsHandler.setSendReceiveListener(this);
+                            communicationsHandler.sendReceive(sendPacket);*/
+                            senddata(sendPacket);
+                        }
+                        else {
+                            if(PosApplication.getApp().oGPosTransaction.m_enmTrxCardType== POSTransaction.CardType.ICC & !PosApplication.getApp().oGPosTransaction.m_is_mada & PosApplication.getApp().oGTerminal_Operation_Data.saf_info.m_iSAFTrxNumber==1)
+                            {
+                                //do nothing incase there is only one saf and the transaction is not mada because it is saved by the current transaction non mada card ICS
                             }
-                        byte[] sendPacket = SAF_transaction.m_RequestISOMsg.isotostr();
+                            else {
+                                SAF_transaction = SAF_Info.Load_trx_from_SAF();
+                                PosApplication.getApp().oGTerminal_Operation_Data.saf_info.DeSAF_partial_count--;
 
-                        PosApplication.getApp().oGcommunicationsHandler = PosApplication.getApp().oGcommunicationsHandler.getInstance(new CommunicationInfo(PosApplication.getApp().getApplicationContext()));
-                        PosApplication.getApp().oGcommunicationsHandler.setSendReceiveListener(this);
-                       // communicationsHandler.sendReceive(sendPacket);
-                        PosApplication.getApp().oGcommunicationsHandler.sendReceive(sendPacket);
+                                switch (SAF_transaction.m_enmTrxType) {
+                                    case PURCHASE_ADVICE: //1220
+                                        SAF_transaction.ComposeFinancialAdviseMessage(SAF_transaction.m_enmTrxType);
+                                        break;
+                                    case AUTHORISATION_ADVICE://1120
+                                        SAF_transaction.ComposeAuthorisationAdviseMessage(SAF_transaction.m_enmTrxType);
+                                        break;
+                                }
+                                byte[] sendPacket = SAF_transaction.m_RequestISOMsg.isotostr();
+
+                                /*communicationsHandler = CommunicationsHandler.getInstance(new CommunicationInfo(PosApplication.getApp().getApplicationContext()));
+                                communicationsHandler.setSendReceiveListener(this);
+                                communicationsHandler.sendReceive(sendPacket);*/
+                                senddata(sendPacket);
+
+                            }
+                        }
+
                     }
+                    break;
 
-                }
-                break;
 
-            //todo performe message building and send and recive for reversal advice and SAF transaction
             case FULL:
                    if(PosApplication.getApp().oGTerminal_Operation_Data.breversal_flg) {
-                    SAF_transaction = SAF_Info.Load_from_Reversal();
-                    PosApplication.getApp().oGTerminal_Operation_Data.saf_info.m_iSAFTrxNumber--;
-                    PosApplication.getApp().oGPosTransaction.ComposeReversalMessage();
-                    byte[] sendPacket = PosApplication.getApp().oGPosTransaction.m_RequestISOMsg.isotostr();
-                    CommunicationsHandler communicationsHandler = CommunicationsHandler.getInstance(new CommunicationInfo(PosApplication.getApp().getApplicationContext()));
-                    communicationsHandler.setSendReceiveListener(this);
-                    communicationsHandler.sendReceive(sendPacket);
+                        SAF_transaction = SAF_Info.Load_from_Reversal();
 
-
-
-                }
-                else {
+                        PosApplication.getApp().oGPosTransaction.ComposeReversalMessage();
+                        byte[] sendPacket = PosApplication.getApp().oGPosTransaction.m_RequestISOMsg.isotostr();
+                       /* communicationsHandler = CommunicationsHandler.getInstance(new CommunicationInfo(PosApplication.getApp().getApplicationContext()));
+                        communicationsHandler.setSendReceiveListener(this);
+                        communicationsHandler.sendReceive(sendPacket);*/
+                       senddata(sendPacket);
+                     }
+                     else {
 
 
                         SAF_transaction = SAF_Info.Load_trx_from_SAF();
-                       PosApplication.getApp().oGTerminal_Operation_Data.saf_info.m_iSAFTrxNumber--;
+
 
                        switch (SAF_transaction.m_enmTrxType) {
                            case PURCHASE_ADVICE: //1220
@@ -1630,17 +1736,23 @@ DF03 Check Sum                                [20]   >> 4410C6D51C2F83ADFD92528F
                                break;
                        }
                         byte[] sendPacket = PosApplication.getApp().oGPosTransaction.m_RequestISOMsg.isotostr();
-                        CommunicationsHandler communicationsHandler = CommunicationsHandler.getInstance(new CommunicationInfo(PosApplication.getApp().getApplicationContext()));
+                    /*    communicationsHandler = CommunicationsHandler.getInstance(new CommunicationInfo(PosApplication.getApp().getApplicationContext()));
                         communicationsHandler.setSendReceiveListener(this);
-                        communicationsHandler.sendReceive(sendPacket);
+                        communicationsHandler.sendReceive(sendPacket);*/
+                       senddata(sendPacket);
 
 
 
                 }
                 break;
 
+
+
         }
         Save_TermData();
+        if(communicationsHandler!=null)
+        communicationsHandler.closeConnection();
+       // disconnect();
         return iRetRes;
     }
 
@@ -1654,13 +1766,20 @@ DF03 Check Sum                                [20]   >> 4410C6D51C2F83ADFD92528F
         {
             //todo go to invalid macing process
         }
-
-        if(!CheckHostActionCode(BCDASCII.bytesToHexString(PosApplication.getApp().oGPosTransaction.m_ResponseISOMsg.getDataElement(39))))
+        String mResponse = BCDASCII.asciiByteArray2String(PosApplication.getApp().oGPosTransaction.m_ResponseISOMsg.getDataElement(39));
+        if(!CheckHostActionCode(mResponse))
         {
             //todo declined transaction check response code and print message or not for saf resonse
 
         }
-        PosApplication.getApp().oGPosTransaction.m_sApprovalCode=BCDASCII.bytesToHexString(PosApplication.getApp().oGPosTransaction.m_ResponseISOMsg.getDataElement(38));
+        else {
+            iRetres = 0;
+            PosApplication.getApp().oGTerminal_Operation_Data.saf_info.m_iSAFTrxNumber--;
+            Update_Terminal_totals();  //added to update purchase advises and detail
+            SAF_Info.Deletetopsaf();
+            Save_TermData();
+        }
+       // PosApplication.getApp().oGPosTransaction.m_sApprovalCode=BCDASCII.bytesToHexString(PosApplication.getApp().oGPosTransaction.m_ResponseISOMsg.getDataElement(38));
 
         return iRetres;
     }
@@ -1685,6 +1804,8 @@ DF03 Check Sum                                [20]   >> 4410C6D51C2F83ADFD92528F
                             POSTrx.m_enmTrxType = POSTransaction.TranscationType.PURCHASE_ADVICE;
                            SAF_Info.SAVE_IN_SAF(POSTrx);
                             PosApplication.getApp().oGTerminal_Operation_Data.bDeSAF_flag=true;
+                            PosApplication.getApp().oGTerminal_Operation_Data.saf_info.m_dSAFCumulativeAmount=+Integer.parseInt(POSTrx.m_sTrxAmount);
+                            PosApplication.getApp().oGTerminal_Operation_Data.saf_info.m_iSAFTrxNumber++;
                         }
                         //todo save  Offline Financial Transaction – mada Chip/Contactless Card (Declined)
                         break;
@@ -1703,6 +1824,8 @@ DF03 Check Sum                                [20]   >> 4410C6D51C2F83ADFD92528F
                             POSTrx.m_enmTrxType = POSTransaction.TranscationType.PURCHASE_ADVICE;
                             SAF_Info.SAVE_IN_SAF(POSTrx);
                             PosApplication.getApp().oGTerminal_Operation_Data.bDeSAF_flag=true;
+                            PosApplication.getApp().oGTerminal_Operation_Data.saf_info.m_dSAFCumulativeAmount=+Integer.parseInt(POSTrx.m_sTrxAmount);
+                            PosApplication.getApp().oGTerminal_Operation_Data.saf_info.m_iSAFTrxNumber++;
                         }
                         break;
                     case AUTHORISATION:
@@ -1711,14 +1834,15 @@ DF03 Check Sum                                [20]   >> 4410C6D51C2F83ADFD92528F
                             POSTrx.m_enmTrxType = POSTransaction.TranscationType.AUTHORISATION_ADVICE;
                             SAF_Info.SAVE_IN_SAF(POSTrx);
                             PosApplication.getApp().oGTerminal_Operation_Data.bDeSAF_flag=true;
+                            PosApplication.getApp().oGTerminal_Operation_Data.saf_info.m_dSAFCumulativeAmount=+Integer.parseInt(POSTrx.m_sTrxAmount);
+                            PosApplication.getApp().oGTerminal_Operation_Data.saf_info.m_iSAFTrxNumber++;
                         }
                         break;
 
                 }
             }
         }
-        PosApplication.getApp().oGTerminal_Operation_Data.saf_info.m_dSAFCumulativeAmount=+Integer.parseInt(POSTrx.m_sTrxAmount);
-        PosApplication.getApp().oGTerminal_Operation_Data.saf_info.m_iSAFTrxNumber++;
+
         return iRetRes;
 
     }
@@ -1994,36 +2118,39 @@ DF03 Check Sum                                [20]   >> 4410C6D51C2F83ADFD92528F
 
             if(sActionCodeDE39.equals("500")) {//process in Balance data
                 //get DE124
-
+               // getDE124(PosApplication.getApp().oGPosTransaction);
                 String sTotalsDE124=BCDASCII.asciiByteArray2String(PosApplication.getApp().oGPosTransaction.m_ResponseISOMsg.getDataElement(124));
                 iNumberOfCardScheme=Integer.parseInt(sTotalsDE124.substring(0,2));
                 hostTotals=new HostTotals(iNumberOfCardScheme);
                 hostTotals.cardSchemeTotals=fillHostReconciliationTotals(sTotalsDE124,iNumberOfCardScheme);
                 hostTotals.inBalance=true;
-                //todo Save HOSTTOTALS
+                SaveLoadFile.Saverecon(PosApplication.getApp().oGPosTransaction);
 
 
 
             }
             else if (sActionCodeDE39.equals("501")) {       //process out of Balance
                 //get DE124
+               // getDE124(PosApplication.getApp().oGPosTransaction);
                 String sTotalsDE124=BCDASCII.asciiByteArray2String(PosApplication.getApp().oGPosTransaction.m_ResponseISOMsg.getDataElement(124));
                 iNumberOfCardScheme=Integer.parseInt(sTotalsDE124.substring(0,2));
                 hostTotals=new HostTotals(iNumberOfCardScheme);
                 hostTotals.cardSchemeTotals=fillHostReconciliationTotals(sTotalsDE124,iNumberOfCardScheme);
                 hostTotals.inBalance=false;
+                SaveLoadFile.Saverecon(PosApplication.getApp().oGPosTransaction);
                 Log.d(TAG, "Parse_RECONSILE_response:sTotalsDE124=  "+ sTotalsDE124);
             }
             else{
 
             }
 
-
+            Save_TermData();
             ////////////for test printing here////////////
             Reconsile_Print mReconsile_print;
             mReconsile_print = new Reconsile_Print();
 
             mReconsile_print.printDetail(hostTotals);
+
             ////////////////////////////////////////////
             iRetres= 0;
         }
@@ -2031,6 +2158,16 @@ DF03 Check Sum                                [20]   >> 4410C6D51C2F83ADFD92528F
         return iRetres;
 
 
+    }
+
+    private HostTotals getDE124(POSTransaction reconsiletrx) {
+
+        String sTotalsDE124=BCDASCII.asciiByteArray2String(reconsiletrx.m_ResponseISOMsg.getDataElement(124));
+        int iNumberOfCardScheme=Integer.parseInt(sTotalsDE124.substring(0,2));
+        HostTotals hostTotals=new HostTotals(iNumberOfCardScheme);
+        hostTotals.cardSchemeTotals=fillHostReconciliationTotals(sTotalsDE124,iNumberOfCardScheme);
+        hostTotals.inBalance=true;
+        return hostTotals;
     }
 
     public CardSchemeTotals[] fillHostReconciliationTotals(String stotalsDE124,int iNumberOfCardScheme)
@@ -2084,7 +2221,8 @@ DF03 Check Sum                                [20]   >> 4410C6D51C2F83ADFD92528F
             //todo go to invalid macing process
         }
 
-        if(!CheckHostActionCode(BCDASCII.bytesToHexString(PosApplication.getApp().oGPosTransaction.m_ResponseISOMsg.getDataElement(39))))
+        String mResponse = BCDASCII.asciiByteArray2String(PosApplication.getApp().oGPosTransaction.m_ResponseISOMsg.getDataElement(39));
+        if(!CheckHostActionCode(mResponse))
         {
             //todo declined transaction check response code and print message or not for reversal declined
             return 0;
@@ -2093,6 +2231,9 @@ DF03 Check Sum                                [20]   >> 4410C6D51C2F83ADFD92528F
         return iRetres;
 
 
+    }
+    private void disconnect(){
+        TCPCommunicator.closeStreams();
     }
 }
 

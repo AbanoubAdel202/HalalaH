@@ -42,7 +42,7 @@ public class AidDaoImpl extends BaseDaoImpl<Aid> {
      * @param aid	the hexstring of aid
      * @return
      */
-    public Aid findByAidAndAsi(String aid){
+    public Aid  findByAidAndAsi(String aid){
         List<Aid> mList = findAllAid();
         if (mList == null || mList.size() == 0) {
             return null;

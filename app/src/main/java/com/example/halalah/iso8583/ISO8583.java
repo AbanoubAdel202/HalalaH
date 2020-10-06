@@ -527,10 +527,11 @@ public class ISO8583 implements Serializable {
         int dataOffset = 0;
         int bytenum=16;
         int bitnum = 8;
-        String sbitmap;
+        if(Arrays.equals(mMessageId, PosApplication.MTI_Terminal_Reconciliation_Advice.getBytes())||PosApplication.getApp().oGPosTransaction.m_enmTrxType== POSTransaction.TranscationType.TMS_FILE_DOWNLOAD){
+            bytenum=32;
+        }
         int n = 0;
         byte[] data = new byte[MAXBUFFERLEN];
-
         for (int i = 0; i < bytenum/2; i++) {
             byte bitmap = 0; //Represents 8 bitmap fields in a byte in a 64-bit bitmap
             int bitmask = 0x80;
@@ -539,24 +540,23 @@ public class ISO8583 implements Serializable {
                 if((i==0 & bitmask==0x80)& bytenum==32)
                 {
                     mISO8583Domain[n].mBitf = 1;
+                    //we should set field 128 bitmap =1 but it's not nessasery here we only need first bitmap
+                }
+                if(n==63 & bytenum==16)
+                {
+                    //force DE 64 Exist in bitmap as it not set yet
+                    mISO8583Domain[n].mBitf = 1;
                 }
                 if (mISO8583Domain[n].mBitf == 0) {//This field has no value
                     continue;
                 }
                 bitmap |= bitmask;
-
-
             }
-
-
-
+            data[i + 4] = bitmap;
         }
-                byte[] bBitmap = BCDASCII.fromBCDToASCII(data, 4, 16, false);
-
-
-
-            return bBitmap;
-        }
+        byte[] bBitmap = BCDASCII.fromBCDToASCII(data, 4, 16, false);
+        return bBitmap;
+    }
 
 
 

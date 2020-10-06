@@ -5,8 +5,10 @@ import com.example.halalah.util.ExtraUtil;
 
 import org.parceler.Parcel;
 
+import java.io.Serializable;
+
 @Parcel
-public class RegistrationData {
+public class RegistrationData implements Serializable {
     String vendorId;                // 50
     String vendorTerminalType;      // 01
     String trsmid;                  // 010203

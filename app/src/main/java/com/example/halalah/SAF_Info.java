@@ -36,7 +36,9 @@ public class SAF_Info implements Serializable {
         return SAFTRX;
     }
 
-   public enum DESAFtype{
+
+
+    public enum DESAFtype{
         PARTIAL,
         FULL
     }
@@ -45,8 +47,8 @@ public class SAF_Info implements Serializable {
     int m_iMax_SAF_Cumulative_Amount;
     int       m_iSAFTrxNumber;              // Number of saved transactions in SAF file
     double    m_dSAFCumulativeAmount;       // Total amount of approved transaction (calculation based on reconciliation as debit++ , credit-- , reversal(refund ++) -- )
-    int    DeSAF_partial_count=2;
-    int    DeSAF_count;
+    int    DeSAF_partial_count=2;   //used to do desaf after each transaction
+
 
 
     POSTransaction[] m_posTransactions_SAF;
@@ -75,6 +77,47 @@ public class SAF_Info implements Serializable {
         return SAFTransaction;
 
     }
+
+    public static void Deletetopsaf() {
+        POSTransaction SAFTRX = new POSTransaction();
+
+        POSTransaction[] AllSAF=Load_from_SAF();
+        POSTransaction[] newSAfarry= new POSTransaction[AllSAF.length-1];
+        SAFTRX=AllSAF[0];
+        //check if top is the same as desaf transaction
+
+        if (SAFTRX.m_sRRNumber.equals(PosApplication.getApp().oGPosTransaction.m_sOrigRRNumber)) {
+
+            System.arraycopy(AllSAF, 0, newSAfarry, 0, newSAfarry.length);
+                SaveallSaf(newSAfarry);
+                //todo save backup in case faliure of saving
+        }
+    }
+
+    private static void SaveallSaf(POSTransaction[] newSAfarry) {
+        Context context = null;
+        FileOutputStream fos = null;
+        ObjectOutputStream os = null;
+        context=PosApplication.getApp().getApplicationContext();
+
+        try {
+
+
+            fos = context.openFileOutput("SAF", Context.MODE_PRIVATE);
+            os = new ObjectOutputStream(fos);
+            os.writeObject(newSAfarry);
+
+            os.close();
+            fos.close();
+        }
+        catch(FileNotFoundException e)
+        {
+            Log.d("SaveLoadFile", "Savetransaction: File not found");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     public static void SAVE_IN_SAF(POSTransaction oSAFPostrx)
     {
         Context context = null;
@@ -93,12 +136,16 @@ public class SAF_Info implements Serializable {
             SAFarray = new POSTransaction[1];
             SAFarray[0] = oSAFPostrx;
         }
+
+        //todo backup incase of faliure
         try {
 
 
             fos = context.openFileOutput("SAF", Context.MODE_PRIVATE);
             os = new ObjectOutputStream(fos);
             os.writeObject(SAFarray);
+            
+
 
             os.close();
             fos.close();

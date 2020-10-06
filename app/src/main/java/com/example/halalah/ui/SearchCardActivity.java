@@ -19,9 +19,12 @@ import com.example.halalah.R;
 import com.example.halalah.Utils;
 import com.example.halalah.card.CardManager;
 import com.example.halalah.connect.CommunicationsHandler;
+import com.example.halalah.connect.TCPCommunicator;
 import com.example.halalah.storage.CommunicationInfo;
 import com.example.halalah.util.CardSearchErrorUtil;
 import com.example.halalah.util.PacketProcessUtils;
+import com.topwise.cloudpos.data.AidlErrorCode;
+
 
 public class SearchCardActivity extends Activity{
     private static final String TAG = Utils.TAGPUBLIC + SearchCardActivity.class.getSimpleName();
@@ -87,6 +90,9 @@ public class SearchCardActivity extends Activity{
                     break;
                 case CardSearchErrorUtil.CARD_SEARCH_ERROR_REASON_MAG_EMV_s:
                     showTips(R.string.search_card_error_msr_is_ic);
+                    break;
+                case AidlErrorCode.EMV.ERROR_CHECK_ICCARD_RESET_ERROR:
+                    showTips(R.string.search_card_error_ic);
                     break;
                 default:
                     break;
@@ -178,6 +184,7 @@ public class SearchCardActivity extends Activity{
         Log.d(TAG, "onBackPressed");
         CardManager.getInstance().stopCardDealService(this);
         CommunicationsHandler.getInstance(new CommunicationInfo(this)).closeConnection();
+        TCPCommunicator.closeStreams();
     }
 
     @Override

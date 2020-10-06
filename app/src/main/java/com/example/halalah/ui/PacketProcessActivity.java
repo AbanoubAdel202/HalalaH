@@ -3,6 +3,7 @@ package com.example.halalah.ui;
 
 import android.app.ActionBar;
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
@@ -20,7 +21,10 @@ import com.example.halalah.SAF_Info;
 import com.example.halalah.Utils;
 import com.example.halalah.card.CardManager;
 import com.example.halalah.connect.CommunicationsHandler;
+import com.example.halalah.connect.HeadersInterceptor;
 import com.example.halalah.connect.SendReceiveListener;
+import com.example.halalah.connect.TCPCommunicator;
+import com.example.halalah.connect.TCPListener;
 import com.example.halalah.iso8583.BCDASCII;
 import com.example.halalah.iso8583.ISO8583;
 import com.example.halalah.packet.PackPacket;
@@ -29,7 +33,9 @@ import com.example.halalah.packet.UnpackUtils;
 import com.example.halalah.storage.CommunicationInfo;
 import com.example.halalah.util.PacketProcessUtils;
 
-public class PacketProcessActivity extends Activity implements SendReceiveListener {
+import java.util.Arrays;
+
+public class PacketProcessActivity extends Activity implements SendReceiveListener , TCPListener {
     private static final String TAG = Utils.TAGPUBLIC + PacketProcessActivity.class.getSimpleName();
 
     private static final int MSG_TIME_UPDATE = 100;
@@ -52,6 +58,10 @@ public class PacketProcessActivity extends Activity implements SendReceiveListen
     private int mProcType;
     private int mProcTime = 20;
     private int mProcNum = 1;
+    private CommunicationsHandler communicationsHandler;
+    private HeadersInterceptor headersInterceptor = new HeadersInterceptor();
+    private Handler UIHandler = new Handler();
+    Context mcontext;
 
 
     @Override
@@ -63,7 +73,6 @@ public class PacketProcessActivity extends Activity implements SendReceiveListen
         mTextProcStatus = findViewById(R.id.proc_status);
         mTextTime = findViewById(R.id.proc_time);
         mHandle.sendEmptyMessageDelayed(MSG_TIME_UPDATE, MSG_TIME_UPDATE_DALAY);
-
         mBundle = getIntent().getExtras();
         mProcType = mBundle.getInt(PacketProcessUtils.PACKET_PROCESS_TYPE);
         Log.i(TAG, "mProcType = " + mProcType);
@@ -103,10 +112,13 @@ public class PacketProcessActivity extends Activity implements SendReceiveListen
 
         mSendPacket = mPackPacket.getSendPacket();
         Log.d(TAG, "getPacketAndSend: mSendPacket = " + BCDASCII.bytesToHexString(mSendPacket));
-        CommunicationsHandler communicationsHandler = CommunicationsHandler.getInstance(new CommunicationInfo(this));
+        /*communicationsHandler = CommunicationsHandler.getInstance(new CommunicationInfo(this));
         communicationsHandler.setSendReceiveListener(this);
         POS_MAIN.SaveLastTransaction(PosApplication.getApp().oGPosTransaction, POS_MAIN.CurrentSaving.SAVE);
-        communicationsHandler.sendReceive(mSendPacket);
+        communicationsHandler.sendReceive(mSendPacket);*/
+        POS_MAIN.SaveLastTransaction(PosApplication.getApp().oGPosTransaction, POS_MAIN.CurrentSaving.SAVE);
+        Senddata(mSendPacket);
+
     }
 
     @Override
@@ -121,7 +133,7 @@ public class PacketProcessActivity extends Activity implements SendReceiveListen
             PosApplication.getApp().oGTerminal_Operation_Data.breversal_flg=false;
             PosApplication.getApp().oGPOS_MAIN.PerfomTermHostResponseFlow(mRecePacket,0,this);
 
-            CommunicationsHandler.getInstance(mCommunicationInfo).closeConnection();
+            communicationsHandler.closeConnection();
 
 
             finish();
@@ -294,5 +306,50 @@ public class PacketProcessActivity extends Activity implements SendReceiveListen
     public void onBackPressed() {
         CommunicationsHandler.getInstance(mCommunicationInfo).closeConnection();
         super.onBackPressed();
+    }
+
+    private void Senddata(byte[] Buffer){
+        TCPCommunicator.addListener(this);
+        mCommunicationInfo= new CommunicationInfo(PosApplication.getApp().getApplicationContext());
+        Buffer = headersInterceptor.addHeaders(Buffer, mCommunicationInfo.getTPDU());
+
+        TCPCommunicator.writeToSocket(Buffer, UIHandler, mcontext);
+    }
+
+    @Override
+    public void onTCPMessageRecieved(byte[] receivedPacket) {
+
+        Log.i(TAG, "onSuccess");
+
+        if (receivedPacket != null)
+        {
+
+
+            receivedPacket= Arrays.copyOfRange(receivedPacket, 7, receivedPacket.length);
+            mRecePacket = receivedPacket;
+            mHandle.removeMessages(MSG_TIME_UPDATE);
+            PosApplication.getApp().oGTerminal_Operation_Data.breversal_flg=false;
+            int ret=PosApplication.getApp().oGPOS_MAIN.PerfomTermHostResponseFlow(mRecePacket,0,this);
+          if(ret == 0) {
+              disconnect();
+              finish();
+          }
+
+
+
+
+
+
+        }
+
+
+    }
+
+    @Override
+    public void onTCPConnectionStatusChanged(boolean isConnectedNow) {
+
+    }
+    private void disconnect(){
+        TCPCommunicator.closeStreams();
     }
 }

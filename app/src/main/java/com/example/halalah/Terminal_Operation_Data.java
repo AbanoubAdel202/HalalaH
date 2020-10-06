@@ -51,8 +51,9 @@ public class Terminal_Operation_Data implements Serializable {
         public String m_sTerminal_CVM_Required_Limit;
 
         public byte[] m_CurrentKSN;
+        public int m_ireconCounter;  //number of reconciliation on the terminal
 
-        /*******************
+    /*******************
          * Terminal retailer options *
          *******************/
             public enum Terminallanguage{
@@ -167,14 +168,6 @@ public class Terminal_Operation_Data implements Serializable {
 
     }
 
-
-    /*******************
-     * Terminal retailer options *
-     *******************/
-    public enum Terminallanguage {
-        Arabic,
-        English
-    }
 
 
 }

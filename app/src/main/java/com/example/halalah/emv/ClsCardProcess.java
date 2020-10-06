@@ -20,10 +20,12 @@ import com.topwise.cloudpos.aidl.emv.level2.AidlEntry;
 import com.topwise.cloudpos.aidl.emv.level2.AidlPaypass;
 import com.topwise.cloudpos.aidl.emv.level2.AidlPaywave;
 import com.topwise.cloudpos.aidl.emv.level2.AidlPure;
+import com.topwise.cloudpos.aidl.emv.level2.AidlQpboc;
 import com.topwise.cloudpos.aidl.emv.level2.Combination;
 import com.topwise.cloudpos.aidl.emv.level2.PreProcResult;
 import com.topwise.cloudpos.aidl.emv.level2.TransParam;
 import com.topwise.cloudpos.aidl.led.AidlLed;
+import com.topwise.cloudpos.aidl.pinpad.AidlPinpad;
 import com.topwise.cloudpos.struct.BytesUtil;
 import com.topwise.cloudpos.struct.Tlv;
 import com.topwise.cloudpos.struct.TlvList;
@@ -32,6 +34,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
+import com.topwise.cloudpos.data.PinpadConstant;
 
 
 /**
@@ -49,11 +52,14 @@ public class ClsCardProcess {
     private EmvManager emvManager;
     private static final int LATCH_COUNT = 1;
 
+    private AidlPinpad pinPad = DeviceTopUsdkServiceManager.getInstance().getPinpadManager(PinpadConstant.PinpadId.BUILTIN);
     private AidlEntry entryL2 = DeviceTopUsdkServiceManager.getInstance().getL2Entry();
     private AidlPaywave paywave = DeviceTopUsdkServiceManager.getInstance().getL2Paywave();
     private AidlPaypass paypass = DeviceTopUsdkServiceManager.getInstance().getL2Paypass();
     private AidlPure pure = DeviceTopUsdkServiceManager.getInstance().getL2Pure();
     private AidlAmex amex = DeviceTopUsdkServiceManager.getInstance().getL2Amex();
+    private AidlQpboc qpboc = DeviceTopUsdkServiceManager.getInstance().getL2Qpboc();
+
     private CountDownLatch mDownLatch;
 
     private String mAmount = null;
@@ -261,7 +267,10 @@ public class ClsCardProcess {
             } else {
                 int errorCode = entryL2.getErrorCode();
                 SDKLog.d(TAG, "getErrorCode: " + errorCode);
-                selectCallback(CallbackSort.ON_ERROR, null, errorCode);
+                Bundle param = new Bundle();
+                param.putInt(PayDataUtil.CardCode.TRANS_RESULT, PayDataUtil.CardCode.TRANS_STOP);
+                selectCallback(CallbackSort.ON_TRANS_RESULT, null, errorCode);
+
             }
             return PayDataUtil.DEFAULT_RETURN_CODE;
         }
@@ -274,7 +283,10 @@ public class ClsCardProcess {
             }
             int errorCode = entryL2.getErrorCode();
             SDKLog.d(TAG, "getErrorCode: " + errorCode);
-            selectCallback(CallbackSort.ON_ERROR, null, errorCode);
+            Bundle param = new Bundle();
+            param.putInt(PayDataUtil.CardCode.TRANS_RESULT, PayDataUtil.CardCode.TRANS_STOP);
+            selectCallback(CallbackSort.ON_TRANS_RESULT, param, errorCode);
+
             return PayDataUtil.DEFAULT_RETURN_CODE;
         }
 
@@ -324,7 +336,10 @@ public class ClsCardProcess {
         int ret = entryL2.getPreProcResult(preProcResult);
         SDKLog.d(TAG, "getPreProcResult ret: " + ret);
         if (ret != PayDataUtil.EMV_OK) {
-            selectCallback(CallbackSort.ON_ERROR, null, ret);
+            Bundle param = new Bundle();
+            param.putInt(PayDataUtil.CardCode.TRANS_RESULT, PayDataUtil.CardCode.TRANS_STOP);
+            selectCallback(CallbackSort.ON_TRANS_RESULT, param, ret);
+
             return PayDataUtil.DEFAULT_RETURN_CODE;
         }
 
@@ -370,6 +385,11 @@ public class ClsCardProcess {
                     payProcess = new AMexPayProcess();
                     payProcess.startPay(bundle, mResultListener);
                     break;
+                case PayDataUtil.KERNTYPE_QPBOC:
+                    payProcess = new QpbocProcess();
+                    payProcess.startPay(bundle, mResultListener);
+                    break;
+
                 default:
                     mResultListener.onProcessResult(false, true, PayDataUtil.CardCode.TRANS_STOP);;
                     break;
@@ -423,7 +443,10 @@ public class ClsCardProcess {
                 int ret = entryL2.getPreProcResult(preProcResult);
                 SDKLog.d(TAG, "getPreProcResult ret: " + ret);
                 if (ret != PayDataUtil.EMV_OK) {
-                    selectCallback(CallbackSort.ON_ERROR, null, ret);
+                    Bundle param = new Bundle();
+                    param.putInt(PayDataUtil.CardCode.TRANS_RESULT, PayDataUtil.CardCode.TRANS_STOP);
+                    selectCallback(CallbackSort.ON_TRANS_RESULT, param, ret);
+
                     return;
                 }
                 SDKLog.d(TAG, "ucKernType: " + ucKernType[0]);
@@ -451,8 +474,13 @@ public class ClsCardProcess {
                         payProcess = new AMexPayProcess();
                         payProcess.startPay(bundle, mResultListener);
                         break;
-                    default:
+                    case PayDataUtil.KERNTYPE_QPBOC:
+                        payProcess = new QpbocProcess();
+                        payProcess.startPay(bundle, mResultListener);
                         break;
+                    default:
+                        mResultListener.onProcessResult(false, true, PayDataUtil.CardCode.TRANS_STOP);
+
                 }
             }
         }
@@ -529,16 +557,18 @@ public class ClsCardProcess {
      * @return tlv数据的value值
      */
     public byte[] getTlvData(String tag) {
-        SDKLog.d(TAG, "tag: " + tag);
+        SDKLog.d(TAG, "getTlvData() tag: " + tag);
         if ("5A".equals(tag)) {
             Tlv tlv = new Tlv(tag,mCardNo);
             return tlv.getBytes();
         }
+
         try {
+            int res = -1;
             byte[] data = new byte[512];
             int[] dataLen = new int[1];
             byte[] tagByte = BytesUtil.hexString2Bytes(tag);
-            int res = -1;
+
             switch (cardPayType) {
                 case PayDataUtil.KERNTYPE_MC:
                     res = paypass.getTLVDataList(tagByte, tagByte.length, data.length, data, dataLen);
@@ -552,10 +582,30 @@ public class ClsCardProcess {
                 case PayDataUtil.KERNTYPE_AMEX:
                     res = amex.getTLVDataList(tagByte, tagByte.length, data.length, data, dataLen);
                     break;
+                case PayDataUtil.KERNTYPE_QPBOC: {
+                    byte[] bTag4Bytes = new byte[4];
+                    int iTag = 0;
+
+                    java.util.Arrays.fill(bTag4Bytes, (byte)0);
+                    System.arraycopy(tagByte, 0, bTag4Bytes, bTag4Bytes.length - tagByte.length, tagByte.length);
+                    Log.d(TAG, "bTag4Bytes: " + BytesUtil.bytes2HexString(bTag4Bytes));
+
+                    //The first parameter of 'BytesUtil.bytes2Int' must be 4 bytes
+                    iTag = BytesUtil.bytes2Int(bTag4Bytes, true);
+                    Log.d(TAG, "iTag: " + iTag);
+
+                    data = qpboc.getTLVData(iTag);
+                    if (data != null) {
+                        res = PayDataUtil.EMV_OK;
+                        dataLen[0] = data.length;
+                    }
+                    Log.d(TAG, "data: " + BytesUtil.bytes2HexString(data));
+                }
+                break;
                 default:
                     break;
             }
-            SDKLog.d(TAG, "getTlvData ret: " + res);
+            SDKLog.d(TAG, "getTlvData res: " + res);
             SDKLog.d(TAG, "getTlvData dataLen: " + dataLen[0]);
             SDKLog.d(TAG, "getTlvData data: " + BytesUtil.bytes2HexString(data));
             if (res == PayDataUtil.EMV_OK && dataLen[0] > 0) {
@@ -571,6 +621,7 @@ public class ClsCardProcess {
             return null;
         }
     }
+
 
     /**
      * 设置tlv数据
@@ -596,6 +647,9 @@ public class ClsCardProcess {
                 pure.setTLVDataList(data, data.length);
             } else if (ucType == PayDataUtil.KERNTYPE_AMEX) {
                 amex.setTLVDataList(data, data.length);
+            }
+             else if (ucType == PayDataUtil.KERNTYPE_QPBOC) {
+            QpbocProcess.setTLVDataList(data, data.length);
             }
         }catch(RemoteException e){
             e.printStackTrace();
@@ -799,13 +853,16 @@ public class ClsCardProcess {
     private TlvList handleKernalData(byte[] aid) {
         PayDataUtil dataUtil = new PayDataUtil();
         TlvList list = dataUtil.getDefaultKernal();
+
         //set kernel data
-        if (list.getList() != null && list.getList().size() > 0) {
+        if (mTlvList.getList() != null && mTlvList.getList().size() > 0) {
             for (Map.Entry<String, Tlv> entry : mTlvList.getList().entrySet()) {
                 SDKLog.d(TAG, "settlv out: " + entry.getValue().toHex());
                 list.addTlv(entry.getValue());
             }
+            mTlvList.clear();
         }
+
         //Amount, Authorised (Numeric)
         SDKLog.d(TAG, "txn amount: " + mAmount);
         if (mAmount != null) {
@@ -826,7 +883,21 @@ public class ClsCardProcess {
         //Transaction Time
         list.addTlv("9F21",dataUtil.getTransDateTime(PayDataUtil.TRANS_TIME_HHMMSS));
 
+        //The getRandom function returns a fixed 8 byte random number
+        byte[] random = new byte[0];
+        try {
+            random = pinPad.getRandom();
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+        byte[] unpredictableNum = new byte[4];
+        System.arraycopy(random, 0, unpredictableNum, 0, 4);
+        list.addTlv("9F37", unpredictableNum);
+
         //aid parameters
+        if (aid == null) {
+            return list;
+        }
         TlvList aidList = new TlvList();
         aidList.fromBytes(aid);
 
@@ -909,6 +980,8 @@ public class ClsCardProcess {
 
         return list;
     }
+
+
 
 
     private byte[] getTlv(String[] tags) {

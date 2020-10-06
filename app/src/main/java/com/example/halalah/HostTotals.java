@@ -1,7 +1,7 @@
 package com.example.halalah;
 
 public class HostTotals {
-
+    public int iNumberOfCardScheme;
     public CardSchemeTotals[] cardSchemeTotals;
     public boolean inBalance;
 

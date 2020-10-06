@@ -31,8 +31,9 @@ public class UnpackResponse {
 
                 }
                 else {
-                    PosApplication.getApp().oGPosTransaction.m_sApprovalCode = new String(mIso.getDataElement(38));
-                    resDetail = PosApplication.getApp().oGPosTransaction.m_sApprovalCode;
+                   // if we need to do any thing Before proceed
+                   /* PosApplication.getApp().oGPosTransaction.m_sApprovalCode = new String(mIso.getDataElement(38));
+                    resDetail = PosApplication.getApp().oGPosTransaction.m_sApprovalCode;*/
                 }
             }
 

@@ -60,7 +60,7 @@ public class UnpackPacket {
         if (mProcType == PacketProcessUtils.PACKET_PROCESS_PURCHASE) {
             UnpackResponse unpackpurchase = new UnpackResponse(mRecePacket, mRecePacket.length);
             mResponse = unpackpurchase.getResponse();
-            mResponseDetail = unpackpurchase.getResponseDetail();
+          //  mResponseDetail = unpackpurchase.getResponseDetail();
         }
 
    }
@@ -69,13 +69,11 @@ public class UnpackPacket {
         return mResponse;
     }
 
-    public String getResponseDetail() {
+    /*public String getResponseDetail() {
         return mResponseDetail;
-    }
+    }*/
 
-    public byte[] getField47() {
-        return mField47;
-    }
+
 
 
 

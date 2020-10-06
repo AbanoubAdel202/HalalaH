@@ -4,7 +4,7 @@ import android.app.Application;
 import android.content.Context;
 import android.util.Log;
 
-import androidx.room.Room;
+
 
 import com.example.halalah.connect.CommunicationsHandler;
 import com.example.halalah.sqlite.database.DBManager;
@@ -28,6 +28,9 @@ public class PosApplication extends Application{
 
     private Context mContext;
     private static PosApplication mPosApplication=new PosApplication();
+
+
+    public static CommunicationsHandler oGcommunicationsHandler;
 
     /*******************
      *   Message types *
@@ -138,7 +141,7 @@ public class PosApplication extends Application{
 
         mContext = getApplicationContext();
         oGTerminal_Operation_Data.communicationInfo=new CommunicationInfo(this);
-        oGTerminal_Operation_Data.communicationInfo.setHostIP("192.168.43.69");
+        oGTerminal_Operation_Data.communicationInfo.setHostIP("192.168.8.145");
         oGTerminal_Operation_Data.communicationInfo.setHostPort("2030");
         mPosApplication = this;
 

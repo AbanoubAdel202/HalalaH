@@ -3,7 +3,7 @@ package com.example.halalah;
 import android.util.Log;
 import android.widget.Switch;
 
-import androidx.room.util.StringUtil;
+
 
 import com.example.halalah.TMS.Card_Scheme;
 import com.example.halalah.TMS.SAMA_TMS;
@@ -432,7 +432,7 @@ public class POSTransaction implements Serializable {
             if (m_enmTrxCardType == CardType.ICC | m_enmTrxCardType == CardType.CTLS)
                 bMac = BytesUtil.mergeBytes(bMac, BCDASCII.fromASCIIToBCD(m_sICCRelatedTags, 0, m_sICCRelatedTags.length(), true));
 
-    }
+        }
         else if(m_sMTI.equals(PosApplication.MTI_Authorisation_Advice)) {
             //0.Messa   ge Type Identifier
             sMAC = sMAC = PosApplication.MTI_Authorisation_Advice;
@@ -490,7 +490,7 @@ public class POSTransaction implements Serializable {
 
         }
 
-           else if(m_sMTI.equals(PosApplication.MTI_Financial_Transaction_Advice)) {
+        else if(m_sMTI.equals(PosApplication.MTI_Financial_Transaction_Advice)) {
             //0.Messa   ge Type Identifier
             sMAC = PosApplication.MTI_Financial_Transaction_Advice;
             //1. Primary bitmap
@@ -521,7 +521,7 @@ public class POSTransaction implements Serializable {
 
         }
 
-            else if(m_sMTI.equals(PosApplication.MTI_Reversal_Advice)) {
+        else if(m_sMTI.equals(PosApplication.MTI_Reversal_Advice)) {
             //0.Messa   ge Type Identifier
             sMAC = PosApplication.MTI_Reversal_Advice;
             //1. Primary bitmap
@@ -549,7 +549,7 @@ public class POSTransaction implements Serializable {
                 bMac = BytesUtil.mergeBytes(bMac, BCDASCII.fromASCIIToBCD(m_sICCRelatedTags, 0, m_sICCRelatedTags.length(), true));
 
         }
-          else if(m_sMTI.equals(PosApplication.MTI_File_Action_Request)) {
+        else if(m_sMTI.equals(PosApplication.MTI_File_Action_Request)) {
             //0.Messa   ge Type Identifier
             sMAC = PosApplication.MTI_File_Action_Request;
             //1. Primary bitmap
@@ -613,7 +613,7 @@ public class POSTransaction implements Serializable {
         }
         else
         {
-                bMac = BytesUtil.add(bMac, (byte) 0x80);
+            bMac = BytesUtil.add(bMac, (byte) 0x80);
         }
 
         m_sTrxMACBlock= DUKPT_KEY.CaluclateMACBlock(bMac);
@@ -627,6 +627,7 @@ public class POSTransaction implements Serializable {
 
         return "0";
     }
+
 
     // Message
     public int  BuildISO8583Message(TranscationType TrxType){
@@ -1497,7 +1498,8 @@ public class POSTransaction implements Serializable {
 */
 
         // Set HostData
-        m_RequestISOMsg.SetDataElement(48, m_sHostData_DE48.getBytes(), m_sHostData_DE48.length());
+        byte[] bHostData_DE48 = BCDASCII.fromASCIIToBCD(m_sHostData_DE48,0,m_sHostData_DE48.length(),true);
+        m_RequestISOMsg.SetDataElement(48, bHostData_DE48, bHostData_DE48.length);
         Log.i(TAG, " DE 48 [m_sHostData_DE48]= " + m_sHostData_DE48+"Length ="+m_sHostData_DE48.length());
 
         // Set Terminal Status
@@ -2898,6 +2900,10 @@ public class POSTransaction implements Serializable {
                             fc = Function_Code.Previously_approved_authorisation_amount_same;
                         else
                             fc = Function_Code.Previously_approved_authorisation_amount_differs;
+                    }
+                    else
+                    {
+                        fc = Function_Code.Previously_approved_authorisation_amount_same;
                     }
 
                 }

@@ -18,14 +18,15 @@ public class CapkDaoImpl extends BaseDaoImpl<Capk> {
      * @return
      */
     public Capk findByRidIndex(String rid,byte index){
-        StringBuffer sb = new StringBuffer("select * from tb_capk where rid='")
-                .append(rid).append("' and rindex='").append(index).append("'");
+        String ridindex = new StringBuffer(rid).append(Integer.toHexString(index & 0xFF)).toString().toUpperCase();
+        StringBuffer sb = new StringBuffer("select * from tb_capk where ridindex='").append(ridindex).append("'");
         List<Capk> capklist = rawQuery(sb.toString(), null);
         if(capklist==null||capklist.size()==0){
             return null;
         }
         return capklist.get(0);
     }
+
 
     /**
      * select capk from database

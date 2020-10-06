@@ -26,7 +26,7 @@ public class PlainSocketManager implements iConnect{
     private static int connectionStatus = CONNECTION_STATUS_DISCONNECTED;
 
     private static PlainSocketManager mInstance;
-    private SocketChannel mSocketChannel;
+    private static SocketChannel mSocketChannel;
     private Selector mSelector;
     private boolean mIsGoOn = true;
 

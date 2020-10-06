@@ -95,13 +95,13 @@ public class TransactionFragment extends Fragment implements View.OnClickListene
             case R.id.Mada_btn:
                 Toast.makeText(getContext(),R.string.Purchase,Toast.LENGTH_LONG).show();
                 PosApplication.getApp().oGPosTransaction.m_enmTrxType=POSTransaction.TranscationType.PURCHASE;
-                PosApplication.getApp().oGPOS_MAIN.Start_Transaction(PosApplication.getApp().oGPosTransaction, POSTransaction.TranscationType.PURCHASE);
+                PosApplication.getApp().oGPOS_MAIN.Start_Transaction(PosApplication.getApp().oGPosTransaction, POSTransaction.TranscationType.PURCHASE,null);
                 break;
             case R.id.Naqd_btn:
                 preConnect();
                 Toast.makeText(getContext(),R.string.NaQD,Toast.LENGTH_LONG).show();
                 PosApplication.getApp().oGPosTransaction.m_enmTrxType=POSTransaction.TranscationType.PURCHASE_WITH_NAQD;
-                PosApplication.getApp().oGPOS_MAIN.Start_Transaction(PosApplication.getApp().oGPosTransaction,POSTransaction.TranscationType.PURCHASE_WITH_NAQD);
+                PosApplication.getApp().oGPOS_MAIN.Start_Transaction(PosApplication.getApp().oGPosTransaction,POSTransaction.TranscationType.PURCHASE_WITH_NAQD,null);
                 break;
             case R.id.auth_btn: // authorization transaction
                 Intent intent = new Intent(getActivity(), Auth_menuActivity.class);
@@ -115,29 +115,29 @@ public class TransactionFragment extends Fragment implements View.OnClickListene
 
                 PosApplication.getApp().oGPosTransaction.m_enmTrxType=POSTransaction.TranscationType.REVERSAL;
                 PosApplication.getApp().oGPosTransaction.reversal_status =1;
-                PosApplication.getApp().oGPOS_MAIN.Start_Transaction(PosApplication.getApp().oGPosTransaction,POSTransaction.TranscationType.REVERSAL);
+                PosApplication.getApp().oGPOS_MAIN.Start_Transaction(PosApplication.getApp().oGPosTransaction,POSTransaction.TranscationType.REVERSAL,null);
 
 
                 break;
             case R.id.Purchase_advice_btn:
 
                 PosApplication.getApp().oGPosTransaction.m_enmTrxType=POSTransaction.TranscationType.PURCHASE_ADVICE;
-                PosApplication.getApp().oGPOS_MAIN.Start_Transaction(PosApplication.getApp().oGPosTransaction,POSTransaction.TranscationType.PURCHASE_ADVICE);
+                PosApplication.getApp().oGPOS_MAIN.Start_Transaction(PosApplication.getApp().oGPosTransaction,POSTransaction.TranscationType.PURCHASE_ADVICE,null);
                 break;
             case R.id.cash_advance_btn:
                 //POS_transaction(cash_advance)
                 PosApplication.getApp().oGPosTransaction.m_enmTrxType=POSTransaction.TranscationType.CASH_ADVANCE;
-                PosApplication.getApp().oGPOS_MAIN.Start_Transaction(PosApplication.getApp().oGPosTransaction,POSTransaction.TranscationType.CASH_ADVANCE);
+                PosApplication.getApp().oGPOS_MAIN.Start_Transaction(PosApplication.getApp().oGPosTransaction,POSTransaction.TranscationType.CASH_ADVANCE,null);
                 break;
             case R.id.Refund_btn:
                 preConnect();
                 PosApplication.getApp().oGPosTransaction.m_enmTrxType=POSTransaction.TranscationType.REFUND;
-                PosApplication.getApp().oGPOS_MAIN.Start_Transaction(PosApplication.getApp().oGPosTransaction,POSTransaction.TranscationType.REFUND);
+                PosApplication.getApp().oGPOS_MAIN.Start_Transaction(PosApplication.getApp().oGPosTransaction,POSTransaction.TranscationType.REFUND,null);
                 break;
             case R.id.authorization_advice_btn:
                 preConnect();
                 PosApplication.getApp().oGPosTransaction.m_enmTrxType=POSTransaction.TranscationType.AUTHORISATION_ADVICE;
-                PosApplication.getApp().oGPOS_MAIN.Start_Transaction(PosApplication.getApp().oGPosTransaction,POSTransaction.TranscationType.AUTHORISATION_ADVICE);
+                PosApplication.getApp().oGPOS_MAIN.Start_Transaction(PosApplication.getApp().oGPosTransaction,POSTransaction.TranscationType.AUTHORISATION_ADVICE,null);
                 break;
 
             case R.id.desaf_btn:

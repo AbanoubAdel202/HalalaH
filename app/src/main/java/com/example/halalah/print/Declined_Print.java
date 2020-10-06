@@ -8,10 +8,11 @@ import android.os.RemoteException;
 import android.util.Log;
 
 import com.example.halalah.DeviceTopUsdkServiceManager;
-import com.example.halalah.HostTotals;
+import com.example.halalah.POSTransaction;
 import com.example.halalah.PosApplication;
 import com.example.halalah.R;
 import com.example.halalah.Utils;
+import com.example.halalah.ui.Declined_Display_Print;
 import com.example.halalah.ui.Display_PrintActivity;
 import com.topwise.cloudpos.aidl.printer.AidlPrinter;
 import com.topwise.cloudpos.aidl.printer.AidlPrinterListener;
@@ -22,8 +23,9 @@ import com.topwise.template.PrintTemplate;
 import com.topwise.template.TextUnit;
 
 import java.util.ArrayList;
-public class Purchase_Print {
-    private static final String TAG = Utils.TAGPUBLIC + Purchase_Print.class.getSimpleName();
+
+public class Declined_Print {
+    private static final String TAG = Utils.TAGPUBLIC + Declined_Print.class.getSimpleName();
 
     public static final int MSG_TASK_SHOW_RESULT = 101;
     public static final int MSG_TASK_PRINT = 103;
@@ -37,25 +39,25 @@ public class Purchase_Print {
 
     private boolean isHolder = false;
 
-    private Display_PrintActivity mDisplay_PrintActivity;
+    private Declined_Display_Print mDeclinedActivity;
     private Context mContext;
 
     public String curTime;
 
-    public Purchase_Print(Display_PrintActivity display_PrintActivity) {
+    public Declined_Print(Declined_Display_Print DeclinedActivity) {
         mPrinterManager = DeviceTopUsdkServiceManager.getInstance().getPrintManager();
         mPrintObjs = new ArrayList<PrintItemObj>();
 
-        mDisplay_PrintActivity = display_PrintActivity;
+        mDeclinedActivity = DeclinedActivity;
 
     }
 
-    public void printDetail() {
+    public void printDetail(String messagetxt) {
         Log.i(TAG, "printDetail, printMsg Started ");
 
-        if (mDisplay_PrintActivity != null) {
-            mContext = mDisplay_PrintActivity;
-            getPurchase_PrintString();
+        if (mDeclinedActivity != null) {
+            mContext = mDeclinedActivity;
+            getPurchase_PrintString(messagetxt);
 
         }
 
@@ -64,7 +66,7 @@ public class Purchase_Print {
         Log.i(TAG, "startPrint ");
         try {
             Typeface typeface = Typeface.createFromAsset(mContext.getAssets(), "hwzs.ttf");
-            String startTime = getCurTime();
+            curTime = getCurTime();
 
             PrintTemplate template = new PrintTemplate(mContext,typeface);
             template.setStrokeWidth(0.1f);
@@ -114,8 +116,8 @@ public class Purchase_Print {
                     Log.i(TAG,"onPrintFinish");
 
 //                    if (isHolder) {
-//                        if (mDisplay_PrintActivity != null) {
-//                            mDisplay_PrintActivity.mHandle.sendEmptyMessage(MSG_TASK_PRINT);
+//                        if (mDeclinedActivity != null) {
+//                            mDeclinedActivity.mHandle.sendEmptyMessage(MSG_TASK_PRINT);
 //                        }
 //                        if (mScanSuccessActivity != null) {
 //                            mScanSuccessActivity.mHandle.sendEmptyMessage(MSG_TASK_PRINT);
@@ -126,8 +128,8 @@ public class Purchase_Print {
 //                        Bundle data = new Bundle();
 //                        data.putString("message", mContext.getString(R.string.result_print_success));
 //                        message.setData(data);
-//                        if (mDisplay_PrintActivity != null) {
-//                            mDisplay_PrintActivity.mHandle.sendMessage(message);
+//                        if (mDeclinedActivity != null) {
+//                            mDeclinedActivity.mHandle.sendMessage(message);
 //                        }
 //                        if (mScanSuccessActivity != null) {
 //                            mScanSuccessActivity.mHandle.sendMessage(message);
@@ -144,7 +146,7 @@ public class Purchase_Print {
         Log.i(TAG, "startPrint end");
     }
 
-    private void getPurchase_PrintString() {
+    private void getPurchase_PrintString(String messagetxt) {
         Log.i(TAG, "getPurchase_PrintString()");
 
 
@@ -154,6 +156,10 @@ public class Purchase_Print {
         mPrintObjs.add(getPrintItemObjs("TID:"+PosApplication.getApp().oGPosTransaction.m_sTerminalID,PrinterConstant.FontSize.NORMAL,true,PrintItemObj.ALIGN.LEFT));
         mPrintObjs.add(getPrintItemObjs("MID:"+PosApplication.getApp().oGPosTransaction.m_sMerchantID,PrinterConstant.FontSize.NORMAL,true,PrintItemObj.ALIGN.LEFT));
   //      mPrintObjs.add(getPrintItemObjs("هلا للمدفوعات", PrinterConstant.FontSize.LARGE,false, PrintItemObj.ALIGN.RIGHT));
+        mPrintObjs.add(getPrintItemObjs("Declined", PrinterConstant.FontSize.LARGE,true, PrintItemObj.ALIGN.CENTER));
+        mPrintObjs.add(getPrintItemObjs("Action code : "+ PosApplication.getApp().oGPosTransaction.m_sActionCode, PrinterConstant.FontSize.LARGE,true, PrintItemObj.ALIGN.CENTER));
+        mPrintObjs.add(getPrintItemObjs(messagetxt , PrinterConstant.FontSize.LARGE,true, PrintItemObj.ALIGN.CENTER));
+
         mPrintObjs.add(getPrintItemObjs("Amount:"+PosApplication.getApp().oGPosTransaction.m_sTrxAmount,PrinterConstant.FontSize.LARGE,true,PrintItemObj.ALIGN.LEFT));
         mPrintObjs.add(getPrintItemObjs(PosApplication.getApp().oGPosTransaction.m_sPAN,PrinterConstant.FontSize.LARGE,true,PrintItemObj.ALIGN.CENTER));
         mPrintObjs.add(getPrintItemObjs("RRN:"+PosApplication.getApp().oGPosTransaction.m_sRRNumber,PrinterConstant.FontSize.NORMAL,true,PrintItemObj.ALIGN.LEFT));
