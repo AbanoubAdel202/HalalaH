@@ -5,6 +5,7 @@ import com.example.halalah.TMS.Public_Key;
 import com.example.halalah.TMS.TMSManager;
 import com.example.halalah.emv.EmvManager;
 import com.example.halalah.storage.CommunicationInfo;
+import com.example.halalah.storage.SaveLoadFile;
 import com.topwise.cloudpos.aidl.emv.level2.EmvTerminalInfo;
 
 import android.Manifest;
@@ -181,7 +182,8 @@ public class MainActivity extends AppCompatActivity implements ITransaction.View
 
         // todo Terminal initialization
         POS_MAIN.check_hardware();
-        POS_MAIN.load_Terminal_configuration_file(); //TMS parameter
+        POS_MAIN.load_Terminal_configuration_file(); //TMS initial parameter
+        //add default terminal data
         POS_MAIN.load_TermData();
         Getlocation();
 
@@ -410,6 +412,7 @@ public class MainActivity extends AppCompatActivity implements ITransaction.View
     private void StartMADA_APP()
     {   Load_Terminal_operation_data();
         POS_MAIN.Get_Terminal_Transaction_limits();
+
     }
 
     private void checkRegistration() {
@@ -418,9 +421,11 @@ public class MainActivity extends AppCompatActivity implements ITransaction.View
             return;
         }
         boolean bRegistered = PosApplication.getApp().oGTerminal_Operation_Data.m_bregistered;
-//        Initialize_Security();
+        //Initialize_Security();
         if (bRegistered == true) {
+        //if (true) {
             //Initialize_EMV_Configuration();
+
             Initialize_CTLS_configuration();
         } else {
             showRegistrationScreen();
@@ -456,7 +461,7 @@ public class MainActivity extends AppCompatActivity implements ITransaction.View
         EMVterminalParam.setUcTerminalType(Byte.parseByte(PosApplication.getApp().oGSama_TMS.retailer_data.m_sEMV_Terminal_Type));
         EMVterminalParam.setAucTerminalCountryCode(PosApplication.getApp().oGSama_TMS.retailer_data.m_sTerminal_Country_Code.getBytes());
         EMVterminalParam.setAucTransCurrencyCode(PosApplication.getApp().oGSama_TMS.retailer_data.m_sTerminal_Currency_Code.getBytes());
-       // EMVterminalParam.setAucTerminalCapabilities(PosApplication.getApp().oGSama_TMS.retailer_data.m_sTerminal_Capability.getBytes());
+        //EMVterminalParam.setAucTerminalCapabilities(PosApplication.getApp().oGSama_TMS.retailer_data.m_sTerminal_Capability.getBytes());
         mEMVmanager.setEmvTerminalInfo(EMVterminalParam);
 
 
@@ -467,7 +472,7 @@ public class MainActivity extends AppCompatActivity implements ITransaction.View
     }
     private void Load_Terminal_operation_data()
     {
-        //todo Load Terminal operation data from database
+        PosApplication.getApp().oGTerminal_Operation_Data=SaveLoadFile.loadTeminal_operation_Data();
     }
     @Override
     public void showRegistrationScreen() {

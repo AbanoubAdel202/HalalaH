@@ -112,11 +112,13 @@ public class PacketProcessActivity extends Activity implements SendReceiveListen
 
         mSendPacket = mPackPacket.getSendPacket();
         Log.d(TAG, "getPacketAndSend: mSendPacket = " + BCDASCII.bytesToHexString(mSendPacket));
-        /*communicationsHandler = CommunicationsHandler.getInstance(new CommunicationInfo(this));
+      /*  communicationsHandler = CommunicationsHandler.getInstance(new CommunicationInfo(this));
         communicationsHandler.setSendReceiveListener(this);
         POS_MAIN.SaveLastTransaction(PosApplication.getApp().oGPosTransaction, POS_MAIN.CurrentSaving.SAVE);
         communicationsHandler.sendReceive(mSendPacket);*/
-        POS_MAIN.SaveLastTransaction(PosApplication.getApp().oGPosTransaction, POS_MAIN.CurrentSaving.SAVE);
+        if(PosApplication.getApp().oGPosTransaction.m_enmTrxType!=POSTransaction.TranscationType.TMS_FILE_DOWNLOAD) {
+            POS_MAIN.SaveLastTransaction(PosApplication.getApp().oGPosTransaction, POS_MAIN.CurrentSaving.SAVE);
+        }
         Senddata(mSendPacket);
 
     }
@@ -298,13 +300,15 @@ public class PacketProcessActivity extends Activity implements SendReceiveListen
 
     @Override
     protected void onDestroy() {
-        CommunicationsHandler.getInstance(mCommunicationInfo).closeConnection();
+       // CommunicationsHandler.getInstance(mCommunicationInfo).closeConnection();
+        disconnect();
         super.onDestroy();
     }
 
     @Override
     public void onBackPressed() {
-        CommunicationsHandler.getInstance(mCommunicationInfo).closeConnection();
+        //CommunicationsHandler.getInstance(mCommunicationInfo).closeConnection();
+        disconnect();
         super.onBackPressed();
     }
 
@@ -331,8 +335,12 @@ public class PacketProcessActivity extends Activity implements SendReceiveListen
             PosApplication.getApp().oGTerminal_Operation_Data.breversal_flg=false;
             int ret=PosApplication.getApp().oGPOS_MAIN.PerfomTermHostResponseFlow(mRecePacket,0,this);
           if(ret == 0) {
-              disconnect();
-              finish();
+              try{wait(5000);}
+              catch (Exception e){
+                  e.printStackTrace();
+              }
+              //disconnect();
+             // finish();
           }
 
 

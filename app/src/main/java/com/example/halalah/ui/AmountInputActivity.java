@@ -85,12 +85,12 @@ public class AmountInputActivity extends Activity implements View.OnClickListene
 
     private void preConnect() {
         // open socket to be ready to sending/receiving financial messages
-      /*  CommunicationInfo communicationInfo = new CommunicationInfo(this);
+     /*  CommunicationInfo communicationInfo = new CommunicationInfo(this);
         InputStream caInputStream = getResources().openRawResource(R.raw.bks);
         CommunicationsHandler.getInstance(communicationInfo, caInputStream).connect();*/
 
         tcpClient = TCPCommunicator.getInstance();
-        tcpClient.init("192.168.8.145", 2030);
+        tcpClient.init("192.168.8.116", 2030);
         TCPCommunicator.closeStreams();
     }
 

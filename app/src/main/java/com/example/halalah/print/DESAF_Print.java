@@ -8,7 +8,6 @@ import android.os.RemoteException;
 import android.util.Log;
 
 import com.example.halalah.DeviceTopUsdkServiceManager;
-import com.example.halalah.HostTotals;
 import com.example.halalah.PosApplication;
 import com.example.halalah.R;
 import com.example.halalah.Utils;
@@ -22,8 +21,9 @@ import com.topwise.template.PrintTemplate;
 import com.topwise.template.TextUnit;
 
 import java.util.ArrayList;
-public class Purchase_Print {
-    private static final String TAG = Utils.TAGPUBLIC + Purchase_Print.class.getSimpleName();
+
+public class DESAF_Print {
+    private static final String TAG = Utils.TAGPUBLIC + DESAF_Print.class.getSimpleName();
 
     public static final int MSG_TASK_SHOW_RESULT = 101;
     public static final int MSG_TASK_PRINT = 103;
@@ -37,19 +37,13 @@ public class Purchase_Print {
 
     private boolean isHolder = false;
 
-    private Display_PrintActivity mDisplay_PrintActivity;
-    private Context mContext;
+
+    private Context mContext=PosApplication.getApp().getApplicationContext();
 
     public String curTime;
 
-    public Purchase_Print(Display_PrintActivity display_PrintActivity) {
-        mPrinterManager = DeviceTopUsdkServiceManager.getInstance().getPrintManager();
-        mPrintObjs = new ArrayList<PrintItemObj>();
 
-        mDisplay_PrintActivity = display_PrintActivity;
-
-    }
-    public Purchase_Print() {
+    public DESAF_Print() throws RemoteException {
         mPrinterManager = DeviceTopUsdkServiceManager.getInstance().getPrintManager();
         mPrintObjs = new ArrayList<PrintItemObj>();
 
@@ -60,15 +54,12 @@ public class Purchase_Print {
     public void printDetail() {
         Log.i(TAG, "printDetail, printMsg Started ");
 
-        if (mDisplay_PrintActivity != null) {
-            mContext = mDisplay_PrintActivity;
+
             getPurchase_PrintString();
 
-        }
 
 
 
-        Log.i(TAG, "startPrint ");
         try {
             Typeface typeface = Typeface.createFromAsset(mContext.getAssets(), "hwzs.ttf");
             String startTime = getCurTime();

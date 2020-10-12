@@ -105,6 +105,8 @@ public class Terminal_Operation_Data implements Serializable {
 
     //TMSCoonect
     public String m_sTMSHeader;
+    public int TMS_currentcount;
+    public int TMS_endcount;
 
     //COMMUNICATION
     public CommunicationInfo communicationInfo;
@@ -162,6 +164,8 @@ public class Terminal_Operation_Data implements Serializable {
         g_TerminalTotals = new CardSchemeTotals[10];
         //TMSHEADER
         m_sTMSHeader="3060000";
+         TMS_currentcount= 0;
+        TMS_endcount = 0;
         //communication
 
 

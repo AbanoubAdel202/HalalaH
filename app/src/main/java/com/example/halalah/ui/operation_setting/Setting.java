@@ -18,6 +18,7 @@ import com.example.halalah.POSTransaction;
 import com.example.halalah.PosApplication;
 import com.example.halalah.R;
 import com.example.halalah.connect.CommunicationsHandler;
+import com.example.halalah.connect.TCPCommunicator;
 import com.example.halalah.storage.CommunicationInfo;
 
 import java.io.InputStream;
@@ -25,6 +26,7 @@ import java.io.InputStream;
 public class Setting extends Fragment implements View.OnClickListener {
 
     private SettingViewModel mViewModel;
+    private TCPCommunicator tcpClient;
 
     public static Setting newInstance() {
         return new Setting();
@@ -37,9 +39,10 @@ public class Setting extends Fragment implements View.OnClickListener {
 
         Button TMSdownload = (Button) root.findViewById(R.id.TMS_btn);
        TMSdownload.setOnClickListener(this);
-        CommunicationInfo communicationInfo = new CommunicationInfo(getContext());
+       /* CommunicationInfo communicationInfo = new CommunicationInfo(getContext());
         InputStream caInputStream = getResources().openRawResource(R.raw.bks);
-        CommunicationsHandler.getInstance(communicationInfo, caInputStream).connect();
+        CommunicationsHandler.getInstance(communicationInfo, caInputStream).connect();*/
+
                 return root;
     }
 
@@ -58,11 +61,23 @@ public class Setting extends Fragment implements View.OnClickListener {
         {
             case R.id.TMS_btn:
 
-                PosApplication.getApp().oGPOS_MAIN.mcontext = getContext();
+               /* PosApplication.getApp().oGPOS_MAIN.mcontext = getContext();
                 PosApplication.getApp().oGPosTransaction.m_enmTrxType= POSTransaction.TranscationType.TMS_FILE_DOWNLOAD;
                 PosApplication.getApp().oGPOS_MAIN.Start_Transaction(PosApplication.getApp().oGPosTransaction,POSTransaction.TranscationType.TMS_FILE_DOWNLOAD,null);
-
-
+                */
+                preConnect();
+                PosApplication.getApp().oGPosTransaction.m_enmTrxType= POSTransaction.TranscationType.TMS_FILE_DOWNLOAD;
+                PosApplication.getApp().oGPOS_MAIN.StartTMSDownload(false);
         }
+    }
+    private void preConnect() {
+        // open socket to be ready to sending/receiving financial messages
+      /*  CommunicationInfo communicationInfo = new CommunicationInfo(this);
+        InputStream caInputStream = getResources().openRawResource(R.raw.bks);
+        CommunicationsHandler.getInstance(communicationInfo, caInputStream).connect();*/
+
+        tcpClient = TCPCommunicator.getInstance();
+        tcpClient.init("192.168.8.116", 2030);
+        TCPCommunicator.closeStreams();
     }
 }
