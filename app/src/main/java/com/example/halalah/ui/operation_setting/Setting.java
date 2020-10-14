@@ -77,7 +77,7 @@ public class Setting extends Fragment implements View.OnClickListener {
         CommunicationsHandler.getInstance(communicationInfo, caInputStream).connect();*/
 
         tcpClient = TCPCommunicator.getInstance();
-        tcpClient.init("192.168.8.116", 2030);
+        tcpClient.init("192.168.8.151", 2030);
         TCPCommunicator.closeStreams();
     }
 }

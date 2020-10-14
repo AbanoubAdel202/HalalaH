@@ -147,6 +147,7 @@ Load Last Terminal Data from Terminal Operation Data Table
 
         Log.i(TAG,"InitilizeDUKPT() STARTED with szBDK [ "+szBDK+" ]and szKSN [ "+szKSN+" ]");
         PosApplication.getApp().getDeviceManager();
+
         pinpad = DeviceTopUsdkServiceManager.getInstance().getPinpadManager(0);
 	/*
 	// Drive IPEK

@@ -3,14 +3,18 @@ package com.example.halalah;
 import com.example.halalah.TMS.Card_Scheme;
 import com.example.halalah.TMS.Public_Key;
 import com.example.halalah.TMS.TMSManager;
+import com.example.halalah.connect.TCPCommunicator;
 import com.example.halalah.emv.EmvManager;
 import com.example.halalah.storage.CommunicationInfo;
 import com.example.halalah.storage.SaveLoadFile;
 import com.topwise.cloudpos.aidl.emv.level2.EmvTerminalInfo;
 
 import android.Manifest;
+
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Address;
@@ -24,6 +28,8 @@ import android.os.SystemClock;
 import android.text.format.DateFormat;
 import android.util.Log;
 import android.view.Menu;
+import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -69,9 +75,13 @@ import java.util.concurrent.CountDownLatch;
 public class MainActivity extends AppCompatActivity implements ITransaction.View {
 
     private static final int REGISTRATION_REQUEST_CODE = 1000;
+    private static final int REGISTRATION_REQUEST_BYPASS = 2000;
     private AppBarConfiguration mAppBarConfiguration;
     Context context;
     ProgressDialog mProgressDialog;
+    AlertDialog.Builder builder;
+    private TCPCommunicator tcpClient;
+
     private boolean isRegistrationInProgress;
 
     @Override
@@ -81,9 +91,11 @@ public class MainActivity extends AppCompatActivity implements ITransaction.View
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 //        CommunicationInfo communicationInfo = new CommunicationInfo(this);
-//        communicationInfo.setHostIP("192.168.8.124");
+//        communicationInfo.setHostIP("192.168.8.138");
 //        communicationInfo.setHostPort("1001");
 //        communicationInfo.setTPDU("6000230000");
+        builder = new AlertDialog.Builder(this);
+
 
         TextView date = findViewById(R.id.Date);
         TextView time =findViewById(R.id.TIME);
@@ -97,7 +109,6 @@ public class MainActivity extends AppCompatActivity implements ITransaction.View
         time.setText(t);
 
         PosApplication.getApp().getDeviceManager();
-
         // Mostafa 21/4/2020 added to remove bars for full screen application
         /*View decorView = getWindow().getDecorView();
         int uiOptions = View.SYSTEM_UI_FLAG_LOW_PROFILE
@@ -122,6 +133,7 @@ public class MainActivity extends AppCompatActivity implements ITransaction.View
         NavigationUI.setupWithNavController(navigationView, navController);
 
         showLoading("Terminal Initializing please wait...");
+
 
         Terminal_Initialization();
 
@@ -167,15 +179,16 @@ public class MainActivity extends AppCompatActivity implements ITransaction.View
     protected void onResume() {
         super.onResume();
         PosApplication.getApp().oGPosTransaction.Reset();
-        AidlLed mAidlLed = DeviceTopUsdkServiceManager.getInstance().getLedManager();
-        checkRegistration();
-        try {
+
+      //  AidlLed mAidlLed = DeviceTopUsdkServiceManager.getInstance().getLedManager();
+      //  checkRegistration();
+      /*  try {
             if(mAidlLed != null){
                 mAidlLed.setLed(0 , false);
             }
         } catch (RemoteException e) {
             e.printStackTrace();
-        }
+        }*/
     }
 
     private boolean Terminal_Initialization() {
@@ -187,10 +200,10 @@ public class MainActivity extends AppCompatActivity implements ITransaction.View
         POS_MAIN.load_TermData();
         Getlocation();
 
-        new Thread(() -> {
+        /*new Thread(() -> {
             SystemClock.sleep(1000);
             if(!PosApplication.getApp().oGTerminal_Operation_Data.m_TMS_Downloaded)
-                DownLoadParM();//Dummy TMS download
+              //  DownLoadParM();//Dummy TMS download
             //downLoadKeys();
 
             runOnUiThread(new Runnable() {
@@ -199,7 +212,7 @@ public class MainActivity extends AppCompatActivity implements ITransaction.View
                     hideLoading();
                 }
             });
-        }).start();
+        }).start();*/
 
         return true;
 
@@ -271,6 +284,23 @@ public class MainActivity extends AppCompatActivity implements ITransaction.View
 
 
 
+    }
+
+    private void DownloadTMS()
+    {
+        preConnect();
+        PosApplication.getApp().oGPosTransaction.m_enmTrxType= POSTransaction.TranscationType.TMS_FILE_DOWNLOAD;
+        PosApplication.getApp().oGPOS_MAIN.StartTMSDownload(false);
+    }
+    private void preConnect() {
+        // open socket to be ready to sending/receiving financial messages
+      /*  CommunicationInfo communicationInfo = new CommunicationInfo(this);
+        InputStream caInputStream = getResources().openRawResource(R.raw.bks);
+        CommunicationsHandler.getInstance(communicationInfo, caInputStream).connect();*/
+
+        tcpClient = TCPCommunicator.getInstance();
+        tcpClient.init("192.168.8.151", 2030);
+        TCPCommunicator.closeStreams();
     }
     private void DownLoadParM(){
         SAMA_TMS sama_tms = new SAMA_TMS();
@@ -385,32 +415,14 @@ public class MainActivity extends AppCompatActivity implements ITransaction.View
     }
 
 
-    private boolean downLoadKeys(){
 
-        final AidlPinpad pinpadManager = DeviceTopUsdkServiceManager.getInstance().getPinpadManager(0);
-        final byte[] tmk = BCDASCII.hexStringToBytes("89F8B0FDA2F2896B9801F131D32F986D89F8B0FDA2F2896B");
-        final byte[] tak = BCDASCII.hexStringToBytes("92B1754D6634EB22");
-        final byte[] tpk = BCDASCII.hexStringToBytes("B5E175AC5FD8DD8A03AD23A35C5BAB6B");
-        final byte[] trk = BCDASCII.hexStringToBytes("744185122EEC284830694CAD383B4F7A");
-        boolean mIsSuccess =false;
-
-        try {
-            mIsSuccess = pinpadManager.loadMainkey(0, tmk, null);
-
-            mIsSuccess = pinpadManager.loadWorkKey(PinpadConstant.WKeyType.WKEY_TYPE_MAK, 0, 0, tak, null);
-
-            mIsSuccess = pinpadManager.loadWorkKey(PinpadConstant.WKeyType.WKEY_TYPE_PIK, 0, 0, tpk, null);
-
-            mIsSuccess = pinpadManager.loadWorkKey(PinpadConstant.WKeyType.WKEY_TYPE_TDK, 0, 0, trk, null);
-
-        } catch (RemoteException e) {
-            e.printStackTrace();
-        }
-    return true;
-    }
 
     private void StartMADA_APP()
-    {   Load_Terminal_operation_data();
+    {
+
+        Load_Terminal_operation_data();
+       // Initialize_Security();
+      //  checkRegistration();
         POS_MAIN.Get_Terminal_Transaction_limits();
 
     }
@@ -421,12 +433,15 @@ public class MainActivity extends AppCompatActivity implements ITransaction.View
             return;
         }
         boolean bRegistered = PosApplication.getApp().oGTerminal_Operation_Data.m_bregistered;
-        //Initialize_Security();
-        if (bRegistered == true) {
+
+        if (bRegistered==true) {
         //if (true) {
             //Initialize_EMV_Configuration();
 
             Initialize_CTLS_configuration();
+            if(!PosApplication.getApp().oGTerminal_Operation_Data.m_TMS_Downloaded)
+                DownloadTMS();
+
         } else {
             showRegistrationScreen();
         }
@@ -487,15 +502,36 @@ public class MainActivity extends AppCompatActivity implements ITransaction.View
     @Override
     public void showError(int errorMessageId) {
         hideLoading();
-        Toast.makeText(context, getString(errorMessageId), Toast.LENGTH_SHORT).show();
+        isRegistrationInProgress = false;
+        //Toast.makeText(context, getString(errorMessageId), Toast.LENGTH_SHORT).show();
+
+        this.runOnUiThread(new Runnable() {
+            public void run() {
+                Toast.makeText(context, getString(errorMessageId), Toast.LENGTH_SHORT).show();
+                showalert(getString(errorMessageId));
+
+            }
+        });
         checkRegistration();
+
     }
 
     @Override
     public void showError(String errorMessageString) {
         hideLoading();
         Toast.makeText(context, errorMessageString, Toast.LENGTH_SHORT).show();
+
+        isRegistrationInProgress = false;
+
+        this.runOnUiThread(new Runnable() {
+            public void run() {
+                Toast.makeText(context, errorMessageString, Toast.LENGTH_SHORT).show();
+                showalert(errorMessageString);
+
+            }
+        });
         checkRegistration();
+
     }
 
     @Override
@@ -506,6 +542,7 @@ public class MainActivity extends AppCompatActivity implements ITransaction.View
     @Override
     public void showRegistrationSuccess() {
         hideLoading();
+        isRegistrationInProgress = false;
         Toast.makeText(context, "Terminal registered successfully !! ", Toast.LENGTH_SHORT).show();
     }
 
@@ -523,9 +560,47 @@ public class MainActivity extends AppCompatActivity implements ITransaction.View
                     PosApplication.getApp().oGTerminal_Registeration.StartRegistrationProcess(
                             PosApplication.getApp().oGPosTransaction, this);
                 } else {
+                    if(resultCode == RESULT_CANCELED)
+                    {
+                        PosApplication.getApp().oGTerminal_Operation_Data.m_bregistered=true;
+                    }
                     showError(R.string.registration_error);
                 }
                 break;
+
+
+
+
         }
     }
+
+    public void showalert(String message){
+
+                //Uncomment the below code to Set the message and title from the strings.xml file
+                builder.setMessage(message) .setTitle("error registeration");
+
+                //Setting message manually and performing action on button click
+                builder.setMessage("not registered ")
+                        .setCancelable(false)
+                        .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                finish();
+
+                            }
+                        })
+                        .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                //  Action for 'NO' Button
+                                dialog.cancel();
+
+                            }
+                        });
+                //Creating dialog box
+                AlertDialog alert = builder.create();
+                //Setting the title manually
+                alert.setTitle("Error registeration");
+                alert.show();
+            }
+
+
 }

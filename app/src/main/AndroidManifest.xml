@@ -72,7 +72,7 @@
         </activity>
         <activity
             android:name=".registration.view.RegistrationActivity"
-            android:launchMode="singleTask" />
+            />
         <activity
             android:name=".ui.transactions.Authorization.AuthAdvice.authAdviceTypeActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"

@@ -105,6 +105,7 @@ public class DeviceTopUsdkServiceManager {
         public void onServiceConnected(ComponentName componentName, IBinder service) {
             mDeviceService = AidlDeviceService.Stub.asInterface(service);
             Log.i("topwise","onServiceConnected  :  " + mDeviceService);
+            Log.d("topwise", "onServiceConnected: "+ mDeviceService);
         }
 
         @Override

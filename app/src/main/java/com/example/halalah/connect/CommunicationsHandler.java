@@ -40,8 +40,7 @@ public class CommunicationsHandler {
     private static String mHostIp;
     private static String mHostPort;
     private CountDownTimer timeoutCounter;
-    private BehaviorSubject<Boolean> sendReceiveBS;
-    private Observable observable;
+    private static BehaviorSubject<Boolean> sendReceiveBS;
     private boolean mIsFinancialMessage = true;
     private HeadersInterceptor headersInterceptor = new HeadersInterceptor();
 
@@ -50,12 +49,9 @@ public class CommunicationsHandler {
     }
 
     public static CommunicationsHandler getInstance(CommunicationInfo communicationInfo, InputStream certificateIS) {
-
-
         if (mInstance == null) {
             mInstance = new CommunicationsHandler(communicationInfo, certificateIS);
         }
-        Log.d(TAG, "getInstance: ");
         return mInstance;
     }
 
@@ -90,10 +86,10 @@ public class CommunicationsHandler {
         sendReceiveBS = BehaviorSubject.create();
 
         mSendPacket = packetToSend;
-        observable = Observable.fromCallable(() -> sendReceive())
+        Observable o = Observable.fromCallable(() -> sendReceive())
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread());
-        observable.subscribe(sendReceiveBS);
+        o.subscribe(sendReceiveBS);
         return sendReceiveBS;
     }
 
@@ -145,8 +141,6 @@ public class CommunicationsHandler {
         Log.d(TAG, "send packet success.");
 
         mRecePacket = mSocketManager.receive();
-
-
         // TODO TIMEOUT
         if ((mRecePacket == null) || (mRecePacket.length <= 0)) {
             Log.d(TAG, "receive packet failed.");
@@ -220,7 +214,7 @@ public class CommunicationsHandler {
         });
     }
 
-    public boolean isConnected() {
+    private boolean isConnected() {
         Log.d(TAG, "isConnected = " + (mSocketManager.getConnectionStatus() == iConnect.CONNECTION_STATUS_CONNECTED));
         return mSocketManager.getConnectionStatus() == iConnect.CONNECTION_STATUS_CONNECTED;
     }

@@ -112,6 +112,7 @@ public class Terminal_Operation_Data implements Serializable {
     public CommunicationInfo communicationInfo;
 
     public Terminal_Operation_Data(){
+        m_bregistered = false;
         m_iPinKeyboardMode=1;
         m_sMerchantID="800150400577";
         m_sTerminalID="5012345600123456";

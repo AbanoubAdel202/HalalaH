@@ -109,6 +109,7 @@ public class Terminal_Registeration implements SendReceiveListener {
             PosApplication.getApp().oGPOS_MAIN.Start_Transaction(PosApplication.getApp().oGPosTransaction, POSTransaction.TranscationType.TMS_FILE_DOWNLOAD,null);
         } else {
             onFailure(R.string.registration_error);
+
         }
 
     }

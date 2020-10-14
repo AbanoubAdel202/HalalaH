@@ -492,7 +492,7 @@ public class PinpadActivity extends Activity {
             intent.putExtra("result_errReason", 0);
             intent.putExtra("result_response", "00");
 
-            startActivity(intent);
+         //   startActivity(intent);
         } else {
             Intent intent = new Intent(this, ShowResultActivity.class);
             intent.putExtra(PacketProcessUtils.PACKET_PROCESS_TYPE, PacketProcessUtils.PACKET_PROCESS_PURCHASE);

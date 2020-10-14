@@ -83,14 +83,14 @@ public class POS_MAIN implements SendReceiveListener , TCPListener {
         { //parse reversal
 
             Parse_reversal_Response(receivedPacket);
-            CommunicationsHandler.getInstance(new CommunicationInfo(PosApplication.getApp().getApplicationContext())).closeConnection();
+          //  CommunicationsHandler.getInstance(new CommunicationInfo(PosApplication.getApp().getApplicationContext())).closeConnection();
         }
         else if(sresponseMTI.equals("1534"))
         {
            // PosApplication.getApp().oGTerminal_Operation_Data.breconsile_flag=false;
             Parse_RECONSILE_response(receivedPacket);
 
-            //printing reconciliation
+
           //  CommunicationsHandler.getInstance(new CommunicationInfo(PosApplication.getApp().getApplicationContext())).closeConnection();
 
         }
@@ -102,7 +102,7 @@ public class POS_MAIN implements SendReceiveListener , TCPListener {
         }
 
 
-        // checks after Each recive
+        // checks after Each receive
 
         if(PosApplication.getApp().oGTerminal_Operation_Data.bDeSAF_flag & !PosApplication.getApp().oGTerminal_Operation_Data.breconsile_flag) {
             Parse_DeSAF_Response(receivedPacket);
@@ -859,9 +859,9 @@ public class POS_MAIN implements SendReceiveListener , TCPListener {
         //ex.DF180101
         // Adding Default_TDOL
         if (AIDObj.Default_TDOL.length() > 0) {
-            AIDObj.Default_TDOL=AIDObj.Default_TDOL.replaceAll(" ","");
-            strFormatedAIDData.append("DF8101" + String.format(Locale.ENGLISH, "%02d", AIDObj.Default_TDOL.length() / 2) + AIDObj.Default_TDOL);
-        }
+        AIDObj.Default_TDOL=AIDObj.Default_TDOL.replaceAll(" ","");
+        strFormatedAIDData.append("DF8102" + String.format(Locale.ENGLISH, "%02d", AIDObj.Default_TDOL.length() / 2) + AIDObj.Default_TDOL);
+    }
         //ex.9F7B06000000100000
         strFormatedAIDData.append("9F7B06000000100000");
 
@@ -1084,7 +1084,7 @@ DF03 Check Sum                                [20]   >> 4410C6D51C2F83ADFD92528F
         }
         else {
             String mResponse = BCDASCII.asciiByteArray2String(PosApplication.getApp().oGPosTransaction.m_ResponseISOMsg.getDataElement(39));
-
+            PosApplication.getApp().oGPosTransaction.m_sActionCode=mResponse;
 
             if (!CheckHostActionCode(mResponse)) {
                 if(mResponse.equals("112") ||mResponse.equals("117") || mResponse.equals("127"))
@@ -1117,16 +1117,19 @@ DF03 Check Sum                                [20]   >> 4410C6D51C2F83ADFD92528F
                 Check_DE44(PosApplication.getApp().oGPosTransaction.m_ResponseISOMsg.getDataElement(44));
                 Check_DE47(PosApplication.getApp().oGPosTransaction.m_ResponseISOMsg.getDataElement(47));
                 //todo Update LEDs with tranasction status (Approved) Green Contactless
-                if (PosApplication.getApp().oGPosTransaction.m_enmTrxCardType == POSTransaction.CardType.ICC) {
+                if (PosApplication.getApp().oGPosTransaction.m_enmTrxCardType == POSTransaction.CardType.ICC || PosApplication.getApp().oGPosTransaction.m_enmTrxCardType == POSTransaction.CardType.CTLS) {
                     byte[] icc = PosApplication.getApp().oGPosTransaction.m_ResponseISOMsg.getDataElement(55);
-                    String ICCresp = BCDASCII.fromBCDToASCIIString(icc, 0, icc.length * 2, true);
-                    Check_DE55(PosApplication.getApp().oGPosTransaction.m_ResponseISOMsg.getDataElement(55));
-                    // go do 2nd AC and Issuer if exist
-                    CardManager.getInstance().setRequestOnline(true, mResponse, ICCresp);
-
+                    if(icc != null ) {
+                        String ICCresp = BCDASCII.fromBCDToASCIIString(icc, 0, icc.length * 2, true);
+                        Check_DE55(PosApplication.getApp().oGPosTransaction.m_ResponseISOMsg.getDataElement(55));
+                        // go do 2nd AC and Issuer if exist
+                        if (PosApplication.getApp().oGPosTransaction.m_enmTrxCardType == POSTransaction.CardType.ICC)
+                            CardManager.getInstance().setRequestOnline(true, mResponse, ICCresp);
+                    }
                 }
 
-                //  if(PosApplication.getApp().oGPosTransaction.m_enmTrxCardType!= POSTransaction.CardType.ICC) {
+
+                  if(PosApplication.getApp().oGPosTransaction.m_enmTrxCardType!= POSTransaction.CardType.ICC) {
 
                 SaveLastTransaction(PosApplication.getApp().oGPosTransaction, CurrentSaving.REMOVE);
                 SaveLoadFile.Savetransaction(PosApplication.getApp().oGPosTransaction);
@@ -1160,8 +1163,8 @@ DF03 Check Sum                                [20]   >> 4410C6D51C2F83ADFD92528F
                     //clear flags
                   }
                 Save_TermData();
+                }
             }
-            //  }
 
             //todo GetDateTime(int iFormat);           // iFormat , All , HHSS,YYMM,
 
@@ -1287,52 +1290,66 @@ DF03 Check Sum                                [20]   >> 4410C6D51C2F83ADFD92528F
         Log.d(TAG, "POS_MAIN onSuccess: start");
         byte[] responseMTI=BytesUtil.subBytes(receivedPacket, 0, 4);
         String sresponseMTI=BCDASCII.asciiByteArray2String(responseMTI);
-            if(sresponseMTI.equals("1434"))
-            { //parse reversal
+        if(sresponseMTI.equals("1434"))
+        { //parse reversal
 
-                Parse_reversal_Response(receivedPacket);
-                CommunicationsHandler.getInstance(new CommunicationInfo(PosApplication.getApp().getApplicationContext())).closeConnection();
-            }
-            else if(sresponseMTI.equals("1534"))
-                {
-                    Parse_RECONSILE_response(receivedPacket);
-
-                    //printing reconciliation
-                    CommunicationsHandler.getInstance(new CommunicationInfo(PosApplication.getApp().getApplicationContext())).closeConnection();
-
-                }
+            Parse_reversal_Response(receivedPacket);
+            CommunicationsHandler.getInstance(new CommunicationInfo(PosApplication.getApp().getApplicationContext())).closeConnection();
+        }
+        else if(sresponseMTI.equals("1534"))
+        {
+            // PosApplication.getApp().oGTerminal_Operation_Data.breconsile_flag=false;
+            Parse_RECONSILE_response(receivedPacket);
 
 
-            if(PosApplication.getApp().oGTerminal_Operation_Data.bDeSAF_flag&!PosApplication.getApp().oGTerminal_Operation_Data.breconsile_flag) {
-                Parse_DeSAF_Response(receivedPacket);
+              CommunicationsHandler.getInstance(new CommunicationInfo(PosApplication.getApp().getApplicationContext())).closeConnection();
 
-            if (PosApplication.getApp().oGTerminal_Operation_Data.saf_info.m_iSAFTrxNumber >0)
-                               DeSAF(SAF_Info.DESAFtype.PARTIAL);
+        }
+        else if(sresponseMTI.equals(("1314")))
+        {
+            parse_TMS_response(receivedPacket);
+
+            // if (/* TMS not finished */)
         }
 
-        if(PosApplication.getApp().oGTerminal_Operation_Data.bDeSAF_flag&PosApplication.getApp().oGTerminal_Operation_Data.breconsile_flag)// RECONSILE
-                if(PosApplication.getApp().oGTerminal_Operation_Data.saf_info.m_iSAFTrxNumber>0)
-                {
-                    Parse_DeSAF_Response(receivedPacket);
-                    DeSAF(SAF_Info.DESAFtype.FULL);
-                }
-                else
-                {
 
-                    Parse_DeSAF_Response(receivedPacket);
-                    PosApplication.getApp().oGTerminal_Operation_Data.bDeSAF_flag=false;
-                    StartReconciliation(false);
-                }
-        if(!PosApplication.getApp().oGTerminal_Operation_Data.bDeSAF_flag&PosApplication.getApp().oGTerminal_Operation_Data.breconsile_flag)
-             StartReconciliation(false);
-        if (PosApplication.getApp().oGTerminal_Operation_Data.bDeSAF_flag&PosApplication.getApp().oGTerminal_Operation_Data.bTMS_flag) {
+        // checks after Each recive
+
+        if(PosApplication.getApp().oGTerminal_Operation_Data.bDeSAF_flag & !PosApplication.getApp().oGTerminal_Operation_Data.breconsile_flag) {
+            Parse_DeSAF_Response(receivedPacket);
+
+            if (PosApplication.getApp().oGTerminal_Operation_Data.saf_info.m_iSAFTrxNumber >0)
+                DeSAF(SAF_Info.DESAFtype.PARTIAL);
+        }
+
+        if(PosApplication.getApp().oGTerminal_Operation_Data.bDeSAF_flag & PosApplication.getApp().oGTerminal_Operation_Data.breconsile_flag)// RECONSILE
+            if(PosApplication.getApp().oGTerminal_Operation_Data.saf_info.m_iSAFTrxNumber>0)
+            {
+                Parse_DeSAF_Response(receivedPacket);
+                DeSAF(SAF_Info.DESAFtype.FULL);
+            }
+            else
+            {
+                Parse_DeSAF_Response(receivedPacket);
+                PosApplication.getApp().oGTerminal_Operation_Data.bDeSAF_flag=false;
+                StartReconciliation(false);
+            }
+
+        if(!PosApplication.getApp().oGTerminal_Operation_Data.bDeSAF_flag & PosApplication.getApp().oGTerminal_Operation_Data.breconsile_flag)
+        {
+            StartReconciliation(false);
+        }
+
+        if (PosApplication.getApp().oGTerminal_Operation_Data.bDeSAF_flag & PosApplication.getApp().oGTerminal_Operation_Data.bTMS_flag) {
             if (PosApplication.getApp().oGTerminal_Operation_Data.saf_info.m_iSAFTrxNumber > 0) {
+                Parse_DeSAF_Response(receivedPacket);
                 DeSAF(SAF_Info.DESAFtype.FULL);
             } else {
                 StartTMSDownload(false);
             }
         }
-        if(!PosApplication.getApp().oGTerminal_Operation_Data.bDeSAF_flag&PosApplication.getApp().oGTerminal_Operation_Data.bTMS_flag)
+
+        if(PosApplication.getApp().oGTerminal_Operation_Data.bDeSAF_flag == false && PosApplication.getApp().oGTerminal_Operation_Data.bTMS_flag == true)
             StartTMSDownload(false);
 
 
@@ -1682,9 +1699,9 @@ DF03 Check Sum                                [20]   >> 4410C6D51C2F83ADFD92528F
     }
 
     private void senddata(byte[] Buffer) {
-      /*  CommunicationsHandler communicationsHandler = CommunicationsHandler.getInstance(new CommunicationInfo(PosApplication.getApp().getApplicationContext()));
+       /* CommunicationsHandler communicationsHandler = CommunicationsHandler.getInstance(new CommunicationInfo(PosApplication.getApp().getApplicationContext()));
         communicationsHandler.setSendReceiveListener(this);
-        communicationsHandler.sendReceive(sendtotals);*/
+        communicationsHandler.sendReceive(Buffer);*/
 
         TCPCommunicator.addListener(this);
         mCommunicationInfo= new CommunicationInfo(PosApplication.getApp().getApplicationContext());

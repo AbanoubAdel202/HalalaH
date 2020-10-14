@@ -5,6 +5,7 @@ import android.os.RemoteException;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.example.halalah.POSTransaction;
 import com.example.halalah.POS_MAIN;
 import com.example.halalah.PosApplication;
 import com.example.halalah.iso8583.BCDASCII;
@@ -142,7 +143,7 @@ public class ContactCardProcess {
             countDownLatchNew();
             emvListener.requestImportPin(PayDataUtil.PINTYPE_ONLINE, false, importAmount);
             countDownLatchAwait();
-            if (importPinStr == null) {
+            if ((importPinStr == null) || (importPinStr.equals(""))) {
                 return 0;
             }
             Log.d(TAG, "cGetOnlinePin: import pin str:"+importPinStr );
@@ -172,7 +173,7 @@ public class ContactCardProcess {
             emvListener.requestImportPin(PayDataUtil.PINTYPE_OFFLINE, false, null);
             countDownLatchAwait();
 
-            if (importPinStr == null) {
+            if ((importPinStr == null) || (importPinStr.equals(""))) {
                 return 0;
             }
 
@@ -713,71 +714,89 @@ public class ContactCardProcess {
                     return;
                 }
 
-                if (importOnlineRes) {
-                    onlineResult = EmvDefinition.EMV_ONLINE_APPROVED;
+                if (PosApplication.getApp().oGPosTransaction.m_sActionCode.equals("117")) {
+                    emvRet = EmvDefinition.EMV_TERMINATED;
+                    countDownLatchNew();
+                    emvListener.onRequestOnline();
+                    countDownLatchNew();
+
+                    if (isEndEmv()) {
+                        emvListener.onTransResult(getAppEmvtransResult(EmvDefinition.EMV_TERMINATED));
+                        endEmv();
+                        return;
+                    }
                 } else {
-                    onlineResult = EmvDefinition.EMV_ONLINE_ERROR;
+
+                    if (importOnlineRes) {
+                        onlineResult = EmvDefinition.EMV_ONLINE_APPROVED;
+                    } else {
+                        onlineResult = EmvDefinition.EMV_ONLINE_ERROR;
+                    }
+
+                    authRespCode = BytesUtil.hexString2Bytes(importRespCode);
+
+                    String strRespIcc55 = importIcc55;
+                    TlvList tlvList = new TlvList();
+                    tlvList.fromHex(strRespIcc55);
+                    Tlv tlv = tlvList.getTlv("89");
+                    if (tlv != null)
+                        authCode = tlv.getValue();
+                    tlv = tlvList.getTlv("91");
+                    if (tlv != null)
+                        issueAuthData = tlv.getValue();
+                    tlv = tlvList.getTlv("71");
+                    if (tlv != null)
+                        issueScript71 = tlv.getValue();
+                    tlv = tlvList.getTlv("72");
+                    if (tlv != null)
+                        issueScript72 = tlv.getValue();
+                    byte[] authCodenull = new byte[0];
+                    emvRet = emvL2.EMV_ProcessOnlineRespData(onlineResult, issueAuthData, authRespCode, authCodenull);
+                    //emvRet = EmvDefinition.EMV_DECLINED;
+                    Log.d(TAG, "EMV_ProcessOnlineRespData emvRet : " + emvRet);
                 }
 
-                authRespCode = BytesUtil.hexString2Bytes(importRespCode);
+                if (isEndEmv()) {
+                    emvListener.onTransResult(getAppEmvtransResult(EmvDefinition.EMV_TERMINATED));
+                    endEmv();
+                    return;
+                }
 
-                String strRespIcc55 = importIcc55;
-                TlvList tlvList = new TlvList();
-                tlvList.fromHex(strRespIcc55);
-                Tlv tlv = tlvList.getTlv("89");
-                if(tlv!=null)
-                    authCode = tlv.getValue();
-                tlv = tlvList.getTlv("91");
-                if(tlv!=null)
-                    issueAuthData = tlv.getValue();
-                tlv = tlvList.getTlv("71");
-                if(tlv!=null)
-                    issueScript71 = tlv.getValue();
-                tlv = tlvList.getTlv("72");
-                if(tlv!=null)
-                    issueScript72 = tlv.getValue();
-                byte[] authCodenull=new byte[0];
-                emvRet = emvL2.EMV_ProcessOnlineRespData(onlineResult, issueAuthData, authRespCode, authCodenull);
-                //emvRet = EmvDefinition.EMV_DECLINED;
-                Log.d(TAG, "EMV_ProcessOnlineRespData emvRet : " + emvRet);
-            }
+                if (emvRet != EmvDefinition.EMV_TERMINATED) {
+                    if (issueScript71 != null)
+                        emvL2.EMV_IssueToCardScript((byte) 1, issueScript71);
+                }
 
-            if (isEndEmv()) {
-                emvListener.onTransResult(getAppEmvtransResult(EmvDefinition.EMV_TERMINATED));
-                endEmv();
-                return;
-            }
-
-            if (emvRet != EmvDefinition.EMV_TERMINATED) {
-                if(issueScript71!=null)
-                emvL2.EMV_IssueToCardScript((byte)1, issueScript71);
-            }
-
-            if (emvRet == EmvDefinition.EMV_OK) {
-                if (onlineResult == EmvDefinition.EMV_ONLINE_APPROVED) {
-                    emvRet = emvL2.EMV_Completion((byte) 1);
-                } else if (onlineResult == EmvDefinition.EMV_ONLINE_VOICE_PREFER) {
-                    emvRet = emvL2.EMV_Completion((byte) 1);
-                } else {
+                if (emvRet == EmvDefinition.EMV_OK) {
+                    if (onlineResult == EmvDefinition.EMV_ONLINE_APPROVED) {
+                        emvRet = emvL2.EMV_Completion((byte) 1);
+                    } else if (onlineResult == EmvDefinition.EMV_ONLINE_VOICE_PREFER) {
+                        emvRet = emvL2.EMV_Completion((byte) 1);
+                    } else {
+                        emvRet = emvL2.EMV_Completion((byte) 0);
+                    }
+                } else if (emvRet == EmvDefinition.EMV_DECLINED) {
                     emvRet = emvL2.EMV_Completion((byte) 0);
+                } else if (emvRet == EmvDefinition.EMV_APPROVED) {
+                    emvRet = emvL2.EMV_Completion((byte) 1);
                 }
-            } else if (emvRet == EmvDefinition.EMV_DECLINED) {
-                emvRet = emvL2.EMV_Completion((byte) 0);
-            } else if (emvRet == EmvDefinition.EMV_APPROVED) {
-                emvRet = emvL2.EMV_Completion((byte) 1);
+
+                if (emvRet != EmvDefinition.EMV_TERMINATED) {
+                    if (issueScript71 != null)
+                        emvL2.EMV_IssueToCardScript((byte) 0, issueScript72);
+                }
             }
 
-            if (emvRet != EmvDefinition.EMV_TERMINATED) {
-                if(issueScript71!=null)
-                emvL2.EMV_IssueToCardScript((byte) 0, issueScript72);
-            }
+
+            //todo second generate have to be removed force approval
+            emvRet = EmvDefinition.EMV_APPROVED;
+
+            emvListener.onTransResult(getAppEmvtransResult(emvRet));
+            getTlvData("95");
+            getTlvData("9F34");
+
+            endEmv();
         }
-
-        emvListener.onTransResult(getAppEmvtransResult(emvRet));
-        getTlvData("95");
-        getTlvData("9F34");
-
-        endEmv();
     }
 
     public void endEmv() {

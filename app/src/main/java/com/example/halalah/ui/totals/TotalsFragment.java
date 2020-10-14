@@ -42,7 +42,7 @@ public class TotalsFragment extends Fragment implements View.OnClickListener  {
         snapshot_btn.setOnClickListener(this);
         Button back_btn = (Button)root.findViewById(R.id.back_btn);
         snapshot_btn.setOnClickListener(this);
-       // preConnect();
+        preConnect();
         return root;
     }
 
@@ -53,7 +53,7 @@ public class TotalsFragment extends Fragment implements View.OnClickListener  {
         switch(v.getId())
         {
             case R.id.recon_btn:
-                preConnect();
+              //  preConnect();
 
                 PosApplication.getApp().oGPosTransaction.m_enmTrxType= POSTransaction.TranscationType.RECONCILIATION;
                  PosApplication.getApp().oGPOS_MAIN.StartReconciliation(true);
@@ -62,7 +62,7 @@ public class TotalsFragment extends Fragment implements View.OnClickListener  {
                     startActivity(reconciliation);
 
 
-                disconnect();
+              //  disconnect();
 
 
 
@@ -93,12 +93,12 @@ public class TotalsFragment extends Fragment implements View.OnClickListener  {
 
     private void preConnect() {
         // open socket to be ready to sending/receiving financial messages
-    /*   CommunicationInfo communicationInfo = new CommunicationInfo(getContext());
+     /*  CommunicationInfo communicationInfo = new CommunicationInfo(getContext());
         InputStream caInputStream = getResources().openRawResource(R.raw.bks);
        CommunicationsHandler.getInstance(communicationInfo, caInputStream).connect();*/
 
        tcpClient = TCPCommunicator.getInstance();
-        tcpClient.init("192.168.8.145", 2030);
+        tcpClient.init("192.168.8.151", 2030);
         TCPCommunicator.closeStreams();
     }
 

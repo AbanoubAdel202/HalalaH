@@ -135,7 +135,7 @@ public class SearchCardActivity extends Activity{
             if (result == CardSearchErrorUtil.TRANS_APPROVE) {
                 resultDetail = "Transaction Approval";
                 //should we add final flow here
-                PosApplication.getApp().oGPOS_MAIN.finalizing_EMV_transaction(searchactivity);
+               // PosApplication.getApp().oGPOS_MAIN.finalizing_EMV_transaction(searchactivity);
             }
             if (result == CardSearchErrorUtil.TRANS_REASON_REJECT) {
                 resultDetail = getString(R.string.search_card_trans_result_reject);
