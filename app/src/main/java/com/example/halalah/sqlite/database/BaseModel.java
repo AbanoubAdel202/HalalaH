@@ -12,7 +12,7 @@ public class BaseModel extends BaseStruct {
 	/**primary key,INT,auto increment*/
 	@Id
 	@Column(name = "id")
-	private int id;
+	public int id;
 	public int getId() {
 		return id;
 	}

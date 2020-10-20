@@ -17,24 +17,7 @@ import java.io.Serializable;
 public class SAF_Info implements Serializable {
 
 
-    public static void Load_TRX_from_Reversal() {
 
-
-    }
-
-    public static POSTransaction Load_trx_from_SAF() {
-
-        POSTransaction SAFTRX = new POSTransaction();
-
-        POSTransaction[] AllSAF =Load_from_SAF();
-
-        SAFTRX=AllSAF[0];
-
-
-
-
-        return SAFTRX;
-    }
 
 
 
@@ -53,7 +36,7 @@ public class SAF_Info implements Serializable {
 
     POSTransaction[] m_posTransactions_SAF;
 
-    SAF_Info(){
+    public SAF_Info(){
 
         m_posTransactions_SAF= new POSTransaction[m_iMax_SAF_Depth];
         m_iMax_SAF_Cumulative_Amount=0;
@@ -78,6 +61,24 @@ public class SAF_Info implements Serializable {
 
     }
 
+    public static void Load_TRX_from_Reversal() {
+
+
+    }
+
+    public static POSTransaction Load_trx_from_SAF() {
+
+        POSTransaction SAFTRX = new POSTransaction();
+
+        POSTransaction[] AllSAF =Load_from_SAF();
+
+        SAFTRX=AllSAF[0];
+
+
+
+
+        return SAFTRX;
+    }
     public static void Deletetopsaf() {
         POSTransaction SAFTRX = new POSTransaction();
 
@@ -88,7 +89,7 @@ public class SAF_Info implements Serializable {
 
         if (SAFTRX.m_sRRNumber.equals(PosApplication.getApp().oGPosTransaction.m_sOrigRRNumber)) {
 
-            System.arraycopy(AllSAF, 0, newSAfarry, 0, newSAfarry.length);
+            System.arraycopy(AllSAF, 1, newSAfarry, 0, newSAfarry.length);
                 SaveallSaf(newSAfarry);
                 //todo save backup in case faliure of saving
         }

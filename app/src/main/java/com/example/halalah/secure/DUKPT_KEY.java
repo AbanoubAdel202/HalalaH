@@ -17,6 +17,8 @@ import com.topwise.cloudpos.aidl.pinpad.AidlPinpad;
 import com.topwise.cloudpos.aidl.system.AidlSystem;
 import com.topwise.cloudpos.data.PinpadConstant;
 
+import static com.topwise.cloudpos.data.PinpadConstant.KeyType.KEYTYPE_DUKPT_DES;
+
 public class DUKPT_KEY {
 
     private static final String TAG = "DUKPT";
@@ -75,7 +77,7 @@ public class DUKPT_KEY {
 
     KSN     m_KSN=new KSN();
     String  m_BDK ;            // Load terminal BDK value using secure way
-   static int     m_WorkKey = 0x01;  // Towpise Key index
+   static int     m_WorkKey = 0;//0x01;  // Towpise Key index
 
     // KSN Descriptor
     public byte[] KSN_Descriptor= new byte[3];       //[3 bytes] should be Hex format
@@ -146,8 +148,7 @@ Load Last Terminal Data from Terminal Operation Data Table
 
 
         Log.i(TAG,"InitilizeDUKPT() STARTED with szBDK [ "+szBDK+" ]and szKSN [ "+szKSN+" ]");
-        PosApplication.getApp().getDeviceManager();
-
+       // PosApplication.getApp().getDeviceManager();
         pinpad = DeviceTopUsdkServiceManager.getInstance().getPinpadManager(0);
 	/*
 	// Drive IPEK
@@ -162,7 +163,10 @@ Load Last Terminal Data from Terminal Operation Data Table
 	*/
         // 2- inject IPEK or BDK to kernel
         try {
-            iRetRes = pinpad.loadDuKPTkey(PosApplication.DUKPT_BDK, m_WorkKey, HexUtil.hexStringToByte(szBDK.toUpperCase()), HexUtil.hexStringToByte(szKSN.toUpperCase()));
+            //iRetRes = pinpad.loadDuKPTkey(PosApplication.DUKPT_BDK, m_WorkKey, HexUtil.hexStringToByte(szBDK.toUpperCase()), HexUtil.hexStringToByte(szKSN.toUpperCase()));
+
+            iRetRes = pinpad.loadDukptBDK(PosApplication.DUKPT_BDK, HexUtil.hexStringToByte(szBDK.toUpperCase()), HexUtil.hexStringToByte(szKSN.toUpperCase()));
+
             //iRetRes = pinpad.loadDuKPTkey(DukptKeyType.DUKPT_IPEK, m_WorkKey ,HexUtil.hexStringToByte(IPEK),HexUtil.hexStringToByte(szKSN));
 
             Log.i(TAG, " loadDuKPTkey returned [ " + iRetRes + " ]");
@@ -251,7 +255,7 @@ Load Last Terminal Data from Terminal Operation Data Table
         Log.i(TAG," CaluclateMACBlock STarted Input Data  [ "+bMACInputData+ " ]");
 
         macBundle.putInt("wkeyid", m_WorkKey);
-        macBundle.putInt("key_type", PosApplication.DUKPT_MAK);
+        macBundle.putInt("key_type",KEYTYPE_DUKPT_DES /*PosApplication.DUKPT_MAK*/);
         //byte[]x=HexUtil.StringToByte(strMACInputData);
         macBundle.putByteArray("data", bMACInputData);//HexUtil.StringToByte(strMACInputData));
         macBundle.putByteArray("random", null);

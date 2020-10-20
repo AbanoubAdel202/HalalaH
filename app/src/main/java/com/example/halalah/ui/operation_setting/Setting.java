@@ -2,6 +2,9 @@ package com.example.halalah.ui.operation_setting;
 
 import androidx.lifecycle.ViewModelProviders;
 
+import android.app.Activity;
+import android.app.ProgressDialog;
+import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -19,15 +22,18 @@ import com.example.halalah.PosApplication;
 import com.example.halalah.R;
 import com.example.halalah.connect.CommunicationsHandler;
 import com.example.halalah.connect.TCPCommunicator;
+import com.example.halalah.network_settings;
+import com.example.halalah.registration.view.ITransaction;
 import com.example.halalah.storage.CommunicationInfo;
 
 import java.io.InputStream;
 
-public class Setting extends Fragment implements View.OnClickListener {
+public class Setting extends Fragment implements View.OnClickListener , ITransaction.View  {
 
     private SettingViewModel mViewModel;
     private TCPCommunicator tcpClient;
-
+    private ProgressDialog mProgressDialog;
+    private ITransaction.View mView;
     public static Setting newInstance() {
         return new Setting();
     }
@@ -38,7 +44,9 @@ public class Setting extends Fragment implements View.OnClickListener {
         View root = inflater.inflate(R.layout.fragment_setting, container, false);
 
         Button TMSdownload = (Button) root.findViewById(R.id.TMS_btn);
+        Button networksettingbtn = root.findViewById(R.id.Networksettingsbtn);
        TMSdownload.setOnClickListener(this);
+        networksettingbtn.setOnClickListener(this);
        /* CommunicationInfo communicationInfo = new CommunicationInfo(getContext());
         InputStream caInputStream = getResources().openRawResource(R.raw.bks);
         CommunicationsHandler.getInstance(communicationInfo, caInputStream).connect();*/
@@ -67,7 +75,18 @@ public class Setting extends Fragment implements View.OnClickListener {
                 */
                 preConnect();
                 PosApplication.getApp().oGPosTransaction.m_enmTrxType= POSTransaction.TranscationType.TMS_FILE_DOWNLOAD;
-                PosApplication.getApp().oGPOS_MAIN.StartTMSDownload(false);
+                PosApplication.getApp().oGTerminal_Operation_Data.TMS_currentcount=0;
+                PosApplication.getApp().oGTerminal_Operation_Data.m_sTMSHeader ="3060000";
+                if(PosApplication.getApp().oGTerminal_Operation_Data.TMS_currentcount==0)
+                    showLoading("Terminal Downloading  TMS please wait...");
+                PosApplication.getApp().oGPOS_MAIN.StartTMSDownload(false,this);
+
+
+                break;
+            case R.id.Networksettingsbtn:
+                Intent networksetting = new Intent(getActivity(), network_settings.class);
+                startActivity(networksetting);
+                break;
         }
     }
     private void preConnect() {
@@ -77,7 +96,73 @@ public class Setting extends Fragment implements View.OnClickListener {
         CommunicationsHandler.getInstance(communicationInfo, caInputStream).connect();*/
 
         tcpClient = TCPCommunicator.getInstance();
-        tcpClient.init("192.168.8.151", 2030);
+        tcpClient.init( PosApplication.getApp().oGTerminal_Operation_Data.Hostip, PosApplication.getApp().oGTerminal_Operation_Data.Hostport);
         TCPCommunicator.closeStreams();
+    }
+
+
+    private void showLoading(String message) {
+        if (mProgressDialog == null) {
+            mProgressDialog = new ProgressDialog(getContext());
+        }
+        mProgressDialog.setCancelable(false);
+        mProgressDialog.setMessage(message);
+        mProgressDialog.show();
+    }
+    private void hideLoading() {
+        if (mProgressDialog != null && mProgressDialog.isShowing()) {
+            mProgressDialog.dismiss();
+        }
+    }
+
+
+    @Override
+    public void showRegistrationScreen() {
+
+    }
+
+    @Override
+    public void showTMSupdateScreen() {
+
+
+
+            getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+
+                    mProgressDialog.setMessage("TMS Downloading : "+ Integer.toString(PosApplication.getApp().oGTerminal_Operation_Data.TMS_currentcount) + " OF " + Integer.toString(PosApplication.getApp().oGTerminal_Operation_Data.TMS_endcount));
+
+                    if (PosApplication.getApp().oGTerminal_Operation_Data.TMS_currentcount == PosApplication.getApp().oGTerminal_Operation_Data.TMS_endcount)
+                        hideLoading();
+                }
+            });
+
+
+
+
+
+
+
+
+    }
+
+    @Override
+    public void showError(int errorMessageId) {
+
+    }
+
+    @Override
+    public void showError(String errorMessageString) {
+
+    }
+
+    @Override
+    public void showConnectionStatus(int connectionStatus) {
+
+    }
+
+    @Override
+    public void showRegistrationSuccess() {
+
     }
 }

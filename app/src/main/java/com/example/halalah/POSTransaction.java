@@ -343,11 +343,11 @@ public class POSTransaction implements Serializable {
             stotalsDE124=stotalsDE124.concat(oTotalsArray[i].m_szCardSchemeAcqID.toString());       /* Card Scheme Acquirer ID*/
             // Trx Totals
             stotalsDE124=stotalsDE124.concat(String.format(Locale.ENGLISH,"%010d",oTotalsArray[i].m_lDebitCount));            /* Debit Count*/
-            stotalsDE124=stotalsDE124.concat(String.format(Locale.ENGLISH,"%014.02f",oTotalsArray[i].m_dDebitAmount));           /* Debit Amount*/
+            stotalsDE124=stotalsDE124.concat(String.format(Locale.ENGLISH,"%016.02f",oTotalsArray[i].m_dDebitAmount));           /* Debit Amount*/
             stotalsDE124=stotalsDE124.concat(String.format(Locale.ENGLISH,"%010d",oTotalsArray[i].m_lCreditCount));           /* Credit Count*/
-            stotalsDE124=stotalsDE124.concat(String.format(Locale.ENGLISH,"%014.02f",oTotalsArray[i].m_dCreditAmount));          /* Credit Amount*/
-            stotalsDE124=stotalsDE124.concat(String.format(Locale.ENGLISH,"%014.02f",oTotalsArray[i].m_dCashBackAmount));        /* Cash Back Amount*/
-            stotalsDE124=stotalsDE124.concat(String.format(Locale.ENGLISH,"%014.02f",oTotalsArray[i].m_dCashAdvanceAmount));     /* Cash Advance Amount*/
+            stotalsDE124=stotalsDE124.concat(String.format(Locale.ENGLISH,"%016.02f",oTotalsArray[i].m_dCreditAmount));          /* Credit Amount*/
+            stotalsDE124=stotalsDE124.concat(String.format(Locale.ENGLISH,"%016.02f",oTotalsArray[i].m_dCashBackAmount));        /* Cash Back Amount*/
+            stotalsDE124=stotalsDE124.concat(String.format(Locale.ENGLISH,"%016.02f",oTotalsArray[i].m_dCashAdvanceAmount));     /* Cash Advance Amount*/
             stotalsDE124=stotalsDE124.concat(String.format(Locale.ENGLISH,"%010d",oTotalsArray[i].m_lAuthorisationCount));    /* Authorisation Count*/
 
             stotalsDE124=stotalsDE124.replace(".","");

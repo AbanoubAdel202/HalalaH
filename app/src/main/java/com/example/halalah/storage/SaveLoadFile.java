@@ -3,9 +3,14 @@ package com.example.halalah.storage;
 import android.content.Context;
 import android.util.Log;
 
+import com.example.halalah.CardSchemeTotals;
 import com.example.halalah.HostTotals;
 import com.example.halalah.POSTransaction;
+import com.example.halalah.POS_MAIN;
 import com.example.halalah.PosApplication;
+import com.example.halalah.SAF_Info;
+import com.example.halalah.TMS.Card_Scheme;
+import com.example.halalah.TMS.TMSManager;
 import com.example.halalah.Terminal_Operation_Data;
 
 import java.io.FileInputStream;
@@ -36,6 +41,7 @@ public class SaveLoadFile {
             Log.d("SaveLoadFile", "Savetransaction: File not found");
         } catch (IOException e) {
             e.printStackTrace();
+            return -1;
         }
         return 0;
     }
@@ -233,9 +239,10 @@ public class SaveLoadFile {
             isr = new ObjectInputStream(fIn);
         } catch (FileNotFoundException e) {
             Log.d("SaveLoadFile", "load HostTOTALS_data: File not found");
+            //todo handle file not found
             return hostTotals;
         } catch (Exception e) {
-
+            //todo handle exception
             e.printStackTrace();
         }
 
@@ -246,6 +253,7 @@ public class SaveLoadFile {
             e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
+            //todo handle exception
         }
 
 
@@ -293,6 +301,7 @@ public class SaveLoadFile {
             Log.d("SaveLoadFile", "recon: File not found");
         } catch (IOException e) {
             e.printStackTrace();
+            //todo handel exception
         }
 
 
@@ -301,7 +310,7 @@ public class SaveLoadFile {
     }
     public static POSTransaction[] LoadAllrecon() {
         POSTransaction transactions[] = new POSTransaction[PosApplication.getApp().oGTerminal_Operation_Data.m_ireconCounter];
-//Reading the file back...
+        //Reading the file back...
 
         /* We have to use the openFileInput()-method
          * the ActivityContext provides.
@@ -314,7 +323,8 @@ public class SaveLoadFile {
         } catch (FileNotFoundException e) {
             Log.d("SaveLoadFile", "Savetransaction: File not found");
         } catch (Exception e) {
-
+            e.printStackTrace();
+            //todo handle exception
         }
 
         // Fill the Buffer with data from the file
@@ -330,6 +340,32 @@ public class SaveLoadFile {
         return transactions;
 
     }
+
+    /***
+     *
+     *
+     * Description: reset reconciliation totals and all it's transaction in new file and reset totals in terminal operation data and host totals
+     */
+    public static void resetandsavebatch(POSTransaction postrx)
+    {
+        Saverecon(postrx);
+        // reseting global totals and transaction counters
+        resettotals();
+
+        PosApplication.getApp().oGTerminal_Operation_Data.m_iTransactionCounter = 0;
+        PosApplication.getApp().oGTerminal_Operation_Data.saf_info = new SAF_Info();
+
+    }
+
+    public static void resettotals()
+    {
+        POS_MAIN.SetTotalsschemes();
+    }
+
+
+
+
+
 
 
 }

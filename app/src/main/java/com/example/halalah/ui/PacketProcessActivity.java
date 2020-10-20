@@ -334,14 +334,10 @@ public class PacketProcessActivity extends Activity implements SendReceiveListen
             mHandle.removeMessages(MSG_TIME_UPDATE);
             PosApplication.getApp().oGTerminal_Operation_Data.breversal_flg=false;
             int ret=PosApplication.getApp().oGPOS_MAIN.PerfomTermHostResponseFlow(mRecePacket,0,this);
-          if(ret == 0) {
-              try{wait(5000);}
-              catch (Exception e){
-                  e.printStackTrace();
-              }
+
               //disconnect();
              // finish();
-          }
+
 
 
 

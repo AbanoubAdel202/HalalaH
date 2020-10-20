@@ -29,6 +29,7 @@ import com.topwise.cloudpos.aidl.pinpad.AidlPinpad;
 import com.topwise.cloudpos.aidl.pinpad.GetPinListener;
 import com.topwise.cloudpos.data.BuzzerCode;
 
+import static com.topwise.cloudpos.data.PinpadConstant.KeyType.KEYTYPE_DUKPT_DES;
 public class PinpadActivity extends Activity {
     private static final String TAG = Utils.TAGPUBLIC + PinpadActivity.class.getSimpleName();
 
@@ -50,7 +51,7 @@ public class PinpadActivity extends Activity {
     private Intent mIntent;
     private Bundle mParam;
     private byte[]   byteNewKSN;
-    int     m_WorkKey = 0x01;
+    int     m_WorkKey = 0;//0x01;
     int    iRetRes = -1;
 
     private boolean mIsCancleInputKey = false;
@@ -160,7 +161,7 @@ public class PinpadActivity extends Activity {
 
     private Bundle SetPINParam() {
         Log.i(TAG, "getParam()");
-        int     m_WorkKey = 0x01;  // Towpise Key index
+        int     m_WorkKey = 0;//0x01;  // Towpise Key index
         int type = 0;
         if (mParam != null) {
             type = mParam.getInt("type", 3) == 3 ? 0 : 1;
@@ -173,7 +174,8 @@ public class PinpadActivity extends Activity {
 
         // Set Key Info
         bundle.putInt("wkeyid", m_WorkKey);
-        bundle.putInt("key_type", PosApplication.DUKPT_PEK);
+        bundle.putInt("key_type", KEYTYPE_DUKPT_DES);  // DUKPT Key Type
+        bundle.putInt("keytype", type);                // Trx Key Type (offline , Online)
         bundle.putByteArray("random", null);
         bundle.putInt("inputtimes", 1);
         bundle.putInt("minlength", 4);

@@ -1,6 +1,9 @@
 package com.example.halalah;
 
 
+import android.content.Context;
+
+import com.example.halalah.TMS.Device_Specific;
 import com.example.halalah.iso8583.BCDASCII;
 import com.example.halalah.storage.CommunicationInfo;
 
@@ -45,7 +48,9 @@ public class Terminal_Operation_Data implements Serializable {
         public  int g_NumberOfCardSchemes;    /* Number of supported card scheme is 10 */
         public  CardSchemeTotals [] g_TerminalTotals; /* Terminal Totals */
         public double    m_dTermReconciliationAmount;  // Adding All approved/accepted transaction amount
+        // public double   m_dMaxtermReconciliationAmount;  // maximum total amount to force recosile
         public int       m_iTermApprovedTrxCounter;    // Counter of approved transaction usded to for checking number of approved trx against reconcilation trx limit
+        //   public int      m_iTermMaxapprovedtrxcounter;  // maximum transactions to force reconsile
         public String m_sTerminal_Contactless_Floor_Limit;
         public String m_sTerminal_Contactless_Transaction_Limit;
         public String m_sTerminal_CVM_Required_Limit;
@@ -53,7 +58,13 @@ public class Terminal_Operation_Data implements Serializable {
         public byte[] m_CurrentKSN;
         public int m_ireconCounter;  //number of reconciliation on the terminal
 
-    /*******************
+        /*******************
+         * Terminal Device Specifics  *
+         *******************/
+
+        public Device_Specific m_DeviceSpecific;
+
+         /*******************
          * Terminal retailer options *
          *******************/
             public enum Terminallanguage{
@@ -110,6 +121,8 @@ public class Terminal_Operation_Data implements Serializable {
 
     //COMMUNICATION
     public CommunicationInfo communicationInfo;
+    public String Hostip;
+    public int Hostport;
 
     public Terminal_Operation_Data(){
         m_bregistered = false;
@@ -168,6 +181,8 @@ public class Terminal_Operation_Data implements Serializable {
          TMS_currentcount= 0;
         TMS_endcount = 0;
         //communication
+        Hostip = "192.168.8.151";
+        Hostport = 2030;
 
 
 

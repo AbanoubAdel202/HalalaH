@@ -7,7 +7,7 @@ import com.example.halalah.registration.RegistrationData;
 public interface ITransaction {
     interface View {
         void showRegistrationScreen();
-
+        void showTMSupdateScreen();
         void showError(@StringRes int errorMessageId);
 
         void showError(String errorMessageString);
