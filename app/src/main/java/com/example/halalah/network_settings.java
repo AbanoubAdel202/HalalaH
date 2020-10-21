@@ -195,5 +195,7 @@ public class network_settings extends AppCompatActivity implements View.OnClickL
             break;
         }
 
+        POS_MAIN.Save_TermData();
+
     }
 }

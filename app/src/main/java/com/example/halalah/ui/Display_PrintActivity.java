@@ -4,6 +4,7 @@ import android.app.ActionBar;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -33,7 +34,7 @@ public class Display_PrintActivity extends Activity implements View.OnClickListe
     private static final String TAG = Utils.TAGPUBLIC + Display_PrintActivity.class.getSimpleName();
 
     private static final int MSG_TIME_UPDATE = 100;
-
+    private Intent intent;
     private TextView mAmount;
     private TextView mTransactionType;
     private TextView mPANno;
@@ -65,7 +66,7 @@ public class Display_PrintActivity extends Activity implements View.OnClickListe
         Log.i(TAG, "onCreate()");
         setContentView(R.layout.activity_consume_result);
 
-        mAmount = (TextView) findViewById(R.id.consume_amount);
+         mAmount = (TextView) findViewById(R.id.consume_amount);
         mTransactionType = (TextView) findViewById(R.id.consume_type);
         mPANno = (TextView) findViewById(R.id.consume_cardnum);
         mRecieptno = (TextView) findViewById(R.id.consume_venchor_num);
@@ -74,6 +75,8 @@ public class Display_PrintActivity extends Activity implements View.OnClickListe
         mTransactiontime = (TextView) findViewById(R.id.consume_time);
         mPinBlock = (TextView) findViewById(R.id.pin_block);
         mKsnValue = (TextView) findViewById(R.id.ksn_value);
+
+
         byte[] pin = new byte[0];
         if (PosApplication.getApp().oGPosTransaction.m_sTrxPIN!=null) {
             pin = PosApplication.getApp().oGPosTransaction.m_sTrxPIN.getBytes();

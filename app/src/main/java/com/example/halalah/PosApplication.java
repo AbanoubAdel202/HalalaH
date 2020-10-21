@@ -78,6 +78,15 @@ public class PosApplication extends Application{
     public POSTransaction oGPosTransaction = new POSTransaction();
 
     /**********************
+     * Print Transactions
+     ********************/
+   // public Transactionprint oGTransactionprint;
+    /**********************
+     * Print reconsilation
+     ********************/
+   // public Reconsileprint   oGReconsileprint;
+
+    /**********************
      * TMS SAMA *
      **********************/
     public SAMA_TMS oGSama_TMS = new SAMA_TMS();

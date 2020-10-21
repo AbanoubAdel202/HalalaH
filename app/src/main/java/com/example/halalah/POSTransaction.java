@@ -1,8 +1,6 @@
 package com.example.halalah;
 
 import android.util.Log;
-import android.widget.Switch;
-
 
 
 import com.example.halalah.TMS.Card_Scheme;
@@ -10,13 +8,11 @@ import com.example.halalah.TMS.SAMA_TMS;
 import com.example.halalah.iso8583.BCDASCII;
 import com.example.halalah.iso8583.ISO8583;
 import com.example.halalah.registration.RegistrationData;
-import com.example.halalah.packet.PackUtils;
 import com.example.halalah.secure.DUKPT_KEY;
 import com.example.halalah.util.BytesUtil;
 import com.example.halalah.util.ExtraUtil;
 
 import java.io.Serializable;
-import java.lang.reflect.Array;
 import java.util.Locale;
 
 /** Header POSTransaction
@@ -259,7 +255,7 @@ public class POSTransaction implements Serializable {
     /************************************************************************************************************/
 
     // OPeration & Data
-    public int    Reset()
+    public void Reset()
     {
         m_is_mada=false;
         m_is_final=false;
@@ -306,7 +302,6 @@ public class POSTransaction implements Serializable {
         m_RequestISOMsg=new ISO8583();                  /* ISO8583 Request message to be sent constractor*/
         m_ResponseISOMsg=new ISO8583();         /* ISO8583 Response message constractor*/
         m_card_scheme = new Card_Scheme();                /* card scheme for the card used in this transaction */
-        return 0;
     }
 
     public String ComposeReconciliationTotals(int iNumberOfCardScheme , CardSchemeTotals[] oTotalsArray )
@@ -3120,7 +3115,7 @@ public class POSTransaction implements Serializable {
                                                 mrc=Message_reason_code.Contactless_Transaction;
                                                 break;
                                             case MAG:
-
+                                                mrc= Message_reason_code.Terminal_processed;
                                                 break;
                                             case FALLBACK:
                                                 mrc= Message_reason_code.Fallback_from_chip_to_magnetic_stripe;//1776
@@ -3170,7 +3165,7 @@ public class POSTransaction implements Serializable {
                                 mrc= Message_reason_code.Contactless_Transaction_Advice;
                                 break;
                             case MAG:
-
+                                mrc= Message_reason_code.Terminal_processed;
                                 break;
                             case FALLBACK:
                                 mrc= Message_reason_code.Fallback_from_chip_to_magnetic_stripe;//1776
@@ -3220,13 +3215,13 @@ public class POSTransaction implements Serializable {
                                 mrc=Message_reason_code.Contactless_Transaction;
                                 break;
                             case MAG:
-
+                                mrc= Message_reason_code.Terminal_processed;
                                 break;
                             case FALLBACK:
                                 mrc= Message_reason_code.Fallback_from_chip_to_magnetic_stripe;//1776
                                 break;
                             case MANUAL:
-
+                                mrc= Message_reason_code.Terminal_processed;
                                 break;
                         }
 
@@ -3243,14 +3238,14 @@ public class POSTransaction implements Serializable {
                                 mrc=Message_reason_code.Contactless_Transaction;
                                 break;
                             case MAG:
-
+                                mrc= Message_reason_code.Terminal_processed;
                                 break;
                             case FALLBACK:
                                 mrc= Message_reason_code.Fallback_from_chip_to_magnetic_stripe;//1776
                                 break;
 
                             case MANUAL:
-
+                                mrc= Message_reason_code.Terminal_processed;
                                 break;
                         }
                         break;
@@ -3271,13 +3266,13 @@ public class POSTransaction implements Serializable {
                                 mrc=Message_reason_code.Contactless_Transaction;
                                 break;
                             case MAG:
-
+                                mrc= Message_reason_code.Terminal_processed;
                                 break;
                             case FALLBACK:
                                 mrc= Message_reason_code.Fallback_from_chip_to_magnetic_stripe;//1776
                                 break;
                             case MANUAL:
-
+                                mrc= Message_reason_code.Terminal_processed;
                                 break;
                         }
 
@@ -3302,7 +3297,7 @@ public class POSTransaction implements Serializable {
                                 break;
 
                             case MANUAL:
-
+                                mrc= Message_reason_code.Terminal_processed;
                                 break;
                         }
                         break;
@@ -3322,13 +3317,13 @@ public class POSTransaction implements Serializable {
                                 mrc=Message_reason_code.Contactless_Transaction;
                                 break;
                             case MAG:
-
+                                mrc= Message_reason_code.Terminal_processed;
                                 break;
                             case FALLBACK:
                                 mrc= Message_reason_code.Fallback_from_chip_to_magnetic_stripe;//1776
                                 break;
                             case MANUAL:
-
+                                mrc= Message_reason_code.Terminal_processed;
                                 break;
                         }
 
@@ -3345,7 +3340,7 @@ public class POSTransaction implements Serializable {
                                 mrc=Message_reason_code.Contactless_Transaction;
                                 break;
                             case MAG:
-
+                                mrc= Message_reason_code.Terminal_processed;
                                 break;
                             case FALLBACK:
                                 mrc= Message_reason_code.Fallback_from_chip_to_magnetic_stripe;//1776
@@ -3395,14 +3390,14 @@ public class POSTransaction implements Serializable {
                                 mrc=Message_reason_code.Contactless_Transaction;
                                 break;
                             case MAG:
-
+                                mrc= Message_reason_code.Terminal_processed;
                                 break;
                             case FALLBACK:
                                 mrc= Message_reason_code.Fallback_from_chip_to_magnetic_stripe;//1776
                                 break;
 
                             case MANUAL:
-
+                                mrc= Message_reason_code.Terminal_processed;
                                 break;
                         }
                         break;
@@ -3422,13 +3417,13 @@ public class POSTransaction implements Serializable {
                                 mrc=Message_reason_code.Contactless_Transaction;
                                 break;
                             case MAG:
-
+                                mrc= Message_reason_code.Terminal_processed;
                                 break;
                             case FALLBACK:
                                 mrc= Message_reason_code.Fallback_from_chip_to_magnetic_stripe;//1776
                                 break;
                             case MANUAL:
-
+                                mrc= Message_reason_code.Terminal_processed;
                                 break;
                         }
 
@@ -3445,14 +3440,14 @@ public class POSTransaction implements Serializable {
                                 mrc=Message_reason_code.Contactless_Transaction;
                                 break;
                             case MAG:
-
+                                mrc= Message_reason_code.Terminal_processed;
                                 break;
                             case FALLBACK:
                                 mrc= Message_reason_code.Fallback_from_chip_to_magnetic_stripe;//1776
                                 break;
 
                             case MANUAL:
-
+                                mrc= Message_reason_code.Terminal_processed;
                                 break;
                         }
                         break;
@@ -3526,7 +3521,7 @@ public class POSTransaction implements Serializable {
                                 mrc=Message_reason_code.Contactless_Transaction;
                                 break;
                             case MAG:
-
+                                mrc= Message_reason_code.Terminal_processed;
                                 break;
                             case FALLBACK:
                                 mrc= Message_reason_code.Fallback_from_chip_to_magnetic_stripe;//1776
@@ -3543,20 +3538,20 @@ public class POSTransaction implements Serializable {
                     default:       // For IBCS
                         switch (m_enmTrxCardType) {
                             case ICC:
-
+                                mrc= Message_reason_code.Terminal_processed;
                                 break;
                             case CTLS:
-
+                                mrc= Message_reason_code.Terminal_processed;
                                 break;
                             case MAG:
-
+                                mrc= Message_reason_code.Terminal_processed;
                                 break;
                             case FALLBACK:
                                 mrc= Message_reason_code.Fallback_from_chip_to_magnetic_stripe;//1776
                                 break;
 
                             case MANUAL:
-
+                                mrc= Message_reason_code.Terminal_processed;
                                 break;
                         }
                         break;
@@ -3591,13 +3586,14 @@ public class POSTransaction implements Serializable {
                             case ICC:
                             case CTLS:
                             case MAG:
+                                mrc= Message_reason_code.Terminal_processed;
                                 break;
 
                             case FALLBACK:
                                 mrc= Message_reason_code.Fallback_from_chip_to_magnetic_stripe;//1776
                                 break;
                             case MANUAL:
-
+                                mrc= Message_reason_code.Terminal_processed;
                                 break;
                         }
                         break;
@@ -3620,7 +3616,7 @@ public class POSTransaction implements Serializable {
                                 mrc= Message_reason_code.Fallback_from_chip_to_magnetic_stripe;//1776
                                 break;
                             case MANUAL:
-
+                                mrc= Message_reason_code.Terminal_processed;
                                 break;
                         }
 
@@ -3640,7 +3636,7 @@ public class POSTransaction implements Serializable {
                                 mrc= Message_reason_code.Fallback_from_chip_to_magnetic_stripe;//1776
                                 break;
                             case MANUAL:
-
+                                mrc= Message_reason_code.Terminal_processed;
                                 break;
                         }
                         break;

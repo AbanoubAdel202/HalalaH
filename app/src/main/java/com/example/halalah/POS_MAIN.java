@@ -3,6 +3,7 @@ package com.example.halalah;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.RemoteException;
 import android.util.Log;
@@ -1884,8 +1885,9 @@ DF03 Check Sum                                [20]   >> 4410C6D51C2F83ADFD92528F
         // checking again for mada incase response change card type from non mada to mada
         if(Check_MADA_Card())
         {
-
+            //todo any condition if it's mada card we sent 1100 so if it should be considered as 1200  (check with moamen)
         }
+
         int iRetRes=-1;
         if (bIsReversal) {
             POSTrx = SAF_Info.BuildSAFOriginals(POSTrx, PosApplication.getApp().oGPosTransaction);
@@ -1990,7 +1992,7 @@ DF03 Check Sum                                [20]   >> 4410C6D51C2F83ADFD92528F
         // Checking Reconciliation Limits 4.16
         Log.d(TAG, "CheckReconciliationLimits: "+PosApplication.getApp().oGTerminal_Operation_Data.m_dTermReconciliationAmount);
         //if(PosApplication.getApp().oGTerminal_Operation_Data.m_dTermReconciliationAmount >= Double.parseDouble(PosApplication.getApp().oGSama_TMS.device_specific.m_sMax_Reconciliation_Amount ))
-        if(PosApplication.getApp().oGTerminal_Operation_Data.m_dTermReconciliationAmount >= (Double.parseDouble(PosApplication.getApp().oGTerminal_Operation_Data.m_DeviceSpecific.m_sMax_Reconciliation_Amount)/100))
+        if(PosApplication.getApp().oGTerminal_Operation_Data.m_dTermReconciliationAmount >= Double.parseDouble(PosApplication.getApp().oGTerminal_Operation_Data.m_DeviceSpecific.m_sMax_Reconciliation_Amount))
         {
 
 
@@ -2045,9 +2047,10 @@ DF03 Check Sum                                [20]   >> 4410C6D51C2F83ADFD92528F
                     dAmount = Double.parseDouble(POSTrx.m_sTrxAmount);
                     dAmount =dAmount/100;
                 }
-                else  if(POSTrx.m_sProcessCode.equals("200000"))
+                else  if(POSTrx.m_sProcessCode.equals("200000")) {
                     dAmount = Double.parseDouble(POSTrx.m_sTrxAmount) * -1;
-                    dAmount = dAmount/100;
+                    dAmount = dAmount / 100;
+                }
             }
             break;
             case REVERSAL :
@@ -2194,8 +2197,11 @@ DF03 Check Sum                                [20]   >> 4410C6D51C2F83ADFD92528F
 
         }
 
+
+
        Intent intent = new Intent(activity, Display_PrintActivity.class);
 
+        intent.putExtra("trx",POStrx);
         activity.startActivity(intent);
 
     }
@@ -2248,8 +2254,7 @@ DF03 Check Sum                                [20]   >> 4410C6D51C2F83ADFD92528F
 
             }
             PosApplication.getApp().oGTerminal_Operation_Data.breconsile_flag=false;
-            SaveLoadFile.resetandsavebatch(PosApplication.getApp().oGPosTransaction);
-            Save_TermData();
+
             ////////////for test printing here////////////
             Reconsile_Print mReconsile_print;
             mReconsile_print = new Reconsile_Print();
@@ -2257,7 +2262,8 @@ DF03 Check Sum                                [20]   >> 4410C6D51C2F83ADFD92528F
             mReconsile_print.printDetail(hostTotals);
 
             ////////////////////////////////////////////
-
+            SaveLoadFile.resetandsavebatch(PosApplication.getApp().oGPosTransaction);
+            Save_TermData();
             iRetres= 0;
         }
 
