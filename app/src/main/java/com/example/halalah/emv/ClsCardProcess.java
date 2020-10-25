@@ -14,6 +14,7 @@ import com.example.halalah.iso8583.BCDASCII;
 import com.example.halalah.qrcode.utils.SDKLog;
 import com.example.halalah.util.CommonFunction;
 import com.example.halalah.emv.PayDataUtil.CallbackSort;
+import com.example.halalah.util.LEDnbuzzManager;
 import com.topwise.cloudpos.aidl.emv.CardInfo;
 import com.topwise.cloudpos.aidl.emv.level2.AidlAmex;
 import com.topwise.cloudpos.aidl.emv.level2.AidlEntry;
@@ -119,6 +120,8 @@ public class ClsCardProcess {
                 e.printStackTrace();
             }
         }
+       // LEDnbuzzManager.getinstence().setbuzzer(0,3000);
+        LEDnbuzzManager.getinstence().setled(1,true);
         return buildCandidate();
     }
 
@@ -144,6 +147,9 @@ public class ClsCardProcess {
             return true;
         }
         isEndEmv = true;
+        LEDnbuzzManager.getinstence().setbuzzer(1,3000);
+        LEDnbuzzManager.getinstence().setled(0,true);
+
         return false;
     }
 
@@ -155,6 +161,7 @@ public class ClsCardProcess {
             return true;
         }
         isEndEmv = true;
+
         return false;
     }
 
@@ -217,6 +224,7 @@ public class ClsCardProcess {
         if (mPayThread != null && mPayThread.isAlive()) {
             mPayThread.interrupt();
             mPayThread = null;
+            LEDnbuzzManager.getinstence().setbuzzer(4,1000);
         }
     }
 

@@ -11,6 +11,7 @@ import com.example.halalah.DeviceTopUsdkServiceManager;
 import com.example.halalah.POSTransaction;
 import com.example.halalah.PosApplication;
 import com.example.halalah.R;
+import com.example.halalah.cloudpos.data.AidlErrorCode;
 import com.example.halalah.iso8583.BCDASCII;
 import com.example.halalah.util.HexUtil;
 import com.topwise.cloudpos.aidl.pinpad.AidlPinpad;
@@ -148,8 +149,36 @@ Load Last Terminal Data from Terminal Operation Data Table
 
 
         Log.i(TAG,"InitilizeDUKPT() STARTED with szBDK [ "+szBDK+" ]and szKSN [ "+szKSN+" ]");
-       // PosApplication.getApp().getDeviceManager();
+        //PosApplication.getApp().getDeviceManager();
+        Log.i("most", "getting pinpad");
         pinpad = DeviceTopUsdkServiceManager.getInstance().getPinpadManager(0);
+        Log.i("most", "getting pinpad"+pinpad);
+   /*     int iCounter =0;
+        while(true)
+            if ( pinpad ==  null) {
+                Log.i(TAG,"InitilizeDUKPT() Null PIN PAD "+iCounter+"");
+                try {
+                    Thread.sleep(10000);
+                }
+                catch (InterruptedException e)
+                {
+                    e.printStackTrace();
+                }
+                PosApplication.getApp().getDeviceManager();
+                pinpad = DeviceTopUsdkServiceManager.getInstance().getPinpadManager(0);
+                iCounter++;
+                if (pinpad == null)
+                    continue;
+                else
+                    break;
+
+
+            }*/
+
+
+        Log.i(TAG,"InitilizeDUKPT() PIN PAD Success ");
+
+       // pinpad = DeviceTopUsdkServiceManager.getInstance().getPinpadManager(PinpadConstant.PinpadId.BUILTIN);
 	/*
 	// Drive IPEK
 	// Arrange Encryption Data

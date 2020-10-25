@@ -1451,7 +1451,7 @@ public class POSTransaction implements Serializable {
 
 
         // Set Transmission Date and Time
-        m_sTrxDateTime=ExtraUtil.GetDate_Time();
+       // m_sTrxDateTime=ExtraUtil.GetDate_Time();
         m_RequestISOMsg.SetDataElement(7, m_sTrxDateTime.getBytes(), m_sTrxDateTime.length());
         Log.i(TAG, " DE 7 [m_sTrxDateTime]= " + m_sTrxDateTime+"Length ="+m_sTrxDateTime.length());
 

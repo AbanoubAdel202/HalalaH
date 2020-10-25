@@ -32,6 +32,11 @@ public class PosApplication extends Application{
 
     public static CommunicationsHandler oGcommunicationsHandler;
 
+    /************
+     * Terminal data
+     ***********/
+    public static String halaVendorid ="50FFF0";
+
     /*******************
      *   Message types *
      *******************/

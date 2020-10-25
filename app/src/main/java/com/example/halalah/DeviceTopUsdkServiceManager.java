@@ -53,6 +53,7 @@ public class DeviceTopUsdkServiceManager {
 
     public static void getmDeviceServiceManager() {
         synchronized (DeviceTopUsdkServiceManager.class) {
+
             mDeviceServiceManager = new DeviceTopUsdkServiceManager();
             Log.d("topwise","gz mDeviceServiceManager: " + mDeviceServiceManager);
             mDeviceServiceManager.mContext = PosApplication.getApp();
@@ -80,6 +81,7 @@ public class DeviceTopUsdkServiceManager {
         intent.setClassName(DEVICE_SERVICE_PACKAGE_NAME, DEVICE_SERVICE_CLASS_NAME);
 
         try {
+
             boolean bindResult = mContext.bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
             Log.i("topwise","bindResult = " + bindResult);
             return bindResult;

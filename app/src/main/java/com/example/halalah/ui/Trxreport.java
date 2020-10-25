@@ -1,4 +1,4 @@
-package com.example.halalah;
+package com.example.halalah.ui;
 
 import android.annotation.SuppressLint;
 
@@ -9,6 +9,8 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.view.MotionEvent;
 import android.view.View;
+
+import com.example.halalah.R;
 
 /**
  * An example full-screen activity that shows and hides the system UI (i.e.

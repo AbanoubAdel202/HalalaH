@@ -1149,7 +1149,7 @@ DF03 Check Sum                                [20]   >> 4410C6D51C2F83ADFD92528F
                 Log.d(TAG, "PerfomTermHostResponseFlow:Update_Terminal_totals : bRetRes= " + bRetRes);
 
 
-                if (errReason == -1 || errReason == -2) //timeout//cannot send
+                if (mResponse.equals("100")) //macing error
                 {
                     CheckandSaveInSAF(PosApplication.getApp().oGPosTransaction, true);
                 } else {
@@ -2159,7 +2159,9 @@ DF03 Check Sum                                [20]   >> 4410C6D51C2F83ADFD92528F
                     break;
                     case 1://PRINTER_STATE_NOPAPER
                            PosApplication.getApp().oGTerminal_Operation_Data.Printer_Status = "1";
+                           break;
                     case 2:
+                        break;
                 }
 
 
@@ -2320,6 +2322,7 @@ DF03 Check Sum                                [20]   >> 4410C6D51C2F83ADFD92528F
                     PosApplication.getApp().oGTerminal_Operation_Data.g_TerminalTotals[i].m_szCardSchemeAcqID=card_schemes[i].m_sCard_Scheme_Acquirer_ID;
                 }*/
                 PosApplication.getApp().oGTerminal_Operation_Data.m_TMS_Downloaded=true;
+                TCPCommunicator.closeStreams();
                 Save_TermData();
 
 

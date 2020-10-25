@@ -2,6 +2,7 @@ package com.example.halalah.storage;
 
 import android.content.Context;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.example.halalah.CardSchemeTotals;
 import com.example.halalah.HostTotals;
@@ -38,33 +39,40 @@ public class SaveLoadFile {
             os.close();
             fos.close();
         } catch (FileNotFoundException e) {
-            Log.d("SaveLoadFile", "Savetransaction: File not found");
+            Log.d("SaveLoadFile", "SAVETeminal_operation_Data: File not found");
         } catch (IOException e) {
             e.printStackTrace();
+        //    Toast.makeText(PosApplication.getApp().getApplicationContext(),e.toString(),Toast.LENGTH_LONG);
             return -1;
         }
         return 0;
     }
 
     public static Terminal_Operation_Data loadTeminal_operation_Data() {
+
         Log.d("load terminal operation data", "loadTeminal_operation_Data: started");
         Terminal_Operation_Data terminal_operation_data = new Terminal_Operation_Data();
-
+        FileInputStream fIn = null;
         ObjectInputStream isr = null;
+
         try {
-            FileInputStream fIn = PosApplication.getApp().getApplicationContext().openFileInput("Terminal_operation_data");
+            fIn = PosApplication.getApp().getApplicationContext().openFileInput("Terminal_operation_data");
             isr = new ObjectInputStream(fIn);
+
         } catch (FileNotFoundException e) {
-            Log.d("SaveLoadFile", "Savetransaction: File not found");
+            Log.d("SaveLoadFile", "loadTeminal_operation_Data: File not found");
             return terminal_operation_data;
         } catch (Exception e) {
 
             e.printStackTrace();
+           // Toast.makeText(PosApplication.getApp().getApplicationContext(),e.toString(),Toast.LENGTH_LONG);
         }
 
         // Fill the Buffer with data from the file
         try {
             terminal_operation_data = (Terminal_Operation_Data) isr.readObject();
+            isr.close();
+            fIn.close();
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {
@@ -115,7 +123,7 @@ public class SaveLoadFile {
             os.close();
             fos.close();
         } catch (FileNotFoundException e) {
-            Log.d("SaveLoadFile", "Savetransaction: File not found");
+            Log.d("SaveLoadFile", "Savelasttransaction: File not found");
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -125,13 +133,13 @@ public class SaveLoadFile {
    public static POSTransaction Loadlasttransaction(){
 
         POSTransaction transaction = new POSTransaction();
-
+       FileInputStream fIn = null;
         ObjectInputStream isr = null;
         try {
-            FileInputStream fIn = PosApplication.getApp().getApplicationContext().openFileInput("revtrx");
+            fIn = PosApplication.getApp().getApplicationContext().openFileInput("revtrx");
             isr = new ObjectInputStream(fIn);
         } catch (FileNotFoundException e) {
-            Log.d("SaveLoadFile", "Savetransaction: File not found");
+            Log.d("SaveLoadFile", "Loadlasttransaction: File not found");
         } catch (Exception e) {
 
         }
@@ -139,6 +147,8 @@ public class SaveLoadFile {
         // Fill the Buffer with data from the file
         try {
             transaction = (POSTransaction) isr.readObject();
+            isr.close();
+            fIn.close();
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {
@@ -186,11 +196,12 @@ public class SaveLoadFile {
          * Again for security reasons with
          * openFileInput(...) */
         ObjectInputStream isr = null;
+        FileInputStream fIn = null;
         try {
-            FileInputStream fIn = PosApplication.getApp().getApplicationContext().openFileInput("POSTRX");
+            fIn = PosApplication.getApp().getApplicationContext().openFileInput("POSTRX");
             isr = new ObjectInputStream(fIn);
         } catch (FileNotFoundException e) {
-            Log.d("SaveLoadFile", "Savetransaction: File not found");
+            Log.d("SaveLoadFile", "LoadAllTransaction: File not found");
         } catch (Exception e) {
 
         }
@@ -198,6 +209,8 @@ public class SaveLoadFile {
         // Fill the Buffer with data from the file
         try {
             transactions = (POSTransaction[]) isr.readObject();
+            isr.close();
+            fIn.close();
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {
@@ -232,10 +245,10 @@ public class SaveLoadFile {
     public static HostTotals load_Host_Recon_Data(String sSTAN) {
         Log.d("load HostTOTALS_data", "load HostTOTALS_data: started");
         HostTotals hostTotals=null;
-
+        FileInputStream fIn = null;
         ObjectInputStream isr = null;
         try {
-            FileInputStream fIn = PosApplication.getApp().getApplicationContext().openFileInput("reconsile"+sSTAN);
+            fIn = PosApplication.getApp().getApplicationContext().openFileInput("reconsile"+sSTAN);
             isr = new ObjectInputStream(fIn);
         } catch (FileNotFoundException e) {
             Log.d("SaveLoadFile", "load HostTOTALS_data: File not found");
@@ -249,6 +262,8 @@ public class SaveLoadFile {
         // Fill the Buffer with data from the file
         try {
             hostTotals = (HostTotals) isr.readObject();
+            isr.close();
+            fIn.close();
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {
@@ -317,8 +332,9 @@ public class SaveLoadFile {
          * Again for security reasons with
          * openFileInput(...) */
         ObjectInputStream isr = null;
+        FileInputStream fIn = null;
         try {
-            FileInputStream fIn = PosApplication.getApp().getApplicationContext().openFileInput("recon");
+            fIn = PosApplication.getApp().getApplicationContext().openFileInput("recon");
             isr = new ObjectInputStream(fIn);
         } catch (FileNotFoundException e) {
             Log.d("SaveLoadFile", "Savetransaction: File not found");
@@ -330,6 +346,8 @@ public class SaveLoadFile {
         // Fill the Buffer with data from the file
         try {
             transactions = (POSTransaction[]) isr.readObject();
+            isr.close();
+            fIn.close();
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {

@@ -54,7 +54,8 @@ public class Terminal_Operation_Data implements Serializable {
         public String m_sTerminal_Contactless_Floor_Limit;
         public String m_sTerminal_Contactless_Transaction_Limit;
         public String m_sTerminal_CVM_Required_Limit;
-
+        public String m_sTRMSID;
+        public String m_szBDK;    // todo to be encrypted and saved in secure area not operation data
         public byte[] m_CurrentKSN;
         public int m_ireconCounter;  //number of reconciliation on the terminal
 
@@ -127,8 +128,8 @@ public class Terminal_Operation_Data implements Serializable {
     public Terminal_Operation_Data(){
         m_bregistered = false;
         m_iPinKeyboardMode=1;
-        m_sMerchantID="800150400577";
-        m_sTerminalID="5012345600123456";
+        m_sMerchantID="000000000000";
+        m_sTerminalID="0000000000000000";
         sMerchant_Category_Code="5411";
         sAcquirer_ID="588847";
         m_sCurrencycode="682";
@@ -137,7 +138,8 @@ public class Terminal_Operation_Data implements Serializable {
         saf_info=new SAF_Info();
         g_NumberOfCardSchemes = 10;
         m_iSTAN=100;
-        m_CurrentKSN= BCDASCII.hexStringToBytes( "50FFF012345600000000");
+        m_CurrentKSN= BCDASCII.hexStringToBytes( "00000000000000000000");
+        m_szBDK = "0123456789ABCDEFFEDCBA9876543210";
         m_sMaximum_transaction_amount_indicator="1111111111";
         m_sMaximum_transaction_amount="999999999999";
         Mada_Auto_Selection=1;
@@ -180,8 +182,9 @@ public class Terminal_Operation_Data implements Serializable {
         m_sTMSHeader="3060000";
          TMS_currentcount= 0;
         TMS_endcount = 0;
+        m_TMS_Downloaded = false;
         //communication
-        Hostip = "192.168.8.151";
+        Hostip = "192.168.8.153";
         Hostport = 2030;
 
 

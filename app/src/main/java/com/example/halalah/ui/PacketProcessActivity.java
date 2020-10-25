@@ -163,72 +163,7 @@ public class PacketProcessActivity extends Activity implements SendReceiveListen
 
 
 
-    private void PerfomTermHostResponseFlow(int errReason) {
 
-
-        PosApplication.getApp().oGPOS_MAIN.PerfomTermHostResponseFlow(mRecePacket,errReason,this);
-        CommunicationsHandler.getInstance(mCommunicationInfo).closeConnection();
-
-
-    /*    // old flow
-        Bundle data = new Bundle();
-        mUnpackPacket.Process_Rece_Packet(this, mRecePacket, data);
-        mResponse = mUnpackPacket.getResponse();
-        mResponseDetail = mUnpackPacket.getResponseDetail();
-
-        if (mResponse != null && mResponse.equals("00")) {
-            mProcNum++;
-            if (mProcType == PacketProcessUtils.PACKET_PROCESS_ONLINE_INIT && mProcNum < 4) {
-                String temp = null;
-                if (mResponseDetail != null && mResponseDetail.length() > 2) {
-                    temp = mResponseDetail.substring(0, 2);
-                    Log.i(TAG, "temp = " + temp);
-                }
-                if (temp != null && temp.equals("01")) {
-                    showResult(mResponse, mResponseDetail, errReason);
-                } else {
-                    getPacketAndSend();
-                }
-            } else if (mProcType == PacketProcessUtils.PACKET_PROCESS_PURCHASE && (mResponse != null) && (mResponse.equals("00"))) {
-                //todo if comulative limit exeeded host response 196 we need to openpinpad for entering pin and resend transaction again
-                byte[] field47 = mUnpackPacket.getField47();
-             //   Display_printResult(mResponse, mResponseDetail, field47);
-
-                if(!PosApplication.getApp().oGPosTransaction.m_is_mada)
-                SAF_Info.SAVE_IN_SAF(PosApplication.getApp().oGPosTransaction);
-
-            }
-            else if(mProcType == PacketProcessUtils.PACKET_PROCESS_AUTHORISATION && (mResponse != null) && (mResponse.equals("00")))
-            {
-                if(!PosApplication.getApp().oGPosTransaction.m_is_mada) {
-                    SAF_Info.SAVE_IN_SAF(PosApplication.getApp().oGPosTransaction);
-                }
-                else
-                {
-                    byte[] field47 = mUnpackPacket.getField47();
-              //      Display_printResult(mResponse, mResponseDetail, field47);
-                }
-
-            }
-            else if(mProcType == PacketProcessUtils.PACKET_PROCESS_AUTHORISATION_ADVICE && (mResponse != null) && (mResponse.equals("00")))
-            {
-                if(!PosApplication.getApp().oGPosTransaction.m_is_mada) {
-                    SAF_Info.SAVE_IN_SAF(PosApplication.getApp().oGPosTransaction);
-                }
-                else
-                {
-                    byte[] field47 = mUnpackPacket.getField47();
-                 //   Display_printResult(mResponse, mResponseDetail, field47);
-                }
-
-            }
-            else {
-                showResult(mResponse, mResponseDetail, errReason);
-            }
-        } else {
-            showResult(mResponse, mResponseDetail, errReason);
-        }*/
-    }
 
     private Handler mHandle = new Handler() {
         @Override

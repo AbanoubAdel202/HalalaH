@@ -41,8 +41,7 @@ public class AmountInputActivity extends Activity implements View.OnClickListene
     private StringBuilder mAmountBuilder;
     private StringBuilder mAmount;
     private StringBuilder mNAQD_Amount;
-    private AidlLed mAidlLed = DeviceTopUsdkServiceManager.getInstance().getLedManager();
-    private AidlBuzzer beepManager = DeviceTopUsdkServiceManager.getInstance().getBeepManager();
+
     private int mTime = 30;
     private TCPCommunicator tcpClient;
     @Override

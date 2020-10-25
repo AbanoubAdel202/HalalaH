@@ -1,4 +1,4 @@
-package com.example.halalah;
+package com.example.halalah.ui;
 
 import android.annotation.SuppressLint;
 
@@ -10,11 +10,13 @@ import android.os.Handler;
 import android.view.MotionEvent;
 import android.view.View;
 
+import com.example.halalah.R;
+
 /**
  * An example full-screen activity that shows and hides the system UI (i.e.
  * status bar and navigation/system bar) with user interaction.
  */
-public class hosttransaction extends AppCompatActivity {
+public class search_Trx extends AppCompatActivity {
     /**
      * Whether or not the system UI should be auto-hidden after
      * {@link #AUTO_HIDE_DELAY_MILLIS} milliseconds.
@@ -89,7 +91,7 @@ public class hosttransaction extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        setContentView(R.layout.activity_hosttransaction);
+        setContentView(R.layout.activity_search__trx);
 
         mVisible = true;
         mControlsView = findViewById(R.id.fullscreen_content_controls);

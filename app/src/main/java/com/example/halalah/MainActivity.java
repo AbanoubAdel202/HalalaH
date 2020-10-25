@@ -3,10 +3,12 @@ package com.example.halalah;
 import com.example.halalah.TMS.Card_Scheme;
 import com.example.halalah.TMS.Public_Key;
 import com.example.halalah.TMS.TMSManager;
+import com.example.halalah.cloudpos.data.AidlErrorCode;
 import com.example.halalah.connect.TCPCommunicator;
 import com.example.halalah.emv.EmvManager;
 import com.example.halalah.storage.CommunicationInfo;
 import com.example.halalah.storage.SaveLoadFile;
+import com.example.halalah.util.BytesUtil;
 import com.topwise.cloudpos.aidl.emv.level2.EmvTerminalInfo;
 
 import android.Manifest;
@@ -79,6 +81,7 @@ public class MainActivity extends AppCompatActivity implements ITransaction.View
     private AppBarConfiguration mAppBarConfiguration;
     Context context;
     ProgressDialog mProgressDialog;
+    ProgressDialog mProgressDialog2;
     AlertDialog.Builder builder;
     private TCPCommunicator tcpClient;
 
@@ -91,7 +94,7 @@ public class MainActivity extends AppCompatActivity implements ITransaction.View
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 //        CommunicationInfo communicationInfo = new CommunicationInfo(this);
-//        communicationInfo.setHostIP("192.168.8.138");
+ //       communicationInfo.setHostIP("192.168.8.138");
 //        communicationInfo.setHostPort("1001");
 //        communicationInfo.setTPDU("6000230000");
         builder = new AlertDialog.Builder(this);
@@ -109,6 +112,47 @@ public class MainActivity extends AppCompatActivity implements ITransaction.View
         time.setText(t);
 
         PosApplication.getApp().getDeviceManager();
+/*
+        mProgressDialog2 = new ProgressDialog(this);
+        mProgressDialog2.setCancelable(false);
+        mProgressDialog2.setMessage("Bind USDK Service");
+        mProgressDialog2.show();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while (true) {
+                    Log.i("wxz", ">" + DeviceTopUsdkServiceManager.getInstance().getDeviceService());
+                    if (DeviceTopUsdkServiceManager.getInstance().getDeviceService() != null) {
+                        break;
+                    }
+                    else
+                    {
+                        DeviceTopUsdkServiceManager.getmDeviceServiceManager();
+                    }
+                    SystemClock.sleep(1000);
+                }
+                Log.i("wxz", "getting pinpad");
+                AidlPinpad pinpad = DeviceTopUsdkServiceManager.getInstance().getPinpadManager(PinpadConstant.PinpadId.BUILTIN);
+                Log.i("wxz", "getting pinpad"+pinpad);
+                try {
+                    byte[] random = pinpad.getRandom();
+                    Log.i("wxz", "random"+ BytesUtil.bytes2HexString(random));
+                } catch (RemoteException e) {
+                    e.printStackTrace();
+                }
+                DUKPT_KEY.InitilizeDUKPT("0123456789ABCDEFFEDCBA9876543210","50FFF012345600000000");
+
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if(mProgressDialog2!= null && mProgressDialog2.isShowing()){
+                            mProgressDialog2.dismiss();
+                        }
+
+                    }
+                });
+            }
+        }).start();*/
         // Mostafa 21/4/2020 added to remove bars for full screen application
         /*View decorView = getWindow().getDecorView();
         int uiOptions = View.SYSTEM_UI_FLAG_LOW_PROFILE
@@ -181,7 +225,7 @@ public class MainActivity extends AppCompatActivity implements ITransaction.View
         PosApplication.getApp().oGPosTransaction.Reset();
 
       //  AidlLed mAidlLed = DeviceTopUsdkServiceManager.getInstance().getLedManager();
-      //  checkRegistration();
+        checkRegistration();
       /*  try {
             if(mAidlLed != null){
                 mAidlLed.setLed(0 , false);
@@ -422,7 +466,7 @@ public class MainActivity extends AppCompatActivity implements ITransaction.View
 
         Load_Terminal_operation_data();
         //Initialize_Security();
-        //checkRegistration();
+       // checkRegistration();
         POS_MAIN.Get_Terminal_Transaction_limits();
 
     }
@@ -437,10 +481,11 @@ public class MainActivity extends AppCompatActivity implements ITransaction.View
         if (bRegistered==true) {
         //if (true) {
             //Initialize_EMV_Configuration();
+           // Initialize_Security();
 
             Initialize_CTLS_configuration();
-            if(!PosApplication.getApp().oGTerminal_Operation_Data.m_TMS_Downloaded)
-                DownloadTMS();
+           // if(!PosApplication.getApp().oGTerminal_Operation_Data.m_TMS_Downloaded)
+                //DownloadTMS();
 
         } else {
             showRegistrationScreen();
@@ -463,8 +508,8 @@ public class MainActivity extends AppCompatActivity implements ITransaction.View
     }
     private void Initialize_Security()
     {
-        DUKPT_KEY.InitilizeDUKPT("0123456789ABCDEFFEDCBA9876543210", BCDASCII.bytesToHexString(PosApplication.getApp().oGTerminal_Operation_Data.m_CurrentKSN));
-
+        //DUKPT_KEY.InitilizeDUKPT("0123456789ABCDEFFEDCBA9876543210", BCDASCII.bytesToHexString(PosApplication.getApp().oGTerminal_Operation_Data.m_CurrentKSN));
+        DUKPT_KEY.InitilizeDUKPT(PosApplication.getApp().oGTerminal_Operation_Data.m_szBDK, BCDASCII.bytesToHexString(PosApplication.getApp().oGTerminal_Operation_Data.m_CurrentKSN));
 
         //todo initialize security parameter
     }

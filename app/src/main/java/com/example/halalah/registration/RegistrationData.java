@@ -95,15 +95,15 @@ public class RegistrationData implements Serializable {
         RegistrationManager manager = RegistrationManager.getInstance();
         StringBuilder vendorHashingData = new StringBuilder();
         String dateTime = ExtraUtil.GetDate_Time();
-        vendorHashingData.append(dateTime);
         PosApplication.getApp().oGPosTransaction.m_sTrxDateTime = dateTime;
-        vendorHashingData.append("814"); // Terminal Registration Function Code
+        vendorHashingData.append(Utils.asciiToHex(dateTime).toString());
+        vendorHashingData.append(Utils.asciiToHex( "814").toString()); // Terminal Registration Function Code
         vendorHashingData.append(vendorId);
         vendorHashingData.append(vendorTerminalType);
         vendorHashingData.append(trsmid);
         vendorHashingData.append(getRandomStringSequence());
 
-        return vendorSignature = Utils.byteArrayToHex(manager.signAndHashWithLoadedKeys(vendorHashingData.toString()));
+        return vendorSignature = manager.signAndHashWithLoadedKeys(vendorHashingData.toString());
 
     }
 

@@ -334,6 +334,7 @@
     <string name="Partial">Partial</string>
     <string name="Full">Full</string>
     <string name="registration_error">registration error</string>
+    <string name="invalid_registration_data">Invalid Registration Data</string>
     <string name="invalid_pki_files">invalid PKI files</string>
     <string name="vendor_terminal_type">vendor terminal type</string>
     <string name="terminal_registration">Terminal Registration</string>
