@@ -99,7 +99,7 @@ public class TotalsFragment extends Fragment implements View.OnClickListener  {
 
        tcpClient = TCPCommunicator.getInstance();
         tcpClient.init( PosApplication.getApp().oGTerminal_Operation_Data.Hostip, PosApplication.getApp().oGTerminal_Operation_Data.Hostport);
-        TCPCommunicator.closeStreams();
+      //  TCPCommunicator.closeStreams();
     }
 
 

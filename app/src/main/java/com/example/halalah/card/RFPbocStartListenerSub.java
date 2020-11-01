@@ -53,13 +53,12 @@ public class RFPbocStartListenerSub implements OnEmvProcessListener {
         if (POS_MAIN.Recognise_card()!=0)
             //todo do activity error CArd not recognised
 
-        if(!POS_MAIN.Check_transaction_allowed(PosApplication.getApp().oGPosTransaction.m_enmTrxType))
+        if(!POS_MAIN.Check_transaction_allowed(PosApplication.getApp().oGPosTransaction.m_enmTrxType)) {
             //todo do transaction not allowed Activity
-
-            if(POS_MAIN.Check_transaction_limits(PosApplication.getApp().oGPosTransaction.m_enmTrxType)==0)
-            {
+        }
+        if(POS_MAIN.Check_transaction_limits(PosApplication.getApp().oGPosTransaction.m_enmTrxType)==0){
                 //todo alert dialog for limit exeeded
-            }
+        }
 
         POS_MAIN.supervisor_pass_required();
 

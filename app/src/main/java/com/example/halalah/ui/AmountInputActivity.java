@@ -90,7 +90,7 @@ public class AmountInputActivity extends Activity implements View.OnClickListene
 
         tcpClient = TCPCommunicator.getInstance();
         tcpClient.init( PosApplication.getApp().oGTerminal_Operation_Data.Hostip, PosApplication.getApp().oGTerminal_Operation_Data.Hostport);
-        TCPCommunicator.closeStreams();
+       // TCPCommunicator.closeStreams();
     }
 
     private Handler mHandle = new Handler() {

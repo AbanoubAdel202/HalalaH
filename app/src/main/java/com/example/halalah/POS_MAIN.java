@@ -651,7 +651,7 @@ public class POS_MAIN implements SendReceiveListener , TCPListener  {
 
       if(PosApplication.getApp().oGPosTransaction.m_card_scheme.m_sSupervisor_Functions=="1") {
 
-          //todo dialog which ask for password}
+          //todo dialog which ask for password
 
 
       /*    AlertDialog.Builder builder = new AlertDialog.Builder(mcontext);
@@ -820,7 +820,7 @@ public class POS_MAIN implements SendReceiveListener , TCPListener  {
             strFormatedAIDData.append("9F08" +"02"+AIDObj.Terminal_AID_version_numbers.substring(0,4));
         //ex.DF1105FC408CA800
         // Adding Default_action_code
-        if (AIDObj.Denial_action_code.length() > 0)
+        if (AIDObj.Default_action_code.length() > 0)
         {
             AIDObj.Default_action_code=AIDObj.Default_action_code.replaceAll(" ","");
             strFormatedAIDData.append("DF11" +String.format(Locale.ENGLISH,"%02d",AIDObj.Default_action_code.length()/2)+AIDObj.Default_action_code);
@@ -830,7 +830,7 @@ public class POS_MAIN implements SendReceiveListener , TCPListener  {
 
         //ex.DF1205FC408CF800
         // Adding Online_action_code
-        if (AIDObj.Denial_action_code.length() > 0) {
+        if (AIDObj.Online_action_code.length() > 0) {
             AIDObj.Online_action_code=AIDObj.Online_action_code.replaceAll(" ","");
             strFormatedAIDData.append("DF12" + String.format(Locale.ENGLISH, "%02d", AIDObj.Online_action_code.length() / 2) + AIDObj.Online_action_code);
         }
@@ -1083,8 +1083,11 @@ DF03 Check Sum                                [20]   >> 4410C6D51C2F83ADFD92528F
         Log.i(TAG, "Process_Rece_Packet: ");
         POSTransaction current_postrx = PosApplication.getApp().oGPosTransaction;
         if(!ValidateHostMAC())
-        {
-            //todo go to invalid macing process
+        {   //invalid mac procesdures
+            CheckandSaveInSAF(PosApplication.getApp().oGPosTransaction,true);
+            DeSAF(SAF_Info.DESAFtype.PARTIAL);
+            Start_Transaction(current_postrx, POSTransaction.TranscationType.ADMIN,null);
+            //todo print reciept decline
         }
         else {
             String mResponse = BCDASCII.asciiByteArray2String(PosApplication.getApp().oGPosTransaction.m_ResponseISOMsg.getDataElement(39));
@@ -1107,7 +1110,15 @@ DF03 Check Sum                                [20]   >> 4410C6D51C2F83ADFD92528F
                     bRetRes =1;
 
                 }
+                else if(mResponse.equals("916"))
+                {
+                   // CheckandSaveInSAF(PosApplication.getApp().oGPosTransaction,true);
+                   // DeSAF(SAF_Info.DESAFtype.PARTIAL);
+                    Start_Transaction(current_postrx, POSTransaction.TranscationType.ADMIN,null);
+                    //todo print reciept
+                }
                 else{
+
                     Intent intent = new Intent(activity, Declined_Display_Print.class);
                     intent.putExtra("response code", mResponse);
                     activity.startActivity(intent);
@@ -1664,7 +1675,7 @@ DF03 Check Sum                                [20]   >> 4410C6D51C2F83ADFD92528F
         else{  //tms download done reset counters
             PosApplication.getApp().oGTerminal_Operation_Data.TMS_currentcount=0;
             PosApplication.getApp().oGTerminal_Operation_Data.TMS_endcount=0;
-            PosApplication.getApp().oGTerminal_Operation_Data.m_sTMSHeader="3060000";
+            PosApplication.getApp().oGTerminal_Operation_Data.m_sTMSHeader="3040000";
             //todo for partial conditions overwrite
         }
     }
@@ -1852,8 +1863,9 @@ DF03 Check Sum                                [20]   >> 4410C6D51C2F83ADFD92528F
         }
         else {
             iRetres = 0;
-            printdesaf();
+           // printdesaf();
             PosApplication.getApp().oGTerminal_Operation_Data.saf_info.m_iSAFTrxNumber--;
+            PosApplication.getApp().oGTerminal_Operation_Data.saf_info.m_dSAFCumulativeAmount-= Double.parseDouble(PosApplication.getApp().oGPosTransaction.m_sTrxAmount)/100;
             if(PosApplication.getApp().oGTerminal_Operation_Data.saf_info.m_iSAFTrxNumber==0)
                 PosApplication.getApp().oGTerminal_Operation_Data.bDeSAF_flag=false;
             Update_Terminal_totals();  //added to update purchase advises and detail
@@ -1906,7 +1918,7 @@ DF03 Check Sum                                [20]   >> 4410C6D51C2F83ADFD92528F
                             POSTrx.m_enmTrxType = POSTransaction.TranscationType.PURCHASE_ADVICE;
                            SAF_Info.SAVE_IN_SAF(POSTrx);
                             PosApplication.getApp().oGTerminal_Operation_Data.bDeSAF_flag=true;
-                            PosApplication.getApp().oGTerminal_Operation_Data.saf_info.m_dSAFCumulativeAmount=+Integer.parseInt(POSTrx.m_sTrxAmount);
+                            PosApplication.getApp().oGTerminal_Operation_Data.saf_info.m_dSAFCumulativeAmount=+Double.parseDouble(POSTrx.m_sTrxAmount)/100;
                             PosApplication.getApp().oGTerminal_Operation_Data.saf_info.m_iSAFTrxNumber++;
                         }
                         //todo save  Offline Financial Transaction – mada Chip/Contactless Card (Declined)
@@ -1926,7 +1938,7 @@ DF03 Check Sum                                [20]   >> 4410C6D51C2F83ADFD92528F
                             POSTrx.m_enmTrxType = POSTransaction.TranscationType.PURCHASE_ADVICE;
                             SAF_Info.SAVE_IN_SAF(POSTrx);
                             PosApplication.getApp().oGTerminal_Operation_Data.bDeSAF_flag=true;
-                            PosApplication.getApp().oGTerminal_Operation_Data.saf_info.m_dSAFCumulativeAmount=+Integer.parseInt(POSTrx.m_sTrxAmount);
+                            PosApplication.getApp().oGTerminal_Operation_Data.saf_info.m_dSAFCumulativeAmount=+Double.parseDouble(POSTrx.m_sTrxAmount)/100;
                             PosApplication.getApp().oGTerminal_Operation_Data.saf_info.m_iSAFTrxNumber++;
                         }
                         break;
@@ -1936,7 +1948,7 @@ DF03 Check Sum                                [20]   >> 4410C6D51C2F83ADFD92528F
                             POSTrx.m_enmTrxType = POSTransaction.TranscationType.AUTHORISATION_ADVICE;
                             SAF_Info.SAVE_IN_SAF(POSTrx);
                             PosApplication.getApp().oGTerminal_Operation_Data.bDeSAF_flag=true;
-                            PosApplication.getApp().oGTerminal_Operation_Data.saf_info.m_dSAFCumulativeAmount=+Integer.parseInt(POSTrx.m_sTrxAmount);
+                            PosApplication.getApp().oGTerminal_Operation_Data.saf_info.m_dSAFCumulativeAmount=+Double.parseDouble(POSTrx.m_sTrxAmount)/100;
                             PosApplication.getApp().oGTerminal_Operation_Data.saf_info.m_iSAFTrxNumber++;
                         }
                         break;
@@ -2304,23 +2316,19 @@ DF03 Check Sum                                [20]   >> 4410C6D51C2F83ADFD92528F
                 PosApplication.getApp().oGSama_TMS.Get_Sama_param(sDE72);
             }
             if(PosApplication.getApp().oGTerminal_Operation_Data.TMS_currentcount==PosApplication.getApp().oGTerminal_Operation_Data.TMS_endcount) {
-                PosApplication.getApp().oGTerminal_Operation_Data.bTMS_flag = false;
 
+              // update all operation data nessassry to run the application (Devicespecific,saf,
+                PosApplication.getApp().oGTerminal_Operation_Data.bTMS_flag = false;
                 com.example.halalah.database.table.DBManager.getInstance().init(PosApplication.getApp().oGPOS_MAIN.mcontext);   //load AIDs and CAPK
                 com.example.halalah.database.table.DBManager.getInstance().addTMSCapkAIDtoDB();
                 Device_Specific deviceSpecific = TMSManager.getInstance().getDeviceSpecific();
+
                 PosApplication.getApp().oGTerminal_Operation_Data.m_DeviceSpecific = deviceSpecific;
+
+                PosApplication.getApp().oGTerminal_Operation_Data.saf_info.m_iMax_SAF_Cumulative_Amount=Integer.parseInt(deviceSpecific.m_sMax_SAF_Cumulative_Amount); //todo check max limit integer or log
+                PosApplication.getApp().oGTerminal_Operation_Data.saf_info.m_iMax_SAF_Depth = Integer.parseInt(deviceSpecific.m_sMax_SAF_Depth);
                 SetTotalsschemes();
-                /* //setting totals
-                Card_Scheme[] card_schemes = TMSManager.getInstance().getAllCardScheme().toArray(new Card_Scheme[0]);
-                PosApplication.getApp().oGTerminal_Operation_Data.g_NumberOfCardSchemes=card_schemes.length;
-                //PosApplication.getApp().oGTerminal_Operation_Data.g_TerminalTotals=new CardSchemeTotals[card_schemes.length];
-                for(int i = 0 ;i<card_schemes.length;i++)
-                {
-                    PosApplication.getApp().oGTerminal_Operation_Data.g_TerminalTotals[i]= new CardSchemeTotals();
-                    PosApplication.getApp().oGTerminal_Operation_Data.g_TerminalTotals[i].m_szCardSchmID=card_schemes[i].m_sCard_Scheme_ID;
-                    PosApplication.getApp().oGTerminal_Operation_Data.g_TerminalTotals[i].m_szCardSchemeAcqID=card_schemes[i].m_sCard_Scheme_Acquirer_ID;
-                }*/
+
                 PosApplication.getApp().oGTerminal_Operation_Data.m_TMS_Downloaded=true;
                 TCPCommunicator.closeStreams();
                 Save_TermData();

@@ -34,7 +34,7 @@ public class SearchCardActivity extends Activity{
     private String mAmount;
     private Toast mToast;
     private Button  mmanualbtn;
-    private Activity searchactivity;
+   // private Activity searchactivity;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,7 +66,7 @@ public class SearchCardActivity extends Activity{
 
         CardManager.getInstance().startCardDealService(this);
         CardManager.getInstance().initCardExceptionCallBack(exceptionCallBack);
-        searchactivity=this;
+        //searchactivity=this;
     }
 
     @Override

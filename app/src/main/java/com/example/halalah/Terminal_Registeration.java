@@ -57,7 +57,7 @@ public class Terminal_Registeration implements SendReceiveListener {
         // Private – Additional Data (DE 48)
         // Private – Terminal Status (DE62)
 
-        this.mView = transactionView;
+        mView = transactionView;
 
         mCommunicationsHandler = CommunicationsHandler.getInstance(new CommunicationInfo(PosApplication.getApp().getApplicationContext()));
         CommunicationsHandler communicationsHandler = CommunicationsHandler.getInstance(new CommunicationInfo(PosApplication.getApp().getApplicationContext()));
@@ -156,8 +156,8 @@ public class Terminal_Registeration implements SendReceiveListener {
 
                 PosApplication.getApp().oGTerminal_Operation_Data.m_sTRMSID= PosApplication.getApp().oGPosTransaction.getTerminalRegistrationData().getTrsmid();
                 PosApplication.getApp().oGTerminal_Operation_Data.m_CurrentKSN = BCDASCII.hexStringToBytes(PosApplication.getApp().halaVendorid+PosApplication.getApp().oGTerminal_Operation_Data.m_sTRMSID+"00000000");
-              //  PosApplication.getApp().oGPOS_MAIN.Start_Transaction(PosApplication.getApp().oGPosTransaction, POSTransaction.TranscationType.TMS_FILE_DOWNLOAD,null);
-                DUKPT_KEY.InitilizeDUKPT(PosApplication.getApp().oGTerminal_Operation_Data.m_szBDK, BCDASCII.bytesToHexString(PosApplication.getApp().oGTerminal_Operation_Data.m_CurrentKSN));
+               // PosApplication.getApp().oGPOS_MAIN.Start_Transaction(PosApplication.getApp().oGPosTransaction, POSTransaction.TranscationType.TMS_FILE_DOWNLOAD,null);
+               // DUKPT_KEY.InitilizeDUKPT(PosApplication.getApp().oGTerminal_Operation_Data.m_szBDK, BCDASCII.bytesToHexString(PosApplication.getApp().oGTerminal_Operation_Data.m_CurrentKSN));
                 preConnect();
                 PosApplication.getApp().oGPosTransaction.m_enmTrxType= POSTransaction.TranscationType.TMS_FILE_DOWNLOAD;
                 PosApplication.getApp().oGPOS_MAIN.StartTMSDownload(false,mView);
@@ -201,6 +201,6 @@ public class Terminal_Registeration implements SendReceiveListener {
 
         tcpClient = TCPCommunicator.getInstance();
         tcpClient.init( PosApplication.getApp().oGTerminal_Operation_Data.Hostip, PosApplication.getApp().oGTerminal_Operation_Data.Hostport);
-        TCPCommunicator.closeStreams();
+      //  TCPCommunicator.closeStreams();
     }
 }

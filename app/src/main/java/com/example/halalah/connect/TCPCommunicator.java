@@ -66,13 +66,13 @@ public class TCPCommunicator {
                     out.flush();
                     Log.i("TcpClient", "sent: " + outMsg);
                 } catch (Exception e) {
-                    UIHandler.post(new Runnable() {
+                   /* UIHandler.post(new Runnable() {
 
                         @Override
                         public void run() {
-                            Toast.makeText(appContext, "a problem has occured, the app might not be able to reach the server", Toast.LENGTH_SHORT).show();
+                        //    Toast.makeText(appContext, "a problem has occured, the app might not be able to reach the server", Toast.LENGTH_SHORT).show();
                         }
-                    });
+                    });*/
                 }
             }
 
@@ -97,7 +97,7 @@ public class TCPCommunicator {
 
                         @Override
                         public void run() {
-                            Toast.makeText(appContext, "a problem has occured, the app might not be able to reach the server", Toast.LENGTH_SHORT).show();
+//                            Toast.makeText(appContext, "a problem has occured, the app might not be able to reach the server", Toast.LENGTH_SHORT).show();
                         }
                     });
                 }

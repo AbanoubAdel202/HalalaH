@@ -3,7 +3,9 @@ package com.example.halalah.ui.operation_setting;
 import androidx.lifecycle.ViewModelProviders;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 
@@ -25,18 +27,24 @@ import com.example.halalah.connect.TCPCommunicator;
 import com.example.halalah.network_settings;
 import com.example.halalah.registration.view.ITransaction;
 import com.example.halalah.storage.CommunicationInfo;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.io.InputStream;
+
+import static android.content.DialogInterface.BUTTON_NEGATIVE;
+import static android.content.DialogInterface.BUTTON_POSITIVE;
 
 public class Setting extends Fragment implements View.OnClickListener , ITransaction.View  {
 
     private SettingViewModel mViewModel;
     private TCPCommunicator tcpClient;
     private ProgressDialog mProgressDialog;
+    private AlertDialog.Builder mAlertdialog;
     private ITransaction.View mView;
     public static Setting newInstance() {
         return new Setting();
     }
+
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
@@ -50,7 +58,7 @@ public class Setting extends Fragment implements View.OnClickListener , ITransac
        /* CommunicationInfo communicationInfo = new CommunicationInfo(getContext());
         InputStream caInputStream = getResources().openRawResource(R.raw.bks);
         CommunicationsHandler.getInstance(communicationInfo, caInputStream).connect();*/
-
+        mView = this;
                 return root;
     }
 
@@ -68,18 +76,31 @@ public class Setting extends Fragment implements View.OnClickListener , ITransac
         switch(v.getId())
         {
             case R.id.TMS_btn:
+                mAlertdialog = new AlertDialog.Builder(getContext());
+                mAlertdialog.setTitle("select TMS Download Type");
+                mAlertdialog.setMessage("Partial or Full");
+                mAlertdialog.setPositiveButton("FULL", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        PosApplication.getApp().oGTerminal_Operation_Data.m_sTMSHeader="3060000";
+
+                       DownloadTMS();
+
+                    }
+                });
+                mAlertdialog.setNegativeButton("Partial", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        PosApplication.getApp().oGTerminal_Operation_Data.m_sTMSHeader="3040000";
+                        DownloadTMS();
+                    }
+                });
+                mAlertdialog.show();
 
                /* PosApplication.getApp().oGPOS_MAIN.mcontext = getContext();
                 PosApplication.getApp().oGPosTransaction.m_enmTrxType= POSTransaction.TranscationType.TMS_FILE_DOWNLOAD;
                 PosApplication.getApp().oGPOS_MAIN.Start_Transaction(PosApplication.getApp().oGPosTransaction,POSTransaction.TranscationType.TMS_FILE_DOWNLOAD,null);
                 */
-                preConnect();
-                PosApplication.getApp().oGPosTransaction.m_enmTrxType= POSTransaction.TranscationType.TMS_FILE_DOWNLOAD;
-                PosApplication.getApp().oGTerminal_Operation_Data.TMS_currentcount=0;
-                PosApplication.getApp().oGTerminal_Operation_Data.m_sTMSHeader ="3060000";
-                if(PosApplication.getApp().oGTerminal_Operation_Data.TMS_currentcount==0)
-                    showLoading("Terminal Downloading  TMS please wait...");
-                PosApplication.getApp().oGPOS_MAIN.StartTMSDownload(false,this);
 
 
                 break;
@@ -97,7 +118,7 @@ public class Setting extends Fragment implements View.OnClickListener , ITransac
 
         tcpClient = TCPCommunicator.getInstance();
         tcpClient.init( PosApplication.getApp().oGTerminal_Operation_Data.Hostip, PosApplication.getApp().oGTerminal_Operation_Data.Hostport);
-        TCPCommunicator.closeStreams();
+       // TCPCommunicator.closeStreams();
     }
 
 
@@ -164,5 +185,16 @@ public class Setting extends Fragment implements View.OnClickListener , ITransac
     @Override
     public void showRegistrationSuccess() {
 
+    }
+
+    public void DownloadTMS()
+    {
+        preConnect();
+        PosApplication.getApp().oGPosTransaction.m_enmTrxType= POSTransaction.TranscationType.TMS_FILE_DOWNLOAD;
+        PosApplication.getApp().oGTerminal_Operation_Data.TMS_currentcount=0;
+        //  PosApplication.getApp().oGTerminal_Operation_Data.m_sTMSHeader ="3060000";
+        if(PosApplication.getApp().oGTerminal_Operation_Data.TMS_currentcount==0)
+            showLoading("Terminal Downloading  TMS please wait...");
+        PosApplication.getApp().oGPOS_MAIN.StartTMSDownload(false,mView);
     }
 }

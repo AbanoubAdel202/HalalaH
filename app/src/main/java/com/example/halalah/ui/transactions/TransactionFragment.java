@@ -69,7 +69,7 @@ public class TransactionFragment extends Fragment implements View.OnClickListene
 
         //test keys
        // DUKPT_KEY.InitilizeDUKPT("0123456789ABCDEFFEDCBA9876543210", BCDASCII.bytesToHexString(PosApplication.getApp().oGTerminal_Operation_Data.m_CurrentKSN));
-        DUKPT_KEY.InitilizeDUKPT(PosApplication.getApp().oGTerminal_Operation_Data.m_szBDK, BCDASCII.bytesToHexString(PosApplication.getApp().oGTerminal_Operation_Data.m_CurrentKSN));        // context is handed to posmain
+        //DUKPT_KEY.InitilizeDUKPT(PosApplication.getApp().oGTerminal_Operation_Data.m_szBDK, BCDASCII.bytesToHexString(PosApplication.getApp().oGTerminal_Operation_Data.m_CurrentKSN));        // context is handed to posmain
         PosApplication.getApp().oGPOS_MAIN.mcontext = getContext();
         transactionViewModel.getText().observe(getViewLifecycleOwner(), new Observer<String>() {
             @Override

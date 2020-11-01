@@ -548,6 +548,7 @@ public class ContactCardProcess {
             if(!POS_MAIN.Check_transaction_allowed(PosApplication.getApp().oGPosTransaction.m_enmTrxType))
             {
                 //todo do transaction not allowed Activity
+                //todo end emv
             }
             if(POS_MAIN.Check_transaction_limits(PosApplication.getApp().oGPosTransaction.m_enmTrxType)==0)
             {

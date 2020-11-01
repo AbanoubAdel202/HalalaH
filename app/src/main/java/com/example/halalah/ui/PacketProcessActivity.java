@@ -185,7 +185,7 @@ public class PacketProcessActivity extends Activity implements SendReceiveListen
         }
     };
 
-    private void Display_printResult(String response, String resDetail, POSTransaction POStrx) {
+   /* private void Display_printResult(String response, String resDetail, POSTransaction POStrx) {
         Log.i(TAG, "showSuccessResult(), response = " + response + ", resDetail = " + resDetail + ", printDetail = " + POStrx);
         if (mProcType == PacketProcessUtils.PACKET_PROCESS_PURCHASE &&
                 PosApplication.getApp().oGPosTransaction.m_enmTrxCardType != POSTransaction.CardType.MAG) {
@@ -198,16 +198,16 @@ public class PacketProcessActivity extends Activity implements SendReceiveListen
         intent.putExtra("POSTransaction", (Parcelable) POStrx);
         startActivity(intent);
         this.finish();
-    }
+    }*/
 
 
 
     private void showResult(String response, String resDetail, int errReason) {
         Log.i(TAG, "showResult(), response = " + response + ", resDetail = " + resDetail + ", errReason = " + errReason);
-        if (mProcType == PacketProcessUtils.PACKET_PROCESS_PURCHASE &&
+       /* if (mProcType == PacketProcessUtils.PACKET_PROCESS_PURCHASE &&
                 PosApplication.getApp().oGPosTransaction.m_enmTrxCardType != POSTransaction.CardType.MAG) {
             CardManager.getInstance().setRequestOnline(true, mResponse, PosApplication.getApp().oGPosTransaction.m_sICCRelatedTags);
-        }
+        }*/
         mHandle.removeMessages(MSG_TIME_UPDATE);
         Intent intent = new Intent(this, ShowResultActivity.class);
         intent.putExtra(PacketProcessUtils.PACKET_PROCESS_TYPE, mProcType);
@@ -263,7 +263,7 @@ public class PacketProcessActivity extends Activity implements SendReceiveListen
         if (receivedPacket != null)
         {
 
-
+            // todo add invalid response
             receivedPacket= Arrays.copyOfRange(receivedPacket, 7, receivedPacket.length);
             mRecePacket = receivedPacket;
             mHandle.removeMessages(MSG_TIME_UPDATE);
@@ -272,10 +272,6 @@ public class PacketProcessActivity extends Activity implements SendReceiveListen
 
               //disconnect();
              // finish();
-
-
-
-
 
 
 

@@ -438,17 +438,17 @@ public class PinpadActivity extends Activity {
     CardManager.CardExceptionCallBack mCallBack = new CardManager.CardExceptionCallBack() {
         @Override
         public void callBackTimeOut() {
-            Log.i(TAG, "onDestroy()");
+            Log.i(TAG, "onDestroy() callBackTimeOut");
         }
 
         @Override
         public void callBackError(int errorCode) {
-            Log.i(TAG, "onDestroy()");
+            Log.i(TAG, "onDestroy() callBackError");
         }
 
         @Override
         public void callBackCanceled() {
-            Log.i(TAG, "onDestroy()");
+            Log.i(TAG, "onDestroy() callBackCanceled");
         }
 
         @Override
@@ -467,10 +467,13 @@ public class PinpadActivity extends Activity {
             } else if (result == CardSearchErrorUtil.TRANS_REASON_REJECT) {
 
                 resultDetail = getString(R.string.search_card_trans_result_reject);
-                PosApplication.getApp().oGTerminal_Operation_Data.breversal_flg=true;
                 POS_MAIN.CheckandSaveInSAF(PosApplication.getApp().oGPosTransaction,true);
+                PosApplication.getApp().oGPOS_MAIN.DeSAF(SAF_Info.DESAFtype.PARTIAL);
             } else if (result == CardSearchErrorUtil.TRANS_REASON_STOP) {
                 resultDetail = getString(R.string.search_card_trans_result_stop);
+              /*  POS_MAIN.CheckandSaveInSAF(PosApplication.getApp().oGPosTransaction,true);
+                PosApplication.getApp().oGPOS_MAIN.DeSAF(SAF_Info.DESAFtype.PARTIAL);*/
+
             } else if (result == CardSearchErrorUtil.TRANS_REASON_FALLBACK) {
                 resultDetail = getString(R.string.search_card_trans_result_fallback);
             } else if (result == CardSearchErrorUtil.TRANS_REASON_OTHER_UI) {
@@ -498,7 +501,7 @@ public class PinpadActivity extends Activity {
             intent.putExtra("result_response", "00");
 
          //   startActivity(intent);
-        } else {
+        } else if(detail.equals(getString(R.string.search_card_trans_result_reject))) {
             Intent intent = new Intent(this, ShowResultActivity.class);
             intent.putExtra(PacketProcessUtils.PACKET_PROCESS_TYPE, PacketProcessUtils.PACKET_PROCESS_PURCHASE);
             intent.putExtra("result_errReason", 0);

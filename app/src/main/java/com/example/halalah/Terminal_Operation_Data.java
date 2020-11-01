@@ -179,12 +179,12 @@ public class Terminal_Operation_Data implements Serializable {
         Connection_Details="01010101"; //Connection Priority ‘01’ Primary ‘02’ Secondary,   Network Service Provider (NSP) ‘01’ iNET ‘02’ Mobily ‘03’ Zain ‘04’ Sky Band ‘05’ Geidea ,   Provider ‘01’ STC ‘02’ Mobily ‘03’ Zain ‘04’ Sky Band  , Connection Method ‘01’ Dial-up ‘02’ SIM ‘03’ TCP/IP ‘04’ VSAT ‘05’ DSL ‘06’ WiFi
         g_TerminalTotals = new CardSchemeTotals[10];
         //TMSHEADER
-        m_sTMSHeader="3060000";
+        m_sTMSHeader="3040000";
          TMS_currentcount= 0;
         TMS_endcount = 0;
         m_TMS_Downloaded = false;
         //communication
-        Hostip = "192.168.8.153";
+        Hostip = "192.168.8.154";
         Hostport = 2030;
 
 
