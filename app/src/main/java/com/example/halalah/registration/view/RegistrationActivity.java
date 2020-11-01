@@ -40,6 +40,7 @@ public class RegistrationActivity extends AppCompatActivity {
     private Spinner spVendor;
     private Spinner spSama;
     private Button btnProceed;
+    private Button btnbypass;
     private TextView connectionSettingsTv;
     private CommunicationsHandler mCommunicationsHandler;
 
@@ -58,6 +59,18 @@ public class RegistrationActivity extends AppCompatActivity {
         startActivity(new Intent(this, CommunicationSettingActivity.class));
     }
 
+    private void bypass() {
+
+
+        Intent resultIntent = new Intent();
+        resultIntent.putExtra("registrationData", Parcels.wrap(mRegistrationData));
+        setResult(Activity.RESULT_CANCELED, resultIntent);
+
+        new Handler().postDelayed(() -> {
+            finish();
+        }, 500);
+
+    }
     private void proceed() {
 
         String trsmid = etTRSMID.getText().toString();
@@ -138,9 +151,11 @@ public class RegistrationActivity extends AppCompatActivity {
         spVendor = findViewById(R.id.vendor_sp);
         spSama = findViewById(R.id.sama_sp);
         btnProceed = findViewById(R.id.btn_proceed);
+        btnbypass = findViewById(R.id.Passregisteration);
         connectionSettingsTv = findViewById(R.id.btn_connection);
 
         btnProceed.setOnClickListener(v -> proceed());
+        btnbypass.setOnClickListener(v -> bypass());
 
         SpannableString ss = new SpannableString(getString(R.string.connection_settings));
         ClickableSpan clickableSpan = new ClickableSpan() {

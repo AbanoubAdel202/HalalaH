@@ -4,6 +4,7 @@ import android.app.ActionBar;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -14,11 +15,13 @@ import android.view.View;
 import android.widget.TextView;
 
 import com.example.halalah.DeviceTopUsdkServiceManager;
+import com.example.halalah.POSTransaction;
 import com.example.halalah.PosApplication;
 import com.example.halalah.R;
 import com.example.halalah.Utils;
 import com.example.halalah.iso8583.BCDASCII;
 import com.example.halalah.print.Purchase_Print;
+
 import com.example.halalah.secure.DUKPT_KEY;
 import com.topwise.cloudpos.aidl.led.AidlLed;
 import com.topwise.cloudpos.data.PrinterConstant;
@@ -31,7 +34,7 @@ public class Display_PrintActivity extends Activity implements View.OnClickListe
     private static final String TAG = Utils.TAGPUBLIC + Display_PrintActivity.class.getSimpleName();
 
     private static final int MSG_TIME_UPDATE = 100;
-
+    private Intent intent;
     private TextView mAmount;
     private TextView mTransactionType;
     private TextView mPANno;
@@ -63,17 +66,21 @@ public class Display_PrintActivity extends Activity implements View.OnClickListe
         Log.i(TAG, "onCreate()");
         setContentView(R.layout.activity_consume_result);
 
-        mAmount = findViewById(R.id.consume_amount);
-        mTransactionType = findViewById(R.id.consume_type);
-        mPANno = findViewById(R.id.consume_cardnum);
-        mRecieptno = findViewById(R.id.consume_venchor_num);
-        mRRN = findViewById(R.id.consume_reference_num);
-        mOperatorNum = findViewById(R.id.operator_num);
-        mTransactiontime = findViewById(R.id.consume_time);
-        mPinBlock = findViewById(R.id.pin_block);
-        mKsnValue = findViewById(R.id.ksn_value);
+         mAmount = (TextView) findViewById(R.id.consume_amount);
+        mTransactionType = (TextView) findViewById(R.id.consume_type);
+        mPANno = (TextView) findViewById(R.id.consume_cardnum);
+        mRecieptno = (TextView) findViewById(R.id.consume_venchor_num);
+        mRRN = (TextView) findViewById(R.id.consume_reference_num);
+        mOperatorNum = (TextView) findViewById(R.id.operator_num);
+        mTransactiontime = (TextView) findViewById(R.id.consume_time);
+        mPinBlock = (TextView) findViewById(R.id.pin_block);
+        mKsnValue = (TextView) findViewById(R.id.ksn_value);
 
-        byte[] pin = PosApplication.getApp().oGPosTransaction.m_sTrxPIN.getBytes();
+
+        byte[] pin = new byte[0];
+        if (PosApplication.getApp().oGPosTransaction.m_sTrxPIN!=null) {
+            pin = PosApplication.getApp().oGPosTransaction.m_sTrxPIN.getBytes();
+        }
         byte[] ksnValue = DUKPT_KEY.getKSN();
         Log.i(TAG, "pin: " + BCDASCII.bytesToHexString(pin));
         Log.d(TAG, "ksnValue: " + BCDASCII.bytesToHexString(ksnValue));
@@ -89,6 +96,7 @@ public class Display_PrintActivity extends Activity implements View.OnClickListe
         }
 
         mPurchasePrint = new Purchase_Print(this);
+        Log.d(TAG, "Printing: Purchase_Print ");
         mPurchasePrint.setCurTime(getCurTime());
         mBundle = this.getIntent().getExtras();
 
@@ -100,9 +108,9 @@ public class Display_PrintActivity extends Activity implements View.OnClickListe
 
         mAlertDialog = new AlertDialog.Builder(this);
 
-        //add by zongli for fake data
-        showConsumeData(mShowMsg);
-        //showConsumeFakeData(mShowMsg);
+
+        filldisplaydata();
+
         //add end
 
         mHandle.sendEmptyMessage(MSG_TIME_UPDATE);
@@ -131,7 +139,7 @@ public class Display_PrintActivity extends Activity implements View.OnClickListe
                     if (printState == PrinterConstant.PrinterState.PRINTER_STATE_NOPAPER) {
                         showDialog(null, getString(R.string.result_need_paper));
                     } else {
-                        mPurchasePrint.printDetail(mPrintHolder);
+                        mPurchasePrint.printDetail();
                     }
                 } catch (RemoteException e) {
                     e.printStackTrace();
@@ -177,7 +185,7 @@ public class Display_PrintActivity extends Activity implements View.OnClickListe
         }
     };
 
-    private void getPrintMessage(byte[] field47) {
+  /*  private void getPrintMessage(byte[] field47) {
         Log.i(TAG, "getPrintMessage, field47 " + BCDASCII.bytesToHexString(field47));
 
         byte[] printData = null;
@@ -252,99 +260,26 @@ public class Display_PrintActivity extends Activity implements View.OnClickListe
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
+     }*/
+    private void filldisplaydata() {
+
+                mAmount.setText(PosApplication.getApp().oGPosTransaction.m_sTrxAmount);
+                mTransactionType.setText(PosApplication.getApp().oGPosTransaction.m_enmTrxType.toString());
+
+                mPANno.setText(PosApplication.getApp().oGPosTransaction.m_sPAN);
+
+                mRecieptno.setText(PosApplication.getApp().oGPosTransaction.m_sSTAN);
+
+                mOperatorNum.setText(PosApplication.getApp().oGPosTransaction.m_sTerminalID);
+
+                mRRN.setText(PosApplication.getApp().oGPosTransaction.m_sRRNumber);
+                mTransactiontime.setText(PosApplication.getApp().oGPosTransaction.m_sTrxDateTime);
+
+
     }
 
-    private void showConsumeData(String printMsg) {
-        String[] print = printMsg.replace("~", "").split("\\n");
-        String data;
-        String[] datas;
-        for (int i = 0; i < print.length; i++) {
-            if (print[i].indexOf("Amount") != -1) {
-                data = print[i].replace("Amount:", "");
-                datas = data.split(" ");
-                mAmount.setText(datas[1]);
-            } else if (print[i].indexOf("Transaction Type\n") != -1) {
-                data = print[i].replace("Transaction Type\n:", "");
-                mTransactionType.setText(data);
-            } else if (print[i].indexOf("card number\n") != -1) {
-                data = print[i].replace("card number\n:", "");
-                mPANno.setText(data);
-            } else if (print[i].indexOf("Voucher number") != -1) {
-                data = print[i].replace("Voucher number:", "");
-                datas = data.split(" ");
-                mRecieptno.setText(datas[0]);
-            } else if (print[i].indexOf("operator") != -1) {
-                data = print[i].substring(print[i].length() - 2);
-                mOperatorNum.setText(data);
-            } else if (print[i].indexOf("Transaction reference number\n") != -1) {
-                data = print[i].replace("Transaction reference number\n:", "");
-                mRRN.setText(data);
-            } else if (print[i].indexOf("time") != -1) {
-                data = print[i].replace("time:", "");
-                mTransactiontime.setText(data);
-            }
-        }
-    }
 
-    /**
-     * add by zongli for fake show data
-     */
-    private void showConsumeFakeData(String printMsg) {
-        String[] print = printMsg.replace("~", "").split("\\n");
-        String data;
-        String[] datas;
-        String cardNo = PosApplication.getApp().oGPosTransaction.m_sPAN;
-        String amount = PosApplication.getApp().oGPosTransaction.m_sTrxAmount;
-        String firCardNo = null;
-        String mid = null;
-        String lastCardNo = null;
-        if (cardNo != null) {
-            int cardLength = cardNo.length();
-            firCardNo = cardNo.substring(0, 6);
-            lastCardNo = cardNo.substring(cardLength - 4);
-            mid = "******";
-            cardNo = firCardNo + mid + lastCardNo;
-        }
 
-        for (int i = 0; i < print.length; i++) {
-            if (print[i].indexOf("金额") != -1) {
-                data = print[i].replace("金额:", "");
-                datas = data.split(" ");
-                if (amount != null) {
-                    mAmount.setText(amount);
-                } else {
-                    mAmount.setText(datas[1]);
-                }
-            } else if (print[i].indexOf("交易类型") != -1) {
-                data = print[i].replace("交易类型:", "");
-                mTransactionType.setText(R.string.text_consume);
-            } else if (print[i].indexOf("卡号") != -1) {
-                data = print[i].replace("卡号:", "");
-                if (cardNo != null) {
-                    mPANno.setText(cardNo);
-                } else {
-                    mPANno.setText(data);
-                }
-            } else if (print[i].indexOf("凭证号") != -1) {
-                data = print[i].replace("凭证号:", "");
-                datas = data.split(" ");
-                mRecieptno.setText(datas[0]);
-            } else if (print[i].indexOf("操作员") != -1) {
-                data = print[i].substring(print[i].length() - 2);
-                mOperatorNum.setText(data);
-            } else if (print[i].indexOf("交易参考号") != -1) {
-                data = print[i].replace("交易参考号:", "");
-                mRRN.setText(data);
-            } else if (print[i].indexOf("时间") != -1) {
-                data = print[i].replace("时间:", "");
-                if (mPurchasePrint != null && mPurchasePrint.getCurTime() != null) {
-                    mTransactiontime.setText(mPurchasePrint.getCurTime());
-                } else {
-                    mTransactiontime.setText(data);
-                }
-            }
-        }
-    }
 
     private String getCurTime() {
         Date date = new Date(System.currentTimeMillis());
@@ -383,7 +318,7 @@ public class Display_PrintActivity extends Activity implements View.OnClickListe
                         if (printState == PrinterConstant.PrinterState.PRINTER_STATE_NOPAPER) {
                             showDialog(null, getString(R.string.result_need_paper));
                         } else {
-                            mPurchasePrint.printDetail(mPrintMerchant + mPrintBank);
+                            mPurchasePrint.printDetail();
                         }
                     } catch (RemoteException e) {
                         e.printStackTrace();

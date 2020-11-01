@@ -4,8 +4,13 @@ import android.app.Application;
 import android.content.Context;
 import android.util.Log;
 
-import com.example.halalah.TMS.SAMA_TMS;
+
+
+import com.example.halalah.connect.CommunicationsHandler;
 import com.example.halalah.sqlite.database.DBManager;
+import com.example.halalah.TMS.SAMA_TMS;
+import com.example.halalah.storage.CommunicationInfo;
+import com.topwise.cloudpos.aidl.emv.level2.EmvTerminalInfo;
 
 /** Header PosApplication
  \Class Name: POSTransaction
@@ -23,6 +28,14 @@ public class PosApplication extends Application{
 
     private Context mContext;
     private static PosApplication mPosApplication=new PosApplication();
+
+
+    public static CommunicationsHandler oGcommunicationsHandler;
+
+    /************
+     * Terminal data
+     ***********/
+    public static String halaVendorid ="50FFF0";
 
     /*******************
      *   Message types *
@@ -68,6 +81,15 @@ public class PosApplication extends Application{
      * Global Transaction *
      **********************/
     public POSTransaction oGPosTransaction = new POSTransaction();
+
+    /**********************
+     * Print Transactions
+     ********************/
+   // public Transactionprint oGTransactionprint;
+    /**********************
+     * Print reconsilation
+     ********************/
+   // public Reconsileprint   oGReconsileprint;
 
     /**********************
      * TMS SAMA *
@@ -128,10 +150,15 @@ public class PosApplication extends Application{
     public void onCreate() {
         super.onCreate();
         Log.i(TAG, "onCreate");
-        DBManager.getInstance().init(this);
+		DBManager.getInstance().init(this);
         com.example.halalah.database.table.DBManager.getInstance().init(this);
+
         mContext = getApplicationContext();
+        oGTerminal_Operation_Data.communicationInfo=new CommunicationInfo(this);
+        /*oGTerminal_Operation_Data.communicationInfo.setHostIP("192.168.8.140");
+        oGTerminal_Operation_Data.communicationInfo.setHostPort("2030");*/
         mPosApplication = this;
+
 
 
     }

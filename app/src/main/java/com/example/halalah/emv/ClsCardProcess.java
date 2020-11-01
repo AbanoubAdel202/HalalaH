@@ -2,24 +2,31 @@ package com.example.halalah.emv;
 
 import android.os.Bundle;
 import android.os.RemoteException;
+import android.renderscript.Script;
 import android.text.TextUtils;
+import android.util.Log;
 
 import com.example.halalah.DeviceTopUsdkServiceManager;
 import com.example.halalah.card.EmvTransData;
 import com.example.halalah.database.table.Aid;
 import com.example.halalah.database.table.DBManager;
+import com.example.halalah.iso8583.BCDASCII;
 import com.example.halalah.qrcode.utils.SDKLog;
 import com.example.halalah.util.CommonFunction;
 import com.example.halalah.emv.PayDataUtil.CallbackSort;
+import com.example.halalah.util.LEDnbuzzManager;
 import com.topwise.cloudpos.aidl.emv.CardInfo;
 import com.topwise.cloudpos.aidl.emv.level2.AidlAmex;
 import com.topwise.cloudpos.aidl.emv.level2.AidlEntry;
 import com.topwise.cloudpos.aidl.emv.level2.AidlPaypass;
 import com.topwise.cloudpos.aidl.emv.level2.AidlPaywave;
 import com.topwise.cloudpos.aidl.emv.level2.AidlPure;
+import com.topwise.cloudpos.aidl.emv.level2.AidlQpboc;
 import com.topwise.cloudpos.aidl.emv.level2.Combination;
 import com.topwise.cloudpos.aidl.emv.level2.PreProcResult;
 import com.topwise.cloudpos.aidl.emv.level2.TransParam;
+import com.topwise.cloudpos.aidl.led.AidlLed;
+import com.topwise.cloudpos.aidl.pinpad.AidlPinpad;
 import com.topwise.cloudpos.struct.BytesUtil;
 import com.topwise.cloudpos.struct.Tlv;
 import com.topwise.cloudpos.struct.TlvList;
@@ -28,6 +35,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
+import com.topwise.cloudpos.data.PinpadConstant;
 
 
 /**
@@ -42,14 +50,17 @@ public class ClsCardProcess {
 
     private static final String TAG = ClsCardProcess.class.getSimpleName();
     private volatile static ClsCardProcess process = null;
-
+    private EmvManager emvManager;
     private static final int LATCH_COUNT = 1;
 
+    private AidlPinpad pinPad = DeviceTopUsdkServiceManager.getInstance().getPinpadManager(PinpadConstant.PinpadId.BUILTIN);
     private AidlEntry entryL2 = DeviceTopUsdkServiceManager.getInstance().getL2Entry();
     private AidlPaywave paywave = DeviceTopUsdkServiceManager.getInstance().getL2Paywave();
     private AidlPaypass paypass = DeviceTopUsdkServiceManager.getInstance().getL2Paypass();
     private AidlPure pure = DeviceTopUsdkServiceManager.getInstance().getL2Pure();
     private AidlAmex amex = DeviceTopUsdkServiceManager.getInstance().getL2Amex();
+    private AidlQpboc qpboc = DeviceTopUsdkServiceManager.getInstance().getL2Qpboc();
+
     private CountDownLatch mDownLatch;
 
     private String mAmount = null;
@@ -109,6 +120,8 @@ public class ClsCardProcess {
                 e.printStackTrace();
             }
         }
+       // LEDnbuzzManager.getinstence().setbuzzer(0,3000);
+        LEDnbuzzManager.getinstence().setled(1,true);
         return buildCandidate();
     }
 
@@ -134,6 +147,9 @@ public class ClsCardProcess {
             return true;
         }
         isEndEmv = true;
+        LEDnbuzzManager.getinstence().setbuzzer(1,3000);
+        LEDnbuzzManager.getinstence().setled(0,true);
+
         return false;
     }
 
@@ -145,6 +161,7 @@ public class ClsCardProcess {
             return true;
         }
         isEndEmv = true;
+
         return false;
     }
 
@@ -207,6 +224,7 @@ public class ClsCardProcess {
         if (mPayThread != null && mPayThread.isAlive()) {
             mPayThread.interrupt();
             mPayThread = null;
+            LEDnbuzzManager.getinstence().setbuzzer(4,1000);
         }
     }
 
@@ -257,7 +275,10 @@ public class ClsCardProcess {
             } else {
                 int errorCode = entryL2.getErrorCode();
                 SDKLog.d(TAG, "getErrorCode: " + errorCode);
-                selectCallback(CallbackSort.ON_ERROR, null, errorCode);
+                Bundle param = new Bundle();
+                param.putInt(PayDataUtil.CardCode.TRANS_RESULT, PayDataUtil.CardCode.TRANS_STOP);
+                selectCallback(CallbackSort.ON_TRANS_RESULT, null, errorCode);
+
             }
             return PayDataUtil.DEFAULT_RETURN_CODE;
         }
@@ -270,7 +291,10 @@ public class ClsCardProcess {
             }
             int errorCode = entryL2.getErrorCode();
             SDKLog.d(TAG, "getErrorCode: " + errorCode);
-            selectCallback(CallbackSort.ON_ERROR, null, errorCode);
+            Bundle param = new Bundle();
+            param.putInt(PayDataUtil.CardCode.TRANS_RESULT, PayDataUtil.CardCode.TRANS_STOP);
+            selectCallback(CallbackSort.ON_TRANS_RESULT, param, errorCode);
+
             return PayDataUtil.DEFAULT_RETURN_CODE;
         }
 
@@ -320,7 +344,10 @@ public class ClsCardProcess {
         int ret = entryL2.getPreProcResult(preProcResult);
         SDKLog.d(TAG, "getPreProcResult ret: " + ret);
         if (ret != PayDataUtil.EMV_OK) {
-            selectCallback(CallbackSort.ON_ERROR, null, ret);
+            Bundle param = new Bundle();
+            param.putInt(PayDataUtil.CardCode.TRANS_RESULT, PayDataUtil.CardCode.TRANS_STOP);
+            selectCallback(CallbackSort.ON_TRANS_RESULT, param, ret);
+
             return PayDataUtil.DEFAULT_RETURN_CODE;
         }
 
@@ -366,7 +393,13 @@ public class ClsCardProcess {
                     payProcess = new AMexPayProcess();
                     payProcess.startPay(bundle, mResultListener);
                     break;
+                case PayDataUtil.KERNTYPE_QPBOC:
+                    payProcess = new QpbocProcess();
+                    payProcess.startPay(bundle, mResultListener);
+                    break;
+
                 default:
+                    mResultListener.onProcessResult(false, true, PayDataUtil.CardCode.TRANS_STOP);;
                     break;
             }
         }
@@ -418,7 +451,10 @@ public class ClsCardProcess {
                 int ret = entryL2.getPreProcResult(preProcResult);
                 SDKLog.d(TAG, "getPreProcResult ret: " + ret);
                 if (ret != PayDataUtil.EMV_OK) {
-                    selectCallback(CallbackSort.ON_ERROR, null, ret);
+                    Bundle param = new Bundle();
+                    param.putInt(PayDataUtil.CardCode.TRANS_RESULT, PayDataUtil.CardCode.TRANS_STOP);
+                    selectCallback(CallbackSort.ON_TRANS_RESULT, param, ret);
+
                     return;
                 }
                 SDKLog.d(TAG, "ucKernType: " + ucKernType[0]);
@@ -446,8 +482,13 @@ public class ClsCardProcess {
                         payProcess = new AMexPayProcess();
                         payProcess.startPay(bundle, mResultListener);
                         break;
-                    default:
+                    case PayDataUtil.KERNTYPE_QPBOC:
+                        payProcess = new QpbocProcess();
+                        payProcess.startPay(bundle, mResultListener);
                         break;
+                    default:
+                        mResultListener.onProcessResult(false, true, PayDataUtil.CardCode.TRANS_STOP);
+
                 }
             }
         }
@@ -524,16 +565,18 @@ public class ClsCardProcess {
      * @return tlv数据的value值
      */
     public byte[] getTlvData(String tag) {
-        SDKLog.d(TAG, "tag: " + tag);
+        SDKLog.d(TAG, "getTlvData() tag: " + tag);
         if ("5A".equals(tag)) {
             Tlv tlv = new Tlv(tag,mCardNo);
             return tlv.getBytes();
         }
+
         try {
+            int res = -1;
             byte[] data = new byte[512];
             int[] dataLen = new int[1];
             byte[] tagByte = BytesUtil.hexString2Bytes(tag);
-            int res = -1;
+
             switch (cardPayType) {
                 case PayDataUtil.KERNTYPE_MC:
                     res = paypass.getTLVDataList(tagByte, tagByte.length, data.length, data, dataLen);
@@ -547,10 +590,30 @@ public class ClsCardProcess {
                 case PayDataUtil.KERNTYPE_AMEX:
                     res = amex.getTLVDataList(tagByte, tagByte.length, data.length, data, dataLen);
                     break;
+                case PayDataUtil.KERNTYPE_QPBOC: {
+                    byte[] bTag4Bytes = new byte[4];
+                    int iTag = 0;
+
+                    java.util.Arrays.fill(bTag4Bytes, (byte)0);
+                    System.arraycopy(tagByte, 0, bTag4Bytes, bTag4Bytes.length - tagByte.length, tagByte.length);
+                    Log.d(TAG, "bTag4Bytes: " + BytesUtil.bytes2HexString(bTag4Bytes));
+
+                    //The first parameter of 'BytesUtil.bytes2Int' must be 4 bytes
+                    iTag = BytesUtil.bytes2Int(bTag4Bytes, true);
+                    Log.d(TAG, "iTag: " + iTag);
+
+                    data = qpboc.getTLVData(iTag);
+                    if (data != null) {
+                        res = PayDataUtil.EMV_OK;
+                        dataLen[0] = data.length;
+                    }
+                    Log.d(TAG, "data: " + BytesUtil.bytes2HexString(data));
+                }
+                break;
                 default:
                     break;
             }
-            SDKLog.d(TAG, "getTlvData ret: " + res);
+            SDKLog.d(TAG, "getTlvData res: " + res);
             SDKLog.d(TAG, "getTlvData dataLen: " + dataLen[0]);
             SDKLog.d(TAG, "getTlvData data: " + BytesUtil.bytes2HexString(data));
             if (res == PayDataUtil.EMV_OK && dataLen[0] > 0) {
@@ -566,6 +629,7 @@ public class ClsCardProcess {
             return null;
         }
     }
+
 
     /**
      * 设置tlv数据
@@ -591,6 +655,9 @@ public class ClsCardProcess {
                 pure.setTLVDataList(data, data.length);
             } else if (ucType == PayDataUtil.KERNTYPE_AMEX) {
                 amex.setTLVDataList(data, data.length);
+            }
+             else if (ucType == PayDataUtil.KERNTYPE_QPBOC) {
+            QpbocProcess.setTLVDataList(data, data.length);
             }
         }catch(RemoteException e){
             e.printStackTrace();
@@ -623,28 +690,48 @@ public class ClsCardProcess {
                     kernelId=0x03;
                 else if(aid.getAid().equals("A0000002281010"))
                     kernelId=0x02;
+
                 combination.setAucKernelID(new byte[]{kernelId});
-                if (aid.isFloorLimitFlg()) {
+
+                //Byte 1
+                //bit 6: 1 = EMV mode supported
+                //bit 5: 1 = EMV contact chip supported
+                //bit 3: 1 = Online PIN supported
+                //bit 2: 1 = Signature supported
+                //Byte 3
+                //bit 8: 1 = Issuer Update Processing supported
+                //bit 7: 1 = Consumer Device CVM supported
+                byte[] TTQ = new byte[]{0x36, 0x00, (byte) 0xC0, 0x00}; ;
+                combination.setAucReaderTTQ(TTQ);
+
+                //if (aid.isFloorLimitFlg()) {
+                if (true) {
                     combination.setUcTermFLmtFlg(PayDataUtil.CLSS_TAG_EXIST_WITHVAL);
                     combination.setUlTermFLmt(aid.getFloorLimit());
                 } else {
                     combination.setUcTermFLmtFlg(PayDataUtil.CLSS_TAG_NOT_EXIST);
                 }
-                if (aid.isRdCVMLimitFlg()) {
+
+                //if (aid.isRdCVMLimitFlg()) {
+                if (true) {
                     combination.setUcRdCVMLmtFlg(PayDataUtil.CLSS_TAG_EXIST_WITHVAL);
-                    combination.setAucRdCVMLmt(BytesUtil.int2Bytes(aid.getRdCVMLimit(),true));
+                    combination.setAucRdCVMLmt(BytesUtil.hexString2Bytes(String.format("%012d", aid.getRdCVMLimit())));
                 } else {
                     combination.setUcRdCVMLmtFlg(PayDataUtil.CLSS_TAG_NOT_EXIST);
                 }
-                if (aid.isRdClssTxnLimitFlg()) {
+
+                // if (aid.isRdClssTxnLimitFlg()) {
+                if (true) {
                     combination.setUcRdClssTxnLmtFlg(PayDataUtil.CLSS_TAG_EXIST_WITHVAL);
-                    combination.setAucRdClssTxnLmt(BytesUtil.int2Bytes(aid.getRdClssTxnLimit(),true));
+                    combination.setAucRdClssTxnLmt(BytesUtil.hexString2Bytes(String.format("%012d", aid.getRdClssTxnLimit())));
                 } else {
                     combination.setUcRdClssTxnLmtFlg(PayDataUtil.CLSS_TAG_NOT_EXIST);
                 }
-                if (aid.isRdClssFloorLimitFlg()) {
+
+                // if (aid.isRdClssFloorLimitFlg()) {
+                if (true) {
                     combination.setUcRdClssFLmtFlg(PayDataUtil.CLSS_TAG_EXIST_WITHVAL);
-                    combination.setAucRdClssFLmt(BytesUtil.int2Bytes(aid.getRdClssFloorLimit(),true));
+                    combination.setAucRdClssFLmt(BytesUtil.hexString2Bytes(String.format("%012d", aid.getRdClssFloorLimit())));
                 } else {
                     combination.setUcRdClssFLmtFlg(PayDataUtil.CLSS_TAG_NOT_EXIST);
                 }
@@ -652,7 +739,15 @@ public class ClsCardProcess {
                 combination.setUcStatusCheckFlg(0);
                 combination.setUcCrypto17Flg(1);
                 combination.setUcExSelectSuppFlg(0);
-                entryL2.addCombination(combination);
+                int ret = entryL2.addCombination(combination);
+                Log.d(TAG, "addCombination res: "+ret);
+
+                if(aid.getAid().equals("A0000002281010")) {
+
+                    combination.setAucKernelID(new byte[]{0x2D});
+                    int res = entryL2.addCombination(combination);
+                    Log.d(TAG, "addCombination pure kernel 0x2D res: "+res);
+                }
             }
         }
     }
@@ -683,6 +778,11 @@ public class ClsCardProcess {
                     mCallbackSort = CallbackSort.REQUEST_FINAL_AID_SELECT;
                     mEmvProcessListener.finalAidSelect();
                     mDownLatch.await();
+                    //for test
+                    byte[] bkernelID;
+                    String[] kerneltag = new String[]{"9F2A","4F"};
+                    bkernelID= getTlv(kerneltag);
+                    Log.d(TAG, ">>>>>>>>>>>>>>>>>>>>>>>>> selectCallback: Tag: 9F2A,4F: "+ BCDASCII.fromBCDToASCIIString(bkernelID,0,bkernelID.length*2,true));
                     break;
                 case REQUEST_AID_SELECT:
                     int times = bundle.getInt(PayDataUtil.CardCode.IMPORT_AMT_TIMES, 1);
@@ -761,92 +861,162 @@ public class ClsCardProcess {
     private TlvList handleKernalData(byte[] aid) {
         PayDataUtil dataUtil = new PayDataUtil();
         TlvList list = dataUtil.getDefaultKernal();
+
         //set kernel data
-        if (list.getList() != null && list.getList().size() > 0) {
+        if (mTlvList.getList() != null && mTlvList.getList().size() > 0) {
             for (Map.Entry<String, Tlv> entry : mTlvList.getList().entrySet()) {
                 SDKLog.d(TAG, "settlv out: " + entry.getValue().toHex());
                 list.addTlv(entry.getValue());
             }
+            mTlvList.clear();
         }
-        //trade data
-        //授权金额（数字） //trade amt
-        SDKLog.d(TAG, "trade amount: " + mAmount);
+
+        //Amount, Authorised (Numeric)
+        SDKLog.d(TAG, "txn amount: " + mAmount);
         if (mAmount != null) {
             list.addTlv("9F02",mAmount);
         }
-        //金融交易的类型 //trade type
+
+        //Transaction Type
         String tradeType = BytesUtil.bytes2HexString(new byte[]{mEmvTransData.getTransType()});
-        SDKLog.d(TAG, "trade type: " + tradeType);
+        SDKLog.d(TAG, "txn type: " + tradeType);
         list.addTlv("9C",tradeType);
-        //交易序列计数器
+
+        //Transaction Sequence Counter
         list.addTlv("9F41",dataUtil.getSequenceCounter());
+
+        //Transaction Date
         list.addTlv("9A",dataUtil.getTransDateTime(PayDataUtil.TRANS_DATE_YYMMDD));
+
+        //Transaction Time
         list.addTlv("9F21",dataUtil.getTransDateTime(PayDataUtil.TRANS_TIME_HHMMSS));
-        //aid 参数
+
+        //The getRandom function returns a fixed 8 byte random number
+        byte[] random = new byte[0];
+        try {
+            random = pinPad.getRandom();
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+        byte[] unpredictableNum = new byte[4];
+        System.arraycopy(random, 0, unpredictableNum, 0, 4);
+        list.addTlv("9F37", unpredictableNum);
+
+        //aid parameters
+        if (aid == null) {
+            return list;
+        }
         TlvList aidList = new TlvList();
         aidList.fromBytes(aid);
-        //读卡器非接脱机上限 (DF8123)
+
+        //Reader Contactless Floor Limit
         String data = null;
-        if(aidList.getTlv("9F7B")!=null)
-            data = aidList.getTlv("9F7B").getHexValue();
-        SDKLog.d(TAG, "DF8123 data: " + data);
+        if(aidList.getTlv("DF19")!=null)
+            data = aidList.getTlv("DF19").getHexValue();
+        SDKLog.d(TAG, "DF8123(DF19) data: " + data);
         if (!TextUtils.isEmpty(data)) {
             list.addTlv("DF8123",data);
         } else {
-            list.addTlv("DF8123","000000030000");  //todo update default
+            list.addTlv("DF8123","000000030000");
         }
-        //非接交易限额（卡的）
+
+        //Reader Contactless Transaction Limit (No On-device CVM)
         data = null;
         if(aidList.getTlv("DF20")!=null)
             data = aidList.getTlv("DF20").getHexValue();
-        SDKLog.d(TAG, "DF8124 data: " + data);
+        SDKLog.d(TAG, "DF8124(DF20) data: " + data);
         if (!TextUtils.isEmpty(data)) {
             list.addTlv("DF8124",data);
         } else {
-            list.addTlv("DF8124","000000030000"); //todo update default
+            list.addTlv("DF8124","000099999999");
         }
-        //非接交易限额（手机pay的）
-        list.addTlv("DF8125","000000050000");//todo update default
-        //非接免密限额
+
+        //Reader Contactless Transaction Limit (On-device CVM)
+        data = null;
+        if(aidList.getTlv("DF20")!=null)
+            data = aidList.getTlv("DF20").getHexValue();
+        SDKLog.d(TAG, "DF8125(DF20) data: " + data);
+        if (!TextUtils.isEmpty(data)) {
+            list.addTlv("DF8125",data);
+        } else {
+            list.addTlv("DF8125","000099999999");
+        }
+
+        //Reader CVM Required Limit
         data = null;
         if(aidList.getTlv("DF21")!=null)
             data = aidList.getTlv("DF21").getHexValue();
-        SDKLog.d(TAG, "DF8126 data: " + data);
+        SDKLog.d(TAG, "DF8126(DF21) data: " + data);
         if (!TextUtils.isEmpty(data)) {
             list.addTlv("DF8126",data);
         } else {
-            list.addTlv("DF8126","000000005000");//todo update default
+            list.addTlv("DF8126","000000030000");
         }
-        //终端操作代码–默认
+
+        //TAC-Default
         data = null;
         if(aidList.getTlv("DF11")!=null)
             data = aidList.getTlv("DF11").getHexValue();
-        SDKLog.d(TAG, "DF8120 data: " + data);
+        SDKLog.d(TAG, "DF8120(DF11) data: " + data);
         if (!TextUtils.isEmpty(data)) {
-            list.addTlv("DF812005",data);
+            list.addTlv("DF8120",data);
         } else {
             list.addTlv("DF8120","0000000000");
         }
-        //终端操作代码-在线
+
+        //TAC-Online
         data = null;
         if(aidList.getTlv("DF12")!=null)
             data = aidList.getTlv("DF12").getHexValue();
-        SDKLog.d(TAG, "DF8122 data: " + data);
+        SDKLog.d(TAG, "DF8122(DF12) data: " + data);
         if (!TextUtils.isEmpty(data)) {
-            list.addTlv("DF812205",data);
+            list.addTlv("DF8122",data);
         } else {
             list.addTlv("DF8122","0000000000");
         }
-        //终端操作代码-拒绝
+
+        //TAC-Denial
         data = null;
         if(aidList.getTlv("DF13")!=null)
             data = aidList.getTlv("DF13").getHexValue();
-        SDKLog.d(TAG, "DF8121 data: " + data);
+        SDKLog.d(TAG, "DF8121(DF13) data: " + data);
         if (!TextUtils.isEmpty(data)) {
-            list.addTlv("DF812105",data);
+            list.addTlv("DF8121",data);
         } else {
             list.addTlv("DF8121","0000000000");
         }
+
         return list;
+    }
+
+
+
+
+    private byte[] getTlv(String[] tags) {
+        byte[] tempList = new byte[500];
+        byte[] tlvList = null;
+        try {
+            emvManager = EmvManager.getInstance();
+            for (String tag : tags) {
+                String[] tempStr = {tag};
+                byte[] tempByte = new byte[500];
+                int len = emvManager.readKernelData(tempStr, tempByte);
+                Log.d(TAG, "temp: " + BCDASCII.bytesToHexString(tempByte, len));
+            }
+
+            int result = emvManager.readKernelData(tags, tempList);
+
+            if (result < 0) {
+                return null;
+            } else {
+                tlvList = new byte[result];
+                System.arraycopy(tempList, 0, tlvList, 0, result);
+                Log.i(TAG, "tlvList: " + BCDASCII.bytesToHexString(tlvList));
+            }
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+
+        return tlvList;
     }
 }

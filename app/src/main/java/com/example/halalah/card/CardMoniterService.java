@@ -22,13 +22,17 @@ public class CardMoniterService extends Service {
     public void onCreate() {
         super.onCreate();
         Log.i(TAG, "onCreate()");
-        emv = DeviceTopUsdkServiceManager.getInstance().getEmvL2();
-        emvManager = EmvManager.getInstance();
+       /* emv = DeviceTopUsdkServiceManager.getInstance().getEmvL2();
+        emvManager = EmvManager.getInstance();*/
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.d(TAG, "onStartCommand");
+
+        emv = DeviceTopUsdkServiceManager.getInstance().getEmvL2();
+        emvManager = EmvManager.getInstance();
+
         try {
             if(emv != null){
                 emvManager.endEMV();

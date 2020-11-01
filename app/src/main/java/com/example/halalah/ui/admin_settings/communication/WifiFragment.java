@@ -11,6 +11,8 @@ import android.widget.Toast;
 
 import androidx.fragment.app.Fragment;
 
+import com.example.halalah.POS_MAIN;
+import com.example.halalah.PosApplication;
 import com.example.halalah.R;
 import com.example.halalah.TMS.Connection_Parameters;
 import com.example.halalah.TMS.TMSManager;
@@ -94,10 +96,12 @@ public class WifiFragment extends Fragment implements ISaveConnection {
 
         Wifi wifi = new Wifi();
         wifi.Network_IP_Address = ip;
+        PosApplication.getApp().oGTerminal_Operation_Data.Hostip = ip;
         wifi.Network_TCP_Support = port;
+        PosApplication.getApp().oGTerminal_Operation_Data.Hostport = Integer.parseInt(port);
         wifi.Count_Access_Retries = retries_count;
         wifi.Response_Time_Out = response_timeout;
-
+        POS_MAIN.Save_TermData();
         if (saveMode == SAVE_MODE_DEFAULT) {
 
             sharedPreferencesManager.saveConnection(wifi);

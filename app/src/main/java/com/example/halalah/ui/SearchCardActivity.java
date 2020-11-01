@@ -1,6 +1,5 @@
 package com.example.halalah.ui;
 
-import android.app.ActionBar;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
@@ -13,13 +12,17 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.halalah.POSTransaction;
-import com.example.halalah.PanInputActivity;
 import com.example.halalah.PosApplication;
 import com.example.halalah.R;
 import com.example.halalah.Utils;
 import com.example.halalah.card.CardManager;
+import com.example.halalah.connect.CommunicationsHandler;
+import com.example.halalah.connect.TCPCommunicator;
+import com.example.halalah.storage.CommunicationInfo;
 import com.example.halalah.util.CardSearchErrorUtil;
 import com.example.halalah.util.PacketProcessUtils;
+import com.topwise.cloudpos.data.AidlErrorCode;
+
 
 public class SearchCardActivity extends Activity{
     private static final String TAG = Utils.TAGPUBLIC + SearchCardActivity.class.getSimpleName();
@@ -31,6 +34,7 @@ public class SearchCardActivity extends Activity{
     private String mAmount;
     private Toast mToast;
     private Button  mmanualbtn;
+   // private Activity searchactivity;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,6 +66,7 @@ public class SearchCardActivity extends Activity{
 
         CardManager.getInstance().startCardDealService(this);
         CardManager.getInstance().initCardExceptionCallBack(exceptionCallBack);
+        //searchactivity=this;
     }
 
     @Override
@@ -83,6 +88,9 @@ public class SearchCardActivity extends Activity{
                     break;
                 case CardSearchErrorUtil.CARD_SEARCH_ERROR_REASON_MAG_EMV_s:
                     showTips(R.string.search_card_error_msr_is_ic);
+                    break;
+                case AidlErrorCode.EMV.ERROR_CHECK_ICCARD_RESET_ERROR:
+                    showTips(R.string.search_card_error_ic);
                     break;
                 default:
                     break;
@@ -122,6 +130,11 @@ public class SearchCardActivity extends Activity{
         public void callBackTransResult(int result) {
             Log.d(TAG, "callBackTransResult result : " + result);
             String resultDetail = null;
+            if (result == CardSearchErrorUtil.TRANS_APPROVE) {
+                resultDetail = "Transaction Approval";
+                //should we add final flow here
+               // PosApplication.getApp().oGPOS_MAIN.finalizing_EMV_transaction(searchactivity);
+            }
             if (result == CardSearchErrorUtil.TRANS_REASON_REJECT) {
                 resultDetail = getString(R.string.search_card_trans_result_reject);
             } else if (result == CardSearchErrorUtil.TRANS_REASON_STOP) {
@@ -133,6 +146,9 @@ public class SearchCardActivity extends Activity{
             } else if (result == CardSearchErrorUtil.TRANS_REASON_STOP_OTHERS) {
                 resultDetail = getString(R.string.search_card_trans_result_others);
             }
+
+
+
             showResult(resultDetail);
         }
 
@@ -145,11 +161,19 @@ public class SearchCardActivity extends Activity{
 
     private void showResult(String detail) {
         Log.i(TAG, "showResult(), detail = "+detail);
-        Intent intent = new Intent(this, ShowResultActivity.class);
-        intent.putExtra(PacketProcessUtils.PACKET_PROCESS_TYPE, PacketProcessUtils.PACKET_PROCESS_PURCHASE);
-        intent.putExtra("result_resDetail", detail);
-        startActivity(intent);
-        this.finish();
+        if(detail.equals(getString(R.string.search_card_trans_result_approval))){
+            Intent intent = new Intent(this, Display_PrintActivity.class);
+            intent.putExtra("result_errReason", 0);
+            intent.putExtra("result_response", "00");
+
+            startActivity(intent);
+        } else {
+            Intent intent = new Intent(this, ShowResultActivity.class);
+            intent.putExtra(PacketProcessUtils.PACKET_PROCESS_TYPE, PacketProcessUtils.PACKET_PROCESS_PURCHASE);
+            intent.putExtra("result_resDetail", detail);
+            startActivity(intent);
+        }
+            this.finish();
     }
 
     @Override
@@ -157,6 +181,8 @@ public class SearchCardActivity extends Activity{
         super.onBackPressed();
         Log.d(TAG, "onBackPressed");
         CardManager.getInstance().stopCardDealService(this);
+        CommunicationsHandler.getInstance(new CommunicationInfo(this)).closeConnection();
+        TCPCommunicator.closeStreams();
     }
 
     @Override

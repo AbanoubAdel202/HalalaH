@@ -1,10 +1,14 @@
 package com.example.halalah;
 
+import android.util.Log;
 import com.example.halalah.connect.CommunicationsHandler;
 import com.example.halalah.connect.SendReceiveListener;
+import com.example.halalah.connect.TCPCommunicator;
 import com.example.halalah.registration.view.ITransaction;
+import com.example.halalah.secure.DUKPT_KEY;
 import com.example.halalah.storage.CommunicationInfo;
 import com.example.halalah.util.PacketProcessUtils;
+import com.example.halalah.iso8583.BCDASCII;
 
 /**
  * Header Terminal registeration
@@ -19,7 +23,7 @@ import com.example.halalah.util.PacketProcessUtils;
  */
 public class Terminal_Registeration implements SendReceiveListener {
 
-
+    private static final String TAG = Utils.TAGPUBLIC + CommunicationsHandler.class.getSimpleName();
     public boolean bRegistered = false;
     byte[] mSendPacket = null;
     byte[] mRecePacket = null;
@@ -27,6 +31,7 @@ public class Terminal_Registeration implements SendReceiveListener {
     int cont = -1;
     private ITransaction.View mView;
     private CommunicationsHandler mCommunicationsHandler;
+    private TCPCommunicator tcpClient;
 
 
     /**
@@ -52,7 +57,7 @@ public class Terminal_Registeration implements SendReceiveListener {
         // Private – Additional Data (DE 48)
         // Private – Terminal Status (DE62)
 
-        this.mView = transactionView;
+        mView = transactionView;
 
         mCommunicationsHandler = CommunicationsHandler.getInstance(new CommunicationInfo(PosApplication.getApp().getApplicationContext()));
         CommunicationsHandler communicationsHandler = CommunicationsHandler.getInstance(new CommunicationInfo(PosApplication.getApp().getApplicationContext()));
@@ -88,7 +93,40 @@ public class Terminal_Registeration implements SendReceiveListener {
         // DE41 Card Acceptor Terminal Identification(Terminal ID)
         // DE42 Card Acceptor Identification Code (Merchant ID)
         // DE48 Private – Additional Data
-        return 0;
+        String sAcquirerInsCode = null;
+        String sTerminalID= null;
+        String sMerchantID= null;
+        String sHostSignture= null;
+
+        // Extract Host response
+        sAcquirerInsCode = BCDASCII.asciiByteArray2String(PosApplication.getApp().oGPosTransaction.m_ResponseISOMsg.getDataElement(32));
+        Log.d(TAG, "Acquirer Institution Identification Code ["+sAcquirerInsCode+"]");
+
+        sTerminalID =BCDASCII.asciiByteArray2String(PosApplication.getApp().oGPosTransaction.m_ResponseISOMsg.getDataElement(41));
+        Log.d(TAG, "Terminal ID ["+sTerminalID+"]");
+
+        sMerchantID =BCDASCII.asciiByteArray2String(PosApplication.getApp().oGPosTransaction.m_ResponseISOMsg.getDataElement(42));
+        Log.d(TAG, "Merchant ID ["+sMerchantID+"]");
+
+        sHostSignture =BCDASCII.asciiByteArray2String(PosApplication.getApp().oGPosTransaction.m_ResponseISOMsg.getDataElement(48));
+        Log.d(TAG, "Host Signature DE48  ["+sHostSignture+"]");
+
+        if (sAcquirerInsCode == null ||
+                sTerminalID == null||
+        sMerchantID == null||
+        sHostSignture == null) {
+
+            Log.d(TAG, "!!! Invalid Host Signature Resonse !!!");
+            return -1; // Failed
+        }
+
+        //todo validate Host Signature DE 48;
+
+        PosApplication.getApp().oGTerminal_Operation_Data.sAcquirer_ID = sAcquirerInsCode;
+        PosApplication.getApp().oGTerminal_Operation_Data.m_sTerminalID = sTerminalID;
+        PosApplication.getApp().oGTerminal_Operation_Data.m_sMerchantID = sMerchantID;
+
+        return 1; // Success
     }
 
     @Override
@@ -100,17 +138,37 @@ public class Terminal_Registeration implements SendReceiveListener {
 
     @Override
     public void onSuccess(byte[] receivedPacket) {
+        String sActionCode;
         mCommunicationsHandler.closeConnection();
         mRecePacket = receivedPacket;
         cont = 0;
-        if (ValidateHostRegistrationData(mRecePacket) != 0) {
 
-            PosApplication.getApp().oGTerminal_Registeration.bRegistered = true;
-            PosApplication.getApp().oGPOS_MAIN.Start_Transaction(PosApplication.getApp().oGPosTransaction, POSTransaction.TranscationType.TMS_FILE_DOWNLOAD);
-        } else {
-            onFailure(R.string.registration_error);
+        // Parse host response
+       POS_MAIN.Process_Rece_Packet( mRecePacket);
+
+        // Get Trx Action code
+        sActionCode=BCDASCII.asciiByteArray2String(PosApplication.getApp().oGPosTransaction.m_ResponseISOMsg.getDataElement(39));
+
+        if( POS_MAIN.CheckHostActionCode(sActionCode) == true )
+        {
+            // Validate Host Registration response
+            if (ValidateHostRegistrationData(mRecePacket) == 1) {
+
+                PosApplication.getApp().oGTerminal_Operation_Data.m_sTRMSID= PosApplication.getApp().oGPosTransaction.getTerminalRegistrationData().getTrsmid();
+                PosApplication.getApp().oGTerminal_Operation_Data.m_CurrentKSN = BCDASCII.hexStringToBytes(PosApplication.getApp().halaVendorid+PosApplication.getApp().oGTerminal_Operation_Data.m_sTRMSID+"00000000");
+               // PosApplication.getApp().oGPOS_MAIN.Start_Transaction(PosApplication.getApp().oGPosTransaction, POSTransaction.TranscationType.TMS_FILE_DOWNLOAD,null);
+               // DUKPT_KEY.InitilizeDUKPT(PosApplication.getApp().oGTerminal_Operation_Data.m_szBDK, BCDASCII.bytesToHexString(PosApplication.getApp().oGTerminal_Operation_Data.m_CurrentKSN));
+                preConnect();
+                PosApplication.getApp().oGPosTransaction.m_enmTrxType= POSTransaction.TranscationType.TMS_FILE_DOWNLOAD;
+                PosApplication.getApp().oGPOS_MAIN.StartTMSDownload(false,mView);
+                PosApplication.getApp().oGTerminal_Registeration.bRegistered = true;
+                PosApplication.getApp().oGTerminal_Operation_Data.m_bregistered = true;
+
+            } else
+                onFailure(R.string.invalid_registration_data);
         }
-
+        else
+            onFailure(R.string.registration_error);
     }
 
     @Override
@@ -134,5 +192,15 @@ public class Terminal_Registeration implements SendReceiveListener {
             }
 
         }
+    }
+    private void preConnect() {
+        // open socket to be ready to sending/receiving financial messages
+      /*  CommunicationInfo communicationInfo = new CommunicationInfo(this);
+        InputStream caInputStream = getResources().openRawResource(R.raw.bks);
+        CommunicationsHandler.getInstance(communicationInfo, caInputStream).connect();*/
+
+        tcpClient = TCPCommunicator.getInstance();
+        tcpClient.init( PosApplication.getApp().oGTerminal_Operation_Data.Hostip, PosApplication.getApp().oGTerminal_Operation_Data.Hostport);
+      //  TCPCommunicator.closeStreams();
     }
 }

@@ -3,6 +3,7 @@ package com.example.halalah.ui;
 
 import android.app.ActionBar;
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
@@ -13,19 +14,28 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.halalah.POSTransaction;
+import com.example.halalah.POS_MAIN;
 import com.example.halalah.PosApplication;
 import com.example.halalah.R;
+import com.example.halalah.SAF_Info;
 import com.example.halalah.Utils;
 import com.example.halalah.card.CardManager;
 import com.example.halalah.connect.CommunicationsHandler;
+import com.example.halalah.connect.HeadersInterceptor;
 import com.example.halalah.connect.SendReceiveListener;
+import com.example.halalah.connect.TCPCommunicator;
+import com.example.halalah.connect.TCPListener;
 import com.example.halalah.iso8583.BCDASCII;
+import com.example.halalah.iso8583.ISO8583;
 import com.example.halalah.packet.PackPacket;
 import com.example.halalah.packet.UnpackPacket;
+import com.example.halalah.packet.UnpackUtils;
 import com.example.halalah.storage.CommunicationInfo;
 import com.example.halalah.util.PacketProcessUtils;
 
-public class PacketProcessActivity extends Activity implements SendReceiveListener {
+import java.util.Arrays;
+
+public class PacketProcessActivity extends Activity implements SendReceiveListener , TCPListener {
     private static final String TAG = Utils.TAGPUBLIC + PacketProcessActivity.class.getSimpleName();
 
     private static final int MSG_TIME_UPDATE = 100;
@@ -46,8 +56,13 @@ public class PacketProcessActivity extends Activity implements SendReceiveListen
 
     private Bundle mBundle;
     private int mProcType;
-    private int mProcTime = 60;
+    private int mProcTime = 20;
     private int mProcNum = 1;
+    private CommunicationsHandler communicationsHandler;
+    private HeadersInterceptor headersInterceptor = new HeadersInterceptor();
+    private Handler UIHandler = new Handler();
+    Context mcontext;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,7 +73,6 @@ public class PacketProcessActivity extends Activity implements SendReceiveListen
         mTextProcStatus = findViewById(R.id.proc_status);
         mTextTime = findViewById(R.id.proc_time);
         mHandle.sendEmptyMessageDelayed(MSG_TIME_UPDATE, MSG_TIME_UPDATE_DALAY);
-
         mBundle = getIntent().getExtras();
         mProcType = mBundle.getInt(PacketProcessUtils.PACKET_PROCESS_TYPE);
         Log.i(TAG, "mProcType = " + mProcType);
@@ -98,9 +112,15 @@ public class PacketProcessActivity extends Activity implements SendReceiveListen
 
         mSendPacket = mPackPacket.getSendPacket();
         Log.d(TAG, "getPacketAndSend: mSendPacket = " + BCDASCII.bytesToHexString(mSendPacket));
-        CommunicationsHandler communicationsHandler = CommunicationsHandler.getInstance(new CommunicationInfo(this));
+      /*  communicationsHandler = CommunicationsHandler.getInstance(new CommunicationInfo(this));
         communicationsHandler.setSendReceiveListener(this);
-        communicationsHandler.sendReceive(mSendPacket);
+        POS_MAIN.SaveLastTransaction(PosApplication.getApp().oGPosTransaction, POS_MAIN.CurrentSaving.SAVE);
+        communicationsHandler.sendReceive(mSendPacket);*/
+        if(PosApplication.getApp().oGPosTransaction.m_enmTrxType!=POSTransaction.TranscationType.TMS_FILE_DOWNLOAD) {
+            POS_MAIN.SaveLastTransaction(PosApplication.getApp().oGPosTransaction, POS_MAIN.CurrentSaving.SAVE);
+        }
+        Senddata(mSendPacket);
+
     }
 
     @Override
@@ -111,8 +131,16 @@ public class PacketProcessActivity extends Activity implements SendReceiveListen
         if (receivedPacket != null)
         {
             mRecePacket = receivedPacket;
-            PosApplication.getApp().oGPOS_MAIN.PerfomTermHostResponseFlow(mRecePacket,0);
-            //PerfomTermHostResponseFlow(PacketProcessUtils.SUCCESS); //old flow
+            mHandle.removeMessages(MSG_TIME_UPDATE);
+            PosApplication.getApp().oGTerminal_Operation_Data.breversal_flg=false;
+            PosApplication.getApp().oGPOS_MAIN.PerfomTermHostResponseFlow(mRecePacket,0,this);
+
+            communicationsHandler.closeConnection();
+
+
+            finish();
+
+
 
         }
 
@@ -122,7 +150,9 @@ public class PacketProcessActivity extends Activity implements SendReceiveListen
     @Override
     public void onFailure(int errorCode)
     {
+        Log.d(TAG, "onFailure: start");
         showResult(mResponse, mResponseDetail, errorCode);
+
     }
 
     @Override
@@ -133,72 +163,7 @@ public class PacketProcessActivity extends Activity implements SendReceiveListen
 
 
 
-    private void PerfomTermHostResponseFlow(int errReason) {
 
-
-        PosApplication.getApp().oGPOS_MAIN.PerfomTermHostResponseFlow(mRecePacket,errReason);
-        CommunicationsHandler.getInstance(mCommunicationInfo).closeConnection();
-
-
-    /*    // old flow
-        Bundle data = new Bundle();
-        mUnpackPacket.Process_Rece_Packet(this, mRecePacket, data);
-        mResponse = mUnpackPacket.getResponse();
-        mResponseDetail = mUnpackPacket.getResponseDetail();
-
-        if (mResponse != null && mResponse.equals("00")) {
-            mProcNum++;
-            if (mProcType == PacketProcessUtils.PACKET_PROCESS_ONLINE_INIT && mProcNum < 4) {
-                String temp = null;
-                if (mResponseDetail != null && mResponseDetail.length() > 2) {
-                    temp = mResponseDetail.substring(0, 2);
-                    Log.i(TAG, "temp = " + temp);
-                }
-                if (temp != null && temp.equals("01")) {
-                    showResult(mResponse, mResponseDetail, errReason);
-                } else {
-                    getPacketAndSend();
-                }
-            } else if (mProcType == PacketProcessUtils.PACKET_PROCESS_PURCHASE && (mResponse != null) && (mResponse.equals("00"))) {
-                //todo if comulative limit exeeded host response 196 we need to openpinpad for entering pin and resend transaction again
-                byte[] field47 = mUnpackPacket.getField47();
-             //   Display_printResult(mResponse, mResponseDetail, field47);
-
-                if(!PosApplication.getApp().oGPosTransaction.m_is_mada)
-                SAF_Info.SAVE_IN_SAF(PosApplication.getApp().oGPosTransaction);
-
-            }
-            else if(mProcType == PacketProcessUtils.PACKET_PROCESS_AUTHORISATION && (mResponse != null) && (mResponse.equals("00")))
-            {
-                if(!PosApplication.getApp().oGPosTransaction.m_is_mada) {
-                    SAF_Info.SAVE_IN_SAF(PosApplication.getApp().oGPosTransaction);
-                }
-                else
-                {
-                    byte[] field47 = mUnpackPacket.getField47();
-              //      Display_printResult(mResponse, mResponseDetail, field47);
-                }
-
-            }
-            else if(mProcType == PacketProcessUtils.PACKET_PROCESS_AUTHORISATION_ADVICE && (mResponse != null) && (mResponse.equals("00")))
-            {
-                if(!PosApplication.getApp().oGPosTransaction.m_is_mada) {
-                    SAF_Info.SAVE_IN_SAF(PosApplication.getApp().oGPosTransaction);
-                }
-                else
-                {
-                    byte[] field47 = mUnpackPacket.getField47();
-                 //   Display_printResult(mResponse, mResponseDetail, field47);
-                }
-
-            }
-            else {
-                showResult(mResponse, mResponseDetail, errReason);
-            }
-        } else {
-            showResult(mResponse, mResponseDetail, errReason);
-        }*/
-    }
 
     private Handler mHandle = new Handler() {
         @Override
@@ -220,7 +185,7 @@ public class PacketProcessActivity extends Activity implements SendReceiveListen
         }
     };
 
-    private void Display_printResult(String response, String resDetail, POSTransaction POStrx) {
+   /* private void Display_printResult(String response, String resDetail, POSTransaction POStrx) {
         Log.i(TAG, "showSuccessResult(), response = " + response + ", resDetail = " + resDetail + ", printDetail = " + POStrx);
         if (mProcType == PacketProcessUtils.PACKET_PROCESS_PURCHASE &&
                 PosApplication.getApp().oGPosTransaction.m_enmTrxCardType != POSTransaction.CardType.MAG) {
@@ -233,16 +198,16 @@ public class PacketProcessActivity extends Activity implements SendReceiveListen
         intent.putExtra("POSTransaction", (Parcelable) POStrx);
         startActivity(intent);
         this.finish();
-    }
+    }*/
 
 
 
     private void showResult(String response, String resDetail, int errReason) {
         Log.i(TAG, "showResult(), response = " + response + ", resDetail = " + resDetail + ", errReason = " + errReason);
-        if (mProcType == PacketProcessUtils.PACKET_PROCESS_PURCHASE &&
+       /* if (mProcType == PacketProcessUtils.PACKET_PROCESS_PURCHASE &&
                 PosApplication.getApp().oGPosTransaction.m_enmTrxCardType != POSTransaction.CardType.MAG) {
             CardManager.getInstance().setRequestOnline(true, mResponse, PosApplication.getApp().oGPosTransaction.m_sICCRelatedTags);
-        }
+        }*/
         mHandle.removeMessages(MSG_TIME_UPDATE);
         Intent intent = new Intent(this, ShowResultActivity.class);
         intent.putExtra(PacketProcessUtils.PACKET_PROCESS_TYPE, mProcType);
@@ -257,18 +222,69 @@ public class PacketProcessActivity extends Activity implements SendReceiveListen
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == 100) {
            // PerfomTermHostResponseFlow(0);old flow
-            PosApplication.getApp().oGPOS_MAIN.PerfomTermHostResponseFlow(mRecePacket,0);
+            PosApplication.getApp().oGPOS_MAIN.PerfomTermHostResponseFlow(mRecePacket,0,this);
+            CommunicationsHandler.getInstance(mCommunicationInfo).closeConnection();
         }
     }
 
     @Override
     protected void onStop() {
         super.onStop();
+
     }
 
     @Override
     protected void onDestroy() {
-        CommunicationsHandler.getInstance(mCommunicationInfo).closeConnection();
+       // CommunicationsHandler.getInstance(mCommunicationInfo).closeConnection();
+        disconnect();
         super.onDestroy();
+    }
+
+    @Override
+    public void onBackPressed() {
+        //CommunicationsHandler.getInstance(mCommunicationInfo).closeConnection();
+        disconnect();
+        super.onBackPressed();
+    }
+
+    private void Senddata(byte[] Buffer){
+        TCPCommunicator.addListener(this);
+        mCommunicationInfo= new CommunicationInfo(PosApplication.getApp().getApplicationContext());
+        Buffer = headersInterceptor.addHeaders(Buffer, mCommunicationInfo.getTPDU());
+
+        TCPCommunicator.writeToSocket(Buffer, UIHandler, mcontext);
+    }
+
+    @Override
+    public void onTCPMessageRecieved(byte[] receivedPacket) {
+
+        Log.i(TAG, "onSuccess");
+
+        if (receivedPacket != null)
+        {
+
+            // todo add invalid response
+            receivedPacket= Arrays.copyOfRange(receivedPacket, 7, receivedPacket.length);
+            mRecePacket = receivedPacket;
+            mHandle.removeMessages(MSG_TIME_UPDATE);
+            PosApplication.getApp().oGTerminal_Operation_Data.breversal_flg=false;
+            int ret=PosApplication.getApp().oGPOS_MAIN.PerfomTermHostResponseFlow(mRecePacket,0,this);
+
+              //disconnect();
+             // finish();
+
+
+
+        }
+
+
+    }
+
+    @Override
+    public void onTCPConnectionStatusChanged(boolean isConnectedNow) {
+
+    }
+    private void disconnect(){
+        TCPCommunicator.closeStreams();
     }
 }

@@ -10,8 +10,10 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.example.halalah.DeviceTopUsdkServiceManager;
+import com.example.halalah.POS_MAIN;
 import com.example.halalah.PosApplication;
 import com.example.halalah.R;
+import com.example.halalah.SAF_Info;
 import com.example.halalah.Utils;
 import com.example.halalah.util.PacketProcessUtils;
 import com.topwise.cloudpos.aidl.led.AidlLed;
@@ -79,6 +81,8 @@ public class ShowResultActivity extends Activity implements View.OnClickListener
                 mResponseDetail = getString(R.string.result_error_rece);
             } else if (mErrorReson == PacketProcessUtils.SOCKET_PROC_ERROR_REASON_RECE_TIME_OUT) {
                 mResponseDetail = getString(R.string.result_error_rece_time_out);
+                POS_MAIN.CheckandSaveInSAF(PosApplication.getApp().oGPosTransaction,true);
+                PosApplication.getApp().oGPOS_MAIN.DeSAF(SAF_Info.DESAFtype.PARTIAL);
             }
             mImageResult.setImageDrawable(getDrawable(R.drawable.trans_faild));
         } else {
@@ -102,7 +106,12 @@ public class ShowResultActivity extends Activity implements View.OnClickListener
                     mImageResult.setImageDrawable(getDrawable(R.drawable.trans_faild));
                 }
             }
+            else if(mProcType == PacketProcessUtils.PACKET_PROCESS_PURCHASE){
 
+                mResponseDetail = getString(R.string.timeout_error);
+                mImageResult.setImageDrawable(getDrawable(R.drawable.trans_faild));
+                PosApplication.getApp().oGTerminal_Operation_Data.breversal_flg = true;
+            }
             else {
                 if (mResponse == null || !mResponse.equals("00")) {
                     if (mResponseDetail == null) {

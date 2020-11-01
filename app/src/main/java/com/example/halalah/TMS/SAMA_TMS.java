@@ -1057,8 +1057,13 @@ public class SAMA_TMS implements Serializable {
     }
 
     public static int Get_card_scheme_BY_AID(String AID) {
+
         PosApplication.getApp().oGPosTransaction.m_card_scheme=TMSManager.getInstance().getCardSchemeByAID(AID);
-        return 0;
+        Log.d("SAMA_TMS", "Get_card_scheme_BY_AID: mcard_scheme"+PosApplication.getApp().oGPosTransaction.m_card_scheme.toString());
+        if(PosApplication.getApp().oGPosTransaction.m_card_scheme!=null)
+            return 0;
+        else
+            return -1;
     }
 
     public static int Get_card_scheme_BY_PAN(String PAN) {

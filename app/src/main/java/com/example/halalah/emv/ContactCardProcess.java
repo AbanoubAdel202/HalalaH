@@ -5,7 +5,10 @@ import android.os.RemoteException;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.example.halalah.POSTransaction;
+import com.example.halalah.POS_MAIN;
 import com.example.halalah.PosApplication;
+import com.example.halalah.iso8583.BCDASCII;
 import com.example.halalah.util.CommonFunction;
 import com.example.halalah.util.TLVDecode;
 import com.topwise.cloudpos.aidl.emv.level2.AidlEmvL2;
@@ -45,7 +48,7 @@ public class ContactCardProcess {
     private EmvTerminalInfo emvTerminalInfo;
     private CountDownLatch countDownLatch;
     private boolean isEndEmv;
-    private boolean isTxnStarted;
+
 
 
     //importAidSelectRes()
@@ -105,7 +108,7 @@ public class ContactCardProcess {
 
     private void initTransData() {
         isEndEmv = false;
-        isTxnStarted = false;
+
         importAidSelectIndex = -1;
         importMsgConfirmResult = false;
         importFixedAmount = null;
@@ -140,7 +143,7 @@ public class ContactCardProcess {
             countDownLatchNew();
             emvListener.requestImportPin(PayDataUtil.PINTYPE_ONLINE, false, importAmount);
             countDownLatchAwait();
-            if (importPinStr == null) {
+            if ((importPinStr == null) || (importPinStr.equals(""))) {
                 return 0;
             }
             Log.d(TAG, "cGetOnlinePin: import pin str:"+importPinStr );
@@ -170,15 +173,17 @@ public class ContactCardProcess {
             emvListener.requestImportPin(PayDataUtil.PINTYPE_OFFLINE, false, null);
             countDownLatchAwait();
 
-            if (importPinStr == null) {
+            if ((importPinStr == null) || (importPinStr.equals(""))) {
                 return 0;
             }
 
+            Log.d(TAG, "cGetPlainTextPin, importPinStr: " + importPinStr);
             if (importPinStr.equals("bypass")) {
                 booleans[0] = true;
             } else {
-                booleans[0] = false;          
+                booleans[0] = false;
             }
+
 
             byte[] pinBlock = getOfflinePinBlock(importPinStr);
             System.arraycopy(pinBlock, 0, bytes, 0, pinBlock.length);
@@ -323,18 +328,18 @@ public class ContactCardProcess {
             return emvRet;
         }
 
-
+//todo terminal info EMV data fililing from TMS
         emvTerminalInfo.setUnTerminalFloorLimit(00000);
         emvTerminalInfo.setUnThresholdValue(10000);
         emvTerminalInfo.setAucTerminalID("00000001");
         emvTerminalInfo.setAucIFDSerialNumber("12345678");
-        emvTerminalInfo.setAucTerminalCountryCode(new byte[] {0x01, 0x56});
+        emvTerminalInfo.setAucTerminalCountryCode(BCDASCII.fromASCIIToBCD("0682",0,4,true));
         emvTerminalInfo.setAucMerchantID("0000000100000001");
         emvTerminalInfo.setAucMerchantCategoryCode(new byte[] {0x00, 0x01});
         emvTerminalInfo.setAucMerchantNameLocation(new byte[] {0x30, 0x30, 0x30, 0x31}); //"0001"
-        emvTerminalInfo.setAucTransCurrencyCode(new byte[] {0x01, 0x56});
+        emvTerminalInfo.setAucTransCurrencyCode(BCDASCII.fromASCIIToBCD("0682",0,4,true));
         emvTerminalInfo.setUcTransCurrencyExp((byte) 2);
-        emvTerminalInfo.setAucTransRefCurrencyCode(new byte[] {0x01, 0x56});
+        emvTerminalInfo.setAucTransRefCurrencyCode(BCDASCII.fromASCIIToBCD("0682",0,4,true));
         emvTerminalInfo.setUcTransRefCurrencyExp((byte) 2);
         emvTerminalInfo.setUcTerminalEntryMode((byte) 0x05);
 
@@ -381,7 +386,7 @@ public class ContactCardProcess {
 
         emvTransData = transData;
         emvListener = listener;
-        isTxnStarted = true;
+
         initTransData();
 
         int emvRet = 0;
@@ -416,7 +421,7 @@ public class ContactCardProcess {
             for (Aid aid : mList) {
                 Log.d(TAG, "aid.getAid(): " + aid.getAid());
                 byte[] aucAid = BytesUtil.hexString2Bytes(aid.getAid());
-                emvL2.EMV_AddAIDList(aucAid, (byte) aucAid.length, (byte) 1);
+                emvRet= emvL2.EMV_AddAIDList(aucAid, (byte) aucAid.length, (byte) 1);
             }
         }
 
@@ -477,6 +482,7 @@ public class ContactCardProcess {
 
             //The terminal issues the SELECT command
             emvRet = emvL2.EMV_AppFinalSelect(emvCandidateItem);
+
             Log.d(TAG, "EMV_AppFinalSelect emvRet : " + emvRet);
             if ((EmvDefinition.EMV_APP_BLOCKED == emvRet)
                     || (EmvDefinition.EMV_NO_APP == emvRet)
@@ -530,6 +536,26 @@ public class ContactCardProcess {
                 endEmv();
                 return;
             }
+
+            //check bussiness flow and load card data before EMV processing
+
+            PosApplication.getApp().oGPosTransaction.m_sAID= BCDASCII.bytesToHexString(emvCandidateItem.getAucAID());
+            //todo success validation
+            if (POS_MAIN.Recognise_card()!=0)
+            {
+                //todo do activity error CArd not recognised
+            }
+            if(!POS_MAIN.Check_transaction_allowed(PosApplication.getApp().oGPosTransaction.m_enmTrxType))
+            {
+                //todo do transaction not allowed Activity
+                //todo end emv
+            }
+            if(POS_MAIN.Check_transaction_limits(PosApplication.getApp().oGPosTransaction.m_enmTrxType)==0)
+            {
+               //todo alert dialog for limit exeeded
+            }
+            POS_MAIN.supervisor_pass_required();
+
 
             //Initiate Application Processing
             //The terminal issues the GET PROCESSING OPTIONS command
@@ -595,10 +621,13 @@ public class ContactCardProcess {
         //Offline Data Authentication
         //The terminal uses the RID and index to retrieve the terminal-stored CAPK
         emvRet = retrieveCAPK();
+
         if (emvRet != 0) {
+
             emvListener.onTransResult(getAppEmvtransResult(emvRet));
             endEmv();
             return;
+            //todo display CAPK not found
         }
         emvRet = emvL2.EMV_OfflineDataAuth();
         Log.d(TAG, "EMV_OfflineDataAuth emvRet : " + emvRet);
@@ -686,65 +715,89 @@ public class ContactCardProcess {
                     return;
                 }
 
-                if (importOnlineRes) {
-                    onlineResult = EmvDefinition.EMV_ONLINE_APPROVED;
+                if (PosApplication.getApp().oGPosTransaction.m_sActionCode.equals("117")) {
+                    emvRet = EmvDefinition.EMV_TERMINATED;
+                    countDownLatchNew();
+                    emvListener.onRequestOnline();
+                    countDownLatchNew();
+
+                    if (isEndEmv()) {
+                        emvListener.onTransResult(getAppEmvtransResult(EmvDefinition.EMV_TERMINATED));
+                        endEmv();
+                        return;
+                    }
                 } else {
-                    onlineResult = EmvDefinition.EMV_ONLINE_ERROR;
+
+                    if (importOnlineRes) {
+                        onlineResult = EmvDefinition.EMV_ONLINE_APPROVED;
+                    } else {
+                        onlineResult = EmvDefinition.EMV_ONLINE_ERROR;
+                    }
+
+                    authRespCode = BytesUtil.hexString2Bytes(importRespCode);
+
+                    String strRespIcc55 = importIcc55;
+                    TlvList tlvList = new TlvList();
+                    tlvList.fromHex(strRespIcc55);
+                    Tlv tlv = tlvList.getTlv("89");
+                    if (tlv != null)
+                        authCode = tlv.getValue();
+                    tlv = tlvList.getTlv("91");
+                    if (tlv != null)
+                        issueAuthData = tlv.getValue();
+                    tlv = tlvList.getTlv("71");
+                    if (tlv != null)
+                        issueScript71 = tlv.getValue();
+                    tlv = tlvList.getTlv("72");
+                    if (tlv != null)
+                        issueScript72 = tlv.getValue();
+                    byte[] authCodenull = new byte[0];
+                    emvRet = emvL2.EMV_ProcessOnlineRespData(onlineResult, issueAuthData, authRespCode, authCodenull);
+                    //emvRet = EmvDefinition.EMV_DECLINED;
+                    Log.d(TAG, "EMV_ProcessOnlineRespData emvRet : " + emvRet);
                 }
 
-                authRespCode = BytesUtil.hexString2Bytes(importRespCode);
+                if (isEndEmv()) {
+                    emvListener.onTransResult(getAppEmvtransResult(EmvDefinition.EMV_TERMINATED));
+                    endEmv();
+                    return;
+                }
 
-                String strRespIcc55 = importIcc55;
-                TlvList tlvList = new TlvList();
-                tlvList.fromHex(strRespIcc55);
-                Tlv tlv = tlvList.getTlv("89");
-                if(tlv!=null)
-                    authCode = tlv.getValue();
-                tlv = tlvList.getTlv("91");
-                if(tlv!=null)
-                    issueAuthData = tlv.getValue();
-                tlv = tlvList.getTlv("71");
-                if(tlv!=null)
-                    issueScript71 = tlv.getValue();
-                tlv = tlvList.getTlv("72");
-                if(tlv!=null)
-                    issueScript72 = tlv.getValue();
+                if (emvRet != EmvDefinition.EMV_TERMINATED) {
+                    if (issueScript71 != null)
+                        emvL2.EMV_IssueToCardScript((byte) 1, issueScript71);
+                }
 
-                emvRet = emvL2.EMV_ProcessOnlineRespData(onlineResult, issueAuthData, authRespCode, authCode);
-                Log.d(TAG, "EMV_ProcessOnlineRespData emvRet : " + emvRet);
-            }
-
-            if (isEndEmv()) {
-                emvListener.onTransResult(getAppEmvtransResult(EmvDefinition.EMV_TERMINATED));
-                endEmv();
-                return;
-            }
-
-            if (emvRet != EmvDefinition.EMV_TERMINATED) {
-                emvL2.EMV_IssueToCardScript((byte)1, issueScript71);
-            }
-
-            if (emvRet == EmvDefinition.EMV_OK) {
-                if (onlineResult == EmvDefinition.EMV_ONLINE_APPROVED) {
-                    emvRet = emvL2.EMV_Completion((byte) 1);
-                } else if (onlineResult == EmvDefinition.EMV_ONLINE_VOICE_PREFER) {
-                    emvRet = emvL2.EMV_Completion((byte) 1);
-                } else {
+                if (emvRet == EmvDefinition.EMV_OK) {
+                    if (onlineResult == EmvDefinition.EMV_ONLINE_APPROVED) {
+                        emvRet = emvL2.EMV_Completion((byte) 1);
+                    } else if (onlineResult == EmvDefinition.EMV_ONLINE_VOICE_PREFER) {
+                        emvRet = emvL2.EMV_Completion((byte) 1);
+                    } else {
+                        emvRet = emvL2.EMV_Completion((byte) 0);
+                    }
+                } else if (emvRet == EmvDefinition.EMV_DECLINED) {
                     emvRet = emvL2.EMV_Completion((byte) 0);
+                } else if (emvRet == EmvDefinition.EMV_APPROVED) {
+                    emvRet = emvL2.EMV_Completion((byte) 1);
                 }
-            } else if (emvRet == EmvDefinition.EMV_DECLINED) {
-                emvRet = emvL2.EMV_Completion((byte) 0);
-            } else if (emvRet == EmvDefinition.EMV_APPROVED) {
-                emvRet = emvL2.EMV_Completion((byte) 1);
+
+                if (emvRet != EmvDefinition.EMV_TERMINATED) {
+                    if (issueScript71 != null)
+                        emvL2.EMV_IssueToCardScript((byte) 0, issueScript72);
+                }
             }
 
-            if (emvRet != EmvDefinition.EMV_TERMINATED) {
-                emvL2.EMV_IssueToCardScript((byte) 0, issueScript72);
-            }
+
+            //todo second generate have to be removed force approval
+            emvRet = EmvDefinition.EMV_APPROVED;
+
+            emvListener.onTransResult(getAppEmvtransResult(emvRet));
+            getTlvData("95");
+            getTlvData("9F34");
+
+            endEmv();
         }
-
-        emvListener.onTransResult(getAppEmvtransResult(emvRet));
-        endEmv();
     }
 
     public void endEmv() {
@@ -828,7 +881,7 @@ public class ContactCardProcess {
         byte[] index = emvL2.EMV_GetTLVData(0x8F);
         if ((index == null) || (index.length != 1)) {
             Log.d(TAG, "Get CAPK index(8F) failed!");
-            return -1;
+            return 0;
         }
         Log.d(TAG, "CAPK index(8F): " + BytesUtil.bytes2HexString(index));
 
@@ -838,7 +891,7 @@ public class ContactCardProcess {
         Capk capk = db.getCapkDao().findByRidIndex(strRid, index[0]);
         if (null == db.getCapkDao().findByRidIndex(strRid, index[0])) {
             Log.d(TAG, "findByRidIndex failed!");
-            return -1;
+            return 0;
         }
 
         Log.d(TAG, "getRid(): " + capk.getRid());
@@ -850,6 +903,21 @@ public class ContactCardProcess {
         Log.d(TAG, "getExpDate(): " + BytesUtil.bytes2HexString(capk.getExpDate()));
         Log.d(TAG, "getCheckSum(): " + BytesUtil.bytes2HexString(capk.getCheckSum()));
 
+        byte[] tempExpDate = new byte[3]; //YYMMDD
+        if (4 == capk.getExpDate().length) {
+            System.arraycopy(capk.getExpDate(), 1, tempExpDate, 0, 3);
+        } else if (8 == capk.getExpDate().length) {
+            String strExpDate = new String(capk.getExpDate());
+            byte[] bcdExpDate =  BytesUtil.hexString2Bytes(strExpDate);
+            System.arraycopy(bcdExpDate, 1, tempExpDate, 0, 3);
+        } else {
+            //301231
+            tempExpDate[0] = 0x30;
+            tempExpDate[1] = 0x12;
+            tempExpDate[2] = 0x31;
+        }
+        Log.d(TAG, "tempExpDate(): " + BytesUtil.bytes2HexString(tempExpDate));
+
         EmvCapk emvCapk = new EmvCapk();
         emvCapk.setRID(BytesUtil.hexString2Bytes(capk.getRid()));
         emvCapk.setKeyID(capk.getIndex());
@@ -857,8 +925,13 @@ public class ContactCardProcess {
         emvCapk.setHashInd(capk.getHashInd());
         emvCapk.setExponent(capk.getExponent());
         emvCapk.setModul(capk.getModul());
-        emvCapk.setExpDate(capk.getExpDate());
-        emvCapk.setCheckSum(capk.getCheckSum());
+        emvCapk.setExpDate(tempExpDate);
+        emvCapk.setCheckSum(PayDataUtil.getCAPKChecksum(capk));
+
+
+
+
+
 
         emvL2.EMV_DelAllCAPK();
         emvRet = emvL2.EMV_AddCAPK(emvCapk);
@@ -971,7 +1044,8 @@ public class ContactCardProcess {
         }
 
         String strAid = BytesUtil.bytes2HexString(aid);
-        Aid aidParam = db.getAidDao().findByAid(strAid);
+        Aid aidParam = db.getAidDao().findByAidAndAsi(strAid);
+
 
         //emvL2.EMV_SetTLVData(0x9F09, aidParam.getVersion());
         //emvL2.EMV_SetTLVData(0x9F1B, aidParam.getFloorLimit());
@@ -1117,4 +1191,6 @@ public class ContactCardProcess {
         countDownLatchdDown();
         return true;
     }
+
+
 }

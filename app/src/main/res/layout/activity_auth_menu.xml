@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -11,35 +12,42 @@
         android:layout_height="match_parent">
 
         <Button
-            android:id="@+id/authorization_btn"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Button"
-            tools:layout_editor_absoluteX="162dp"
-            tools:layout_editor_absoluteY="60dp" />
+            android:id="@+id/auth_btn"
+            android:layout_width="408dp"
+            android:layout_height="74dp"
+            android:layout_marginTop="68dp"
+            android:text="@string/Authorization"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
         <Button
             android:id="@+id/authorization_void_btn"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Button"
-            tools:layout_editor_absoluteX="154dp"
-            tools:layout_editor_absoluteY="155dp" />
+            android:layout_width="344dp"
+            android:layout_height="45dp"
+            android:layout_marginStart="32dp"
+            android:layout_marginTop="68dp"
+            android:text="@string/Auth_void"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/auth_btn" />
 
         <Button
             android:id="@+id/authorization_advice_btn"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Button"
-            tools:layout_editor_absoluteX="162dp"
-            tools:layout_editor_absoluteY="269dp" />
+            android:layout_width="236dp"
+            android:layout_height="34dp"
+            android:layout_marginStart="84dp"
+            android:layout_marginTop="84dp"
+            android:text="@string/Auth_Advice"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/authorization_void_btn" />
 
         <Button
             android:id="@+id/authorization_Extension_btn"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Button"
-            tools:layout_editor_absoluteX="169dp"
-            tools:layout_editor_absoluteY="353dp" />
+            android:layout_width="252dp"
+            android:layout_height="61dp"
+            android:layout_marginStart="84dp"
+            android:layout_marginTop="32dp"
+            android:text="@string/Auth_ext"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/authorization_advice_btn" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 </FrameLayout>

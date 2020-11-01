@@ -1,5 +1,8 @@
 package com.example.halalah.database.table;
 
+
+import android.util.Log;
+
 import com.example.halalah.database.BaseModel;
 import com.example.halalah.database.Column;
 import com.example.halalah.database.Table;
@@ -94,103 +97,196 @@ public class Aid extends BaseModel {
         setKernelType(kernelType);
     }
 
-    public void fromTlvList(TlvList tlvList){
+    public void fromTlvList(TlvList tlvList) {
+        final String TAG = "Aid,fromTlvList";
+
         Tlv tlv = tlvList.getTlv("9F06");
-        if(tlv!=null)
+        if (tlv != null) {
             setAid(tlv.getHexValue());
+            Log.d(TAG, "9F06: " + tlv.getHexValue());
+        }
+
         tlv = tlvList.getTlv("DF01");
-        if(tlv!=null)
+        if (tlv != null) {
             setSelFlag(tlv.getValue()[0]);
+            Log.d(TAG, "DF01: " + tlv.getHexValue());
+        }
+
         tlv = tlvList.getTlv("DF17");
-        if(tlv!=null)
+        if (tlv != null) {
             setTargetPer(tlv.getValue()[0]);
+            Log.d(TAG, "DF17: " + tlv.getHexValue());
+        }
+
         tlv = tlvList.getTlv("DF16");
-        if(tlv!=null)
+        if (tlv != null) {
             setMaxTargetPer(tlv.getValue()[0]);
+            Log.d(TAG, "DF16: " + tlv.getHexValue());
+        }
+
         tlv = tlvList.getTlv("9F1B");
-        if(tlv!=null)
-            setFloorLimit(BytesUtil.bytes2Int(tlv.getValue(),true));
+        if (tlv != null) {
+            setFloorLimit(BytesUtil.bytes2Int(tlv.getValue(), true));
+            Log.d(TAG, "9F1B: " + tlv.getHexValue());
+        }
+
         tlv = tlvList.getTlv("DF19");
-        if(tlv!=null)
-            setRdClssFloorLimit(BytesUtil.bytes2Int(tlv.getValue(),true));
+        if (tlv != null) {
+            Log.d(TAG, "DF19: " + tlv.getHexValue());
+            int value = Integer.valueOf(tlv.getHexValue());
+            Log.d(TAG, "DF19 INT: " + value);
+            setRdClssFloorLimit(value);
+        }
+
         tlv = tlvList.getTlv("DF20");
-        if(tlv!=null)
-            setRdClssTxnLimit(BytesUtil.bytes2Int(tlv.getValue(),true));
+        if (tlv != null) {
+            Log.d(TAG, "DF20: " + tlv.getHexValue());
+            int value = Integer.valueOf(tlv.getHexValue());
+            Log.d(TAG, "DF20 INT: " + value);
+            setRdClssTxnLimit(value);
+        }
+
         tlv = tlvList.getTlv("DF21");
-        if(tlv!=null)
-            setRdCVMLimit(BytesUtil.bytes2Int(tlv.getValue(),true));
+        if (tlv != null) {
+            Log.d(TAG, "DF21: " + tlv.getHexValue());
+            int value = Integer.valueOf(tlv.getHexValue());
+            Log.d(TAG, "DF21 INT: " + value);
+            setRdCVMLimit(value);
+        }
+
         tlv = tlvList.getTlv("DF15");
-        if(tlv!=null)
-            setThreShold(BytesUtil.bytes2Int(tlv.getValue(),true));
+        if (tlv != null) {
+            setThreShold(BytesUtil.bytes2Int(tlv.getValue(), true));
+            Log.d(TAG, "DF15: " + tlv.getHexValue());
+        }
+
         tlv = tlvList.getTlv("DF13");
-        if(tlv!=null)
+        if (tlv != null) {
             setTacDenial(tlv.getValue());
+            Log.d(TAG, "DF13: " + tlv.getHexValue());
+        }
+
         tlv = tlvList.getTlv("DF12");
-        if(tlv!=null)
+        if (tlv != null) {
             setTacOnline(tlv.getValue());
+            Log.d(TAG, "DF12: " + tlv.getHexValue());
+        }
+
         tlv = tlvList.getTlv("DF11");
-        if(tlv!=null)
+        if (tlv != null) {
             setTacDefault(tlv.getValue());
+            Log.d(TAG, "DF11: " + tlv.getHexValue());
+        }
+
         tlv = tlvList.getTlv("9F01");
-        if(tlv!=null)
+        if (tlv != null) {
             setAcquierId(tlv.getValue());
+            Log.d(TAG, "9F01: " + tlv.getHexValue());
+        }
+
         tlv = tlvList.getTlv("DF14");
-        if(tlv!=null)
+        if (tlv != null) {
             setdDol(tlv.getValue());
+            Log.d(TAG, "DF14: " + tlv.getHexValue());
+        }
+
         tlv = tlvList.getTlv("DF8102");
-        if(tlv!=null)
+        if (tlv != null) {
             settDol(tlv.getValue());
+            Log.d(TAG, "DF8102: " + tlv.getHexValue());
+        }
+
         tlv = tlvList.getTlv("9F08");
-        if(tlv!=null)
+        if (tlv != null) {
             setVersion(tlv.getValue());
+            Log.d(TAG, "9F08: " + tlv.getHexValue());
+        }
+
         tlv = tlvList.getTlv("9F09");
-        if(tlv!=null)
+        if (tlv != null) {
             setVersion(tlv.getValue());
+            Log.d(TAG, "9F09: " + tlv.getHexValue());
+        }
+
         tlv = tlvList.getTlv("9F1D");
-        if(tlv!=null)
+        if (tlv != null) {
             setRiskManData(tlv.getValue());
+            Log.d(TAG, "9F1D: " + tlv.getHexValue());
+        }
+
         tlv = tlvList.getTlv("9F4E");
-        if(tlv!=null)
+        if (tlv != null) {
             setMerchName(tlv.getValue());
+            Log.d(TAG, "9F4E: " + tlv.getHexValue());
+        }
+
         tlv = tlvList.getTlv("9F15");
-        if(tlv!=null)
+        if (tlv != null) {
             setMerchCateCode(tlv.getValue());
+            Log.d(TAG, "9F15: " + tlv.getHexValue());
+        }
+
         tlv = tlvList.getTlv("9F16");
-        if(tlv!=null)
+        if (tlv != null) {
             setMerchId(tlv.getValue());
+            Log.d(TAG, "9F16: " + tlv.getHexValue());
+        }
+
         tlv = tlvList.getTlv("9F1C");
-        if(tlv!=null)
+        if (tlv != null) {
             setTermId(tlv.getValue());
+            Log.d(TAG, "9F1C: " + tlv.getHexValue());
+        }
+
         tlv = tlvList.getTlv("5F2A");
-        if(tlv!=null)
+        if (tlv != null) {
             setTransCurrCode(tlv.getValue());
+            Log.d(TAG, "5F2A: " + tlv.getHexValue());
+        }
+
         tlv = tlvList.getTlv("5F36");
-        if(tlv!=null)
+        if (tlv != null) {
             setTransCurrExp(tlv.getValue()[0]);
+            Log.d(TAG, "5F36: " + tlv.getHexValue());
+        }
+
         tlv = tlvList.getTlv("9F3C");
-        if(tlv!=null)
+        if (tlv != null) {
             setReferCurrCode(tlv.getValue());
+            Log.d(TAG, "9F3C: " + tlv.getHexValue());
+        }
+
         tlv = tlvList.getTlv("9F3D");
-        if(tlv!=null)
+        if (tlv != null) {
             setReferCurrExp(tlv.getValue()[0]);
+            Log.d(TAG, "9F3D: " + tlv.getHexValue());
+        }
+
         tlv = tlvList.getTlv("DF8101");
-        if(tlv!=null)
-            setReferCurrCon(BytesUtil.bytes2Int(tlv.getValue(),true));
+        if (tlv != null) {
+            setReferCurrCon(BytesUtil.bytes2Int(tlv.getValue(), true));
+            Log.d(TAG, "DF8101: " + tlv.getHexValue());
+        }
+
         tlv = tlvList.getTlv("9F7B");
-        if(tlv!=null)
+        if (tlv != null) {
             setEcTtl(tlv.getValue());
+            Log.d(TAG, "9F7B: " + tlv.getHexValue());
+        }
     }
 
     public TlvList getTlvList(){
+        final String TAG = "Aid,getTlvList";
+
         TlvList tlvList = new TlvList();
         tlvList.addTlv("9F06",aid);
         tlvList.addTlv("DF01",new byte[]{selFlag});
         tlvList.addTlv("DF17",new byte[]{targetPer});
         tlvList.addTlv("DF16",new byte[]{maxTargetPer});
         tlvList.addTlv("9F1B",BytesUtil.int2Bytes(floorLimit,true));
-        tlvList.addTlv("DF19",BytesUtil.int2Bytes(rdClssFloorLimit,true));
-        tlvList.addTlv("DF20",BytesUtil.int2Bytes(rdClssTxnLimit,true));
-        tlvList.addTlv("DF21",BytesUtil.int2Bytes(rdCVMLimit,true));
+        tlvList.addTlv("DF19",BytesUtil.hexString2Bytes(String.format("%012d", rdClssFloorLimit)));
+        tlvList.addTlv("DF20",BytesUtil.hexString2Bytes(String.format("%012d", rdClssTxnLimit)));
+        tlvList.addTlv("DF21",BytesUtil.hexString2Bytes(String.format("%012d", rdCVMLimit)));
         tlvList.addTlv("DF15",BytesUtil.int2Bytes(threShold,true));
         tlvList.addTlv("DF13",tacDenial);
         tlvList.addTlv("DF12",tacOnline);

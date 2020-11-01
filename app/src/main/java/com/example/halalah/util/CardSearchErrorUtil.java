@@ -16,6 +16,7 @@ public class CardSearchErrorUtil {
      其他：0x06
      EMV简易流程不回调此方法
      */
+    public static final int TRANS_APPROVE = 0x01;
     public static final int TRANS_REASON_REJECT = 0x02;
     public static final int TRANS_REASON_STOP = 0x03;
     public static final int TRANS_REASON_FALLBACK = 0x04;

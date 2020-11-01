@@ -9,12 +9,19 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.Button;
+import android.widget.TextView;
 
 /**
  * An example full-screen activity that shows and hides the system UI (i.e.
  * status bar and navigation/system bar) with user interaction.
  */
-public class network_settings extends AppCompatActivity {
+public class network_settings extends AppCompatActivity implements View.OnClickListener {
+
+    private Button setipport;
+    private TextView iptxt;
+    private TextView porttxt;
+
     /**
      * Whether or not the system UI should be auto-hidden after
      * {@link #AUTO_HIDE_DELAY_MILLIS} milliseconds.
@@ -107,7 +114,14 @@ public class network_settings extends AppCompatActivity {
         // Upon interacting with UI controls, delay any scheduled hide()
         // operations to prevent the jarring behavior of controls going away
         // while interacting with the UI.
-        findViewById(R.id.dummy_button).setOnTouchListener(mDelayHideTouchListener);
+        findViewById(R.id.SETIPPort).setOnTouchListener(mDelayHideTouchListener);
+
+         setipport = findViewById(R.id.SETIPPort);
+        setipport.setOnClickListener(this);
+         iptxt = findViewById(R.id.IPTXT);
+         porttxt = findViewById(R.id.PORTTXT);
+         iptxt.setText(PosApplication.getApp().oGTerminal_Operation_Data.Hostip);
+         porttxt.setText(Integer.toString(PosApplication.getApp().oGTerminal_Operation_Data.Hostport));
     }
 
     @Override
@@ -161,5 +175,27 @@ public class network_settings extends AppCompatActivity {
     private void delayedHide(int delayMillis) {
         mHideHandler.removeCallbacks(mHideRunnable);
         mHideHandler.postDelayed(mHideRunnable, delayMillis);
+    }
+
+    @Override
+    public void onClick(View v) {
+
+        switch (v.getId())
+        {
+            case R.id.SETIPPort:
+                PosApplication.getApp().oGTerminal_Operation_Data.Hostip=iptxt.getText().toString();
+                PosApplication.getApp().oGTerminal_Operation_Data.Hostport=Integer.parseInt(porttxt.getText().toString());
+                boolean res = false;
+                do {
+
+                    if(POS_MAIN.Save_TermData()==0)
+                        res = true;
+
+                } while(!res);
+            break;
+        }
+
+        POS_MAIN.Save_TermData();
+
     }
 }

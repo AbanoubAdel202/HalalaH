@@ -52,6 +52,8 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+        <activity android:name=".ui.Declined_Display_Print"></activity>
+        <activity android:name=".ui.reports.displayhosttransaction" />
         <activity
             android:name=".MainActivity"
             android:label="@string/app_name"
@@ -70,7 +72,7 @@
         </activity>
         <activity
             android:name=".registration.view.RegistrationActivity"
-            android:launchMode="singleTask" />
+            />
         <activity
             android:name=".ui.transactions.Authorization.AuthAdvice.authAdviceTypeActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
@@ -112,37 +114,37 @@
             android:label="@string/title_activity_reconciliation"
             android:theme="@style/FullscreenTheme" />
         <activity
-            android:name=".change_pass"
+            android:name=".ui.change_pass"
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:label="@string/title_activity_change_pass"
             android:theme="@style/FullscreenTheme" />
         <activity
-            android:name=".claims"
+            android:name=".ui.claims"
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:label="@string/title_activity_claims"
             android:theme="@style/FullscreenTheme" />
         <activity
-            android:name=".lang"
+            android:name=".ui.lang"
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:label="@string/title_activity_lang"
             android:theme="@style/FullscreenTheme" />
         <activity
-            android:name=".Trxreport"
+            android:name=".ui.Trxreport"
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:label="@string/title_activity_trxreport"
             android:theme="@style/FullscreenTheme" />
         <activity
-            android:name=".search_Trx"
+            android:name=".ui.search_Trx"
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:label="@string/title_activity_search__trx"
             android:theme="@style/FullscreenTheme" />
         <activity
-            android:name=".hosttransaction"
+            android:name=".ui.hosttransaction"
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:label="@string/title_activity_hosttransaction"
             android:theme="@style/FullscreenTheme" />
         <activity
-            android:name=".ildescreenActivity"
+            android:name=".ui.ildescreenActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:label="@string/title_activity_ildescreen"
             android:theme="@style/FullscreenTheme" />
@@ -152,14 +154,14 @@
         <activity android:name=".ui.SearchCardActivity" />
         <activity android:name=".ui.PinpadActivity" />
         <activity android:name=".ui.PacketProcessActivity" />
-        <activity android:name=".ui.ConsumeSuccessActivity" />
         <activity android:name=".ui.CardConfirmActivity" />
         <activity android:name=".ui.admin_settings.SuperAdminActivity" />
         <activity android:name=".ui.admin_settings.OthersSettingActivity" />
         <activity android:name=".ui.admin_settings.communication.CommunicationSettingActivity" />
         <activity android:name=".ui.admin_settings.ImportKeyActivity" />
         <activity android:name=".ui.ShowResultActivity" />
-        <activity android:name=".PanInputActivity" />
+        <activity android:name=".ui.Display_PrintActivity" />
+        <activity android:name=".ui.PanInputActivity" />
 
         <service
             android:name=".card.CardMoniterService"

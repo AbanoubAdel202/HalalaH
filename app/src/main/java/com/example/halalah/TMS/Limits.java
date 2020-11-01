@@ -5,8 +5,10 @@ import androidx.annotation.NonNull;
 import com.example.halalah.sqlite.database.Column;
 import com.example.halalah.sqlite.database.Table;
 
+import java.io.Serializable;
+
 @Table(name = "Limits")
-public class Limits {
+public class Limits implements Serializable {
 
     public Limits() {
 

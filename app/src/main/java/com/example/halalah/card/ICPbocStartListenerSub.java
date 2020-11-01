@@ -1,22 +1,32 @@
 package com.example.halalah.card;
 
+import android.app.AlertDialog;
 import android.content.Context;
 import android.os.Bundle;
 import android.os.RemoteException;
 import android.util.Log;
 
+import com.example.halalah.DeviceTopUsdkServiceManager;
 import com.example.halalah.POSTransaction;
 import com.example.halalah.POS_MAIN;
 import com.example.halalah.PosApplication;
 import com.example.halalah.Utils;
+
+import com.example.halalah.ui.PacketProcessActivity;
+import com.example.halalah.ui.PinpadActivity;
 import com.example.halalah.emv.EmvManager;
 import com.example.halalah.emv.OnEmvProcessListener;
 import com.example.halalah.iso8583.BCDASCII;
 import com.example.halalah.ui.PacketProcessActivity;
 import com.example.halalah.ui.PinpadActivity;
 import com.example.halalah.util.PacketProcessUtils;
+
+
+import com.topwise.cloudpos.aidl.emv.CardInfo;
 import com.topwise.cloudpos.aidl.emv.PCardLoadLog;
 import com.topwise.cloudpos.aidl.emv.PCardTransLog;
+import com.topwise.cloudpos.struct.BytesUtil;
+
 
 public class ICPbocStartListenerSub implements OnEmvProcessListener {
     private static final String TAG = Utils.TAGPUBLIC + ICPbocStartListenerSub.class.getSimpleName();
@@ -45,13 +55,20 @@ public class ICPbocStartListenerSub implements OnEmvProcessListener {
         byte[] bAIDs;
         String[] AIDs = new String[]{"9F06"};
         bAIDs= getTlv(AIDs);
+        PosApplication.getApp().oGPosTransaction.m_sAID=BCDASCII.bytesToHexString(bAIDs);
+        //todo success validation
+        if (POS_MAIN.Recognise_card()!=0)
+            //todo do activity error CArd not recognised
 
-        POS_MAIN.Recognise_card();
-        POS_MAIN.Check_transaction_allowed(PosApplication.getApp().oGPosTransaction.m_enmTrxType);
-        if(POS_MAIN.Check_transaction_limits(PosApplication.getApp().oGPosTransaction.m_enmTrxType)==0)
-        {
-            //todo alert dialog for limit exeeded
-        }
+            if(!POS_MAIN.Check_transaction_allowed(PosApplication.getApp().oGPosTransaction.m_enmTrxType)) {
+                //todo do transaction not allowed Activity
+                return;
+            }
+
+                if(POS_MAIN.Check_transaction_limits(PosApplication.getApp().oGPosTransaction.m_enmTrxType)==0)
+                {
+                    //todo alert dialog for limit exeeded
+                }
         POS_MAIN.supervisor_pass_required();
 
 
@@ -91,7 +108,7 @@ public class ICPbocStartListenerSub implements OnEmvProcessListener {
             for(int index=0 ;index<aids.length;index++)
             {
                 if (aids[index].contains("mada"))
-                    iAID_Index=index+1;
+                    iAID_Index=index;
             }
 
         }
@@ -200,6 +217,8 @@ public class ICPbocStartListenerSub implements OnEmvProcessListener {
 
         }
 
+        setTVR();
+        setTSI();
 
         setExpired();
         setSeqNum();
@@ -219,38 +238,45 @@ public class ICPbocStartListenerSub implements OnEmvProcessListener {
             switch(PosApplication.getApp().oGPosTransaction.m_enmTrxType) {
                 case PURCHASE:
                     bundle.putInt(PacketProcessUtils.PACKET_PROCESS_TYPE, PacketProcessUtils.PACKET_PROCESS_PURCHASE);
-                CardManager.getInstance().startActivity(mContext, bundle, PacketProcessActivity.class);
+                    CardManager.getInstance().startActivity(mContext, bundle, PacketProcessActivity.class);
                 break;
                 case REFUND:
                     bundle.putInt(PacketProcessUtils.PACKET_PROCESS_TYPE, PacketProcessUtils.PACKET_PROCESS_REFUND);
                     CardManager.getInstance().startActivity(mContext, bundle, PacketProcessActivity.class);
+                    break;
                 case AUTHORISATION:
                     bundle.putInt(PacketProcessUtils.PACKET_PROCESS_TYPE, PacketProcessUtils.PACKET_PROCESS_AUTHORISATION);
                     CardManager.getInstance().startActivity(mContext, bundle, PacketProcessActivity.class);
+                    break;
 
                 case AUTHORISATION_VOID:
                     bundle.putInt(PacketProcessUtils.PACKET_PROCESS_TYPE, PacketProcessUtils.PACKET_PROCESS_AUTHORISATION_VOID);
                     CardManager.getInstance().startActivity(mContext, bundle, PacketProcessActivity.class);
+                    break;
                 case AUTHORISATION_ADVICE:
                     bundle.putInt(PacketProcessUtils.PACKET_PROCESS_TYPE, PacketProcessUtils.PACKET_PROCESS_AUTHORISATION_ADVICE);
                     CardManager.getInstance().startActivity(mContext, bundle, PacketProcessActivity.class);
-
+                    break;
                 case CASH_ADVANCE:
                     bundle.putInt(PacketProcessUtils.PACKET_PROCESS_TYPE, PacketProcessUtils.PACKET_PROCESS_CASH_ADVANCE);
                     CardManager.getInstance().startActivity(mContext, bundle, PacketProcessActivity.class);
+                    break;
                 case SADAD_BILL:
                     bundle.putInt(PacketProcessUtils.PACKET_PROCESS_TYPE, PacketProcessUtils.PACKET_PROCESS_SADAD_BILL);
                     CardManager.getInstance().startActivity(mContext, bundle, PacketProcessActivity.class);
+                    break;
                 case AUTHORISATION_EXTENSION:
                     bundle.putInt(PacketProcessUtils.PACKET_PROCESS_TYPE, PacketProcessUtils.PACKET_PROCESS_AUTHORISATION_EXTENSION);
                     CardManager.getInstance().startActivity(mContext, bundle, PacketProcessActivity.class);
-
+                    break;
                 case PURCHASE_WITH_NAQD:
                     bundle.putInt(PacketProcessUtils.PACKET_PROCESS_TYPE, PacketProcessUtils.PACKET_PROCESS_PURCHASE_WITH_NAQD);
                     CardManager.getInstance().startActivity(mContext, bundle, PacketProcessActivity.class);
+                    break;
                 case PURCHASE_ADVICE:
                     bundle.putInt(PacketProcessUtils.PACKET_PROCESS_TYPE, PacketProcessUtils.PACKET_PROCESS_PURCHASE_ADVICE);
                     CardManager.getInstance().startActivity(mContext, bundle, PacketProcessActivity.class);
+                    break;
             }
 
         }
@@ -300,10 +326,15 @@ public class ICPbocStartListenerSub implements OnEmvProcessListener {
      */
     @Override
     public void onTransResult(int result) throws RemoteException {
-        Log.d(TAG, "onTransResult result: " + result + isOnline);
-        if (!isOnline) {
-            CardManager.getInstance().callBackTransResult(result);
-        }
+        Log.d(TAG, "onTransResult result: " + result + " isOnline:" + isOnline);
+        setTVR();
+        setTSI();
+//        if (!isOnline) {
+//            CardManager.getInstance().callBackTransResult(result);
+//        }
+
+        CardManager.getInstance().callBackTransResult(result);
+
     }
 
     @Override
@@ -431,7 +462,7 @@ public class ICPbocStartListenerSub implements OnEmvProcessListener {
 
         if (seqNumTlvList != null) {
             cardSeqNum = BCDASCII.bytesToHexString(seqNumTlvList);
-            cardSeqNum = cardSeqNum.substring(cardSeqNum.length() - 2);
+            cardSeqNum = cardSeqNum.substring(4);
         }
         Log.d(TAG, "setSeqNum : " + cardSeqNum);
         PosApplication.getApp().oGPosTransaction.m_sCardSeqNum=cardSeqNum;
@@ -469,15 +500,70 @@ public class ICPbocStartListenerSub implements OnEmvProcessListener {
 
     private void setDE55() {
         Log.i(TAG, "getDE55()");
+        try {
 
-        String[] DE55Tag = new String[]{"82","9F02","9F03","4F","50","9F12","9F36","9F6C","9F26","9F27","9F34",
-                                        "84","9F6E","9F10","9F1E","5A","9F24","57","9F33","9F66","9F35","95",
-                                        "9F1A","5F2A","9A","9C","9F37","9F19","9F25"};
-        byte[] DE55TlvList = getTlv(DE55Tag);
-        Log.d(TAG, "setDE55 DE55TlvList : " + BCDASCII.bytesToHexString(DE55TlvList));
-        PosApplication.getApp().oGPosTransaction.m_sICCRelatedTags=BCDASCII.bytesToHexString(DE55TlvList);
+
+            String[] DE55Tag = new String[]{"82", "9F02", "9F03", "4F", "50", "9F12", "9F36", "9F6C", "9F26", "9F27", "9F34",
+                    "84", "9F6E", "9F10", "9F1E", "5A", "9F24", "57", "9F33", "9F66", "9F35", "95",
+                    "9F1A", "5F2A", "9A", "9C", "9F37", "9F19", "9F25"};
+            byte[] DE55TlvList = getTlv(DE55Tag);
+
+            Log.d(TAG, "setDE55 DE55TlvList : " + BCDASCII.bytesToHexString(DE55TlvList));
+            PosApplication.getApp().oGPosTransaction.m_sICCRelatedTags = BCDASCII.bytesToHexString(DE55TlvList);
+        }catch(Exception e)
+        {
+            e.printStackTrace();
+        }
+
     }
 
+    private void setTVR() {
+        Log.i(TAG, "setTVR()");
+
+        String[] tags = new String[]{"95"};
+        byte[] tlvBuf = new byte[7];
+        int tlvLength = 0;
+
+        try {
+            tlvLength = emvManager.readKernelData(tags, tlvBuf);
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+        Log.i(TAG, "------TVR tlvLength: " + tlvLength);
+        Log.i(TAG, "------TVR tlvBuf: " + BytesUtil.bytes2HexString(tlvBuf));
+
+        if (tlvLength == 7) {
+            byte[] value = new byte[5];
+            System.arraycopy(tlvBuf, 2, value, 0, 5);
+            PosApplication.getApp().oGPosTransaction.mTVR=value;
+        } else {
+            PosApplication.getApp().oGPosTransaction.mTVR=null;
+        }
+    }
+
+    private void setTSI() {
+        Log.i(TAG, "setTSI()");
+
+        String[] tags = new String[]{"9B"};
+        byte[] tlvBuf = new byte[4];
+        int tlvLength = 0;
+
+        try {
+            tlvLength = emvManager.readKernelData(tags, tlvBuf);
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+        Log.i(TAG, "------TSI tlvLength: " + tlvLength);
+        Log.i(TAG, "------TSI tlvBuf: " + BytesUtil.bytes2HexString(tlvBuf));
+
+        if (tlvLength == 4) {
+            byte[] value = new byte[2];
+            System.arraycopy(tlvBuf, 2, value, 0, 2);
+            PosApplication.getApp().oGPosTransaction.mTSI=value;
+        } else {
+            PosApplication.getApp().oGPosTransaction.mTSI=null;
+        }
+    }
 
 
     private byte[] getTlv(String[] tags) {

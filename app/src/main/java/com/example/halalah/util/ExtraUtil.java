@@ -3,13 +3,14 @@ package com.example.halalah.util;
 import android.text.format.DateFormat;
 import android.util.Log;
 
+//import com.example.halalah.PosApplication;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Date;
-
-//import com.example.halalah.PosApplication;
+import java.util.Locale;
 
 /**
  * @author xukun
@@ -22,7 +23,7 @@ public class ExtraUtil {
     public static String GetDate_Time(){
         Date d = new Date();
         CharSequence s = DateFormat.format("MMddHHmmss", d.getTime());
-       return s.toString();
+        return s.toString();
 
     }
 
@@ -65,5 +66,18 @@ public class ExtraUtil {
         version.append(content.toString());
         Log.i("topwise","getCustomVersionMsg: " + version.toString());
         return version.toString();
+    }
+
+    public static String padLeftZeros(String inputString, int length) {
+        if (inputString.length() >= length) {
+            return inputString;
+        }
+        StringBuilder sb = new StringBuilder();
+        while (sb.length() < length - inputString.length()) {
+            sb.append('0');
+        }
+        sb.append(inputString);
+
+        return sb.toString();
     }
 }

@@ -3,6 +3,7 @@ package com.example.halalah.emv;
 import android.os.Bundle;
 import android.os.RemoteException;
 import android.text.TextUtils;
+import android.util.Log;
 
 import com.example.halalah.DeviceTopUsdkServiceManager;
 import com.example.halalah.qrcode.utils.SDKLog;
@@ -80,6 +81,16 @@ public class PayWaveProcess extends BasePayProcess {
                 }
             }
             listener.nextTransStep(PayDataUtil.CallbackSort.REQUEST_FINAL_AID_SELECT, null);
+            /////added on 1/9/2020 for fix cvm issues
+            byte[] TTQTlv = new byte[7];
+            TTQTlv[0] = (byte)0x9F;
+            TTQTlv[1] = (byte)0x66;
+            TTQTlv[2] = (byte)0x04;
+            System.arraycopy(preProcResult.getAucReaderTTQ(), 0, TTQTlv, 3, 4);
+            Log.d(TAG, "TTQTlv: " + BytesUtil.bytes2HexString(TTQTlv));
+            paywave.setTLVDataList(TTQTlv, TTQTlv.length);
+
+            //////////////////////////////////
 
             byte[] dataBuf = new byte[1];
             res = paywave.gpoProc(dataBuf);
@@ -144,6 +155,14 @@ public class PayWaveProcess extends BasePayProcess {
                     listener.nextTransStep(PayDataUtil.CallbackSort.REQUEST_IMPORT_PIN, bundle);
                 }
             }
+
+            //VISA CDET needs
+          /*  if (PayDataUtil.AC_ARQC == ucAcType[0]) {
+                SDKLog.d(TAG, "ARQC online, request Pin");
+                Bundle bundle = new Bundle();
+                bundle.putInt(PayDataUtil.CardCode.IMPORT_PIN_TYPE, PayDataUtil.PINTYPE_ONLINE);
+                listener.nextTransStep(PayDataUtil.CallbackSort.REQUEST_IMPORT_PIN, bundle);
+            }*/
 
             switch (ucAcType[0]) {
                 case PayDataUtil.AC_TC:

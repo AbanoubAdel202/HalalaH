@@ -9,6 +9,7 @@ import android.os.RemoteException;
 import android.util.Log;
 
 import com.topwise.cloudpos.aidl.AidlDeviceService;
+import com.topwise.cloudpos.aidl.buzzer.AidlBuzzer;
 import com.topwise.cloudpos.aidl.emv.level2.AidlAmex;
 import com.topwise.cloudpos.aidl.emv.level2.AidlEmvL2;
 import com.topwise.cloudpos.aidl.emv.level2.AidlEntry;
@@ -23,6 +24,8 @@ import com.topwise.cloudpos.aidl.printer.AidlPrinter;
 import com.topwise.cloudpos.aidl.rfcard.AidlRFCard;
 import com.topwise.cloudpos.aidl.shellmonitor.AidlShellMonitor;
 import com.topwise.cloudpos.aidl.system.AidlSystem;
+import com.topwise.cloudpos.aidl.emv.level2.AidlQpboc;
+
 
 /**
  * @author xukun
@@ -50,6 +53,7 @@ public class DeviceTopUsdkServiceManager {
 
     public static void getmDeviceServiceManager() {
         synchronized (DeviceTopUsdkServiceManager.class) {
+
             mDeviceServiceManager = new DeviceTopUsdkServiceManager();
             Log.d("topwise","gz mDeviceServiceManager: " + mDeviceServiceManager);
             mDeviceServiceManager.mContext = PosApplication.getApp();
@@ -77,6 +81,7 @@ public class DeviceTopUsdkServiceManager {
         intent.setClassName(DEVICE_SERVICE_PACKAGE_NAME, DEVICE_SERVICE_CLASS_NAME);
 
         try {
+
             boolean bindResult = mContext.bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
             Log.i("topwise","bindResult = " + bindResult);
             return bindResult;
@@ -102,6 +107,7 @@ public class DeviceTopUsdkServiceManager {
         public void onServiceConnected(ComponentName componentName, IBinder service) {
             mDeviceService = AidlDeviceService.Stub.asInterface(service);
             Log.i("topwise","onServiceConnected  :  " + mDeviceService);
+            Log.d("topwise", "onServiceConnected: "+ mDeviceService);
         }
 
         @Override
@@ -164,6 +170,23 @@ public class DeviceTopUsdkServiceManager {
     }
 
 
+
+    public AidlBuzzer getBeepManager() {
+
+        AidlBuzzer aidlBuzzer = AidlBuzzer.Stub.asInterface(getBeep());
+
+        return aidlBuzzer;
+    }
+    public IBinder getBeep() {
+        try {
+            if (mDeviceService != null) {
+                return mDeviceService.getBuzzer();
+            }
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
     public IBinder getPrinter() {
         try {
             if (mDeviceService != null) {
@@ -345,4 +368,15 @@ public class DeviceTopUsdkServiceManager {
         }
         return null;
     }
+    public AidlQpboc getL2Qpboc() {
+        try {
+            if (mDeviceService != null) {
+                return AidlQpboc.Stub.asInterface(mDeviceService.getL2Qpboc());
+            }
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
 }

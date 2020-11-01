@@ -1,12 +1,27 @@
 package com.example.halalah;
 
+import android.content.Context;
+import android.util.Log;
 import android.widget.Switch;
 
-public class SAF_Info {
+import com.example.halalah.storage.SaveLoadFile;
+
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
+
+public class SAF_Info implements Serializable {
 
 
 
-    enum DESAFtype{
+
+
+
+    public enum DESAFtype{
         PARTIAL,
         FULL
     }
@@ -15,13 +30,13 @@ public class SAF_Info {
     int m_iMax_SAF_Cumulative_Amount;
     int       m_iSAFTrxNumber;              // Number of saved transactions in SAF file
     double    m_dSAFCumulativeAmount;       // Total amount of approved transaction (calculation based on reconciliation as debit++ , credit-- , reversal(refund ++) -- )
-    int    DeSAF_partial_count=2;
-    int    DeSAF_count;
+    int    DeSAF_partial_count=2;   //used to do desaf after each transaction
+
 
 
     POSTransaction[] m_posTransactions_SAF;
 
-    SAF_Info(){
+    public SAF_Info(){
 
         m_posTransactions_SAF= new POSTransaction[m_iMax_SAF_Depth];
         m_iMax_SAF_Cumulative_Amount=0;
@@ -45,28 +60,204 @@ public class SAF_Info {
         return SAFTransaction;
 
     }
-    public static void SAVE_IN_SAF(POSTransaction oPostrx)
-    {
-                       //todo save pos_transaction in DB
+
+    public static void Load_TRX_from_Reversal() {
+
 
     }
+
+    public static POSTransaction Load_trx_from_SAF() {
+
+        POSTransaction SAFTRX = new POSTransaction();
+
+        POSTransaction[] AllSAF =Load_from_SAF();
+
+        SAFTRX=AllSAF[0];
+
+
+
+
+        return SAFTRX;
+    }
+    public static void Deletetopsaf() {
+        POSTransaction SAFTRX = new POSTransaction();
+
+        POSTransaction[] AllSAF=Load_from_SAF();
+        POSTransaction[] newSAfarry= new POSTransaction[AllSAF.length-1];
+        SAFTRX=AllSAF[0];
+        //check if top is the same as desaf transaction
+
+        if (SAFTRX.m_sRRNumber.equals(PosApplication.getApp().oGPosTransaction.m_sOrigRRNumber)) {
+
+            System.arraycopy(AllSAF, 1, newSAfarry, 0, newSAfarry.length);
+                SaveallSaf(newSAfarry);
+                //todo save backup in case faliure of saving
+        }
+    }
+
+    private static void SaveallSaf(POSTransaction[] newSAfarry) {
+        Context context = null;
+        FileOutputStream fos = null;
+        ObjectOutputStream os = null;
+        context=PosApplication.getApp().getApplicationContext();
+
+        try {
+
+
+            fos = context.openFileOutput("SAF", Context.MODE_PRIVATE);
+            os = new ObjectOutputStream(fos);
+            os.writeObject(newSAfarry);
+
+            os.close();
+            fos.close();
+        }
+        catch(FileNotFoundException e)
+        {
+            Log.d("SaveLoadFile", "Savetransaction: File not found");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void SAVE_IN_SAF(POSTransaction oSAFPostrx)
+    {
+        Context context = null;
+        FileOutputStream fos = null;
+        ObjectOutputStream os = null;
+        context=PosApplication.getApp().getApplicationContext();
+        POSTransaction temp[]=null;
+        POSTransaction SAFarray[]=null;
+        if (PosApplication.getApp().oGTerminal_Operation_Data.saf_info.m_iSAFTrxNumber>0) {
+            temp = SAF_Info.Load_from_SAF();
+            SAFarray = new POSTransaction[temp.length + 1];
+            System.arraycopy(temp, 0, SAFarray, 0, temp.length);
+            SAFarray[temp.length] = oSAFPostrx;
+        }
+        else {
+            SAFarray = new POSTransaction[1];
+            SAFarray[0] = oSAFPostrx;
+        }
+
+        //todo backup incase of faliure
+        try {
+
+
+            fos = context.openFileOutput("SAF", Context.MODE_PRIVATE);
+            os = new ObjectOutputStream(fos);
+            os.writeObject(SAFarray);
+            
+
+
+            os.close();
+            fos.close();
+        }
+        catch(FileNotFoundException e)
+        {
+            Log.d("SaveLoadFile", "Savetransaction: File not found");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+
+
+
+    }
+
+
+
+
+
     public static void SAVE_IN_REV(POSTransaction oPostrax)
     {
-        //todo save transaction reversal
+        Context context = null;
+        FileOutputStream fos = null;
+        ObjectOutputStream os = null;
+        context=PosApplication.getApp().getApplicationContext();
+        POSTransaction temp[]=null;
+        POSTransaction SAFarray[]=null;
+        if (PosApplication.getApp().oGTerminal_Operation_Data.saf_info.m_iSAFTrxNumber>0) {
+            temp = SAF_Info.Load_from_SAF();
+            SAFarray = new POSTransaction[temp.length + 1];
+            System.arraycopy(temp, 0, SAFarray, 0, temp.length);
+            SAFarray[temp.length] = oPostrax;
+        }
+        else {
+            SAFarray = new POSTransaction[1];
+            SAFarray[0] = oPostrax;
+        }
+        try {
+
+
+            fos = context.openFileOutput("REVERSAL", Context.MODE_PRIVATE);
+            os = new ObjectOutputStream(fos);
+            os.writeObject(SAFarray);
+
+            os.close();
+            fos.close();
+        }
+        catch(FileNotFoundException e)
+        {
+            Log.d("SaveLoadFile", "Savetransaction: File not found");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+
 
     }
-    public static POSTransaction Load_from_SAF()
-    {   POSTransaction oSAF_transaction=null;
+    public static POSTransaction[] Load_from_SAF()
+    {      POSTransaction SAFarray[] = new POSTransaction[PosApplication.getApp().oGTerminal_Operation_Data.saf_info.m_iSAFTrxNumber];
 
-        //todo load SAF Transaction;
+        ObjectInputStream isr = null;
+        try {
+            FileInputStream fIn = PosApplication.getApp().getApplicationContext().openFileInput("SAF");
+            isr = new ObjectInputStream(fIn);
+        } catch (FileNotFoundException e) {
+            Log.d("SaveLoadFile", "Savetransaction: File not found");
+        } catch (Exception e) {
 
-        return oSAF_transaction;
+        }
+
+        // Fill the Buffer with data from the file
+        try {
+            SAFarray = (POSTransaction[]) isr.readObject();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+
+        return SAFarray;
 
     }
+
+
+
+
     public static POSTransaction Load_from_Reversal()
-    {       POSTransaction oSAF_transaction=null;
-            //todo get data and set it in return original transaction for reversal
-            return oSAF_transaction;
+    {        POSTransaction RevTRX = new POSTransaction();
+
+        ObjectInputStream isr = null;
+        try {
+            FileInputStream fIn = PosApplication.getApp().getApplicationContext().openFileInput("SAF");
+            isr = new ObjectInputStream(fIn);
+        } catch (FileNotFoundException e) {
+            Log.d("SaveLoadFile", "Savetransaction: File not found");
+        } catch (Exception e) {
+
+        }
+
+        // Fill the Buffer with data from the file
+        try {
+            RevTRX = (POSTransaction) isr.readObject();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return RevTRX;
     }
 
     /**

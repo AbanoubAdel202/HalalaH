@@ -8,6 +8,7 @@ import android.os.RemoteException;
 import android.util.Log;
 
 import com.example.halalah.DeviceTopUsdkServiceManager;
+import com.example.halalah.HostTotals;
 import com.example.halalah.PosApplication;
 import com.example.halalah.R;
 import com.example.halalah.Utils;
@@ -16,9 +17,11 @@ import com.topwise.cloudpos.aidl.printer.AidlPrinter;
 import com.topwise.cloudpos.aidl.printer.AidlPrinterListener;
 import com.topwise.cloudpos.aidl.printer.PrintItemObj;
 import com.topwise.cloudpos.data.PrinterConstant;
+import com.topwise.template.Align;
+import com.topwise.template.PrintTemplate;
+import com.topwise.template.TextUnit;
 
 import java.util.ArrayList;
-
 public class Purchase_Print {
     private static final String TAG = Utils.TAGPUBLIC + Purchase_Print.class.getSimpleName();
 
@@ -44,15 +47,22 @@ public class Purchase_Print {
         mPrintObjs = new ArrayList<PrintItemObj>();
 
         mDisplay_PrintActivity = display_PrintActivity;
-        /*mScanSuccessActivity = scanSuccessActivity;*/
+
+    }
+    public Purchase_Print() {
+        mPrinterManager = DeviceTopUsdkServiceManager.getInstance().getPrintManager();
+        mPrintObjs = new ArrayList<PrintItemObj>();
+
+
+
     }
 
-    public void printDetail(String printMsg) {
-        Log.i(TAG, "printDetail, printMsg = "+printMsg);
+    public void printDetail() {
+        Log.i(TAG, "printDetail, printMsg Started ");
 
         if (mDisplay_PrintActivity != null) {
             mContext = mDisplay_PrintActivity;
-            getPurchase_PrintString(printMsg);
+            getPurchase_PrintString();
 
         }
 
@@ -63,11 +73,11 @@ public class Purchase_Print {
             Typeface typeface = Typeface.createFromAsset(mContext.getAssets(), "hwzs.ttf");
             String startTime = getCurTime();
 
-//            PrintTemplate template = new PrintTemplate(mContext,typeface);
-//            template.setStrokeWidth(0.1f);
-//            int textSize = TextUnit.TextSize.NORMAL;
-//
-//          template.add(new TextUnit("هلا للمدفوعات",24, Align.CENTER).setLineSpacing(10));
+            PrintTemplate template = new PrintTemplate(mContext,typeface);
+            template.setStrokeWidth(0.1f);
+            int textSize = TextUnit.TextSize.NORMAL;
+
+            template.add(new TextUnit("هلا للمدفوعات",24, Align.CENTER).setLineSpacing(10));
 
             try {
                 Bitmap bitmap = BitmapFactory.decodeResource(mContext.getResources(), R.drawable.halalah);
@@ -80,7 +90,7 @@ public class Purchase_Print {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
             }
-          //  mPrinterManager.addRuiImage(template.getPrintBitmap(),0);
+            mPrinterManager.addRuiImage(template.getPrintBitmap(),0);
             mPrinterManager.printRuiQueue(new AidlPrinterListener.Stub() {
                 @Override
                 public void onError(int i) throws RemoteException {
@@ -141,7 +151,7 @@ public class Purchase_Print {
         Log.i(TAG, "startPrint end");
     }
 
-    private void getPurchase_PrintString(String printMsg) {
+    private void getPurchase_PrintString() {
         Log.i(TAG, "getPurchase_PrintString()");
 
 
@@ -150,17 +160,18 @@ public class Purchase_Print {
         mPrintObjs.add(getPrintItemObjs("time:"+curTime, PrinterConstant.FontSize.LARGE,true, PrintItemObj.ALIGN.CENTER));
         mPrintObjs.add(getPrintItemObjs("TID:"+PosApplication.getApp().oGPosTransaction.m_sTerminalID,PrinterConstant.FontSize.NORMAL,true,PrintItemObj.ALIGN.LEFT));
         mPrintObjs.add(getPrintItemObjs("MID:"+PosApplication.getApp().oGPosTransaction.m_sMerchantID,PrinterConstant.FontSize.NORMAL,true,PrintItemObj.ALIGN.LEFT));
-        mPrintObjs.add(getPrintItemObjs("هلا للمدفوعات", PrinterConstant.FontSize.LARGE,false, PrintItemObj.ALIGN.RIGHT));
+  //      mPrintObjs.add(getPrintItemObjs("هلا للمدفوعات", PrinterConstant.FontSize.LARGE,false, PrintItemObj.ALIGN.RIGHT));
         mPrintObjs.add(getPrintItemObjs("Amount:"+PosApplication.getApp().oGPosTransaction.m_sTrxAmount,PrinterConstant.FontSize.LARGE,true,PrintItemObj.ALIGN.LEFT));
         mPrintObjs.add(getPrintItemObjs(PosApplication.getApp().oGPosTransaction.m_sPAN,PrinterConstant.FontSize.LARGE,true,PrintItemObj.ALIGN.CENTER));
         mPrintObjs.add(getPrintItemObjs("RRN:"+PosApplication.getApp().oGPosTransaction.m_sRRNumber,PrinterConstant.FontSize.NORMAL,true,PrintItemObj.ALIGN.LEFT));
-        mPrintObjs.add(getPrintItemObjs(PosApplication.getApp().oGPosTransaction.m_card_scheme.m_sCard_Scheme_Name_English+"      "+PosApplication.getApp().oGPosTransaction.m_enmTrxCVM.toString() ,PrinterConstant.FontSize.NORMAL,true,PrintItemObj.ALIGN.LEFT));
+        mPrintObjs.add(getPrintItemObjs(PosApplication.getApp().oGPosTransaction.m_card_scheme.m_sCard_Scheme_Name_English+"      CVM:"+PosApplication.getApp().oGPosTransaction.m_enmTrxCVM.toString() ,PrinterConstant.FontSize.NORMAL,true,PrintItemObj.ALIGN.LEFT));
 
         mPrintObjs.add(getPrintItemObjs("------------------------------",PrinterConstant.FontSize.NORMAL,true,PrintItemObj.ALIGN.CENTER));
         mPrintObjs.add(getPrintItemObjs("thank you for using Hala",PrinterConstant.FontSize.NORMAL,false,PrintItemObj.ALIGN.CENTER));
         mPrintObjs.add(getPrintItemObjs("------------------------------",PrinterConstant.FontSize.NORMAL,true,PrintItemObj.ALIGN.CENTER));
         mPrintObjs.add(getPrintItemObjs(mContext.getString(R.string.print_confirm_transaction), 8, true, PrintItemObj.ALIGN.LEFT));
         mPrintObjs.add(getPrintItemObjs("\n\n\n\n",PrinterConstant.FontSize.NORMAL,true,PrintItemObj.ALIGN.CENTER));
+        mPrintObjs.add(getPrintItemObjs("going ICC DATA:"+PosApplication.getApp().oGPosTransaction.m_sICCRelatedTags,PrinterConstant.FontSize.NORMAL,false,PrintItemObj.ALIGN.LEFT));
 
     }
 

@@ -18,7 +18,7 @@
             android:orientation="horizontal">
 
             <Button
-                android:id="@+id/authorization_btn"
+                android:id="@+id/auth_btn"
                 android:layout_width="100dp"
                 android:layout_height="100dp"
                 android:layout_gravity="center"
@@ -31,8 +31,8 @@
 
             <Button
                 android:id="@+id/Refund_btn"
-                android:layout_width="100dp"
-                android:layout_height="100dp"
+                android:layout_width="53dp"
+                android:layout_height="103dp"
                 android:layout_gravity="center"
                 android:layout_marginStart="20dp"
                 android:layout_marginTop="32dp"
@@ -41,17 +41,18 @@
                 android:text="@string/Refund" />
 
             <Button
-                android:id="@+id/preauthorization_btn"
+                android:id="@+id/Reversal_btn"
                 android:layout_width="100dp"
                 android:layout_height="100dp"
+                android:layout_gravity="center"
                 android:layout_marginStart="20dp"
                 android:layout_marginTop="32dp"
-                android:layout_gravity="center"
 
                 android:background="@drawable/btn1"
                 android:clickable="true"
                 android:onClick="onClick"
-                android:text="@string/preauthorization" />
+                android:text="@string/reversal" />
+
         </LinearLayout>
 
         <LinearLayout
@@ -80,6 +81,20 @@
                 android:background="@drawable/mada_btn"
                 android:clickable="true"
                 android:onClick="onClick" />
+
+            <Button
+                android:id="@+id/sadad_btn"
+                android:layout_width="100dp"
+                android:layout_height="100dp"
+                android:layout_gravity="center"
+                android:layout_marginStart="20dp"
+                android:layout_marginTop="32dp"
+
+                android:layout_weight="1"
+                android:background="@drawable/btn1"
+                android:clickable="true"
+                android:onClick="onClick"
+                android:text="@string/SADAD" />
         </LinearLayout>
 
         <LinearLayout
@@ -110,7 +125,26 @@
                 android:clickable="true"
                 android:onClick="onClick"
                 android:text="@string/Purchase_Advice" />
+
+            <Button
+                android:id="@+id/authorization_advice_btn"
+                android:layout_width="100dp"
+                android:layout_height="100dp"
+                android:layout_gravity="center"
+                android:layout_marginStart="20dp"
+                android:layout_marginTop="32dp"
+                android:layout_weight="1"
+                android:background="@drawable/btn3"
+                android:clickable="true"
+                android:onClick="onClick"
+                android:text="@string/Auth_Advice" />
         </LinearLayout>
+
+        <Button
+            android:id="@+id/desaf_btn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Desaf" />
 
     </LinearLayout>
 

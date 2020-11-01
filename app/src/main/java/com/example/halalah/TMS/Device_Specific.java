@@ -4,8 +4,10 @@ import com.example.halalah.sqlite.database.BaseModel;
 import com.example.halalah.sqlite.database.Column;
 import com.example.halalah.sqlite.database.Table;
 
+import java.io.Serializable;
+
 @Table(name = "Device_Specific")
-public class Device_Specific extends BaseModel {
+public class Device_Specific extends BaseModel implements Serializable {
 
     private Limits p1Limits;
     @Column(name = "p1LimitsStr")

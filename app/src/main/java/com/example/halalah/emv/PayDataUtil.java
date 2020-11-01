@@ -1,10 +1,15 @@
 package com.example.halalah.emv;
 
+import android.util.Log;
+
+import com.example.halalah.database.table.Capk;
 import com.example.halalah.qrcode.utils.SDKLog;
 import com.topwise.cloudpos.struct.BytesUtil;
 import com.topwise.cloudpos.struct.Tlv;
 import com.topwise.cloudpos.struct.TlvList;
 
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
@@ -46,8 +51,12 @@ class PayDataUtil {
     static final byte KERNTYPE_JCB = 0x05;
     static final byte KERNTYPE_ZIP = 0x06; //Discover ZIP or 16
     static final byte KERNTYPE_DPAS = 0x06;//Discover DPAS
+    static final byte KERNTYPE_QPBOC = 0x07;
+
     static final byte KERNTYPE_RUPAY = 0x0D;
-    static final byte  KERNTYPE_PURE = 0x12;
+    static final byte  KERNTYPE_PURE = 0x2D;
+
+
     /**
      * auth handle response code
      */
@@ -168,6 +177,8 @@ class PayDataUtil {
         static final byte TRANS_SECOND_READ = 0x18;
         static final byte TRANS_OTHER = 0x06;
         static final byte CDCVM_SECOND_READ_CARD = 0x19;
+        static final byte TRANS_AGAIN_CHECK_CARD = 0x20;
+
     }
 
     /**
@@ -264,6 +275,8 @@ class PayDataUtil {
             default:
                 break;
         }
+        SDKLog.d(TAG, "getTransDateTime: " + result);
+
         return result;
     }
 
@@ -314,5 +327,41 @@ class PayDataUtil {
         //list.addTlv("DF8104","");
         //list.addTlv("DF8105","");
         return list;
+    }
+
+    public static byte[] getSHA1(byte[] buf, int offset, int len) {
+        if (buf == null) {
+            return null;
+        }
+        if (offset < 0) {
+            return null;
+        }
+        if (len == 0) {
+            return null;
+        }
+
+        byte[] SHA1 = null;
+        byte[] data = new byte[len];
+        System.arraycopy(buf, offset, data, 0, len);
+
+        try {
+            MessageDigest messageDigest = MessageDigest.getInstance("SHA");
+            SHA1 = messageDigest.digest(data);
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
+
+        return SHA1;
+    }
+
+    public static byte[] getCAPKChecksum(Capk capk) {
+        byte[] data = new byte[5 + 1 + capk.getModul().length + capk.getExponent().length];
+        System.arraycopy(BytesUtil.hexString2Bytes(capk.getRid()), 0, data, 0, 5);
+        data[5] = capk.getIndex();
+        System.arraycopy(capk.getModul(), 0, data, 6, capk.getModul().length);
+        System.arraycopy(capk.getExponent(), 0, data, 6 + capk.getModul().length, capk.getExponent().length);
+        byte[] sha1 = PayDataUtil.getSHA1(data, 0, data.length);
+        Log.d(TAG, "getCAPKChecksum, sha1: " + BytesUtil.bytes2HexString(sha1));
+        return sha1;
     }
 }

@@ -1,54 +1,412 @@
 package com.example.halalah;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.RemoteException;
 import android.util.Log;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.Toast;
 
 import com.example.halalah.TMS.AID_Data;
 import com.example.halalah.TMS.Card_Scheme;
+import com.example.halalah.TMS.Device_Specific;
 import com.example.halalah.TMS.Public_Key;
 import com.example.halalah.TMS.SAMA_TMS;
+import com.example.halalah.TMS.TMSManager;
+import com.example.halalah.cloudpos.data.AidlErrorCode;
+import com.example.halalah.connect.HeadersInterceptor;
+import com.example.halalah.connect.TCPCommunicator;
+import com.example.halalah.connect.TCPListener;
+import com.example.halalah.print.DESAF_Print;
+import com.example.halalah.registration.view.ITransaction;
+import com.example.halalah.card.CardManager;
 import com.example.halalah.connect.CommunicationsHandler;
 import com.example.halalah.connect.SendReceiveListener;
+import com.example.halalah.iso8583.BCDASCII;
 import com.example.halalah.iso8583.ISO8583;
-import com.example.halalah.packet.UnpackPurchase;
-import com.example.halalah.registration.view.ITransaction;
+import com.example.halalah.packet.UnpackPacket;
+import com.example.halalah.packet.UnpackResponse;
+import com.example.halalah.print.Purchase_Print;
+import com.example.halalah.print.Reconsile_Print;
 import com.example.halalah.secure.DUKPT_KEY;
 import com.example.halalah.sqlite.database.DBManager;
 import com.example.halalah.storage.CommunicationInfo;
+import com.example.halalah.storage.SaveLoadFile;
 import com.example.halalah.ui.AmountInputActivity;
+
+import com.example.halalah.ui.Declined_Display_Print;
+import com.example.halalah.ui.Display_PrintActivity;
 import com.example.halalah.ui.P_NAQD_InputActivity;
 import com.example.halalah.ui.PacketProcessActivity;
+import com.example.halalah.ui.PinpadActivity;
+import com.example.halalah.ui.SearchCardActivity;
+import com.example.halalah.util.BytesUtil;
+import com.example.halalah.util.ExtraUtil;
 import com.example.halalah.ui.Refund_InputActivity;
 import com.topwise.cloudpos.aidl.printer.AidlPrinter;
 
+import java.util.Arrays;
 import java.util.Locale;
 
-/**
- * Header POS Main
- * \Class Name: POS_MAIN
- * \Param  :
- * \Return :
- * \Pre    :
- * \Post   :
- * \Author	: Mostafa Hussiny
- * \DT		: 4/28/2020
- * \Des    : main control of transaction flow methods
+/** Header POS Main
+ \Class Name: POS_MAIN
+ \Param  :
+ \Return :
+ \Pre    :
+ \Post   :
+ \Author	: Mostafa Hussiny
+ \DT		: 4/28/2020
+ \Des    : main control of transaction flow methods
  */
-public class POS_MAIN implements SendReceiveListener {
+public class POS_MAIN implements SendReceiveListener , TCPListener  {
     private static final String TAG = POS_MAIN.class.getSimpleName();
     public static boolean isforced;
     private static boolean cont;
+    private ITransaction.View mView;
+    private HeadersInterceptor headersInterceptor = new HeadersInterceptor();
+    private static CommunicationInfo mCommunicationInfo;
 
 
-    public Context mcontext;
-    public Flowtrxtype m_enumflowtype;
+    private Handler UIHandler = new Handler();
+
+    @Override
+    public void onTCPMessageRecieved(byte[] receivedPacket) {
+
+        receivedPacket = Arrays.copyOfRange(receivedPacket, 7, receivedPacket.length);
+
+        Log.d(TAG, "POS_MAIN onSuccess: start");
+        byte[] responseMTI = BytesUtil.subBytes(receivedPacket, 0, 4);
+        String sresponseMTI = BCDASCII.asciiByteArray2String(responseMTI);
+        if (sresponseMTI.equals("1434")) { //parse reversal
+
+            Parse_reversal_Response(receivedPacket);
+            //  CommunicationsHandler.getInstance(new CommunicationInfo(PosApplication.getApp().getApplicationContext())).closeConnection();
+        } else if (sresponseMTI.equals("1534")) {
+            // PosApplication.getApp().oGTerminal_Operation_Data.breconsile_flag=false;
+            Parse_RECONSILE_response(receivedPacket);
 
 
-    public POS_MAIN() {
+            //  CommunicationsHandler.getInstance(new CommunicationInfo(PosApplication.getApp().getApplicationContext())).closeConnection();
+
+        } else if (sresponseMTI.equals(("1314"))) {
+
+            parse_TMS_response(receivedPacket);
+            mView.showTMSupdateScreen();
+            // if (/* TMS not finished */)
+        }
+
+
+        // checks after Each receive
+
+        if (PosApplication.getApp().oGTerminal_Operation_Data.bDeSAF_flag & !PosApplication.getApp().oGTerminal_Operation_Data.breconsile_flag) {
+            Parse_DeSAF_Response(receivedPacket);
+
+            if (PosApplication.getApp().oGTerminal_Operation_Data.saf_info.m_iSAFTrxNumber > 0)
+                DeSAF(SAF_Info.DESAFtype.PARTIAL);
+        }
+
+        if (PosApplication.getApp().oGTerminal_Operation_Data.bDeSAF_flag & PosApplication.getApp().oGTerminal_Operation_Data.breconsile_flag)// RECONSILE with saf
+        {    if (PosApplication.getApp().oGTerminal_Operation_Data.saf_info.m_iSAFTrxNumber > 0) {
+                Parse_DeSAF_Response(receivedPacket);
+
+                if (PosApplication.getApp().oGTerminal_Operation_Data.saf_info.m_iSAFTrxNumber == 0) {
+                    PosApplication.getApp().oGTerminal_Operation_Data.bDeSAF_flag = false;
+                    StartReconciliation(false);
+                } else {
+                    DeSAF(SAF_Info.DESAFtype.FULL);
+                }
+            }
+        }
+        else {
+
+
+            if (!PosApplication.getApp().oGTerminal_Operation_Data.bDeSAF_flag & PosApplication.getApp().oGTerminal_Operation_Data.breconsile_flag)  //reconsile without saf
+            {
+                StartReconciliation(false);
+            }
+            else {
+
+                if (PosApplication.getApp().oGTerminal_Operation_Data.bDeSAF_flag & PosApplication.getApp().oGTerminal_Operation_Data.bTMS_flag) {
+                    if (PosApplication.getApp().oGTerminal_Operation_Data.saf_info.m_iSAFTrxNumber > 0) {
+                        Parse_DeSAF_Response(receivedPacket);
+                        DeSAF(SAF_Info.DESAFtype.FULL);
+                    } else {
+                        StartTMSDownload(false ,mView);
+                    }
+                }
+                else {
+
+                    if (!PosApplication.getApp().oGTerminal_Operation_Data.bDeSAF_flag & PosApplication.getApp().oGTerminal_Operation_Data.bTMS_flag)
+                        StartTMSDownload(false,mView);
+                }
+            }
+        }
+
 
     }
 
+
+
+    @Override
+    public void onTCPConnectionStatusChanged(boolean isConnectedNow) {
+
+
+    }
+
+
+    public enum Flowtrxtype {DESAF,
+        RECONSILE,
+        REVERSAL}
+    public Flowtrxtype m_enumflowtype;
+
+
+
+    public  Context mcontext;
+        public POS_MAIN()
+        {
+
+        }
+
+
+
+
+    public void Start_Transaction(POSTransaction oPos_trans, POSTransaction.TranscationType Trxtype, ITransaction.View transactionView)
+    {
+        PosApplication.getApp().oGPosTransaction.Reset();
+
+
+        Intent intent;
+
+        switch(Trxtype)
+        {
+            case PURCHASE://purchase
+
+                //get amount
+                intent= new Intent(mcontext, AmountInputActivity.class);
+                intent.putExtra("transaction Type",Trxtype);
+                mcontext.startActivity(intent);
+                break;
+            case PURCHASE_WITH_NAQD://PURCHASE_WITH_NAQD
+                //get amount
+                /* AmountACT = new Intent(mcontext, P_NAQD_InputActivity.class);
+                 AmountACT.putExtra("transaction Type",Trxtype);
+                mcontext.startActivity(AmountACT);*/
+                PosApplication.getApp().oGPosTransaction.m_sTrxAmount="500.35";
+                PosApplication.getApp().oGPosTransaction.m_sAdditionalAmount="200.80";
+
+                PosApplication.getApp().oGPosTransaction.m_enmTrxType= POSTransaction.TranscationType.PURCHASE_WITH_NAQD;
+                intent= new Intent(mcontext, SearchCardActivity.class);
+                mcontext.startActivity(intent);
+
+
+
+                break;
+            case REFUND://REFUND
+
+
+
+
+               /* // TODO get original transaction Type
+                AmountACT = new Intent(mcontext, Refund_InputActivity.class);
+                AmountACT.putExtra("transaction Type",Trxtype);
+                mcontext.startActivity(AmountACT);*/
+
+                PosApplication.getApp().oGPosTransaction.m_sTrxAmount="500.35";
+                PosApplication.getApp().oGPosTransaction.m_sOrigRRNumber="2233445566";
+                PosApplication.getApp().oGPosTransaction.m_sOrigTrxDateTime="2008251212";
+                PosApplication.getApp().oGPosTransaction.m_sOrigLocalTrxDateTime="200825121210";
+                PosApplication.getApp().oGPosTransaction.m_sOrigMTI="1200";
+
+                PosApplication.getApp().oGPosTransaction.m_enmTrxType= POSTransaction.TranscationType.REFUND;
+                intent= new Intent(mcontext, SearchCardActivity.class);
+                mcontext.startActivity(intent);
+
+                break;
+            case AUTHORISATION://AUTHORISATION:
+
+                PosApplication.getApp().oGPosTransaction.m_enmTrxType= POSTransaction.TranscationType.AUTHORISATION;
+                //get amount
+                intent = new Intent(mcontext, AmountInputActivity.class);
+                intent.putExtra("transaction Type",Trxtype);
+                mcontext.startActivity(intent);
+
+             /*   PosApplication.getApp().oGPosTransaction.m_sTrxAmount="500.35";
+                PosApplication.getApp().oGPosTransaction.m_enmTrxType= POSTransaction.TranscationType.AUTHORISATION;
+                searchcard= new Intent(mcontext, SearchCardActivity.class);
+                mcontext.startActivity(searchcard);*/
+
+                break;
+            case AUTHORISATION_ADVICE://AUTHORISATION_ADVICE:
+                //get amount
+               /* AmountACT = new Intent(mcontext, AmountInputActivity.class);
+                AmountACT.putExtra("transaction Type",Trxtype);
+                mcontext.startActivity(AmountACT);*/
+
+                PosApplication.getApp().oGPosTransaction.m_sTrxAmount="500.35";
+                PosApplication.getApp().oGPosTransaction.m_sOrigRRNumber="121323";
+                PosApplication.getApp().oGPosTransaction.m_sApprovalCode="123456";
+                PosApplication.getApp().oGPosTransaction.m_sOrigRRNumber="2233445566";
+                PosApplication.getApp().oGPosTransaction.m_sOrigTrxDateTime="2008251212";
+                PosApplication.getApp().oGPosTransaction.m_sActionCode="000";
+                PosApplication.getApp().oGPosTransaction.m_enmTrxType= POSTransaction.TranscationType.AUTHORISATION_ADVICE;
+                intent= new Intent(mcontext, SearchCardActivity.class);
+                mcontext.startActivity(intent);
+                break;
+            case AUTHORISATION_VOID://AUTHORISATION_VOID:
+               /* AmountACT = new Intent(mcontext, AmountInputActivity.class);
+                AmountACT.putExtra("transaction Type",Trxtype);*/
+                PosApplication.getApp().oGPosTransaction.m_sApprovalCode="AVOIDA";
+                PosApplication.getApp().oGPosTransaction.m_sActionCode="107";
+                PosApplication.getApp().oGPosTransaction.m_is_final=true;
+                PosApplication.getApp().oGPosTransaction.m_sTrxAmount="500.35";
+                PosApplication.getApp().oGPosTransaction.m_sOrigRRNumber="121323";
+                PosApplication.getApp().oGPosTransaction.m_sOrigAmount="500.35";
+                PosApplication.getApp().oGPosTransaction.m_sOrigLocalTrxDateTime="121212121212";
+                PosApplication.getApp().oGPosTransaction.m_sOrigMTI="1100";
+                PosApplication.getApp().oGPosTransaction.m_sOrigSTAN="120";
+                PosApplication.getApp().oGPosTransaction.m_sOrigTrxDateTime="101020201212";
+
+                PosApplication.getApp().oGPosTransaction.m_sOrigAquirerInsIDCode="1234";
+                PosApplication.getApp().oGPosTransaction.m_sOrigFWAquirerInsIDCode="00";
+
+                PosApplication.getApp().oGPosTransaction.m_sOrigLocalTrxDate="12122020";
+                PosApplication.getApp().oGPosTransaction.m_enum_OrigTRxtype= POSTransaction.TranscationType.AUTHORISATION;
+                PosApplication.getApp().oGPosTransaction.m_enmTrxType= POSTransaction.TranscationType.AUTHORISATION_VOID;
+                /*Bundle bundle=new Bundle();
+                bundle.putInt(PacketProcessUtils.PACKET_PROCESS_TYPE, PacketProcessUtils.PACKET_PROCESS_PURCHASE);
+                intent= new Intent(mcontext, PacketProcessActivity.class);
+                intent.putExtras(bundle);
+                mcontext.startActivity(intent);*/
+                intent= new Intent(mcontext, SearchCardActivity.class);
+                mcontext.startActivity(intent);
+                break;
+            case AUTHORISATION_EXTENSION://AUTHORISATION_EXTENSION
+                PosApplication.getApp().oGPosTransaction.m_sApprovalCode="EXTina";
+                PosApplication.getApp().oGPosTransaction.m_sActionCode="107";
+                PosApplication.getApp().oGPosTransaction.m_is_final=true;
+                PosApplication.getApp().oGPosTransaction.m_sTrxAmount="500.35";
+                PosApplication.getApp().oGPosTransaction.m_sOrigRRNumber="121323";
+                PosApplication.getApp().oGPosTransaction.m_sOrigAmount="500.35";
+                PosApplication.getApp().oGPosTransaction.m_sOrigLocalTrxDateTime="121212121212";
+                PosApplication.getApp().oGPosTransaction.m_sOrigMTI="1100";
+                PosApplication.getApp().oGPosTransaction.m_sOrigSTAN="120";
+                PosApplication.getApp().oGPosTransaction.m_sOrigTrxDateTime="2008251212";
+
+                PosApplication.getApp().oGPosTransaction.m_sOrigAquirerInsIDCode="1234";
+                PosApplication.getApp().oGPosTransaction.m_sOrigFWAquirerInsIDCode="00";
+
+                PosApplication.getApp().oGPosTransaction.m_sOrigLocalTrxDate="12122020";
+                PosApplication.getApp().oGPosTransaction.m_enum_OrigTRxtype= POSTransaction.TranscationType.AUTHORISATION;
+                PosApplication.getApp().oGPosTransaction.m_enmTrxType= POSTransaction.TranscationType.AUTHORISATION_EXTENSION;
+                intent= new Intent(mcontext, SearchCardActivity.class);
+                mcontext.startActivity(intent);
+                break;
+            case PURCHASE_ADVICE://PURCHASE_ADVICE:
+
+                PosApplication.getApp().oGPosTransaction.m_sApprovalCode="ABCDEFG";
+                PosApplication.getApp().oGPosTransaction.m_sActionCode="107";
+                PosApplication.getApp().oGPosTransaction.m_is_final=true;
+                PosApplication.getApp().oGPosTransaction.m_sOrigRRNumber="2233445566";
+                PosApplication.getApp().oGPosTransaction.m_sOrigTrxDateTime="2008251212";
+                intent = new Intent(mcontext, AmountInputActivity.class);
+                intent.putExtra("transaction Type",Trxtype);
+                mcontext.startActivity(intent);
+
+                break;
+
+            case CASH_ADVANCE://CASH_ADVANCE:
+
+                intent = new Intent(mcontext, AmountInputActivity.class);
+                intent.putExtra("transaction Type",Trxtype);
+                mcontext.startActivity(intent);
+                break;
+            case REVERSAL://REVERSAL
+
+                //todo check reversal time out
+                //todo check Transaction mode
+                PosApplication.getApp().oGPosTransaction=SaveLoadFile.Loadlasttransaction();
+                if(!Check_transaction_allowed(POSTransaction.TranscationType.REVERSAL))
+                {
+                    //todo reversal not allowed for this transaction
+                }
+
+                PosApplication.getApp().oGPosTransaction.m_sLocalTrxDateTime = ExtraUtil.Get_Local_Date_Time();
+                PosApplication.getApp().oGPosTransaction.reversal_status=1;
+                POSTransaction oReversal_Trx = null;
+                perform_reversal(PosApplication.getApp().oGPosTransaction,oReversal_Trx);
+
+
+                break;
+            case SADAD_BILL://SADAD_BILL:
+                //todo  sadad
+                break;
+            case RECONCILIATION://RECONCILIATION:
+                //todo
+                break;
+            case TMS_FILE_DOWNLOAD://TMS_FILE_DOWNLOAD:
+
+                Intent TMSprocess= new Intent(mcontext, PacketProcessActivity.class);
+                TMSprocess.putExtra("transaction Type",Trxtype);
+                mcontext.startActivity(TMSprocess);
+
+                break;
+            case TERMINAL_REGISTRATION://TREMINAL_REGISTRATION:
+
+
+
+                // based on Moamen Ahmed Registeration file , Terminal_Registeration.java also
+                PosApplication.getApp().oGTerminal_Registeration.StartRegistrationProcess(
+                        PosApplication.getApp().oGPosTransaction, transactionView);
+
+                break;
+            case ADMIN://ADMIN:
+                break;
+
+
+
+
+        }
+
+
+    }
+
+    /** Header POS Main
+     \function Name: Perform_reversal
+     \Param  :
+     \Return :
+     \Pre    :
+     \Post   :
+     \Author	: Mostafa Hussiny
+     \DT		: 6/00/2020
+     \Des    : will start collection and performe reversal transaction
+     */
+    public boolean perform_reversal(POSTransaction oOriginal_Transaction,POSTransaction oReversal_Transaction)
+    {
+
+        //todo check reversal allowed for the original transaction or not
+        oReversal_Transaction=oOriginal_Transaction;
+        oReversal_Transaction=SAF_Info.BuildSAFOriginals(oReversal_Transaction,oOriginal_Transaction);
+        oReversal_Transaction.m_enmTrxType= POSTransaction.TranscationType.REVERSAL;
+        oReversal_Transaction.m_sMTI=PosApplication.MTI_Reversal_Advice;
+
+
+        oReversal_Transaction.ComposeReversalMessage();
+        byte[] mSendPacket=oReversal_Transaction.m_RequestISOMsg.isotostr();
+  /*      CommunicationsHandler communicationsHandler = CommunicationsHandler.getInstance(new CommunicationInfo(PosApplication.getApp().getApplicationContext()));
+        communicationsHandler.setSendReceiveListener(this);
+        communicationsHandler.sendReceive(mSendPacket);*/
+        senddata(mSendPacket);
+
+        //todo  save in saf the reversal advice then printing copy of reversal then performe DESAF
+
+
+
+        return true;
+    }
     /** Header recognise card
      \function Name: recognise card
      \Param  :
@@ -59,18 +417,100 @@ public class POS_MAIN implements SendReceiveListener {
      \DT		: 4/28/2020  modified 1/7/2020
      \Des    : will get the card AID and check if this card is MAda based on AID or PAN
      */
-    public static int Recognise_card() {
-        int istate = -1;
-        if (PosApplication.getApp().oGPosTransaction.m_enmTrxCardType == POSTransaction.CardType.MANUAL || PosApplication.getApp().oGPosTransaction.m_enmTrxCardType == POSTransaction.CardType.MAG) {
-            istate = SAMA_TMS.Get_card_scheme_BY_PAN(PosApplication.getApp().oGPosTransaction.m_sPAN);
-            PosApplication.getApp().oGPosTransaction.m_is_mada = Check_MADA_Card();
+    public static int Recognise_card(){
+           int istate=-1;
+            if(PosApplication.getApp().oGPosTransaction.m_enmTrxCardType==POSTransaction.CardType.MANUAL || PosApplication.getApp().oGPosTransaction.m_enmTrxCardType==POSTransaction.CardType.MAG )
+               istate= SAMA_TMS.Get_card_scheme_BY_PAN(PosApplication.getApp().oGPosTransaction.m_sPAN);
+            else
+                istate=SAMA_TMS.Get_card_scheme_BY_AID(PosApplication.getApp().oGPosTransaction.m_sAID);
 
+        if (Check_MADA_Card())
+            PosApplication.getApp().oGPosTransaction.m_is_mada=true;
+        else
+            PosApplication.getApp().oGPosTransaction.m_is_mada=false;
 
-        } else
-            istate = SAMA_TMS.Get_card_scheme_BY_AID(PosApplication.getApp().oGPosTransaction.m_sAID);
 
         return istate;
 
+    }
+
+    /** Header  Check_transaction_allowed
+     \function Name: Check_transaction_allowed
+     \Param  : Transaction Type
+     \Return : boolean Transaction allowed or not
+     \Pre    :
+     \Post   :
+     \Author	: Mostafa Hussiny
+     \DT		: 6/00/2020
+     \Des    : check transaction allowed flag for each transaction
+     */
+    public static boolean Check_transaction_allowed(POSTransaction.TranscationType Trxtype) {
+
+            //note : Pre-authorization (includes PreAuthorization Extension), Purchase Advice (for Pre-Authorization Capture or Completion )
+            // and Correction/Reversal (including PreAuthorization Void/Partial Void)
+            // shall be configured for the mada scheme for POS terminals that support the Pre-Authorization and Capture service
+
+        switch (Trxtype) {
+            case PURCHASE://purchase  offset 0
+                if ('1'==PosApplication.getApp().oGPosTransaction.m_card_scheme.m_sTransactions_Allowed.charAt(0))
+                return true;
+                break;
+            case PURCHASE_WITH_NAQD://PURCHASE_WITH_NAQD                                 offset 1
+                if ('1'==PosApplication.getApp().oGPosTransaction.m_card_scheme.m_sTransactions_Allowed.charAt(1))
+                return true;
+                break;
+            case PURCHASE_ADVICE://PURCHASE_ADVICE:                                      offset 2
+            case AUTHORISATION_ADVICE://AUTHORISATION_ADVICE:
+                if ('1'==PosApplication.getApp().oGPosTransaction.m_card_scheme.m_sTransactions_Allowed.charAt(2))
+                return true;
+                break;
+            case REFUND://REFUND                                                         offset 3
+                if ('1'==PosApplication.getApp().oGPosTransaction.m_card_scheme.m_sTransactions_Allowed.charAt(3))
+                return true;
+                break;
+            case AUTHORISATION://AUTHORISATION:                                          offset 4
+                if ('1'==PosApplication.getApp().oGPosTransaction.m_card_scheme.m_sTransactions_Allowed.charAt(4))
+                return true;
+                break;
+            case CASH_ADVANCE://CASH_ADVANCE:                                            offset 5
+                if ('1'==PosApplication.getApp().oGPosTransaction.m_card_scheme.m_sTransactions_Allowed.charAt(5))
+                return true;
+                break;
+            case REVERSAL://REVERSAL:                                                    offset 6
+                if ('1'==PosApplication.getApp().oGPosTransaction.m_card_scheme.m_sTransactions_Allowed.charAt(6))
+                return true;
+                break;
+            case AUTHORISATION_EXTENSION://AUTHORISATION_EXTENSION                       offset 7
+                if ('1'==PosApplication.getApp().oGPosTransaction.m_card_scheme.m_sTransactions_Allowed.charAt(7)) {
+                    return true;
+                }else if(PosApplication.getApp().oGPosTransaction.m_is_mada)
+                {
+
+                    return true;
+                }
+                break;
+            case AUTHORISATION_VOID://AUTHORISATION_VOID:                                offset 8
+                if ('1'==PosApplication.getApp().oGPosTransaction.m_card_scheme.m_sTransactions_Allowed.charAt(8))
+                return true;
+                else if(PosApplication.getApp().oGPosTransaction.m_is_mada)
+                {
+
+                    return true;
+                }
+                break;
+            case SADAD_BILL://SADAD_BILL:                                                offset 9
+                if ('1'==PosApplication.getApp().oGPosTransaction.m_card_scheme.m_sTransactions_Allowed.charAt(9))
+                return true;
+                else if(PosApplication.getApp().oGPosTransaction.m_is_mada)
+                {
+
+                    return true;
+                }
+                break;
+
+
+        }
+        return false;  // transaction not allowed
     }
 
     /** Header  Check_transaction_limit
@@ -95,36 +535,36 @@ public class POS_MAIN implements SendReceiveListener {
 
         switch (Trxtype) {
             case PURCHASE://purchase  offset 0
-                if ("1".equals(PosApplication.getApp().oGTerminal_Operation_Data.m_sMaximum_transaction_amount_indicator.charAt(0)))
+                if ('1'==PosApplication.getApp().oGTerminal_Operation_Data.m_sMaximum_transaction_amount_indicator.charAt(0))
                     istate=1;
                 break;
             case PURCHASE_WITH_NAQD://PURCHASE_WITH_NAQD                                 offset 1
-                if ("1".equals(PosApplication.getApp().oGTerminal_Operation_Data.m_sMaximum_transaction_amount_indicator.charAt(1)))
+                if ('1'==PosApplication.getApp().oGTerminal_Operation_Data.m_sMaximum_transaction_amount_indicator.charAt(1))
                     istate=1;
                 break;
             case PURCHASE_ADVICE://PURCHASE_ADVICE:                                      offset 2
             case AUTHORISATION_ADVICE://AUTHORISATION_ADVICE:
-                if ("1".equals(PosApplication.getApp().oGTerminal_Operation_Data.m_sMaximum_transaction_amount_indicator.charAt(2)))
+                if ('1'==PosApplication.getApp().oGTerminal_Operation_Data.m_sMaximum_transaction_amount_indicator.charAt(2))
                     istate=1;
                 break;
             case REFUND://REFUND                                                         offset 3
-                if ("1".equals(PosApplication.getApp().oGTerminal_Operation_Data.m_sMaximum_transaction_amount_indicator.charAt(3)))
+                if ('1'==PosApplication.getApp().oGTerminal_Operation_Data.m_sMaximum_transaction_amount_indicator.charAt(3))
                     istate=1;
                 break;
             case AUTHORISATION://AUTHORISATION:                                          offset 4
-                if ("1".equals(PosApplication.getApp().oGTerminal_Operation_Data.m_sMaximum_transaction_amount_indicator.charAt(4)))
+                if ('1'==PosApplication.getApp().oGTerminal_Operation_Data.m_sMaximum_transaction_amount_indicator.charAt(4))
                     istate=1;
                 break;
             case CASH_ADVANCE://CASH_ADVANCE:                                            offset 5
-                if ("1".equals(PosApplication.getApp().oGTerminal_Operation_Data.m_sMaximum_transaction_amount_indicator.charAt(5)))
+                if ('1'==PosApplication.getApp().oGTerminal_Operation_Data.m_sMaximum_transaction_amount_indicator.charAt(5))
                     istate=1;
                 break;
             case REVERSAL://REVERSAL:                                                    offset 6
-                if ("1".equals(PosApplication.getApp().oGTerminal_Operation_Data.m_sMaximum_transaction_amount_indicator.charAt(6)))
+                if ('1'==PosApplication.getApp().oGTerminal_Operation_Data.m_sMaximum_transaction_amount_indicator.charAt(6))
                     istate=1;
                 break;
             case AUTHORISATION_EXTENSION://AUTHORISATION_EXTENSION                       offset 7
-                if ("1".equals(PosApplication.getApp().oGTerminal_Operation_Data.m_sMaximum_transaction_amount_indicator.charAt(7))) {
+                if ('1'==PosApplication.getApp().oGTerminal_Operation_Data.m_sMaximum_transaction_amount_indicator.charAt(7)) {
                     istate=1;
                 }else if(PosApplication.getApp().oGPosTransaction.m_is_mada)
                 {
@@ -133,7 +573,7 @@ public class POS_MAIN implements SendReceiveListener {
                 }
                 break;
             case AUTHORISATION_VOID://AUTHORISATION_VOID:                                offset 8
-                if ("1".equals(PosApplication.getApp().oGTerminal_Operation_Data.m_sMaximum_transaction_amount_indicator.charAt(8)))
+                if ('1'==PosApplication.getApp().oGTerminal_Operation_Data.m_sMaximum_transaction_amount_indicator.charAt(8))
                     istate=1;
                 else if(PosApplication.getApp().oGPosTransaction.m_is_mada)
                 {
@@ -142,7 +582,7 @@ public class POS_MAIN implements SendReceiveListener {
                 }
                 break;
             case SADAD_BILL://SADAD_BILL:                                                offset 9
-                if ("1".equals(PosApplication.getApp().oGTerminal_Operation_Data.m_sMaximum_transaction_amount_indicator.charAt(9)))
+                if ('1'==PosApplication.getApp().oGTerminal_Operation_Data.m_sMaximum_transaction_amount_indicator.charAt(9))
                     istate=1;
                 else if(PosApplication.getApp().oGPosTransaction.m_is_mada)
                 {
@@ -154,509 +594,46 @@ public class POS_MAIN implements SendReceiveListener {
 
         }
 
-        if (istate == 1) {
+        if(istate==1) {
 
-            if (Integer.parseInt(PosApplication.getApp().oGPosTransaction.m_sTrxAmount) > Integer.parseInt(PosApplication.getApp().oGTerminal_Operation_Data.m_sMaximum_transaction_amount))
-                istate = 0;
+            if (Long.parseLong(PosApplication.getApp().oGPosTransaction.m_sTrxAmount.replace(".",""))>Long.parseLong(PosApplication.getApp().oGTerminal_Operation_Data.m_sMaximum_transaction_amount))
+                istate=0;
             else
-                istate = -1;
+                istate=-1;
         }
 
 
         return istate;
     }
+    public boolean Check_manual_allowed()
+    {
+        if(PosApplication.getApp().oGPosTransaction.m_card_scheme.m_sManual_entry_allowed=="1")
+            return true;
+        else
+            return false;
+    }
+    public int Check_max_cashback(int cashbackamount)
+    {
+        //todo get max cash back
 
-    /**
-     * Header  Check_MADA_Card
-     * \function Name: Check_MADA_Card
-     * \Param  :
-     * \Return : boolean for true is mada
-     * \Pre    :
-     * \Post   :
-     * \Author	: Mostafa Hussiny
-     * \DT		: 6/00/2020
-     * \Des    : check card is mada or ICS
+        return 0;
+    }
+    /** Header  Check_MADA_Card
+     \function Name: Check_MADA_Card
+     \Param  :
+     \Return : boolean for true is mada
+     \Pre    :
+     \Post   :
+     \Author	: Mostafa Hussiny
+     \DT		: 6/00/2020
+     \Des    : check card is mada or ICS
      */
-    public static boolean Check_MADA_Card() {
-        return PosApplication.getApp().oGPosTransaction.m_card_scheme.m_sCard_Scheme_ID == "P1";
-    }
+    public static boolean Check_MADA_Card()
+    {
+        if(PosApplication.getApp().oGPosTransaction.m_card_scheme.m_sCard_Scheme_ID.equals("P1"))
+        return true;
 
-    public static String FormatCAKeys(Public_Key CAKeyObj) {
-        int iRetRes = 0;
-        StringBuilder strFormatedCAKey = new StringBuilder();
-
-        if (CAKeyObj == null) {
-            // log an error message
-            return String.valueOf(iRetRes);
-        }
-
-        // Adding RID
-        if (CAKeyObj.RID.length() > 0)
-            strFormatedCAKey.append("9F06" + String.format(Locale.ENGLISH, "%02d", CAKeyObj.RID.length() / 2) + CAKeyObj.RID);
-        else {
-            //Todo Log message showing can not format sent key due to incorrect length of RID
-            return String.valueOf(iRetRes);
-        }
-
-
-        // Adding Key_Index
-        if (CAKeyObj.Key_Index.length() > 0)
-            strFormatedCAKey.append("9F22" + String.format(Locale.ENGLISH, "%02d", CAKeyObj.Key_Index.length() / 2) + CAKeyObj.Key_Index);
-        else {
-            //Todo Log message showing can not format sent key due to incorrect length of Key_Index
-            return String.valueOf(iRetRes);
-        }
-
-        // Adding CA_Public_Key_Expiry_Date
-        if (CAKeyObj.CA_Public_Key_Expiry_Date.length() > 0)
-            strFormatedCAKey.append("DF05" +/*String.format(Locale.ENGLISH,"%02d",CAKeyObj.CA_Public_Key_Expiry_Date.length()/2)*/"0420" + CAKeyObj.CA_Public_Key_Expiry_Date);
-        else {
-            //Todo Log message showing can not format sent key due to incorrect length of CA_Public_Key_Expiry_Date
-            return String.valueOf(iRetRes);
-        }
-        // Adding Hash_ID
-        if (CAKeyObj.Hash_ID.length() > 0)
-            strFormatedCAKey.append("DF06" + String.format(Locale.ENGLISH, "%02d", CAKeyObj.Hash_ID.length() / 2) + CAKeyObj.Hash_ID);
-        else {
-            //Todo Log message showing can not format sent key due to incorrect length of Hash_ID
-            return String.valueOf(iRetRes);
-        }
-
-
-        // Adding Digital_Signature_ID
-        if (CAKeyObj.Digital_Signature_ID.length() > 0)
-            strFormatedCAKey.append("DF07" + String.format(Locale.ENGLISH, "%02d", CAKeyObj.Digital_Signature_ID.length() / 2) + CAKeyObj.Digital_Signature_ID);
-        else {
-            //Todo Log message showing can not format sent key due to incorrect length of Digital_Signature_ID
-            return String.valueOf(iRetRes);
-        }
-
-
-        // formating  Public Key Value  and Public_Key length
-        if (CAKeyObj.Public_Key.length() > 0 && CAKeyObj.CA_Public_Key_Length.length() > 0)
-            strFormatedCAKey.append("DF0281" + Integer.toHexString(CAKeyObj.Public_Key.length() / 2) + CAKeyObj.Public_Key);
-        else {
-            //Todo Log message showing can not format sent key due to incorrect length of Public_Key
-            return String.valueOf(iRetRes);
-        }
-
-        // Adding Exponent
-        if (CAKeyObj.Exponent.length() > 0)
-            strFormatedCAKey.append("DF04" + String.format(Locale.ENGLISH, "%02d", CAKeyObj.Exponent.length() / 2) + CAKeyObj.Exponent);
-        else {
-            //Todo Log message showing can not format sent key due to incorrect length of Exponent
-            return String.valueOf(iRetRes);
-        }
-
-        // Adding Check_Sum
-        if (CAKeyObj.Check_Sum.length() > 0)
-            strFormatedCAKey.append("DF03" + Integer.toHexString(CAKeyObj.Check_Sum.length() / 2)/*String.format(Locale.ENGLISH,"%02d",CAKeyObj.Check_Sum.length()/2)*/ + CAKeyObj.Check_Sum);
-        else {
-            //Todo Log message showing can not format sent key due to incorrect length of Check_Sum
-            return String.valueOf(iRetRes);
-        }
-
-
-        // Todo log Formated string for debugging
-
-        return strFormatedCAKey.toString();
-
-    }
-
-    public static boolean ValidateHostMAC() {
-        ISO8583 oResponseTrx = PosApplication.getApp().oGPosTransaction.m_ResponseISOMsg;
-
-        String sMAC = "";
-
-        switch (PosApplication.getApp().oGPosTransaction.m_enmTrxType) {
-            case AUTHORISATION:
-            case AUTHORISATION_EXTENSION:
-
-
-                //0.Messa   ge Type Identifier
-                sMAC = PosApplication.MTI_Authorisation_Request;
-                //1. Primary bitmap   todo get bitmap
-                sMAC = new String(oResponseTrx.Getbitmap());
-                //2.Primary Account Number (PAN)
-                sMAC.concat(new String(oResponseTrx.getDataElement(2)));
-                //3.Processing Code
-                sMAC.concat(new String(oResponseTrx.getDataElement(3)));
-                //4.Amount, Transaction
-                sMAC.concat(new String(oResponseTrx.getDataElement(4)));
-                //11.System Trace Audit Number
-                sMAC.concat(new String(oResponseTrx.getDataElement(11)));
-                //12.Date and Time, Local Transaction
-                sMAC.concat(new String(oResponseTrx.getDataElement(12)));
-                //39 Action code
-                sMAC.concat(new String(oResponseTrx.getDataElement(39)));
-                //47.National Data
-                sMAC.concat(new String(oResponseTrx.getDataElement(47)));
-                //53.Security Related Control Information
-                sMAC.concat(new String(oResponseTrx.getDataElement(53)));
-                //55.EMV Data
-                if (PosApplication.getApp().oGPosTransaction.m_enmTrxCardType == POSTransaction.CardType.ICC | PosApplication.getApp().oGPosTransaction.m_enmTrxCardType == POSTransaction.CardType.CTLS)
-                    sMAC.concat(new String(oResponseTrx.getDataElement(55)));
-                break;
-            case AUTHORISATION_ADVICE:
-                //0.Messa   ge Type Identifier
-                sMAC = PosApplication.MTI_Authorisation_Advice;
-                //1. Primary bitmap
-                sMAC = new String(oResponseTrx.Getbitmap());
-                //2.Primary Account Number (PAN)
-                sMAC.concat(new String(oResponseTrx.getDataElement(2)));
-                //3.Processing Code
-                sMAC.concat(new String(oResponseTrx.getDataElement(3)));
-                //4.Amount, Transaction
-                sMAC.concat(new String(oResponseTrx.getDataElement(4)));
-                //11.System Trace Audit Number
-                sMAC.concat(new String(oResponseTrx.getDataElement(11)));
-                //12.Date and Time, Local Transaction
-                sMAC.concat(new String(oResponseTrx.getDataElement(12)));
-                //39 Action code
-                sMAC.concat(new String(oResponseTrx.getDataElement(39)));
-                //47.National Data
-                sMAC.concat(new String(oResponseTrx.getDataElement(47)));
-                //53.Security Related Control Information
-                sMAC.concat(new String(oResponseTrx.getDataElement(53)));
-                //55.EMV Data
-                if (PosApplication.getApp().oGPosTransaction.m_enmTrxCardType == POSTransaction.CardType.ICC | PosApplication.getApp().oGPosTransaction.m_enmTrxCardType == POSTransaction.CardType.CTLS)
-                    sMAC.concat(new String(oResponseTrx.getDataElement(55)));
-
-                break;
-            case REFUND:
-            case CASH_ADVANCE:
-            case PURCHASE_WITH_NAQD:
-            case PURCHASE:
-                //0.Messa   ge Type Identifier
-                sMAC = PosApplication.MTI_Financial_Request;
-                //1. Primary bitmap
-                sMAC = new String(oResponseTrx.Getbitmap());
-                //2.Primary Account Number (PAN)
-                sMAC.concat(new String(oResponseTrx.getDataElement(2)));
-                //3.Processing Code
-                sMAC.concat(new String(oResponseTrx.getDataElement(3)));
-                //4.Amount, Transaction
-                sMAC.concat(new String(oResponseTrx.getDataElement(4)));
-                //11.System Trace Audit Number
-                sMAC.concat(new String(oResponseTrx.getDataElement(11)));
-                //12.Date and Time, Local Transaction
-                sMAC.concat(new String(oResponseTrx.getDataElement(12)));
-                //39 Action code
-                sMAC.concat(new String(oResponseTrx.getDataElement(39)));
-                //47.National Data
-                sMAC.concat(new String(oResponseTrx.getDataElement(47)));
-                //53.Security Related Control Information
-                sMAC.concat(new String(oResponseTrx.getDataElement(53)));
-                //55.EMV Data
-                if (PosApplication.getApp().oGPosTransaction.m_enmTrxCardType == POSTransaction.CardType.ICC | PosApplication.getApp().oGPosTransaction.m_enmTrxCardType == POSTransaction.CardType.CTLS)
-                    sMAC.concat(new String(oResponseTrx.getDataElement(55)));
-                break;
-            case PURCHASE_ADVICE:
-                //0.Messa   ge Type Identifier
-                sMAC = PosApplication.MTI_Financial_Transaction_Advice;
-                //1. Primary bitmap
-                sMAC = new String(oResponseTrx.Getbitmap());
-                //2.Primary Account Number (PAN)
-                sMAC.concat(new String(oResponseTrx.getDataElement(2)));
-                //3.Processing Code
-                sMAC.concat(new String(oResponseTrx.getDataElement(3)));
-                //4.Amount, Transaction
-                sMAC.concat(new String(oResponseTrx.getDataElement(4)));
-                //11.System Trace Audit Number
-                sMAC.concat(new String(oResponseTrx.getDataElement(11)));
-                //12.Date and Time, Local Transaction
-                sMAC.concat(new String(oResponseTrx.getDataElement(12)));
-                //39 Action code
-                sMAC.concat(new String(oResponseTrx.getDataElement(39)));
-                //47.National Data
-                sMAC.concat(new String(oResponseTrx.getDataElement(47)));
-                //53.Security Related Control Information
-                sMAC.concat(new String(oResponseTrx.getDataElement(53)));
-                //55.EMV Data
-                if (PosApplication.getApp().oGPosTransaction.m_enmTrxCardType == POSTransaction.CardType.ICC | PosApplication.getApp().oGPosTransaction.m_enmTrxCardType == POSTransaction.CardType.CTLS)
-                    sMAC.concat(new String(oResponseTrx.getDataElement(55)));
-
-                break;
-            case REVERSAL:
-                //0.Messa   ge Type Identifier
-                sMAC = PosApplication.MTI_Reversal_Advice;
-                //1. Primary bitmap
-                sMAC = new String(oResponseTrx.Getbitmap());
-                //2.Primary Account Number (PAN)
-                sMAC.concat(new String(oResponseTrx.getDataElement(2)));
-                //3.Processing Code
-                sMAC.concat(new String(oResponseTrx.getDataElement(3)));
-                //4.Amount, Transaction
-                sMAC.concat(new String(oResponseTrx.getDataElement(4)));
-                //11.System Trace Audit Number
-                sMAC.concat(new String(oResponseTrx.getDataElement(11)));
-                //12.Date and Time, Local Transaction
-                sMAC.concat(new String(oResponseTrx.getDataElement(12)));
-                //39 Action code
-                sMAC.concat(new String(oResponseTrx.getDataElement(39)));
-                //47.National Data
-                sMAC.concat(new String(oResponseTrx.getDataElement(47)));
-                //53.Security Related Control Information
-                sMAC.concat(new String(oResponseTrx.getDataElement(53)));
-                //55.EMV Data
-                if (PosApplication.getApp().oGPosTransaction.m_enmTrxCardType == POSTransaction.CardType.ICC | PosApplication.getApp().oGPosTransaction.m_enmTrxCardType == POSTransaction.CardType.CTLS)
-                    sMAC.concat(new String(oResponseTrx.getDataElement(55)));
-                break;
-
-            case TMS_FILE_DOWNLOAD:
-                break;
-            case RECONCILIATION:
-        }
-        //0.Messa   ge Type Identifier
-        //2.Primary Account Number (PAN)
-        //3.Processing Code
-        //4.Amount, Transaction
-        //11.System Trace Audit Number
-        //12.Date and Time, Local Transaction
-        //39.Action Code
-        //47.National Data
-        //53.Security Related Control Information
-        //55.EMV Data
-        //72.Data Record
-        //124.Private - (POS Terminal Reconciliation)
-        byte[] bMac = sMAC.getBytes();
-
-        if (bMac.length % 8 != 0) {
-            for (int i = 0; i < bMac.length % 8; i++) {
-                sMAC = sMAC + 0x00;
-            }
-        }
-
-        sMAC = DUKPT_KEY.CaluclateMACBlock(sMAC);
-
-        //removinglast 4 bytes
-        sMAC = sMAC.substring(0, 4);
-        sMAC = sMAC.concat("ÿÿÿÿ");
-
-
-        return sMAC.equals(oResponseTrx.getDataElement(64));
-    }
-
-    /**
-     * Header  Check_transaction_allowed
-     * \function Name: Check_transaction_allowed
-     * \Param  : Transaction Type
-     * \Return : boolean Transaction allowed or not
-     * \Pre    :
-     * \Post   :
-     * \Author	: Mostafa Hussiny
-     * \DT		: 6/00/2020
-     * \Des    : check transaction allowed flag for each transaction
-     */
-    public static boolean Check_transaction_allowed(POSTransaction.TranscationType Trxtype) {
-
-        //note : Pre-authorization (includes PreAuthorization Extension), Purchase Advice (for Pre-Authorization Capture or Completion )
-        // and Correction/Reversal (including PreAuthorization Void/Partial Void)
-        // shall be configured for the mada scheme for POS terminals that support the Pre-Authorization and Capture service
-
-        switch (Trxtype) {
-            case PURCHASE://purchase  offset 0
-                if ("1".equals(PosApplication.getApp().oGPosTransaction.m_card_scheme.m_sTransactions_Allowed.charAt(0)))
-                    return true;
-                break;
-            case PURCHASE_WITH_NAQD://PURCHASE_WITH_NAQD                                 offset 1
-                if ("1".equals(PosApplication.getApp().oGPosTransaction.m_card_scheme.m_sTransactions_Allowed.charAt(1)))
-                    return true;
-                break;
-            case PURCHASE_ADVICE://PURCHASE_ADVICE:                                      offset 2
-            case AUTHORISATION_ADVICE://AUTHORISATION_ADVICE:
-                if ("1".equals(PosApplication.getApp().oGPosTransaction.m_card_scheme.m_sTransactions_Allowed.charAt(2)))
-                    return true;
-                break;
-            case REFUND://REFUND                                                         offset 3
-                if ("1".equals(PosApplication.getApp().oGPosTransaction.m_card_scheme.m_sTransactions_Allowed.charAt(3)))
-                    return true;
-                break;
-            case AUTHORISATION://AUTHORISATION:                                          offset 4
-                if ("1".equals(PosApplication.getApp().oGPosTransaction.m_card_scheme.m_sTransactions_Allowed.charAt(4)))
-                    return true;
-                break;
-            case CASH_ADVANCE://CASH_ADVANCE:                                            offset 5
-                if ("1".equals(PosApplication.getApp().oGPosTransaction.m_card_scheme.m_sTransactions_Allowed.charAt(5)))
-                    return true;
-                break;
-            case REVERSAL://REVERSAL:                                                    offset 6
-                if ("1".equals(PosApplication.getApp().oGPosTransaction.m_card_scheme.m_sTransactions_Allowed.charAt(6)))
-                    return true;
-                break;
-            case AUTHORISATION_EXTENSION://AUTHORISATION_EXTENSION                       offset 7
-                if ("1".equals(PosApplication.getApp().oGPosTransaction.m_card_scheme.m_sTransactions_Allowed.charAt(7))) {
-                    return true;
-                } else if (PosApplication.getApp().oGPosTransaction.m_is_mada) {
-
-                    return true;
-                }
-                break;
-            case AUTHORISATION_VOID://AUTHORISATION_VOID:                                offset 8
-                if ("1".equals(PosApplication.getApp().oGPosTransaction.m_card_scheme.m_sTransactions_Allowed.charAt(8)))
-                    return true;
-                else if (PosApplication.getApp().oGPosTransaction.m_is_mada) {
-
-                    return true;
-                }
-                break;
-            case SADAD_BILL://SADAD_BILL:                                                offset 9
-                if ("1".equals(PosApplication.getApp().oGPosTransaction.m_card_scheme.m_sTransactions_Allowed.charAt(9)))
-                    return true;
-                else if (PosApplication.getApp().oGPosTransaction.m_is_mada) {
-
-                    return true;
-                }
-                break;
-
-
-        }
-        return false;  // transaction not allowed
-    }
-
-    /**
-     * \Function Name: load_Terminal_configuration_file
-     * \Param  : POSTransaction POSTrx
-     * \Return : double
-     * \Pre    :
-     * \Post   :
-     * \Author	: mostafa hussiny
-     * \DT		: 00/08/2020
-     * \Des    : loading Terminal operation data from saved file of terminal configuration data
-     */
-    public static void load_Terminal_configuration_file() {
-        // to copy initial terminal operation data
-        SAMA_TMS Default_TMS = new SAMA_TMS();
-
-        // default retailer data
-        Default_TMS.retailer_data.m_sArabic_Receipt_1 = "Arabic_Receipt_1";
-        Default_TMS.retailer_data.m_sArabic_Receipt_2 = "m_sArabic_Receipt_2";
-        Default_TMS.retailer_data.m_sAutomatic_Load = "0";
-        Default_TMS.retailer_data.m_sTerminal_Capability = "0000000";
-        Default_TMS.retailer_data.m_sAdditional_Terminal_Capabilities = "000000";
-        Default_TMS.retailer_data.m_sCurrency_Symbol_Arabic = "ريال";
-        Default_TMS.retailer_data.m_sCurrency_Symbol_English = "SAR";
-        Default_TMS.retailer_data.m_sTerminal_Currency_Code = "0682";
-        Default_TMS.retailer_data.m_sTerminal_Country_Code = "0682";
-        Default_TMS.retailer_data.m_sTransaction_Currency_Exponent = "2";
-        Default_TMS.retailer_data.m_sSAF_Default_Message_Transmission_Number = "2";
-        Default_TMS.retailer_data.m_sSAF_Retry_Limit = "3";
-        Default_TMS.retailer_data.m_sDownload_Phone_Number = "+01061456840";
-        Default_TMS.retailer_data.m_sEMV_Terminal_Type = "22";
-        Default_TMS.retailer_data.m_sNext_load = "0";
-        Default_TMS.retailer_data.m_sReconciliation_time = "233000";
-        Default_TMS.retailer_data.m_sEnglish_Receipt_1 = "English_Receipt_1";
-        Default_TMS.retailer_data.m_sEnglish_Receipt_2 = "English_Receipt_2";
-        Default_TMS.retailer_data.m_sRetailer_Address_1_Arabic = "هلا، المملكه العربيه السعوديه1 ";
-        Default_TMS.retailer_data.m_sRetailer_Address_2_Arabic = "هلا، المملكه العربيه السعوديه2 ";
-        Default_TMS.retailer_data.m_sRetailer_Address_1_English = "hala , saudiarabia 1";
-        Default_TMS.retailer_data.m_sRetailer_Address_2_English = "hala , saudiarabia 2";
-        Default_TMS.retailer_data.m_sRetailer_Name_Arabic = "تاجر مؤقت";
-        Default_TMS.retailer_data.m_sRetailer_Name_English = "temp Merchant";
-
-
-        PosApplication.getApp().oGSama_TMS = Default_TMS;
-
-
-    }
-
-    /**
-     * \Function Name: check_hardware
-     * \Param  : POSTransaction POSTrx
-     * \Return : double
-     * \Pre    :
-     * \Post   :
-     * \Author	: mostafa hussiny
-     * \DT		: 00/08/2020
-     * \Des    : check_hardware printer contactless reader , chip , mag ,...etc
-     */
-
-    public static void check_hardware() {
-
-        AidlPrinter mPrinterManager;
-        mPrinterManager = DeviceTopUsdkServiceManager.getInstance().getPrintManager();
-        int printState = -1;
-        try {
-            printState = mPrinterManager.getPrinterState();
-            Log.i(TAG, "printState = " + printState);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        switch (printState) {
-            case 0://PRINTER_STATE_Normal             // for mada '0' = No printer. '1' = Out of paper. '2' = Plain paper receipt.
-                break;
-            case 1://PRINTER_STATE_NOPAPER
-                PosApplication.getApp().oGTerminal_Operation_Data.Printer_Status = "1";
-            case 2:
-        }
-
-
-    }
-
-    public static boolean CheckHostActionCode(String sDE39) {
-        boolean bRetRes = false;
-        switch (sDE39) {
-            case "000":
-            case "001":
-            case "003":
-            case "007":
-            case "060":
-            case "087":
-            case "089":
-            case "400": // Reversal
-            case "913": // Reversal Duplicate transmission , Specification part b Section 4.3.16 Reversal Transaction Timeout
-            case "500": // Reconciliation
-            case "800": // Network
-                return true; // Approved transaction
-            default:
-                return bRetRes;
-        }
-
-    }
-
-    /**
-     * \Function Name: GetTrxCumulativeAmount
-     * \Param  : POSTransaction POSTrx
-     * \Return : double
-     * \Pre    :
-     * \Post   :
-     * \Author	: Moamen Ahmed
-     * \DT		: 13/07/2020
-     * \Des    : Get Transaction amout to be updated on  m_dTermReconciliationAmount buffer for SAF Checking , not including Authorization amount
-     */
-
-    public static double GetTrxCumulativeAmount(POSTransaction POSTrx) {
-        double dAmount = 0;
-        // Todo Log Start message
-
-        switch (POSTrx.m_enmTrxType) {
-            case PURCHASE:
-            case PURCHASE_WITH_NAQD:
-            case PURCHASE_ADVICE:
-            case CASH_ADVANCE:
-            case REFUND: {
-                if (POSTrx.m_sProcessCode.equals("00") ||
-                        POSTrx.m_sProcessCode.equals("01") ||
-                        POSTrx.m_sProcessCode.equals("09")) {
-                    dAmount = Double.parseDouble(POSTrx.m_sTrxAmount);
-                } else if (POSTrx.m_sProcessCode.equals("20"))
-                    dAmount = Double.parseDouble(POSTrx.m_sTrxAmount) * -1;
-            }
-            break;
-            case REVERSAL: {
-                if (POSTrx.m_sProcessCode.equals("00") ||
-                        POSTrx.m_sProcessCode.equals("01") ||
-                        POSTrx.m_sProcessCode.equals("09")) {
-                    dAmount = Double.parseDouble(POSTrx.m_sTrxAmount) * -1;
-                } else if (POSTrx.m_sProcessCode.equals("20"))
-                    dAmount = Double.parseDouble(POSTrx.m_sTrxAmount);
-            }
-            break;
-        }
-        // Todo Log Endmessage with  return value
-
-        return dAmount;
+        return false;
     }
 
 
@@ -674,7 +651,7 @@ public class POS_MAIN implements SendReceiveListener {
 
       if(PosApplication.getApp().oGPosTransaction.m_card_scheme.m_sSupervisor_Functions=="1") {
 
-          //todo dialog which ask for password}
+          //todo dialog which ask for password
 
 
       /*    AlertDialog.Builder builder = new AlertDialog.Builder(mcontext);
@@ -828,65 +805,89 @@ public class POS_MAIN implements SendReceiveListener {
             // log an error message
             return String.valueOf(iRetRes);
         }
-
+        //ex. 9F0607A0000002282010
         // Adding AID
-        if (AIDObj.AID.length() > 0)
-            strFormatedAIDData.append("9f06" +String.format(Locale.ENGLISH,"%02d",AIDObj.AID.length()/2)+AIDObj.AID);
-
+        if (AIDObj.AID.length() > 0) {
+            AIDObj.AID= AIDObj.AID.replaceAll(" ", "");
+            strFormatedAIDData.append("9F06" + String.format(Locale.ENGLISH, "%02d", AIDObj.AID.length()/2) + AIDObj.AID);
+        }
+        //ex.DF010100
         // Adding ApplicationSelectionIndicator(0:PartMatch,1:ExactMatch)
-        strFormatedAIDData.append("df010100");
-
+        strFormatedAIDData.append("DF010100");
+        //ex.9F08020084
         // Adding ApplicationVersionNumber
         if (AIDObj.Terminal_AID_version_numbers.length() > 0)
-            strFormatedAIDData.append("9f09" +"02"+AIDObj.Terminal_AID_version_numbers.substring(0,4));
-
+            strFormatedAIDData.append("9F08" +"02"+AIDObj.Terminal_AID_version_numbers.substring(0,4));
+        //ex.DF1105FC408CA800
         // Adding Default_action_code
-        if (AIDObj.Denial_action_code.length() > 0)
-            strFormatedAIDData.append("df11" +String.format(Locale.ENGLISH,"%02d",AIDObj.Default_action_code.length()/2)+AIDObj.Default_action_code);
+        if (AIDObj.Default_action_code.length() > 0)
+        {
+            AIDObj.Default_action_code=AIDObj.Default_action_code.replaceAll(" ","");
+            strFormatedAIDData.append("DF11" +String.format(Locale.ENGLISH,"%02d",AIDObj.Default_action_code.length()/2)+AIDObj.Default_action_code);
+
+        }
 
 
+        //ex.DF1205FC408CF800
         // Adding Online_action_code
-        if (AIDObj.Denial_action_code.length() > 0)
-            strFormatedAIDData.append("df12" +String.format(Locale.ENGLISH,"%02d",AIDObj.Online_action_code.length()/2)+AIDObj.Online_action_code);
-
-
+        if (AIDObj.Online_action_code.length() > 0) {
+            AIDObj.Online_action_code=AIDObj.Online_action_code.replaceAll(" ","");
+            strFormatedAIDData.append("DF12" + String.format(Locale.ENGLISH, "%02d", AIDObj.Online_action_code.length() / 2) + AIDObj.Online_action_code);
+        }
+        //ex.DF13050010000000
         // Adding Denial_action_code
-        if (AIDObj.Denial_action_code.length() > 0)
-            strFormatedAIDData.append("df13" +String.format(Locale.ENGLISH,"%02d",AIDObj.Denial_action_code.length()/2)+AIDObj.Denial_action_code);
-
-            strFormatedAIDData.append("9f1b"+String.format(Locale.ENGLISH,"%02d","00000000".length()/2)+"00000000");
-
+        if (AIDObj.Denial_action_code.length() > 0) {
+            AIDObj.Denial_action_code=AIDObj.Denial_action_code.replaceAll(" ","");
+            strFormatedAIDData.append("DF13" + String.format(Locale.ENGLISH, "%02d", AIDObj.Denial_action_code.length() / 2) + AIDObj.Denial_action_code);
+        }
+        //ex.9F1B0400000000
+        strFormatedAIDData.append("9F1B"+String.format(Locale.ENGLISH,"%02d","00000000".length()/2)+"00000000");
+        //ex.DF150400000290
         // Adding ThresholdValueforBiasedRandomSelection
         if (AIDObj.Threshold_Value_for_Biased_Random_Selection.length() > 0)
-            strFormatedAIDData.append("df15" +String.format(Locale.ENGLISH,"%02d",AIDObj.Threshold_Value_for_Biased_Random_Selection.length()/2)+AIDObj.Threshold_Value_for_Biased_Random_Selection);
-
+            strFormatedAIDData.append("DF15" +String.format(Locale.ENGLISH,"%02d",AIDObj.Threshold_Value_for_Biased_Random_Selection.length()/2)+AIDObj.Threshold_Value_for_Biased_Random_Selection);
+        //ex.DF160199
         // Adding Maximum_Target_Percentage_for_Biased_Random_Selection
         if (AIDObj.Maximum_Target_Percentage_for_Biased_Random_Selection.length() > 0)
-            strFormatedAIDData.append("df16" +String.format(Locale.ENGLISH,"%02d",AIDObj.Maximum_Target_Percentage_for_Biased_Random_Selection.length()/2)+AIDObj.Maximum_Target_Percentage_for_Biased_Random_Selection);
-
+            strFormatedAIDData.append("DF16" +String.format(Locale.ENGLISH,"%02d",AIDObj.Maximum_Target_Percentage_for_Biased_Random_Selection.length()/2)+AIDObj.Maximum_Target_Percentage_for_Biased_Random_Selection);
+        //ex.DF170199
         // Adding Target_Percentage
         if (AIDObj.Target_Percentage.length() > 0)
-            strFormatedAIDData.append("df17" +String.format(Locale.ENGLISH,"%02d",AIDObj.Target_Percentage.length()/2)+AIDObj.Target_Percentage);
-
+            strFormatedAIDData.append("DF17" +String.format(Locale.ENGLISH,"%02d",AIDObj.Target_Percentage.length()/2)+AIDObj.Target_Percentage);
+        //ex.DF14039F3704
         // Adding Default_DDOL
-        if (AIDObj.Default_DDOL.length() > 0)
-            strFormatedAIDData.append("df14" +String.format(Locale.ENGLISH,"%02d",AIDObj.Default_DDOL.length()/2)+AIDObj.Default_DDOL);
+        if (AIDObj.Default_DDOL.length() > 0) {
+            AIDObj.Default_DDOL=AIDObj.Default_DDOL.replaceAll(" ", "");
+            strFormatedAIDData.append("DF14" + String.format(Locale.ENGLISH, "%02d", AIDObj.Default_DDOL.length() / 2) + AIDObj.Default_DDOL);
+        }
+        //ex.DF180101
         // Adding Default_TDOL
-        if (AIDObj.Default_TDOL.length() > 0)
-            strFormatedAIDData.append("df8102" +String.format(Locale.ENGLISH,"%02d",AIDObj.Default_TDOL.length()/2)+AIDObj.Default_TDOL);
+        if (AIDObj.Default_TDOL.length() > 0) {
+        AIDObj.Default_TDOL=AIDObj.Default_TDOL.replaceAll(" ","");
+        strFormatedAIDData.append("DF8102" + String.format(Locale.ENGLISH, "%02d", AIDObj.Default_TDOL.length() / 2) + AIDObj.Default_TDOL);
+    }
+        //ex.9F7B06000000100000
+        strFormatedAIDData.append("9F7B06000000100000");
 
+
+
+        //DF1906000000100000
         // Adding Contactless floor limit
         //"DF19" ClssFloorLimit
-        if(PosApplication.getApp().oGTerminal_Operation_Data.m_sTerminal_Contactless_Floor_Limit.length()>0)
-        strFormatedAIDData.append("DF19"+String.format(Locale.ENGLISH,"%02d",PosApplication.getApp().oGTerminal_Operation_Data.m_sTerminal_Contactless_Floor_Limit.length()/2)+PosApplication.getApp().oGTerminal_Operation_Data.m_sTerminal_Contactless_Floor_Limit);
+        if(PosApplication.getApp().oGTerminal_Operation_Data.m_sTerminal_Contactless_Floor_Limit!=null)
+            strFormatedAIDData.append("DF19"+String.format(Locale.ENGLISH,"%02d",PosApplication.getApp().oGTerminal_Operation_Data.m_sTerminal_Contactless_Floor_Limit.length()/2)+PosApplication.getApp().oGTerminal_Operation_Data.m_sTerminal_Contactless_Floor_Limit);
+
+        //DF2006000000100000
         //adding Contactless Transaction limit
         //"DF20" ClssTxnLimit
-        if(PosApplication.getApp().oGTerminal_Operation_Data.m_sTerminal_Contactless_Transaction_Limit.length()>0)
-        strFormatedAIDData.append("DF20"+String.format(Locale.ENGLISH,"%02d",PosApplication.getApp().oGTerminal_Operation_Data.m_sTerminal_Contactless_Transaction_Limit.length()/2)+PosApplication.getApp().oGTerminal_Operation_Data.m_sTerminal_Contactless_Transaction_Limit);
+        if(PosApplication.getApp().oGTerminal_Operation_Data.m_sTerminal_Contactless_Transaction_Limit!=null)
+            strFormatedAIDData.append("DF20"+String.format(Locale.ENGLISH,"%02d",PosApplication.getApp().oGTerminal_Operation_Data.m_sTerminal_Contactless_Transaction_Limit.length()/2)+PosApplication.getApp().oGTerminal_Operation_Data.m_sTerminal_Contactless_Transaction_Limit);
+
+        //DF2106000000100000
         //adding Contactless CVM limit
         //"DF21" ClssCVMLimit
-        if(PosApplication.getApp().oGTerminal_Operation_Data.m_sTerminal_CVM_Required_Limit.length()>0)
-        strFormatedAIDData.append("DF21"+String.format(Locale.ENGLISH,"%02d",PosApplication.getApp().oGTerminal_Operation_Data.m_sTerminal_CVM_Required_Limit.length()/2)+PosApplication.getApp().oGTerminal_Operation_Data.m_sTerminal_CVM_Required_Limit);
+        if(PosApplication.getApp().oGTerminal_Operation_Data.m_sTerminal_CVM_Required_Limit!=null)
+            strFormatedAIDData.append("DF21"+String.format(Locale.ENGLISH,"%02d",PosApplication.getApp().oGTerminal_Operation_Data.m_sTerminal_CVM_Required_Limit.length()/2)+PosApplication.getApp().oGTerminal_Operation_Data.m_sTerminal_CVM_Required_Limit);
 
 
 	/*
@@ -924,9 +925,105 @@ DF03 Check Sum                                [20]   >> 4410C6D51C2F83ADFD92528F
 
 */
 
-    public void Start_Transaction(POSTransaction oPos_trans, POSTransaction.TranscationType Trxtype) {
-        Start_Transaction(oPos_trans, Trxtype, null);
+
+
+
+    public static String FormatCAKeys(Public_Key CAKeyObj)
+    {
+        int iRetRes = 0;
+        StringBuilder strFormatedCAKey = new StringBuilder();
+
+        if (CAKeyObj == null)
+        {
+            // log an error message
+            return String.valueOf(iRetRes);
+        }
+
+        // Adding RID
+        if (CAKeyObj.RID.length() > 0)
+            strFormatedCAKey.append("9F06" +String.format(Locale.ENGLISH,"%02d",CAKeyObj.RID.length()/2)+CAKeyObj.RID.toString());
+        else
+        {
+            //Todo Log message showing can not format sent key due to incorrect length of RID
+            return String.valueOf(iRetRes) ;
+        }
+
+
+        // Adding Key_Index
+        if (CAKeyObj.Key_Index.length() > 0)
+            strFormatedCAKey.append("9F22" +String.format(Locale.ENGLISH,"%02d",CAKeyObj.Key_Index.length()/2)+CAKeyObj.Key_Index.toString());
+        else
+        {
+            //Todo Log message showing can not format sent key due to incorrect length of Key_Index
+            return String.valueOf(iRetRes);
+        }
+
+        // Adding CA_Public_Key_Expiry_Date
+        if (CAKeyObj.CA_Public_Key_Expiry_Date.length() > 0)
+            strFormatedCAKey.append("DF05" +/*String.format(Locale.ENGLISH,"%02d",CAKeyObj.CA_Public_Key_Expiry_Date.length()/2)*/"0420"+CAKeyObj.CA_Public_Key_Expiry_Date.toString());
+        else
+        {
+            //Todo Log message showing can not format sent key due to incorrect length of CA_Public_Key_Expiry_Date
+            return String.valueOf(iRetRes);
+        }
+        // Adding Hash_ID
+        if (CAKeyObj.Hash_ID.length() > 0)
+            strFormatedCAKey.append("DF06" +String.format(Locale.ENGLISH,"%02d",CAKeyObj.Hash_ID.length()/2)+CAKeyObj.Hash_ID.toString());
+        else
+        {
+            //Todo Log message showing can not format sent key due to incorrect length of Hash_ID
+            return String.valueOf(iRetRes);
+        }
+
+
+        // Adding Digital_Signature_ID
+        if (CAKeyObj.Digital_Signature_ID.length() > 0)
+            strFormatedCAKey.append("DF07" +String.format(Locale.ENGLISH,"%02d",CAKeyObj.Digital_Signature_ID.length()/2)+CAKeyObj.Digital_Signature_ID.toString());
+        else
+        {
+            //Todo Log message showing can not format sent key due to incorrect length of Digital_Signature_ID
+            return String.valueOf(iRetRes);
+        }
+
+
+        // formating  Public Key Value  and Public_Key length
+        if (CAKeyObj.Public_Key.length() > 0 && CAKeyObj.CA_Public_Key_Length.length() > 0 )
+            strFormatedCAKey.append("DF0281" + Integer.toHexString(CAKeyObj.Public_Key.toString().length()/2)+CAKeyObj.Public_Key.toString());
+        else
+        {
+            //Todo Log message showing can not format sent key due to incorrect length of Public_Key
+            return String.valueOf(iRetRes);
+        }
+
+        // Adding Exponent
+        if (CAKeyObj.Exponent.length() > 0)
+            strFormatedCAKey.append("DF04" +String.format(Locale.ENGLISH,"%02d",CAKeyObj.Exponent.length()/2)+CAKeyObj.Exponent.toString());
+        else
+        {
+            //Todo Log message showing can not format sent key due to incorrect length of Exponent
+            return String.valueOf(iRetRes);
+        }
+
+        // Adding Check_Sum
+        if (CAKeyObj.Check_Sum.length() > 0)
+            strFormatedCAKey.append("DF03" +Integer.toHexString(CAKeyObj.Check_Sum.toString().length()/2)/*String.format(Locale.ENGLISH,"%02d",CAKeyObj.Check_Sum.length()/2)*/+CAKeyObj.Check_Sum.toString());
+        else
+        {
+            //Todo Log message showing can not format sent key due to incorrect length of Check_Sum
+            return String.valueOf(iRetRes);
+        }
+
+
+
+
+        // Todo log Formated string for debugging
+
+        return strFormatedCAKey.toString();
+
     }
+
+
+
 
 
     /**
@@ -977,64 +1074,156 @@ DF03 Check Sum                                [20]   >> 4410C6D51C2F83ADFD92528F
      * If user remove ICC card during transaction StartCardRemovedTransaction() should be implemented (reversal , receipts,...)
 
      */
-    public int PerfomTermHostResponseFlow(byte[] recePacket, int errReason)
+    public int PerfomTermHostResponseFlow(byte[] recePacket, int errReason, Activity activity)
     {
-        boolean bRetRes;
+        int bRetRes = 0;
 
 
         Process_Rece_Packet( recePacket);
         Log.i(TAG, "Process_Rece_Packet: ");
-        ValidateHostMAC();
-
-        if(!CheckHostActionCode(PosApplication.getApp().oGPosTransaction.m_ResponseISOMsg.getDataElement(39).toString()))
-        {
-            //todo declined transaction check response code and print message+
-            //todo Update LEDs with tranasction status (DEcline) Red  Contactless
+        POSTransaction current_postrx = PosApplication.getApp().oGPosTransaction;
+        if(!ValidateHostMAC())
+        {   //invalid mac procesdures
+            CheckandSaveInSAF(PosApplication.getApp().oGPosTransaction,true);
+            DeSAF(SAF_Info.DESAFtype.PARTIAL);
+            Start_Transaction(current_postrx, POSTransaction.TranscationType.ADMIN,null);
+            //todo print reciept decline
         }
-        PosApplication.getApp().oGPosTransaction.m_sApprovalCode=PosApplication.getApp().oGPosTransaction.m_ResponseISOMsg.getDataElement(38).toString();
-        Check_DE44(PosApplication.getApp().oGPosTransaction.m_ResponseISOMsg.getDataElement(44));
-        Check_DE47(PosApplication.getApp().oGPosTransaction.m_ResponseISOMsg.getDataElement(47));
-        //todo Update LEDs with tranasction status (Approved) Green Contactless
-        Check_DE55(PosApplication.getApp().oGPosTransaction.m_ResponseISOMsg.getDataElement(55));
-        //todo Perform 2nd Generation and issuer script if exist
-        SaveLastTransaction(PosApplication.getApp().oGPosTransaction,CurrentSaving.REMOVE);
-        //todo reciept printing
+        else {
+            String mResponse = BCDASCII.asciiByteArray2String(PosApplication.getApp().oGPosTransaction.m_ResponseISOMsg.getDataElement(39));
+            PosApplication.getApp().oGPosTransaction.m_sActionCode=mResponse;
+
+            if (!CheckHostActionCode(mResponse)) {
+                if(mResponse.equals("112") ||mResponse.equals("117") || mResponse.equals("127"))
+                {
+                    Intent intent = new Intent(activity, PinpadActivity.class);
+                    intent.putExtra("response code", mResponse);
+                    activity.startActivity(intent);
+                    bRetRes =1;
+                }
+                else if (mResponse.equals("196"))
+                {
+                    //todo max commulitive amount exeeded warning
+                    Intent intent = new Intent(activity, PinpadActivity.class);
+                    intent.putExtra("response code", mResponse);
+                    activity.startActivity(intent);
+                    bRetRes =1;
+
+                }
+                else if(mResponse.equals("916"))
+                {
+                   // CheckandSaveInSAF(PosApplication.getApp().oGPosTransaction,true);
+                   // DeSAF(SAF_Info.DESAFtype.PARTIAL);
+                    Start_Transaction(current_postrx, POSTransaction.TranscationType.ADMIN,null);
+                    //todo print reciept
+                }
+                else{
+
+                    Intent intent = new Intent(activity, Declined_Display_Print.class);
+                    intent.putExtra("response code", mResponse);
+                    activity.startActivity(intent);
+                    if(PosApplication.getApp().oGTerminal_Operation_Data.bDeSAF_flag)
+                        DeSAF(SAF_Info.DESAFtype.PARTIAL);
+                }
+                //todo Update LEDs with tranasction status (DEcline) Red  Contactless
+            } else {
+                PosApplication.getApp().oGPosTransaction.m_sApprovalCode = BCDASCII.asciiByteArray2String(PosApplication.getApp().oGPosTransaction.m_ResponseISOMsg.getDataElement(38));
+                SaveLastTransaction(PosApplication.getApp().oGPosTransaction, CurrentSaving.SAVE);
+                Check_DE44(PosApplication.getApp().oGPosTransaction.m_ResponseISOMsg.getDataElement(44));
+                Check_DE47(PosApplication.getApp().oGPosTransaction.m_ResponseISOMsg.getDataElement(47));
+                //todo Update LEDs with tranasction status (Approved) Green Contactless
+                if (PosApplication.getApp().oGPosTransaction.m_enmTrxCardType == POSTransaction.CardType.ICC || PosApplication.getApp().oGPosTransaction.m_enmTrxCardType == POSTransaction.CardType.CTLS) {
+                    byte[] icc = PosApplication.getApp().oGPosTransaction.m_ResponseISOMsg.getDataElement(55);
+                    if(icc != null ) {
+                        String ICCresp = BCDASCII.fromBCDToASCIIString(icc, 0, icc.length * 2, true);
+                        Check_DE55(PosApplication.getApp().oGPosTransaction.m_ResponseISOMsg.getDataElement(55));
+                        // go do 2nd AC and Issuer if exist
+                        if (PosApplication.getApp().oGPosTransaction.m_enmTrxCardType == POSTransaction.CardType.ICC)
+                            CardManager.getInstance().setRequestOnline(true, mResponse, ICCresp);
+                    }
+                }
+
+
+                  if(PosApplication.getApp().oGPosTransaction.m_enmTrxCardType!= POSTransaction.CardType.ICC) {
+
+                SaveLastTransaction(PosApplication.getApp().oGPosTransaction, CurrentSaving.REMOVE);
+                SaveLoadFile.Savetransaction(PosApplication.getApp().oGPosTransaction);
+                PosApplication.getApp().oGTerminal_Operation_Data.m_iTransactionCounter++;
+
+                Display_printResult(activity, PosApplication.getApp().oGPosTransaction.m_sApprovalCode, PosApplication.getApp().oGPosTransaction.m_sApprovalCode, PosApplication.getApp().oGPosTransaction);
+                //   }
 
 
 
-        Update_Terminal_totals();
+                /// if(PosApplication.getApp().oGPosTransaction.m_enmTrxCardType!= POSTransaction.CardType.ICC) {
+                bRetRes = Update_Terminal_totals();
+                Log.d(TAG, "PerfomTermHostResponseFlow:Update_Terminal_totals : bRetRes= " + bRetRes);
 
 
+                if (mResponse.equals("100")) //macing error
+                {
+                    CheckandSaveInSAF(PosApplication.getApp().oGPosTransaction, true);
+                } else {
+                    CheckandSaveInSAF(PosApplication.getApp().oGPosTransaction, false);
+                }
+                if (!CheckForceReconciliation() ) {
+                    if (!CheckForTMSDownload()) {
+                        if (PosApplication.getApp().oGTerminal_Operation_Data.bDeSAF_flag) {
+                            PosApplication.getApp().oGTerminal_Operation_Data.saf_info.DeSAF_partial_count = 2;
 
-        if(errReason==-1||errReason==-2) //timeout//cannot send
-        {
-            CheckandSaveInSAF(PosApplication.getApp().oGPosTransaction, true);
-        }
-        else
-        {
-            CheckandSaveInSAF(PosApplication.getApp().oGPosTransaction, false);
-        }
-        if(!CheckForceReconciliation()) {
+                            DeSAF(SAF_Info.DESAFtype.PARTIAL);
+                        }
 
 
-            if(!CheckForTMSDownload()) {
-                if(PosApplication.getApp().oGTerminal_Operation_Data.bDeSAF_flag)
-                    DeSAF(SAF_Info.DESAFtype.PARTIAL);
-                else
-                Update_TermData();
+                        //clear flags
+                    }
+                }
+                Save_TermData();
+                }
             }
 
-            //clear flags
+            //todo GetDateTime(int iFormat);           // iFormat , All , HHSS,YYMM,
 
         }
+          //  activity.finish();
+            ////////////////////////////////////////////////////
+
+            return bRetRes;
+
+    }
+
+
+    public void finalizing_EMV_transaction(Activity activity)
+    {
+        SaveLastTransaction(PosApplication.getApp().oGPosTransaction, CurrentSaving.REMOVE);
+        SaveLoadFile.Savetransaction(PosApplication.getApp().oGPosTransaction);
+        PosApplication.getApp().oGTerminal_Operation_Data.m_iTransactionCounter++;
+        Display_printResult(activity,PosApplication.getApp().oGPosTransaction.m_sApprovalCode, PosApplication.getApp().oGPosTransaction.m_sApprovalCode, PosApplication.getApp().oGPosTransaction);
+        int bRetRes = Update_Terminal_totals();
+        Log.d(TAG, "PerfomTermHostResponseFlow:Update_Terminal_totals : bRetRes= "+bRetRes);
+
+
+
+
+            CheckandSaveInSAF(PosApplication.getApp().oGPosTransaction, false);
+
+        if (!CheckForceReconciliation() ) {
+            if (!CheckForTMSDownload()) {
+                if (PosApplication.getApp().oGTerminal_Operation_Data.bDeSAF_flag) {
+                    PosApplication.getApp().oGTerminal_Operation_Data.saf_info.DeSAF_partial_count = 2;
+
+                    DeSAF(SAF_Info.DESAFtype.PARTIAL);
+                }
+
+
+                //clear flags
+            }
+        }
+        Save_TermData();
 
         //todo GetDateTime(int iFormat);           // iFormat , All , HHSS,YYMM,
 
 
-
-
-        ////////////////////////////////////////////////////
-        return 0;
     }
 
 
@@ -1050,24 +1239,62 @@ DF03 Check Sum                                [20]   >> 4410C6D51C2F83ADFD92528F
      \DT		: 7/14/2020
      \Des    : update terminal operation data class then save it incase of power off
      */
-    private static void Update_TermData() {
-    }
 
 
-    private static void Update_Terminal_totals() {
 
+    private static int Update_Terminal_totals() {
+        int ret=-1;
         PosApplication.getApp().oGTerminal_Operation_Data.m_dTermReconciliationAmount=+GetTrxCumulativeAmount(PosApplication.getApp().oGPosTransaction);
-        // update card scheme totals
+        ret= CardSchemeTotals.UpdateTerminalTotals(PosApplication.getApp().oGPosTransaction);
+    return ret;
     }
 
     private static void Check_DE55(byte[] dataElement) {
 
+        // todo TLV parser
+
     }
 
     private static void Check_DE47(byte[] dataElement) {
+        if (dataElement == null)
+        {
+            return;
+        }
+
+
+        //A 04  Card Scheme Sponsor ID
+        byte[] Card_Scheme_Sponsor_ID = BytesUtil.subBytes(dataElement,0,4);
+
+        // don't change if cardSchemeID is not exist
+        if(BCDASCII.asciiByteArray2String(Card_Scheme_Sponsor_ID) == null)
+        {
+            return;
+        }
+        PosApplication.getApp().oGPosTransaction.m_sCardSchemeSponsorID=BCDASCII.asciiByteArray2String(Card_Scheme_Sponsor_ID);
+        //A 02 Card Scheme ID
+        byte[] Card_Scheme_ID =BytesUtil.subBytes(dataElement,4,6);
+        PosApplication.getApp().oGPosTransaction.m_card_scheme.m_sCard_Scheme_ID=BCDASCII.asciiByteArray2String(Card_Scheme_ID);
+
+        //var ANS ..97  Additional Data;        including Bill / Fee Payment Data and future data as required.
+        if(dataElement.length>6) {
+            byte[] Additional_Data = BytesUtil.subBytes(dataElement, 6, dataElement.length);
+        }
     }
 
     private static void Check_DE44(byte[] dataElement) {
+
+        if(dataElement !=null)
+        {
+            String Payment_Account_Reference = BCDASCII.asciiByteArray2String(dataElement).substring(2,31);
+            String FPAN_Suffix =BCDASCII.asciiByteArray2String(dataElement).substring(32,36);
+        }
+    }
+    private static void Check_DE72(byte[] dataElement) {
+
+        if(dataElement !=null)
+        {
+
+        }
     }
 
 
@@ -1079,36 +1306,70 @@ DF03 Check Sum                                [20]   >> 4410C6D51C2F83ADFD92528F
     @Override
     public void onSuccess(byte[] receivedPacket) {
 
-        if(PosApplication.getApp().oGTerminal_Operation_Data.bDeSAF_flag&!PosApplication.getApp().oGTerminal_Operation_Data.breconsile_flag) {
+        Log.d(TAG, "POS_MAIN onSuccess: start");
+        byte[] responseMTI=BytesUtil.subBytes(receivedPacket, 0, 4);
+        String sresponseMTI=BCDASCII.asciiByteArray2String(responseMTI);
+        if(sresponseMTI.equals("1434"))
+        { //parse reversal
+
+            Parse_reversal_Response(receivedPacket);
+            CommunicationsHandler.getInstance(new CommunicationInfo(PosApplication.getApp().getApplicationContext())).closeConnection();
+        }
+        else if(sresponseMTI.equals("1534"))
+        {
+            // PosApplication.getApp().oGTerminal_Operation_Data.breconsile_flag=false;
+            Parse_RECONSILE_response(receivedPacket);
+
+
+              CommunicationsHandler.getInstance(new CommunicationInfo(PosApplication.getApp().getApplicationContext())).closeConnection();
+
+        }
+        else if(sresponseMTI.equals(("1314")))
+        {
+            parse_TMS_response(receivedPacket);
+
+            // if (/* TMS not finished */)
+        }
+
+
+        // checks after Each recive
+
+        if(PosApplication.getApp().oGTerminal_Operation_Data.bDeSAF_flag & !PosApplication.getApp().oGTerminal_Operation_Data.breconsile_flag) {
             Parse_DeSAF_Response(receivedPacket);
 
-            if (PosApplication.getApp().oGTerminal_Operation_Data.saf_info.DeSAF_count >0)
-                               DeSAF(SAF_Info.DESAFtype.PARTIAL);
+            if (PosApplication.getApp().oGTerminal_Operation_Data.saf_info.m_iSAFTrxNumber >0)
+                DeSAF(SAF_Info.DESAFtype.PARTIAL);
         }
 
-        if(PosApplication.getApp().oGTerminal_Operation_Data.bDeSAF_flag&PosApplication.getApp().oGTerminal_Operation_Data.breconsile_flag)// RECONSILE
-                if(PosApplication.getApp().oGTerminal_Operation_Data.saf_info.m_iSAFTrxNumber>0)
-                {
-                    Parse_DeSAF_Response(receivedPacket);
-                    DeSAF(SAF_Info.DESAFtype.FULL);
-                }
-                else
-                {
-                    Parse_DeSAF_Response(receivedPacket);
-                    PosApplication.getApp().oGTerminal_Operation_Data.bDeSAF_flag=false;
-                    StartReconciliation(false);
-                }
-        if(!PosApplication.getApp().oGTerminal_Operation_Data.bDeSAF_flag&!PosApplication.getApp().oGTerminal_Operation_Data.breconsile_flag)
-             StartReconciliation(false);
-        if (PosApplication.getApp().oGTerminal_Operation_Data.bDeSAF_flag&PosApplication.getApp().oGTerminal_Operation_Data.bTMS_flag) {
+        if(PosApplication.getApp().oGTerminal_Operation_Data.bDeSAF_flag & PosApplication.getApp().oGTerminal_Operation_Data.breconsile_flag)// RECONSILE
+            if(PosApplication.getApp().oGTerminal_Operation_Data.saf_info.m_iSAFTrxNumber>0)
+            {
+                Parse_DeSAF_Response(receivedPacket);
+                DeSAF(SAF_Info.DESAFtype.FULL);
+            }
+            else
+            {
+                Parse_DeSAF_Response(receivedPacket);
+                PosApplication.getApp().oGTerminal_Operation_Data.bDeSAF_flag=false;
+                StartReconciliation(false);
+            }
+
+        if(!PosApplication.getApp().oGTerminal_Operation_Data.bDeSAF_flag & PosApplication.getApp().oGTerminal_Operation_Data.breconsile_flag)
+        {
+            StartReconciliation(false);
+        }
+
+        if (PosApplication.getApp().oGTerminal_Operation_Data.bDeSAF_flag & PosApplication.getApp().oGTerminal_Operation_Data.bTMS_flag) {
             if (PosApplication.getApp().oGTerminal_Operation_Data.saf_info.m_iSAFTrxNumber > 0) {
+                Parse_DeSAF_Response(receivedPacket);
                 DeSAF(SAF_Info.DESAFtype.FULL);
             } else {
-                StartTMSDownload(false);
+                StartTMSDownload(false,null);
             }
         }
-        if(!PosApplication.getApp().oGTerminal_Operation_Data.bDeSAF_flag&PosApplication.getApp().oGTerminal_Operation_Data.bTMS_flag)
-            StartTMSDownload(false);
+
+        if(PosApplication.getApp().oGTerminal_Operation_Data.bDeSAF_flag == false && PosApplication.getApp().oGTerminal_Operation_Data.bTMS_flag == true)
+            StartTMSDownload(false,null);
 
 
 
@@ -1116,8 +1377,11 @@ DF03 Check Sum                                [20]   >> 4410C6D51C2F83ADFD92528F
 
 
 
+
     @Override
     public void onFailure(int errReason) {
+
+        Log.d(TAG, "onFailure:  fail to send data");
 
     }
 
@@ -1127,17 +1391,17 @@ DF03 Check Sum                                [20]   >> 4410C6D51C2F83ADFD92528F
     private static boolean Check_DE62(byte[] byte_dataElement, Flags flagstype) {
         boolean bRetRes = false;
         String sDE62;
-        sDE62=byte_dataElement.toString();
+        sDE62=BCDASCII.asciiByteArray2String(byte_dataElement);
         switch(flagstype)
         {
             case ForceTMS:
-
-
                 if (sDE62.contains("061") )
                     bRetRes = true;
+                break;
             case FORCERECONCILATION:
                 if (sDE62.contains("081"))
                     bRetRes=true;
+                break;
 
         }
         return bRetRes;
@@ -1147,142 +1411,222 @@ DF03 Check Sum                                [20]   >> 4410C6D51C2F83ADFD92528F
 
     public static boolean Process_Rece_Packet(byte[] recePacket) {
         boolean bRetRes;
-        Log.i(TAG, "Process_Rece_Packet(" + recePacket + ")");
+        Log.i(TAG, "Process_Rece_Packet("+recePacket+")");
 
 
-        if (PosApplication.getApp().oGPosTransaction.m_enmTrxType == POSTransaction.TranscationType.PURCHASE) {
-            UnpackPurchase unpackpurchase = new UnpackPurchase(recePacket, recePacket.length);
-            PosApplication.getApp().oGPosTransaction.m_sActionCode = unpackpurchase.getResponse();
+
+            UnpackResponse unpackResponse = new UnpackResponse(recePacket, recePacket.length);
+            PosApplication.getApp().oGPosTransaction.m_sActionCode = unpackResponse.getResponse();
             return true;
-        }
-        return false;
 
 
-    }
 
-    public void Start_Transaction(POSTransaction oPos_trans, POSTransaction.TranscationType Trxtype, ITransaction.View transactionView) {
-        PosApplication.getApp().oGPosTransaction.Reset();
-
-        Intent AmountACT;
-        switch (Trxtype) {
-            case PURCHASE://purchase
-
-                //get amount
-                AmountACT = new Intent(mcontext, AmountInputActivity.class);
-                AmountACT.putExtra("transaction Type", Trxtype);
-                mcontext.startActivity(AmountACT);
-                break;
-            case PURCHASE_WITH_NAQD://PURCHASE_WITH_NAQD
-                //get amount
-                AmountACT = new Intent(mcontext, P_NAQD_InputActivity.class);
-                AmountACT.putExtra("transaction Type", Trxtype);
-                mcontext.startActivity(AmountACT);
-
-                break;
-            case REFUND://REFUND
-
-
-                // TODO get original transaction Type
-                AmountACT = new Intent(mcontext, Refund_InputActivity.class);
-                AmountACT.putExtra("transaction Type", Trxtype);
-                mcontext.startActivity(AmountACT);
-
-                break;
-            case AUTHORISATION://AUTHORISATION:
-
-
-                //get amount
-                AmountACT = new Intent(mcontext, AmountInputActivity.class);
-                AmountACT.putExtra("transaction Type", Trxtype);
-                mcontext.startActivity(AmountACT);
-
-                break;
-            case AUTHORISATION_ADVICE://AUTHORISATION_ADVICE:
-                //get amount
-                AmountACT = new Intent(mcontext, AmountInputActivity.class);
-                AmountACT.putExtra("transaction Type", Trxtype);
-                mcontext.startActivity(AmountACT);
-                break;
-            case AUTHORISATION_VOID://AUTHORISATION_VOID:
-                AmountACT = new Intent(mcontext, AmountInputActivity.class);
-                AmountACT.putExtra("transaction Type", Trxtype);
-                break;
-            case AUTHORISATION_EXTENSION://AUTHORISATION_EXTENSION
-                AmountACT = new Intent(mcontext, AmountInputActivity.class);
-                AmountACT.putExtra("transaction Type", Trxtype);
-                break;
-            case PURCHASE_ADVICE://PURCHASE_ADVICE:
-                AmountACT = new Intent(mcontext, AmountInputActivity.class);
-                AmountACT.putExtra("transaction Type", Trxtype);
-
-                break;
-
-            case CASH_ADVANCE://CASH_ADVANCE:
-                //todo start cash advance
-                AmountACT = new Intent(mcontext, AmountInputActivity.class);
-                AmountACT.putExtra("transaction Type", Trxtype);
-                break;
-            case REVERSAL://REVERSAL
-                //todo check host transaction
-                //todo check reversal time out
-                //todo check Transaction mode
-                POSTransaction oReversal_Trx = null;
-                perform_reversal(oPos_trans, oReversal_Trx);
-
-
-                break;
-            case SADAD_BILL://SADAD_BILL:
-                //todo  sadad
-                break;
-            case RECONCILIATION://RECONCILIATION:
-                //todo
-                break;
-            case TMS_FILE_DOWNLOAD://TMS_FILE_DOWNLOAD:
-
-                Intent TMSprocess = new Intent(mcontext, PacketProcessActivity.class);
-                TMSprocess.putExtra("transaction Type", Trxtype);
-
-                break;
-            case TERMINAL_REGISTRATION://TREMINAL_REGISTRATION:
-
-                // based on Moamen Ahmed Registeration file , Terminal_Registeration.java also
-                PosApplication.getApp().oGTerminal_Registeration.StartRegistrationProcess(
-                        PosApplication.getApp().oGPosTransaction, transactionView);
-
-                break;
-            case ADMIN://ADMIN:
-                break;
-
-
-        }
 
 
     }
 
-    /**
-     * Header POS Main
-     * \function Name: Perform_reversal
-     * \Param  :
-     * \Return :
-     * \Pre    :
-     * \Post   :
-     * \Author	: Mostafa Hussiny
-     * \DT		: 6/00/2020
-     * \Des    : will start collection and performe reversal transaction
-     */
-    public boolean perform_reversal(POSTransaction oOriginal_Transaction, POSTransaction oReversal_Transaction) {
-        oReversal_Transaction = SAF_Info.BuildSAFOriginals(oReversal_Transaction, oOriginal_Transaction);
-        oReversal_Transaction.m_enmTrxType = POSTransaction.TranscationType.REVERSAL;
-        oReversal_Transaction.m_sMTI = PosApplication.MTI_Reversal_Advice;
-        //todo copy nessasrry data from original transaction to oRevesal transaction
-        //todo  save in saf the reversal advice then printing copy of reversal then performe DESAF
+    public static int Save_TermData() {
+
+       int ret = SaveLoadFile.SAVETeminal_operation_Data(PosApplication.getApp().oGTerminal_Operation_Data);
+       return ret;
+    }
+    public static boolean load_TermData() {
 
 
+        PosApplication.getApp().oGTerminal_Operation_Data=SaveLoadFile.loadTeminal_operation_Data();
         return true;
     }
 
+    public static boolean CheckHostActionCode(String sDE39)
+    {
+        boolean bRetRes = false ;
+        switch(sDE39)
+        {
+            case "000":
 
-    public static int GetTMSTranResponseMessage(String sActionCode){
+            case "001":
+            case "003":
+            case "007":
+            case "060":
+            case "087":
+            case "089":
+            case "300":  //sucessfull TMS
+            case "400": // Reversal
+            case "913": // Reversal Duplicate transmission , Specification part b Section 4.3.16 Reversal Transaction Timeout
+            case "500": // Reconciliation in Balance
+            case "501": // Reconciliation out of Balance
+            case "800": // Network
+                 Log.d(TAG, "CheckHostActionCode: approved transaction :"+sDE39);
+                 bRetRes=true;
+                return bRetRes; // Approved transaction
+
+            default :
+                Log.d(TAG, "CheckHostActionCode: approved transaction :"+sDE39);
+                return bRetRes;
+
+        }
+
+    }
+
+    public static boolean ValidateHostMAC()
+    {
+        Log.d(TAG, "ValidateHostMAC: start");
+        ISO8583 oResponseTrx = PosApplication.getApp().oGPosTransaction.m_ResponseISOMsg;
+
+        byte[] bMAC=null;
+        String sMACblockcaculated;
+
+        if(PosApplication.getApp().oGPosTransaction.m_sMTI.equals(PosApplication.MTI_File_Action_Request)) {
+            //0.Messa   ge Type Identifier
+            bMAC = PosApplication.MTI_File_Action_Request_Response.getBytes();
+            //1. Primary bitmap
+            bMAC= BytesUtil.mergeBytes(bMAC,oResponseTrx.Getbitmap());
+            //11.System Trace Audit Number
+            bMAC= BytesUtil.mergeBytes(bMAC,oResponseTrx.getDataElement(11));
+
+            //12.Date and Time, Local Transaction
+            bMAC= BytesUtil.mergeBytes(bMAC,oResponseTrx.getDataElement(12));
+            //39 Action code
+            bMAC = BytesUtil.mergeBytes(bMAC,oResponseTrx.getDataElement(39));
+            Log.d(TAG, "ValidateHostMAC:bMAC +DE 39: " + BCDASCII.bytesToHexString(bMAC));
+            //53.Security Related Control Information
+            bMAC= BytesUtil.mergeBytes(bMAC,oResponseTrx.getDataElement(53));
+        }
+
+        else if(PosApplication.getApp().oGPosTransaction.m_sMTI.equals(PosApplication.MTI_Terminal_Reconciliation_Advice))
+        {
+            //0.Messa   ge Type Identifier
+            bMAC = PosApplication.MTI_Terminal_Reconciliation_Advice_Response.getBytes();
+            //1. Primary bitmap
+            bMAC= BytesUtil.mergeBytes(bMAC,oResponseTrx.Getbitmap());
+            //11.System Trace Audit Number
+            bMAC= BytesUtil.mergeBytes(bMAC,oResponseTrx.getDataElement(11));
+
+            //12.Date and Time, Local Transaction
+            bMAC= BytesUtil.mergeBytes(bMAC,oResponseTrx.getDataElement(12));
+            //39 Action code
+            bMAC = BytesUtil.mergeBytes(bMAC,oResponseTrx.getDataElement(39));
+            Log.d(TAG, "ValidateHostMAC:bMAC +DE 39: " + BCDASCII.bytesToHexString(bMAC));
+            //53.Security Related Control Information
+            bMAC= BytesUtil.mergeBytes(bMAC,oResponseTrx.getDataElement(53));
+
+            bMAC=BytesUtil.mergeBytes(bMAC,oResponseTrx.getDataElement(124));
+        }
+        else {
+
+            if (PosApplication.getApp().oGPosTransaction.m_sMTI.equals(PosApplication.MTI_Authorisation_Request)) {
+                //0.Messa   ge Type Identifier
+                bMAC = PosApplication.MTI_Authorisation_Response.getBytes();
+                Log.d(TAG, "ValidateHostMAC:bMAC MTI: " + BCDASCII.bytesToHexString(bMAC));
+
+            } else if (PosApplication.getApp().oGPosTransaction.m_sMTI.equals(PosApplication.MTI_Authorisation_Advice)) {
+                //0.Messa   ge Type Identifier
+                bMAC = PosApplication.MTI_Authorisation_Advice_Response.getBytes();
+                Log.d(TAG, "ValidateHostMAC:bMAC MTI: " + BCDASCII.bytesToHexString(bMAC));
+            } else if (PosApplication.getApp().oGPosTransaction.m_sMTI.equals(PosApplication.MTI_Financial_Request)) {
+                //0.Messa   ge Type Identifier
+                bMAC = PosApplication.MTI_Financial_Reponse.getBytes();
+                Log.d(TAG, "ValidateHostMAC:bMAC MTI: " + BCDASCII.bytesToHexString(bMAC));
+            } else if (PosApplication.getApp().oGPosTransaction.m_sMTI.equals(PosApplication.MTI_Financial_Transaction_Advice)) {
+                //0.Messa   ge Type Identifier
+                bMAC = PosApplication.MTI_Financial_Transaction_Advice_response.getBytes();
+                Log.d(TAG, "ValidateHostMAC:bMAC MTI: " + BCDASCII.bytesToHexString(bMAC));
+
+            } else if (PosApplication.getApp().oGPosTransaction.m_sMTI.equals(PosApplication.MTI_Reversal_Advice)) {
+                //0.Messa   ge Type Identifier
+                bMAC = PosApplication.MTI_Reversal_Advice_Reponse.getBytes();
+                Log.d(TAG, "ValidateHostMAC:bMAC MTI: " + BCDASCII.bytesToHexString(bMAC));
+            }
+
+            //1. Primary bitmap
+            bMAC = BytesUtil.mergeBytes(bMAC,oResponseTrx.Getbitmap());
+            Log.d(TAG, "ValidateHostMAC:bMAC +bitmap: " + BCDASCII.bytesToHexString(bMAC));
+            //2.Primary Account Number (PAN)
+            bMAC = BytesUtil.mergeBytes(bMAC,oResponseTrx.getDataElement(2));
+            Log.d(TAG, "ValidateHostMAC:bMAC +DE 2: " + BCDASCII.bytesToHexString(bMAC));
+            //3.Processing Code
+            bMAC = BytesUtil.mergeBytes(bMAC,oResponseTrx.getDataElement(3));
+            Log.d(TAG, "ValidateHostMAC:bMAC +DE 3: " + BCDASCII.bytesToHexString(bMAC));
+            //4.Amount, Transaction
+            bMAC = BytesUtil.mergeBytes(bMAC,oResponseTrx.getDataElement(4));
+            Log.d(TAG, "ValidateHostMAC:bMAC +DE 4: " + BCDASCII.bytesToHexString(bMAC));
+            //11.System Trace Audit Number
+            bMAC = BytesUtil.mergeBytes(bMAC,oResponseTrx.getDataElement(11));
+            Log.d(TAG, "ValidateHostMAC:bMAC +DE 11: " + BCDASCII.bytesToHexString(bMAC));
+            //12.Date and Time, Local Transaction
+            bMAC = BytesUtil.mergeBytes(bMAC,oResponseTrx.getDataElement(12));
+            Log.d(TAG, "ValidateHostMAC:bMAC +DE 12: " + BCDASCII.bytesToHexString(bMAC));
+            //39 Action code
+            bMAC = BytesUtil.mergeBytes(bMAC,oResponseTrx.getDataElement(39));
+            Log.d(TAG, "ValidateHostMAC:bMAC +DE 39: " + BCDASCII.bytesToHexString(bMAC));
+            //47.National Data
+            bMAC = BytesUtil.mergeBytes(bMAC,oResponseTrx.getDataElement(47));
+            Log.d(TAG, "ValidateHostMAC:bMAC +DE 47: " + BCDASCII.bytesToHexString(bMAC));
+            //53.Security Related Control Information
+            bMAC = BytesUtil.mergeBytes(bMAC,oResponseTrx.getDataElement(53));
+            Log.d(TAG, "ValidateHostMAC:bMAC +DE 53: " + BCDASCII.bytesToHexString(bMAC));
+            //55.EMV Data
+            if (PosApplication.getApp().oGPosTransaction.m_enmTrxCardType == POSTransaction.CardType.ICC | PosApplication.getApp().oGPosTransaction.m_enmTrxCardType == POSTransaction.CardType.CTLS) {
+                bMAC = BytesUtil.mergeBytes(bMAC,oResponseTrx.getDataElement(55));
+                Log.d(TAG, "ValidateHostMAC:bMAC +DE 55: " + BCDASCII.bytesToHexString(bMAC));
+            }
+        }
+        //0.Messa   ge Type Identifier
+        //2.Primary Account Number (PAN)
+        //3.Processing Code
+        //4.Amount, Transaction
+        //11.System Trace Audit Number
+        //12.Date and Time, Local Transaction
+        //39.Action Code
+        //47.National Data
+        //53.Security Related Control Information
+        //55.EMV Data
+        //72.Data Record
+        //124.Private - (POS Terminal Reconciliation)
+
+
+            if (bMAC.length%8!=0) {
+                for(int i=0 ;i<bMAC.length%8;i++)
+                {
+
+                    if(i==0) {
+                        bMAC = BytesUtil.add(bMAC, (byte) 0x80);
+                    }
+                    else
+                        bMAC = BytesUtil.add(bMAC, (byte) 0x00);
+
+
+                }
+            }
+            else
+            {
+                bMAC = BytesUtil.add(bMAC, (byte) 0x80);
+            }
+        Log.d(TAG, "ValidateHostMAC: bmac: "+BCDASCII.bytesToHexString(bMAC));
+        sMACblockcaculated = DUKPT_KEY.CaluclateMACBlock(bMAC);
+        Log.d(TAG, "ValidateHostMAC: MAC block:  "+sMACblockcaculated);
+
+            //removinglast 4 bytes
+        sMACblockcaculated=sMACblockcaculated.substring(0,8);
+
+        sMACblockcaculated=sMACblockcaculated.concat("FFFFFFFF");
+            byte[]bresponsemac=oResponseTrx.getDataElement(64);
+            String srespMAC=BCDASCII.bytesToHexString(bresponsemac);
+        Log.d(TAG, "ValidateHostMAC: Response MAC block:  "+srespMAC);
+            if(sMACblockcaculated.equals(srespMAC)) {
+                Log.d(TAG, "ValidateHostMAC: result: true ");
+                return true;
+            }
+        else {
+                Log.d(TAG, "ValidateHostMAC: result: false ");
+                return false;
+            }
+    }
+
+
+
+
+    public static int     GetTMSTranResponseMessage(String sActionCode){
         int iRetRes=-1;
 
         return iRetRes;
@@ -1291,150 +1635,213 @@ DF03 Check Sum                                [20]   >> 4410C6D51C2F83ADFD92528F
     //for host response
     public boolean CheckForTMSDownload()
     {   boolean bRetRes=false;
-        //todo check TMS flag in DE 62 for TMS
-        bRetRes=Check_DE62(PosApplication.getApp().oGPosTransaction.m_ResponseISOMsg.getDataElement(62),Flags.ForceTMS);
+        byte[] DE62=PosApplication.getApp().oGPosTransaction.m_ResponseISOMsg.getDataElement(62);
+    if(DE62!=null) {
+        bRetRes = Check_DE62(DE62, Flags.ForceTMS);
         Log.i(TAG, "ValidateHostResponse: CheckForTMSDownload: " + bRetRes);
-        if(bRetRes) {
+        if (bRetRes) {
             PosApplication.getApp().oGTerminal_Operation_Data.bTMS_flag = true;
             DeSAF(SAF_Info.DESAFtype.FULL);   //Desaf will performe TMS download after finishing
         }
+        else
+        {
+            StartTMSDownload(true , null);
+        }
+    }
         return bRetRes;
     }
-    private void StartTMSDownload(boolean bForced) {
+    public void StartTMSDownload(boolean bForced,ITransaction.View transactionview) {
 
+        mView = transactionview;
         Log.i(TAG, "StartTMSDownload: "+bForced);
-        int iResult;
-        if(!bForced)
-        {
-        }
-        iResult=PosApplication.getApp().oGPosTransaction.ComposeFileDownloadMessage();
-        Log.i(TAG, "ComposeFileDownloadMessage: "+iResult);
-        byte[]TMSreq = PosApplication.getApp().oGPosTransaction.m_RequestISOMsg.isotostr();
-        Log.i(TAG, "TMS request buffer: "+TMSreq);
+        if(PosApplication.getApp().oGTerminal_Operation_Data.TMS_currentcount==0 ||PosApplication.getApp().oGTerminal_Operation_Data.TMS_currentcount<PosApplication.getApp().oGTerminal_Operation_Data.TMS_endcount) {
+            int iResult;
+            if (!bForced) {
+            }
+            PosApplication.getApp().oGTerminal_Operation_Data.bTMS_flag = true;
+            iResult = PosApplication.getApp().oGPosTransaction.ComposeFileDownloadMessage();
+            Log.i(TAG, "ComposeFileDownloadMessage: " + iResult);
+            byte[] TMSreq = PosApplication.getApp().oGPosTransaction.m_RequestISOMsg.isotostr();
+            Log.i(TAG, "TMS request buffer: " + TMSreq);
 
 
-        CommunicationsHandler communicationsHandler = CommunicationsHandler.getInstance(new CommunicationInfo(PosApplication.getApp().getApplicationContext()));
+       /* CommunicationsHandler communicationsHandler = CommunicationsHandler.getInstance(new CommunicationInfo(PosApplication.getApp().getApplicationContext()));
 
         communicationsHandler.setSendReceiveListener(this);
-        communicationsHandler.sendReceive(TMSreq);
+        communicationsHandler.sendReceive(TMSreq);*/
+
+        senddata(TMSreq);
+        }
+        else{  //tms download done reset counters
+            PosApplication.getApp().oGTerminal_Operation_Data.TMS_currentcount=0;
+            PosApplication.getApp().oGTerminal_Operation_Data.TMS_endcount=0;
+            PosApplication.getApp().oGTerminal_Operation_Data.m_sTMSHeader="3040000";
+            //todo for partial conditions overwrite
+        }
     }
 
     // for Host response
-    public boolean	CheckForceReconciliation()
+    public  boolean	CheckForceReconciliation()
     {   boolean bRetRes=false;
         Log.i(TAG, "ValidateHostResponse: CheckForceReconciliation: "+bRetRes);
-            bRetRes =Check_DE62(PosApplication.getApp().oGPosTransaction.m_ResponseISOMsg.getDataElement(62),Flags.FORCERECONCILATION);
-            if(bRetRes) {
-                PosApplication.getApp().oGTerminal_Operation_Data.breconsile_flag=true;
-                DeSAF(SAF_Info.DESAFtype.FULL);   //Desaf will performe reconsile after finishing
+
+        byte[] DE62=PosApplication.getApp().oGPosTransaction.m_ResponseISOMsg.getDataElement(62);
+        if(DE62!=null) {
+            bRetRes = Check_DE62(DE62, Flags.FORCERECONCILATION);
+        }
+            if (bRetRes || CheckReconciliationLimits()) {
+                PosApplication.getApp().oGTerminal_Operation_Data.breconsile_flag = true;
+                if(PosApplication.getApp().oGTerminal_Operation_Data.saf_info.m_iSAFTrxNumber>0) {
+                    DeSAF(SAF_Info.DESAFtype.FULL);   //Desaf will performe reconsile after finishing
+                }
+                else
+                {
+                    StartReconciliation(true);  // start reconsile if no desaf transactions
+                }
 
             }
+
+
+
         return bRetRes;
     }
 
-    private void StartReconciliation(boolean bForced) {
+    public boolean StartReconciliation(boolean bForced) {
         Log.i(TAG, "StartReconciliation: "+bForced);
         int iResult;
-        if(!bForced)
-        {
-        }
+
+            isforced = bForced;
+
+
        iResult=PosApplication.getApp().oGPosTransaction.CompoaseReconciliationMessage();
         Log.i(TAG, "CompoaseReconciliationMessage: "+iResult);
         byte[]sendtotals = PosApplication.getApp().oGPosTransaction.m_RequestISOMsg.isotostr();
         Log.i(TAG, "Reconciliation buffer: "+sendtotals);
 
+        senddata(sendtotals);
 
-        CommunicationsHandler communicationsHandler = CommunicationsHandler.getInstance(new CommunicationInfo(PosApplication.getApp().getApplicationContext()));
-
-        communicationsHandler.setSendReceiveListener(this);
-        communicationsHandler.sendReceive(sendtotals);
-
-
+        return true;
 
     }
+
+    private void senddata(byte[] Buffer) {
+       /* CommunicationsHandler communicationsHandler = CommunicationsHandler.getInstance(new CommunicationInfo(PosApplication.getApp().getApplicationContext()));
+        communicationsHandler.setSendReceiveListener(this);
+        communicationsHandler.sendReceive(Buffer);*/
+
+        TCPCommunicator.addListener(this);
+        mCommunicationInfo= new CommunicationInfo(PosApplication.getApp().getApplicationContext());
+        Buffer = headersInterceptor.addHeaders(Buffer, mCommunicationInfo.getTPDU());
+        TCPCommunicator.writeToSocket(Buffer, UIHandler, mcontext);
+
+    }
+
 
     public int DeSAF(SAF_Info.DESAFtype en_Type) // iType full , partial (only 2 transaction)
     {   POSTransaction SAF_transaction=null;
         int iRetRes=-1;
+        CommunicationsHandler communicationsHandler=null;
 
         switch (en_Type)
         {
             case PARTIAL:
-                if (PosApplication.getApp().oGTerminal_Operation_Data.saf_info.DeSAF_partial_count==0)
-                {
-                    //partial SAF finished nex transaction checks after SAF
-                }
-                else {
-                    if (PosApplication.getApp().oGTerminal_Operation_Data.breversal_flg) {
-                        SAF_transaction = SAF_Info.Load_from_Reversal();
-                        PosApplication.getApp().oGTerminal_Operation_Data.saf_info.DeSAF_partial_count--;
-                        PosApplication.getApp().oGTerminal_Operation_Data.saf_info.m_iSAFTrxNumber--;
-                        PosApplication.getApp().oGPosTransaction.ComposeReversalMessage(); //1420
-                        byte[] sendPacket = PosApplication.getApp().oGPosTransaction.m_RequestISOMsg.isotostr();
-                        CommunicationsHandler communicationsHandler = CommunicationsHandler.getInstance(new CommunicationInfo(PosApplication.getApp().getApplicationContext()));
-                        communicationsHandler.setSendReceiveListener(this);
-                        communicationsHandler.sendReceive(sendPacket);
+                    if (PosApplication.getApp().oGTerminal_Operation_Data.saf_info.DeSAF_partial_count==0)
+                    {
+                        //partial SAF finished nex transaction checks after SAF
                     }
                     else {
-                        SAF_transaction = SAF_Info.Load_from_SAF();
-                        PosApplication.getApp().oGTerminal_Operation_Data.saf_info.DeSAF_partial_count--;
-                        PosApplication.getApp().oGTerminal_Operation_Data.saf_info.m_iSAFTrxNumber--;
-                            switch (SAF_transaction.m_enmTrxType) {
-                                case PURCHASE_ADVICE: //1220
-                                    PosApplication.getApp().oGPosTransaction.ComposeFinancialMessage(SAF_transaction.m_enmTrxType);
-                                    break;
-                                case AUTHORISATION_ADVICE://1120
-                                    PosApplication.getApp().oGPosTransaction.ComposeAuthorisationAdviseMessage(SAF_transaction.m_enmTrxType);
-                                    break;
+                        if (PosApplication.getApp().oGTerminal_Operation_Data.breversal_flg) {
+                            SAF_transaction = SAF_Info.Load_from_Reversal();
+                            PosApplication.getApp().oGTerminal_Operation_Data.saf_info.DeSAF_partial_count--;
+                            PosApplication.getApp().oGPosTransaction.Reset();
+                            PosApplication.getApp().oGPosTransaction.ComposeReversalMessage(); //1420
+                            byte[] sendPacket = PosApplication.getApp().oGPosTransaction.m_RequestISOMsg.isotostr();
+/*                            communicationsHandler = CommunicationsHandler.getInstance(new CommunicationInfo(PosApplication.getApp().getApplicationContext()));
+                            communicationsHandler.setSendReceiveListener(this);
+                            communicationsHandler.sendReceive(sendPacket);*/
+                            senddata(sendPacket);
+                        }
+                        else {
+                            if(PosApplication.getApp().oGPosTransaction.m_enmTrxCardType== POSTransaction.CardType.ICC & !PosApplication.getApp().oGPosTransaction.m_is_mada & PosApplication.getApp().oGTerminal_Operation_Data.saf_info.m_iSAFTrxNumber==1)
+                            {
+                                //do nothing incase there is only one saf and the transaction is not mada because it is saved by the current transaction non mada card ICS
                             }
-                        byte[] sendPacket = PosApplication.getApp().oGPosTransaction.m_RequestISOMsg.isotostr();
-                        CommunicationsHandler communicationsHandler = CommunicationsHandler.getInstance(new CommunicationInfo(PosApplication.getApp().getApplicationContext()));
-                        communicationsHandler.setSendReceiveListener(this);
-                        communicationsHandler.sendReceive(sendPacket);
+                            else {
+                                SAF_transaction = SAF_Info.Load_trx_from_SAF();
+                                PosApplication.getApp().oGTerminal_Operation_Data.saf_info.DeSAF_partial_count--;
+                                PosApplication.getApp().oGPosTransaction.Reset();
+                                PosApplication.getApp().oGPosTransaction = SAF_transaction;
+                                switch (SAF_transaction.m_enmTrxType) {
+                                    case PURCHASE_ADVICE: //1220
+                                        SAF_transaction.ComposeFinancialAdviseMessage(SAF_transaction.m_enmTrxType);
+                                        break;
+                                    case AUTHORISATION_ADVICE://1120
+                                        SAF_transaction.ComposeAuthorisationAdviseMessage(SAF_transaction.m_enmTrxType);
+                                        break;
+                                }
+                                byte[] sendPacket = SAF_transaction.m_RequestISOMsg.isotostr();
+
+                                /*communicationsHandler = CommunicationsHandler.getInstance(new CommunicationInfo(PosApplication.getApp().getApplicationContext()));
+                                communicationsHandler.setSendReceiveListener(this);
+                                communicationsHandler.sendReceive(sendPacket);*/
+                                senddata(sendPacket);
+
+                            }
+                        }
+
                     }
+                    break;
 
-                }
-                break;
 
-            //todo performe message building and send and recive for reversal advice and SAF transaction
             case FULL:
                    if(PosApplication.getApp().oGTerminal_Operation_Data.breversal_flg) {
-                    SAF_transaction = SAF_Info.Load_from_Reversal();
-                    PosApplication.getApp().oGTerminal_Operation_Data.saf_info.m_iSAFTrxNumber--;
-                    PosApplication.getApp().oGPosTransaction.ComposeReversalMessage();
-                    byte[] sendPacket = PosApplication.getApp().oGPosTransaction.m_RequestISOMsg.isotostr();
-                    CommunicationsHandler communicationsHandler = CommunicationsHandler.getInstance(new CommunicationInfo(PosApplication.getApp().getApplicationContext()));
-                    communicationsHandler.setSendReceiveListener(this);
-                    communicationsHandler.sendReceive(sendPacket);
-
-
-
-                }
-                else {
-
-
-                        SAF_transaction = SAF_Info.Load_from_SAF();
-                       PosApplication.getApp().oGTerminal_Operation_Data.saf_info.m_iSAFTrxNumber--;
-
-                       switch (SAF_transaction.m_enmTrxType) {
-                           case PURCHASE_ADVICE: //1220
-                               PosApplication.getApp().oGPosTransaction.ComposeFinancialMessage(SAF_transaction.m_enmTrxType);
-                               break;
-                           case AUTHORISATION_ADVICE://1120
-                               PosApplication.getApp().oGPosTransaction.ComposeAuthorisationAdviseMessage(SAF_transaction.m_enmTrxType);
-                               break;
-                       }
-                        byte[] sendPacket = PosApplication.getApp().oGPosTransaction.m_RequestISOMsg.isotostr();
-                        CommunicationsHandler communicationsHandler = CommunicationsHandler.getInstance(new CommunicationInfo(PosApplication.getApp().getApplicationContext()));
+                        SAF_transaction = SAF_Info.Load_from_Reversal();
+                       PosApplication.getApp().oGPosTransaction.Reset();
+                       SAF_transaction.ComposeReversalMessage();
+                        byte[] sendPacket = SAF_transaction.m_RequestISOMsg.isotostr();
+                       /* communicationsHandler = CommunicationsHandler.getInstance(new CommunicationInfo(PosApplication.getApp().getApplicationContext()));
                         communicationsHandler.setSendReceiveListener(this);
-                        communicationsHandler.sendReceive(sendPacket);
+                        communicationsHandler.sendReceive(sendPacket);*/
+                       senddata(sendPacket);
+                     }
+                     else {
 
+                       if(PosApplication.getApp().oGTerminal_Operation_Data.saf_info.m_iSAFTrxNumber==0){
+                           PosApplication.getApp().oGTerminal_Operation_Data.bDeSAF_flag=false;
+                       }
+                       else {
+
+                           //todo handle if no saf exist protection to below function
+                           SAF_transaction = SAF_Info.Load_trx_from_SAF();
+                           PosApplication.getApp().oGPosTransaction.Reset();
+                           PosApplication.getApp().oGPosTransaction = SAF_transaction;
+
+                           switch (SAF_transaction.m_enmTrxType) {
+                               case PURCHASE_ADVICE: //1220
+                                   SAF_transaction.ComposeFinancialAdviseMessage(SAF_transaction.m_enmTrxType);
+                                   break;
+                               case AUTHORISATION_ADVICE://1120
+                                   SAF_transaction.ComposeAuthorisationAdviseMessage(SAF_transaction.m_enmTrxType);
+                                   break;
+                           }
+                           byte[] sendPacket = SAF_transaction.m_RequestISOMsg.isotostr();
+                    /*    communicationsHandler = CommunicationsHandler.getInstance(new CommunicationInfo(PosApplication.getApp().getApplicationContext()));
+                        communicationsHandler.setSendReceiveListener(this);
+                        communicationsHandler.sendReceive(sendPacket);*/
+                           senddata(sendPacket);
+                       }
 
 
                 }
                 break;
 
+
+
         }
+        Save_TermData();
+        if(communicationsHandler!=null)
+        communicationsHandler.closeConnection();
+       // disconnect();
         return iRetRes;
     }
 
@@ -1444,25 +1851,61 @@ DF03 Check Sum                                [20]   >> 4410C6D51C2F83ADFD92528F
 
         Process_Rece_Packet( recePacket);
         Log.i(TAG, "Process_Rece_Packet: ");
-        ValidateHostMAC();
-
-        if(!CheckHostActionCode(PosApplication.getApp().oGPosTransaction.m_ResponseISOMsg.getDataElement(39).toString()))
+        if(!ValidateHostMAC())
+        {
+            //todo go to invalid macing process
+        }
+        String mResponse = BCDASCII.asciiByteArray2String(PosApplication.getApp().oGPosTransaction.m_ResponseISOMsg.getDataElement(39));
+        if(!CheckHostActionCode(mResponse))
         {
             //todo declined transaction check response code and print message or not for saf resonse
 
         }
-        PosApplication.getApp().oGPosTransaction.m_sApprovalCode=PosApplication.getApp().oGPosTransaction.m_ResponseISOMsg.getDataElement(38).toString();
+        else {
+            iRetres = 0;
+           // printdesaf();
+            PosApplication.getApp().oGTerminal_Operation_Data.saf_info.m_iSAFTrxNumber--;
+            PosApplication.getApp().oGTerminal_Operation_Data.saf_info.m_dSAFCumulativeAmount-= Double.parseDouble(PosApplication.getApp().oGPosTransaction.m_sTrxAmount)/100;
+            if(PosApplication.getApp().oGTerminal_Operation_Data.saf_info.m_iSAFTrxNumber==0)
+                PosApplication.getApp().oGTerminal_Operation_Data.bDeSAF_flag=false;
+            Update_Terminal_totals();  //added to update purchase advises and detail
+            SAF_Info.Deletetopsaf();
+            Save_TermData();
+        }
+       // PosApplication.getApp().oGPosTransaction.m_sApprovalCode=BCDASCII.bytesToHexString(PosApplication.getApp().oGPosTransaction.m_ResponseISOMsg.getDataElement(38));
 
         return iRetres;
     }
+
+    //for test only
+    private static void printdesaf() {
+
+         DESAF_Print desafprint;
+        try {
+            desafprint = new DESAF_Print();
+            desafprint.printDetail();
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+
+    }
+
     public static int CheckandSaveInSAF(POSTransaction POSTrx, boolean bIsReversal)
     {
         // todo checking transaction is eligable to be saved in SAF or not
+
+        // checking again for mada incase response change card type from non mada to mada
+        if(Check_MADA_Card())
+        {
+            //todo any condition if it's mada card we sent 1100 so if it should be considered as 1200  (check with moamen)
+        }
+
         int iRetRes=-1;
         if (bIsReversal) {
             POSTrx = SAF_Info.BuildSAFOriginals(POSTrx, PosApplication.getApp().oGPosTransaction);
             POSTrx.m_enmTrxType = POSTransaction.TranscationType.REVERSAL;
             SAF_Info.SAVE_IN_REV(POSTrx);
+            PosApplication.getApp().oGTerminal_Operation_Data.breversal_flg=true;
         }
         else {
             if(POSTrx.m_is_mada)
@@ -1474,6 +1917,9 @@ DF03 Check Sum                                [20]   >> 4410C6D51C2F83ADFD92528F
                             POSTrx=SAF_Info.BuildSAFOriginals(POSTrx,PosApplication.getApp().oGPosTransaction);
                             POSTrx.m_enmTrxType = POSTransaction.TranscationType.PURCHASE_ADVICE;
                            SAF_Info.SAVE_IN_SAF(POSTrx);
+                            PosApplication.getApp().oGTerminal_Operation_Data.bDeSAF_flag=true;
+                            PosApplication.getApp().oGTerminal_Operation_Data.saf_info.m_dSAFCumulativeAmount=+Double.parseDouble(POSTrx.m_sTrxAmount)/100;
+                            PosApplication.getApp().oGTerminal_Operation_Data.saf_info.m_iSAFTrxNumber++;
                         }
                         //todo save  Offline Financial Transaction – mada Chip/Contactless Card (Declined)
                         break;
@@ -1491,30 +1937,46 @@ DF03 Check Sum                                [20]   >> 4410C6D51C2F83ADFD92528F
                             POSTrx=SAF_Info.BuildSAFOriginals(POSTrx,PosApplication.getApp().oGPosTransaction);
                             POSTrx.m_enmTrxType = POSTransaction.TranscationType.PURCHASE_ADVICE;
                             SAF_Info.SAVE_IN_SAF(POSTrx);
+                            PosApplication.getApp().oGTerminal_Operation_Data.bDeSAF_flag=true;
+                            PosApplication.getApp().oGTerminal_Operation_Data.saf_info.m_dSAFCumulativeAmount=+Double.parseDouble(POSTrx.m_sTrxAmount)/100;
+                            PosApplication.getApp().oGTerminal_Operation_Data.saf_info.m_iSAFTrxNumber++;
                         }
+                        break;
                     case AUTHORISATION:
                         if(POSTrx.m_enmTrxCardType== POSTransaction.CardType.ICC) {
                             POSTrx=SAF_Info.BuildSAFOriginals(POSTrx,PosApplication.getApp().oGPosTransaction);
                             POSTrx.m_enmTrxType = POSTransaction.TranscationType.AUTHORISATION_ADVICE;
                             SAF_Info.SAVE_IN_SAF(POSTrx);
+                            PosApplication.getApp().oGTerminal_Operation_Data.bDeSAF_flag=true;
+                            PosApplication.getApp().oGTerminal_Operation_Data.saf_info.m_dSAFCumulativeAmount=+Double.parseDouble(POSTrx.m_sTrxAmount)/100;
+                            PosApplication.getApp().oGTerminal_Operation_Data.saf_info.m_iSAFTrxNumber++;
                         }
+                        break;
 
                 }
             }
         }
-        PosApplication.getApp().oGTerminal_Operation_Data.saf_info.m_dSAFCumulativeAmount=+Integer.parseInt(POSTrx.m_sTrxAmount);
-        PosApplication.getApp().oGTerminal_Operation_Data.saf_info.m_iSAFTrxNumber++;
+
         return iRetRes;
 
     }
     public enum CurrentSaving{ SAVE,
                         REMOVE}
+
+
     public static int     SaveLastTransaction(POSTransaction POSTrx,CurrentSaving enumsave) // IState = Save or Remove  , Used to save curren tranaction incase of power failure and removed it after ending
     {
         int iRetRes=-1;
+        PosApplication.getApp().oGTerminal_Operation_Data.breversal_flg=false;
 
+        if (enumsave == CurrentSaving.SAVE)
+        { PosApplication.getApp().oGTerminal_Operation_Data.breversal_flg=true;
+        SaveLoadFile.Savelasttransaction(POSTrx);
 
-            //todo  mohamed save transaction in DB
+        }
+        else{
+            PosApplication.getApp().oGTerminal_Operation_Data.breversal_flg=false;
+        }
         return iRetRes;
     }
 
@@ -1540,9 +2002,11 @@ DF03 Check Sum                                [20]   >> 4410C6D51C2F83ADFD92528F
     {
         boolean bRetRes =  false;
         // Checking Reconciliation Limits 4.16
-        if(PosApplication.getApp().oGTerminal_Operation_Data.m_dTermReconciliationAmount >= Double.parseDouble(PosApplication.getApp().oGSama_TMS.device_specific.m_sMax_Reconciliation_Amount ))
+        Log.d(TAG, "CheckReconciliationLimits: "+PosApplication.getApp().oGTerminal_Operation_Data.m_dTermReconciliationAmount);
+        //if(PosApplication.getApp().oGTerminal_Operation_Data.m_dTermReconciliationAmount >= Double.parseDouble(PosApplication.getApp().oGSama_TMS.device_specific.m_sMax_Reconciliation_Amount ))
+        if(PosApplication.getApp().oGTerminal_Operation_Data.m_dTermReconciliationAmount >= Double.parseDouble(PosApplication.getApp().oGTerminal_Operation_Data.m_DeviceSpecific.m_sMax_Reconciliation_Amount))
         {
-            //Todo Log message
+
 
             bRetRes = true ;
 
@@ -1551,31 +2015,169 @@ DF03 Check Sum                                [20]   >> 4410C6D51C2F83ADFD92528F
 
         // Checking Number approved transaction  4.17
 
-        if(PosApplication.getApp().oGTerminal_Operation_Data.m_iTermApprovedTrxCounter >= Integer.parseInt(PosApplication.getApp().oGSama_TMS.device_specific.m_sMax_Transactions_Processed)) {
-            //Todo Log message
+        //if(PosApplication.getApp().oGTerminal_Operation_Data.m_iTermApprovedTrxCounter >= Integer.parseInt(PosApplication.getApp().oGSama_TMS.device_specific.m_sMax_Transactions_Processed ))
+        if(PosApplication.getApp().oGTerminal_Operation_Data.m_iTermApprovedTrxCounter >=  Integer.parseInt(PosApplication.getApp().oGTerminal_Operation_Data.m_DeviceSpecific.m_sMax_Transactions_Processed))
+        {
 
-            bRetRes = true;
+            bRetRes = true ;
 
 
         }
         return bRetRes;
     }
 
-    public boolean Check_manual_allowed() {
-        return PosApplication.getApp().oGPosTransaction.m_card_scheme.m_sManual_entry_allowed == "1";
+/**
+	\Function Name: GetTrxCumulativeAmount
+	\Param  : POSTransaction POSTrx
+	\Return : double
+	\Pre    :
+	\Post   :
+	\Author	: Moamen Ahmed
+	\DT		: 13/07/2020
+	\Des    : Get Transaction amout to be updated on  m_dTermReconciliationAmount buffer for SAF Checking , not including Authorization amount
+*/
+
+    public static double GetTrxCumulativeAmount(POSTransaction POSTrx)
+
+
+    {
+        double dAmount =0;
+        // Todo Log Start message
+
+        switch (POSTrx.m_enmTrxType)
+        {
+            case PURCHASE :
+            case PURCHASE_WITH_NAQD :
+            case PURCHASE_ADVICE:
+            case CASH_ADVANCE:
+            case REFUND :
+            {
+                if(POSTrx.m_sProcessCode.equals("000000") ||
+                        POSTrx.m_sProcessCode.equals("010000") ||
+                        POSTrx.m_sProcessCode.equals("090000"))
+                {
+                    dAmount = Double.parseDouble(POSTrx.m_sTrxAmount);
+                    dAmount =dAmount/100;
+                }
+                else  if(POSTrx.m_sProcessCode.equals("200000")) {
+                    dAmount = Double.parseDouble(POSTrx.m_sTrxAmount) * -1;
+                    dAmount = dAmount / 100;
+                }
+            }
+            break;
+            case REVERSAL :
+            {
+                if(POSTrx.m_sProcessCode.equals("000000") ||
+                        POSTrx.m_sProcessCode.equals("010000") ||
+                        POSTrx.m_sProcessCode.equals("090000"))
+                {
+                    dAmount = Double.parseDouble(POSTrx.m_sTrxAmount) * -1;
+                    dAmount = dAmount/100;
+                }
+                else  if(POSTrx.m_sProcessCode.equals("200000"))
+                    dAmount = Double.parseDouble(POSTrx.m_sTrxAmount);
+                    dAmount = dAmount/100;
+            }
+            break;
+        }
+        // Todo Log Endmessage with  return value
+
+        return dAmount;
     }
 
-    public int Check_max_cashback(int cashbackamount) {
-        //todo get max cash back
 
-        return 0;
+    /**
+     \Function Name: load_Terminal_configuration_file
+     \Param  : POSTransaction POSTrx
+     \Return : double
+     \Pre    :
+     \Post   :
+     \Author	: mostafa hussiny
+     \DT		: 00/08/2020
+     \Des    : loading Terminal operation data from saved file of terminal configuration data
+     */
+    public static void load_Terminal_configuration_file() {
+        // to copy initial terminal operation data
+        SAMA_TMS Default_TMS = new SAMA_TMS();
+
+        // default retailer data
+        Default_TMS.retailer_data.m_sArabic_Receipt_1="Arabic_Receipt_1";
+        Default_TMS.retailer_data.m_sArabic_Receipt_2="m_sArabic_Receipt_2";
+        Default_TMS.retailer_data.m_sAutomatic_Load="0";
+        Default_TMS.retailer_data.m_sTerminal_Capability="0000000";
+        Default_TMS.retailer_data.m_sAdditional_Terminal_Capabilities="000000";
+        Default_TMS.retailer_data.m_sCurrency_Symbol_Arabic="ريال";
+        Default_TMS.retailer_data.m_sCurrency_Symbol_English="SAR";
+        Default_TMS.retailer_data.m_sTerminal_Currency_Code="0682";
+        Default_TMS.retailer_data.m_sTerminal_Country_Code="0682";
+        Default_TMS.retailer_data.m_sTransaction_Currency_Exponent="2";
+        Default_TMS.retailer_data.m_sSAF_Default_Message_Transmission_Number="2";
+        Default_TMS.retailer_data.m_sSAF_Retry_Limit="3";
+        Default_TMS.retailer_data.m_sDownload_Phone_Number="+01061456840";
+        Default_TMS.retailer_data.m_sEMV_Terminal_Type="22";
+        Default_TMS.retailer_data.m_sNext_load="0";
+        Default_TMS.retailer_data.m_sReconciliation_time="233000";
+        Default_TMS.retailer_data.m_sEnglish_Receipt_1="English_Receipt_1";
+        Default_TMS.retailer_data.m_sEnglish_Receipt_2="English_Receipt_2";
+        Default_TMS.retailer_data.m_sRetailer_Address_1_Arabic="هلا، المملكه العربيه السعوديه1 ";
+        Default_TMS.retailer_data.m_sRetailer_Address_2_Arabic="هلا، المملكه العربيه السعوديه2 ";
+        Default_TMS.retailer_data.m_sRetailer_Address_1_English="hala , saudiarabia 1";
+        Default_TMS.retailer_data.m_sRetailer_Address_2_English="hala , saudiarabia 2";
+        Default_TMS.retailer_data.m_sRetailer_Name_Arabic="تاجر مؤقت";
+        Default_TMS.retailer_data.m_sRetailer_Name_English="temp Merchant";
+
+
+
+
+
+
+
+        PosApplication.getApp().oGSama_TMS=Default_TMS;
+
+
+
+
+
+
     }
 
-    public enum Flowtrxtype {
-        DESAF,
-        RECONSILE,
-        REVERSAL
-    }
+    /**
+     \Function Name: check_hardware
+     \Param  : POSTransaction POSTrx
+     \Return : double
+     \Pre    :
+     \Post   :
+     \Author	: mostafa hussiny
+     \DT		: 00/08/2020
+     \Des    : check_hardware printer contactless reader , chip , mag ,...etc
+     */
+
+    public static void check_hardware() {
+
+        AidlPrinter mPrinterManager;
+        mPrinterManager = DeviceTopUsdkServiceManager.getInstance().getPrintManager();
+        int printState=-1;
+                try {
+                           printState = mPrinterManager.getPrinterState();
+                          Log.i(TAG, "printState = " + printState);
+                    }
+                     catch (Exception e)
+                    {
+                          e.printStackTrace();
+                    }
+
+                switch (printState) {
+                    case 0://PRINTER_STATE_Normal             // for mada '0' = No printer. '1' = Out of paper. '2' = Plain paper receipt.
+                    break;
+                    case 1://PRINTER_STATE_NOPAPER
+                           PosApplication.getApp().oGTerminal_Operation_Data.Printer_Status = "1";
+                           break;
+                    case 2:
+                        break;
+                }
+
+
+        }
 
     /**
      \Function Name: Get_Terminal_Transaction_limits
@@ -1601,104 +2203,240 @@ DF03 Check Sum                                [20]   >> 4410C6D51C2F83ADFD92528F
 
 
     }
+
+    private void Display_printResult(Activity activity,String response, String resDetail, POSTransaction POStrx) {
+        Log.i(TAG, "Display_printResult(), response = " + response + ", resDetail = " + resDetail + ", printDetail = " + POStrx);
+        if (POStrx.m_enmTrxType == POSTransaction.TranscationType.PURCHASE )
+        {
+
+        }
+
+
+
+       Intent intent = new Intent(activity, Display_PrintActivity.class);
+
+        intent.putExtra("trx",POStrx);
+        activity.startActivity(intent);
+
+    }
+
+
+    private int Parse_RECONSILE_response(byte[] receivedPacket) {
+        Log.d(TAG, "Parse_RECONSILE_response: Started");
+        int iRetres=-1;
+        int iNumberOfCardScheme;
+        HostTotals hostTotals = null;
+        Process_Rece_Packet( receivedPacket);
+        Log.i(TAG, "Process_Rece_Packet: ");
+        if(!ValidateHostMAC())
+        {
+            //todo go to invalid macing process
+        }
+            String sActionCodeDE39=BCDASCII.asciiByteArray2String(PosApplication.getApp().oGPosTransaction.m_ResponseISOMsg.getDataElement(39));
+        if(!CheckHostActionCode(sActionCodeDE39))
+        {
+            // todo decline
+        }
+        else{
+
+            if(sActionCodeDE39.equals("500")) {//process in Balance data
+                //get DE124
+               // getDE124(PosApplication.getApp().oGPosTransaction);
+                String sTotalsDE124=BCDASCII.asciiByteArray2String(PosApplication.getApp().oGPosTransaction.m_ResponseISOMsg.getDataElement(124));
+                iNumberOfCardScheme=Integer.parseInt(sTotalsDE124.substring(0,2));
+                hostTotals=new HostTotals(iNumberOfCardScheme);
+                hostTotals.cardSchemeTotals=fillHostReconciliationTotals(sTotalsDE124,iNumberOfCardScheme);
+                hostTotals.inBalance=true;
+
+
+
+
+            }
+            else if (sActionCodeDE39.equals("501")) {       //process out of Balance
+                //get DE124
+               // getDE124(PosApplication.getApp().oGPosTransaction);
+                String sTotalsDE124=BCDASCII.asciiByteArray2String(PosApplication.getApp().oGPosTransaction.m_ResponseISOMsg.getDataElement(124));
+                iNumberOfCardScheme=Integer.parseInt(sTotalsDE124.substring(0,2));
+                hostTotals=new HostTotals(iNumberOfCardScheme);
+                hostTotals.cardSchemeTotals=fillHostReconciliationTotals(sTotalsDE124,iNumberOfCardScheme);
+                hostTotals.inBalance=false;
+
+
+                Log.d(TAG, "Parse_RECONSILE_response:sTotalsDE124=  "+ sTotalsDE124);
+            }
+            else{
+
+            }
+            PosApplication.getApp().oGTerminal_Operation_Data.breconsile_flag=false;
+
+            ////////////for test printing here////////////
+            Reconsile_Print mReconsile_print;
+            mReconsile_print = new Reconsile_Print();
+
+            mReconsile_print.printDetail(hostTotals);
+
+            ////////////////////////////////////////////
+            SaveLoadFile.resetandsavebatch(PosApplication.getApp().oGPosTransaction);
+            Save_TermData();
+            iRetres= 0;
+        }
+
+        return iRetres;
+
+
+    }
+
+    private void parse_TMS_response(byte[] receivedPacket) {
+
+        Log.d(TAG, "parse_TMS_response: Started");
+        int iRetres=-1;
+
+
+        Process_Rece_Packet( receivedPacket);
+        Log.i(TAG, "Process_Rece_Packet: ");
+        if(!ValidateHostMAC())
+        {
+            //todo go to invalid macing process
+        }
+        String sActionCodeDE39=BCDASCII.asciiByteArray2String(PosApplication.getApp().oGPosTransaction.m_ResponseISOMsg.getDataElement(39));
+        if(!CheckHostActionCode(sActionCodeDE39))
+        {
+        }
+        else {
+
+          //  Check_DE72();
+            byte[] DE72 =PosApplication.getApp().oGPosTransaction.m_ResponseISOMsg.getDataElement(72);
+            if(DE72!=null) {
+                String sDE72 = BCDASCII.asciiByteArray2String(DE72);
+
+                PosApplication.getApp().oGTerminal_Operation_Data.m_sTMSHeader=sDE72.substring(0,7);
+                PosApplication.getApp().oGTerminal_Operation_Data.TMS_currentcount = Integer.parseInt(sDE72.substring(3,5));
+                PosApplication.getApp().oGTerminal_Operation_Data.TMS_endcount = Integer.parseInt(sDE72.substring(5,7));
+
+                PosApplication.getApp().oGSama_TMS.Get_Sama_param(sDE72);
+            }
+            if(PosApplication.getApp().oGTerminal_Operation_Data.TMS_currentcount==PosApplication.getApp().oGTerminal_Operation_Data.TMS_endcount) {
+
+              // update all operation data nessassry to run the application (Devicespecific,saf,
+                PosApplication.getApp().oGTerminal_Operation_Data.bTMS_flag = false;
+                com.example.halalah.database.table.DBManager.getInstance().init(PosApplication.getApp().oGPOS_MAIN.mcontext);   //load AIDs and CAPK
+                com.example.halalah.database.table.DBManager.getInstance().addTMSCapkAIDtoDB();
+                Device_Specific deviceSpecific = TMSManager.getInstance().getDeviceSpecific();
+
+                PosApplication.getApp().oGTerminal_Operation_Data.m_DeviceSpecific = deviceSpecific;
+
+                PosApplication.getApp().oGTerminal_Operation_Data.saf_info.m_iMax_SAF_Cumulative_Amount=Integer.parseInt(deviceSpecific.m_sMax_SAF_Cumulative_Amount); //todo check max limit integer or log
+                PosApplication.getApp().oGTerminal_Operation_Data.saf_info.m_iMax_SAF_Depth = Integer.parseInt(deviceSpecific.m_sMax_SAF_Depth);
+                SetTotalsschemes();
+
+                PosApplication.getApp().oGTerminal_Operation_Data.m_TMS_Downloaded=true;
+                TCPCommunicator.closeStreams();
+                Save_TermData();
+
+
+             }
+
+            Save_TermData();
+
+
+
+
+
+
+        }
+
+    }
+
+    public static void SetTotalsschemes() {
+
+        //setting totals
+        Card_Scheme[] card_schemes = TMSManager.getInstance().getAllCardScheme().toArray(new Card_Scheme[0]);
+        PosApplication.getApp().oGTerminal_Operation_Data.g_NumberOfCardSchemes=card_schemes.length;
+        //PosApplication.getApp().oGTerminal_Operation_Data.g_TerminalTotals=new CardSchemeTotals[card_schemes.length];
+        for(int i = 0 ;i<card_schemes.length;i++)
+        {
+            PosApplication.getApp().oGTerminal_Operation_Data.g_TerminalTotals[i]= new CardSchemeTotals();
+            PosApplication.getApp().oGTerminal_Operation_Data.g_TerminalTotals[i].m_szCardSchmID=card_schemes[i].m_sCard_Scheme_ID;
+            PosApplication.getApp().oGTerminal_Operation_Data.g_TerminalTotals[i].m_szCardSchemeAcqID=card_schemes[i].m_sCard_Scheme_Acquirer_ID;
+        }
+    }
+
+    private HostTotals getDE124(POSTransaction reconsiletrx) {
+
+        String sTotalsDE124=BCDASCII.asciiByteArray2String(reconsiletrx.m_ResponseISOMsg.getDataElement(124));
+        int iNumberOfCardScheme=Integer.parseInt(sTotalsDE124.substring(0,2));
+        HostTotals hostTotals=new HostTotals(iNumberOfCardScheme);
+        hostTotals.cardSchemeTotals=fillHostReconciliationTotals(sTotalsDE124,iNumberOfCardScheme);
+        hostTotals.inBalance=true;
+        return hostTotals;
+    }
+
+    public CardSchemeTotals[] fillHostReconciliationTotals(String stotalsDE124,int iNumberOfCardScheme)
+    {
+        /**
+         01-02 2 Number of Card Schemes (values from
+         01 to 10)
+         03-98 96 Card Scheme Totals – 01
+         99-194 96 Card Scheme Totals – 02
+         195-290 96 Card Scheme Totals – 03
+         291-386 96 Card Scheme Totals – 04
+         387-482 96 Card Scheme Totals – 05
+         483-578 96 Card Scheme Totals – 06
+         579-674 96 Card Scheme Totals – 07
+         675-770 96 Card Scheme Totals – 08
+         771-866 96 Card Scheme Totals – 09
+         867-962 96 Card Scheme Totals – 10
+         */
+
+
+        stotalsDE124=stotalsDE124.substring(2,stotalsDE124.length());
+        CardSchemeTotals[] oTotalsArray=new CardSchemeTotals[iNumberOfCardScheme];
+
+        for(int i=0; i<iNumberOfCardScheme;i++) {
+            oTotalsArray[i]=new CardSchemeTotals();
+            oTotalsArray[i].m_szCardSchmID=stotalsDE124.substring(0,2);            /* Card scheme ID*/
+            oTotalsArray[i].m_szCardSchemeAcqID=stotalsDE124.substring(2,6);       /* Card Scheme Acquirer ID*/
+            // Trx Totals
+            oTotalsArray[i].m_lDebitCount=Integer.parseInt(stotalsDE124.substring(6,16));            /* Debit Count*/
+            oTotalsArray[i].m_dDebitAmount=Double.parseDouble(stotalsDE124.substring(16,31))/100;             /* Debit Amount*/
+            oTotalsArray[i].m_lCreditCount=Integer.parseInt(stotalsDE124.substring(31,41));         /* Credit Count*/
+            oTotalsArray[i].m_dCreditAmount=Double.parseDouble(stotalsDE124.substring(41,56))/100;          /* Credit Amount*/
+            oTotalsArray[i].m_dCashBackAmount=Double.parseDouble(stotalsDE124.substring(56,71))/100;        /* Cash Back Amount*/
+            oTotalsArray[i].m_dCashAdvanceAmount=Double.parseDouble(stotalsDE124.substring(71,86))/100;     /* Cash Advance Amount*/
+            oTotalsArray[i].m_lAuthorisationCount=Integer.parseInt(stotalsDE124.substring(86,96));    /* Authorisation Count*/
+
+            if(stotalsDE124.length()>96)
+                stotalsDE124=stotalsDE124.substring(96,stotalsDE124.length());
+        }
+
+        return oTotalsArray;
+    }
+    private int Parse_reversal_Response(byte[] receivedPacket) {
+        Log.d(TAG, "Parse_reversal_Response: Started");
+        int iRetres=-1;
+
+        Process_Rece_Packet( receivedPacket);
+        Log.i(TAG, "Process_Rece_Packet: ");
+        if(!ValidateHostMAC())
+        {
+            //todo go to invalid macing process
+        }
+
+        String mResponse = BCDASCII.asciiByteArray2String(PosApplication.getApp().oGPosTransaction.m_ResponseISOMsg.getDataElement(39));
+        if(!CheckHostActionCode(mResponse))
+        {
+            //todo declined transaction check response code and print message or not for reversal declined
+            return 0;
+        }
+
+        return iRetres;
+
+
+    }
+    private void disconnect(){
+        TCPCommunicator.closeStreams();
+    }
 }
 
 
 
-
-/*
-       oPos_trans.ComposeFinancialMessage(POSTransaction.TranscationType.PURCHASE);
-               // oPos_trans.m_RequestISOMsg.isotostr();
-               //send
-               //1221
-               //String data ="31 32 32 31 37 32 33 30 30 37 43 31 32 45 43 32 38 42 30 35 31 36 34 38 34 37 38 33 35 30 31 30 34 37 34 39 31 32 30 30 30 30 30 30 30 30 30 30 30 30 30 30 31 30 30 30 31 32 30 36 30 32 31 38 31 32 30 30 30 30 34 38 31 38 31 32 30 36 30 34 35 34 34 36 37 31 30 33 30 31 35 31 33 33 34 43 30 30 30 32 30 30 31 30 30 35 35 33 31 31 30 36 35 38 38 38 34 39 33 34 34 38 34 37 38 33 35 30 31 30 34 37 34 39 31 32 3D 32 31 30 32 32 32 31 31 38 38 38 38 37 35 38 30 32 30 34 35 34 34 36 30 30 30 30 34 37 34 37 34 39 31 32 30 30 30 34 37 30 30 30 31 32 33 30 31 34 39 30 31 32 33 30 31 30 31 31 32 33 34 35 36 37 38 20 20 20 30 30 36 53 41 49 42 50 31 36 38 32 31 33 47 FF F0 01 11 10 00 00 00 08 36 30 39 31 35 39 82 02 3C 00 9F 36 02 02 6A 9F 26 08 19 12 47 8F 99 43 C9 AD 9F 27 01 40 9F 34 03 42 00 00 9F 1E 08 30 37 30 30 30 30 31 31 9F 10 12 06 01 0A 03 60 AC 04 0A 02 00 00 00 00 00 4E AF 33 3E 9F 33 03 E0 F8 C8 9F 35 01 22 95 05 08 80 04 00 00 9F 37 04 C1 62 B7 38 9F 02 06 00 00 00 00 10 00 9F 03 06 00 00 00 00 00 00 9F 1A 02 06 82 5F 2A 02 06 82 9A 03 18 12 06 9C 01 00 84 07 A0 00 00 02 28 20 10 50 04 6D 61 64 61 9F 12 0A 6D 61 64 61 20 44 65 62 69 74 4F 07 A0 00 00 02 28 20 10 34 32 31 31 30 30 30 30 30 30 34 37 31 32 30 36 30 31 35 34 34 36 31 38 31 32 30 36 30 34 35 34 34 36 30 36 35 38 38 38 34 39 30 30 31 31 36 30 31 31 30 32 32 30 33 30 30 30 30 30 38 30 34 30 30 35 30 30 37 4E 32 34 34 31 33 38 45 30 34 36 34 33 34 33 30 39 30 31 30 30 30 30 30 30 30 30 30 30 31 31 30 30 30 30 30 30 30 30 30 31 32 30 30 30 30 30 30 30 30 30 31 33 30 30 30 30 30 30 30 30 30 31 34 30 30 30 30 30 30 30 30 30 30 30 30 31 35 30 36 30 30 30 33 31 36 30 32 30 32 30 32 30 32 FB B9 A7 FF FF FF FF";
-               String data ="31 35 33 34 43 32 33 30 30 30 31 31 30 32 43 30 34 38 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 31 31 31 36 34 37 30 30 30 31 32 33 30 31 34 39 30 31 32 33 31 32 30 39 30 30 32 39 31 32 30 30 30 32 30 35 31 38 31 32 30 39 30 33 32 39 31 32 31 38 31 32 30 39 30 36 35 38 38 38 34 39 35 30 31 34 37 30 30 30 31 32 33 30 31 34 39 30 31 32 33 30 31 30 31 31 32 33 34 35 36 37 38 20 20 20 36 38 32 31 33 47 FF F0 01 11 10 00 00 00 04 36 30 39 38 36 36 30 39 56 43 52 59 44 42 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 4D 43 52 59 44 42 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 50 31 52 59 44 42 30 30 30 30 30 30 30 30 30 31 30 30 30 30 30 30 30 30 30 31 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 31 44 4D 52 59 44 42 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 56 44 52 59 44 42 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 41 58 52 59 44 42 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 44 4D 53 41 49 42 30 30 30 30 30 30 30 30 30 38 30 30 30 30 30 30 30 30 30 30 34 37 38 35 30 30 30 30 30 30 30 30 30 30 32 30 30 30 30 30 30 30 30 30 30 32 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 50 31 53 41 49 42 30 30 30 30 30 30 30 30 30 32 30 30 30 30 30 30 30 30 30 30 30 31 31 31 31 30 30 30 30 30 30 30 30 30 32 30 30 30 30 30 30 30 30 30 30 30 31 30 30 38 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 56 43 53 41 49 42 30 30 30 30 30 30 30 30 30 37 30 30 30 30 30 30 30 30 35 34 30 33 38 35 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 2D 30 30 30 30 30 30 30 30 33 8E A8 F8 18 FF FF FF FF";
-               // byte[] x=data.getBytes();
-               byte[] x = BCDASCII.hexStringToBytes(data);
-               oPos_trans.m_ResponseISOMsg.strtoiso(x);
-               oPos_trans.m_sOrigMTI=oPos_trans.m_ResponseISOMsg.getMTI();
-               */
-/* oPos_trans.m_sPAN=new String(oPos_trans.m_ResponseISOMsg.getBit(2));
-                oPos_trans.m_sProcessCode=new String(oPos_trans.m_ResponseISOMsg.getBit(3));
-                oPos_trans.m_sTrxAmount=new String(oPos_trans.m_ResponseISOMsg.getBit(4));
-                oPos_trans.m_sTrxDateTime=new String(oPos_trans.m_ResponseISOMsg.getBit(7));//7
-                oPos_trans.m_sSTAN=new String(oPos_trans.m_ResponseISOMsg.getBit(11));
-                oPos_trans.m_sLocalTrxDateTime=new String(oPos_trans.m_ResponseISOMsg.getBit(12));//12
-                oPos_trans.m_sTrack2=new String(oPos_trans.m_ResponseISOMsg.getBit(35));*//*
-
-
-
-
-/*
-***set MTI ***
-                oPos_trans.m_RequestISOMsg.SetMTI(PosApplication.MTI_Financial_Request);
-                        oPos_trans.m_RequestISOMsg.ClearFields();
-
-                        byte[]  field2 ="5061150708203311421".getBytes();
-                        oPos_trans.m_RequestISOMsg.SetDataElement(2,field2, field2.length );
-                        byte[] field3 = "9G000G".getBytes();
-                        oPos_trans.m_RequestISOMsg.SetDataElement(3, field3, field3.length);
-                        byte[] field4 = "200".getBytes();
-                        oPos_trans.m_RequestISOMsg.SetDataElement(4, field4, field4.length);
-
-                        byte[] field7 = "0531124151".getBytes();
-                        oPos_trans.m_RequestISOMsg.SetDataElement(7, field7, field7.length);
-
-
-                        byte[] field11 = "20".getBytes();
-                        oPos_trans.m_RequestISOMsg.SetDataElement(11, field11, field11.length);
-
-
-                        byte[] field12 = "124151".getBytes();
-                        oPos_trans.m_RequestISOMsg.SetDataElement(12, field12, field12.length);
-
-                        byte[] field13 = "0531".getBytes();
-                        oPos_trans.m_RequestISOMsg.SetDataElement(13, field13, field13.length);
-
-                        byte[] field14 = "2106".getBytes();
-                        oPos_trans.m_RequestISOMsg.SetDataElement(14, field14, field14.length);
-
-                        byte[] field22 = "051".getBytes();
-                        oPos_trans.m_RequestISOMsg.SetDataElement(22, field22, field22.length);
-
-                        byte[] field23 = "001".getBytes();
-                        oPos_trans.m_RequestISOMsg.SetDataElement(23, field23, field23.length);
-                        byte[] field25 = "00".getBytes();
-
-                        oPos_trans.m_RequestISOMsg.SetDataElement(25, field25, field25.length);
-                        byte[] field26 = "12".getBytes();
-                        oPos_trans.m_RequestISOMsg.SetDataElement(26, field26, field26.length);
-
-                        byte[] field32 = "111129".getBytes();
-                        oPos_trans.m_RequestISOMsg.SetDataElement(32, field32, field32.length);
-
-                        byte[] field35 = "5061150708203311421D2106601019546474".getBytes();
-                        oPos_trans.m_RequestISOMsg.SetDataElement(35, field35, field35.length);
-
-
-                        byte[] field37 = "00000000002".getBytes();
-                        oPos_trans.m_RequestISOMsg.SetDataElement(37, field37, field37.length);
-
-                        byte[] field41 = "2058RH14".getBytes();
-                        oPos_trans.m_RequestISOMsg.SetDataElement(41, field41, field41.length);
-
-                        byte[] field42 = "2058LA015782326".getBytes();
-                        oPos_trans.m_RequestISOMsg.SetDataElement(42, field42, field42.length);
-
-                        byte[] field49 = "556".getBytes();
-                        oPos_trans.m_RequestISOMsg.SetDataElement(49, field49, field49.length);
-                        String field55Str ="9F2608368992B162D89F859F2701809F10140FA501A20330100000000000000000000F01AAAA9F37044579DCC99F360200D9950500802488009A031905319C01009F02060000000002005F2A020566820258009F1A0205669F34034203009F3303E0F8C89F350122";
-                        //  byte[] field55 = BCDASCII.fromASCIIToBCD(field55Str,0 ,field55Str.length(),false);
-                        byte[] field55 =field55Str.getBytes();
-                        oPos_trans.m_RequestISOMsg.SetDataElement(55, field55, field55.length);
-
-                        byte[] field64 = "8E A8 F8 18 FF FF FF FF".getBytes();
-                        oPos_trans.m_RequestISOMsg.SetDataElement(64, field64, field64.length);
-
-                        byte[] field72 = "AAAABBBBCCCCDDDDEEEEFFFFGGGGHHHHIIIIJJJJKKKKLLLLMMMMNNNNOOOOBBBBQQQQRRRRSSSSTTTTUUUUVVVVWWWWXXXXYYYYZZZZ".getBytes();
-                        oPos_trans.m_RequestISOMsg.SetDataElement(72, field72, field72.length);
-
-                        byte[] field124 = "1234567891234567891234567891234567800000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000009999".getBytes();
-                        oPos_trans.m_RequestISOMsg.SetDataElement(124, field124, field124.length);
-
-                        byte[] bOutdata =oPos_trans.m_RequestISOMsg.isotostr();*/

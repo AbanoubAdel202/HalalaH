@@ -46,6 +46,6 @@ public class HeadersInterceptor {
     }
 
     public byte[] getResponseBody(byte[] rawResponse){
-        return Arrays.copyOfRange(rawResponse, 6, rawResponse.length);
+        return Arrays.copyOfRange(rawResponse, 7, rawResponse.length);
     }
 }

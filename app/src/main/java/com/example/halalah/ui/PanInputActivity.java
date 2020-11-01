@@ -1,4 +1,4 @@
-package com.example.halalah;
+package com.example.halalah.ui;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -10,7 +10,9 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
-import com.example.halalah.ui.PinpadActivity;
+import com.example.halalah.POS_MAIN;
+import com.example.halalah.PosApplication;
+import com.example.halalah.R;
 
 public class PanInputActivity extends Activity implements View.OnClickListener{
     private static final String TAG = PanInputActivity.class.getSimpleName();

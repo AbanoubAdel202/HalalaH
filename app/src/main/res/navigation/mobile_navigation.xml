@@ -50,8 +50,9 @@
         android:name="com.example.halalah.Fragment_home_Transaction"
         android:label="Home"
         tools:layout="@layout/fragment_home_transaction" />
-    <fragment android:id="@+id/nav_setting"
-        android:name="com.example.halalah.ui.totals.TotalsFragment"
+    <fragment
+        android:id="@+id/nav_setting"
+        android:name="com.example.halalah.ui.operation_setting.Setting"
         android:label="setting"
         tools:layout="@layout/fragment_setting" />
 

@@ -2,6 +2,7 @@ package com.example.halalah.emv;
 
 import android.os.Bundle;
 import android.os.RemoteException;
+import android.util.Log;
 
 import com.example.halalah.DeviceTopUsdkServiceManager;
 import com.example.halalah.database.table.Aid;
@@ -95,14 +96,18 @@ abstract class BasePayProcess {
         SDKLog.d(TAG, "getCurrentCapk rid: " + BytesUtil.bytes2HexString(rid));
         SDKLog.d(TAG, "getCurrentCapk index: " + BytesUtil.bytes2HexString(index));
 
-        Capk capk = db.getCapkDao().findByRidIndex(BytesUtil.bytes2HexString(rid),index[0]);
+        byte[] ridData = new byte[5];
+        System.arraycopy(rid, 0, ridData, 0, ridData.length);
 
+        Capk capk = db.getCapkDao().findByRidIndex(BytesUtil.bytes2HexString(ridData),index[0]);
         if (capk != null) {
             SDKLog.d(TAG, "capk: " + capk.toString());
             EmvCapk emvCapk = new EmvCapk();
             emvCapk.setRID(rid);
             emvCapk.setKeyID(index[0]);
-            byte[] orgData = capk.getExpDate();
+
+
+          /*  byte[] orgData = capk.getExpDate();
             if (orgData != null && orgData.length>0) {
                 byte[] date = new byte[3];
                 if (orgData.length > 3) {
@@ -111,11 +116,33 @@ abstract class BasePayProcess {
                     System.arraycopy(orgData, 0, date, 0, orgData.length);
                 }
                 emvCapk.setExpDate(date);
+            }*/
+            byte[] tempExpDate = new byte[3]; //YYMMDD
+            if (4 == capk.getExpDate().length) {
+                System.arraycopy(capk.getExpDate(), 1, tempExpDate, 0, 3);
+            } else if (8 == capk.getExpDate().length) {
+                String strExpDate = new String(capk.getExpDate());
+                byte[] bcdExpDate =  BytesUtil.hexString2Bytes(strExpDate);
+                System.arraycopy(bcdExpDate, 1, tempExpDate, 0, 3);
+            } else {
+                //301231
+                tempExpDate[0] = 0x30;
+                tempExpDate[1] = 0x12;
+                tempExpDate[2] = 0x31;
             }
+            Log.d(TAG, "tempExpDate(): " + BytesUtil.bytes2HexString(tempExpDate));
+            emvCapk.setExpDate(tempExpDate);
+
             emvCapk.setHashInd(capk.getHashInd());
             emvCapk.setArithInd(capk.getArithInd());
-            emvCapk.setCheckSum(capk.getCheckSum());
-            orgData = capk.getModul();
+            //byte[] sha1 = PayDataUtil.getCAPKChecksum(capk);
+            // Log.d(TAG, "sha1: " + BytesUtil.bytes2HexString(sha1));
+            // emvCapk.setCheckSum(sha1);
+            emvCapk.setCheckSum(PayDataUtil.getCAPKChecksum(capk));
+
+
+            byte[] orgData = capk.getModul();
+
             if (orgData != null) {
                 emvCapk.setModul(orgData);
             }
@@ -125,7 +152,10 @@ abstract class BasePayProcess {
             }
             SDKLog.d(TAG, "return emvCapk: " + emvCapk.toString());
             return emvCapk;
+        } else {
+            SDKLog.d(TAG, "capk is null !!!");
         }
+
         return null;
     }
 
@@ -136,13 +166,15 @@ abstract class BasePayProcess {
      * @return AID参数
      */
     byte[] getCurrentAidData(String aidHex) {
-        SDKLog.d(TAG, "getCurrentAidData aidHex: " + aidHex);
-        Aid aid = db.getAidDao().findByAid(aidHex);
+        SDKLog.d(TAG, "getCurrentAidData() aidHex: " + aidHex);
+
+        Aid aid = db.getAidDao().findByAidAndAsi(aidHex);
         SDKLog.d(TAG, "aid:" + aid.toString());
         byte[] aidData = null;
         if (aid != null) {
             aidData = aid.getTlvList().getBytes();
         }
+        SDKLog.d(TAG, "aidData: " + BytesUtil.bytes2HexString(aidData));
         return aidData;
     }
 }

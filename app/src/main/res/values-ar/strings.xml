@@ -182,6 +182,7 @@
     <string name="search_card_error_ic">Read card failed, please swip card</string>
     <string name="search_card_error_electric_card">This card is electric card, this device is no support electric transaction</string>
 
+    <string name="search_card_trans_result_approval">Traansaction Approved</string>
     <string name="search_card_trans_result_reject">Transaction refused</string>
     <string name="search_card_trans_result_stop">Transaction is stoped</string>
     <string name="search_card_trans_result_fallback">FALLBACK</string>
@@ -314,6 +315,7 @@
     <string name="Partial">Partial</string>
     <string name="Full">Full</string>
     <string name="registration_error">registration error</string>
+    <string name="invalid_registration_data">Invalid Registration Data</string>
     <string name="invalid_pki_files">invalid PKI files</string>
     <string name="vendor_terminal_type">vendor terminal type</string>
     <string name="terminal_registration">Terminal Registration</string>
@@ -347,9 +349,19 @@
     <string name="secondary_connection">Secondary Connection</string>
     <string name="connection_type">Connection Type</string>
 
+    <string-array name="key_indicies">
+        <item>    00    </item>
+        <item>    01    </item>
+    </string-array>
+
     <string-array name="connection_types">
         <item>    Wifi    </item>
         <item>    Gprs    </item>
     </string-array>
 
+    <string name="Auth_Advice">Authorization advice</string>
+    <string name="reversal">reversal</string>
+    <string name="SADAD">SADAD</string>
+    <string name="Auth_void">Authorization void</string>
+    <string name="Auth_ext">Authorization Extension</string>
 </resources>

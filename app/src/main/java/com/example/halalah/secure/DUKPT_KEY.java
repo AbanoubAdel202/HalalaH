@@ -1,14 +1,24 @@
 package com.example.halalah.secure;
 
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.RemoteException;
+import android.text.TextUtils;
 import android.util.Log;
+import android.view.View;
 
 import com.example.halalah.DeviceTopUsdkServiceManager;
+import com.example.halalah.POSTransaction;
 import com.example.halalah.PosApplication;
 import com.example.halalah.R;
+import com.example.halalah.cloudpos.data.AidlErrorCode;
+import com.example.halalah.iso8583.BCDASCII;
 import com.example.halalah.util.HexUtil;
 import com.topwise.cloudpos.aidl.pinpad.AidlPinpad;
+import com.topwise.cloudpos.aidl.system.AidlSystem;
+import com.topwise.cloudpos.data.PinpadConstant;
+
+import static com.topwise.cloudpos.data.PinpadConstant.KeyType.KEYTYPE_DUKPT_DES;
 
 public class DUKPT_KEY {
 
@@ -68,7 +78,7 @@ public class DUKPT_KEY {
 
     KSN     m_KSN=new KSN();
     String  m_BDK ;            // Load terminal BDK value using secure way
-   static int     m_WorkKey = 0x01;  // Towpise Key index
+   static int     m_WorkKey = 0;//0x01;  // Towpise Key index
 
     // KSN Descriptor
     public byte[] KSN_Descriptor= new byte[3];       //[3 bytes] should be Hex format
@@ -139,8 +149,36 @@ Load Last Terminal Data from Terminal Operation Data Table
 
 
         Log.i(TAG,"InitilizeDUKPT() STARTED with szBDK [ "+szBDK+" ]and szKSN [ "+szKSN+" ]");
-        PosApplication.getApp().getDeviceManager();
+        //PosApplication.getApp().getDeviceManager();
+        Log.i("most", "getting pinpad");
         pinpad = DeviceTopUsdkServiceManager.getInstance().getPinpadManager(0);
+        Log.i("most", "getting pinpad"+pinpad);
+   /*     int iCounter =0;
+        while(true)
+            if ( pinpad ==  null) {
+                Log.i(TAG,"InitilizeDUKPT() Null PIN PAD "+iCounter+"");
+                try {
+                    Thread.sleep(10000);
+                }
+                catch (InterruptedException e)
+                {
+                    e.printStackTrace();
+                }
+                PosApplication.getApp().getDeviceManager();
+                pinpad = DeviceTopUsdkServiceManager.getInstance().getPinpadManager(0);
+                iCounter++;
+                if (pinpad == null)
+                    continue;
+                else
+                    break;
+
+
+            }*/
+
+
+        Log.i(TAG,"InitilizeDUKPT() PIN PAD Success ");
+
+       // pinpad = DeviceTopUsdkServiceManager.getInstance().getPinpadManager(PinpadConstant.PinpadId.BUILTIN);
 	/*
 	// Drive IPEK
 	// Arrange Encryption Data
@@ -154,7 +192,10 @@ Load Last Terminal Data from Terminal Operation Data Table
 	*/
         // 2- inject IPEK or BDK to kernel
         try {
-            iRetRes = pinpad.loadDuKPTkey(PosApplication.DUKPT_BDK, m_WorkKey, HexUtil.hexStringToByte(szBDK.toUpperCase()), HexUtil.hexStringToByte(szKSN.toUpperCase()));
+            //iRetRes = pinpad.loadDuKPTkey(PosApplication.DUKPT_BDK, m_WorkKey, HexUtil.hexStringToByte(szBDK.toUpperCase()), HexUtil.hexStringToByte(szKSN.toUpperCase()));
+
+            iRetRes = pinpad.loadDukptBDK(PosApplication.DUKPT_BDK, HexUtil.hexStringToByte(szBDK.toUpperCase()), HexUtil.hexStringToByte(szKSN.toUpperCase()));
+
             //iRetRes = pinpad.loadDuKPTkey(DukptKeyType.DUKPT_IPEK, m_WorkKey ,HexUtil.hexStringToByte(IPEK),HexUtil.hexStringToByte(szKSN));
 
             Log.i(TAG, " loadDuKPTkey returned [ " + iRetRes + " ]");
@@ -219,19 +260,19 @@ Load Last Terminal Data from Terminal Operation Data Table
     }
 
 
-/************************
-	\Function Name: CaluclateMACBlock
-	\Param        : string strMACInputData
-	\Return       : string
-	\Pre          :
-	\Post         :
-	\Author	      : MoamenAhmed
-	\DT		      : 07/06/2020
-	\Des: Used to generate MAC block for  passing input data
-**************************************/
+    /************************
+     \Function Name: CaluclateMACBlock
+     \Param        : string strMACInputData
+     \Return       : string
+     \Pre          :
+     \Post         :
+     \Author	      : MoamenAhmed
+     \DT		      : 07/06/2020
+     \Des: Used to generate MAC block for  passing input data
+     **************************************/
 
 
-    public static String CaluclateMACBlock(String strMACInputData)
+    public static String CaluclateMACBlock(byte[] bMACInputData)//String strMACInputData)
     {
 
         int    iRetRes         = -1;
@@ -240,11 +281,12 @@ Load Last Terminal Data from Terminal Operation Data Table
         String strMACBLOCK ;
         byte[] byteCurrentKSN;
 
-        Log.i(TAG," CaluclateMACBlock STarted Input Data  [ "+strMACInputData+ " ]");
+        Log.i(TAG," CaluclateMACBlock STarted Input Data  [ "+bMACInputData+ " ]");
 
         macBundle.putInt("wkeyid", m_WorkKey);
-        macBundle.putInt("key_type", PosApplication.DUKPT_MAK);
-        macBundle.putByteArray("data",HexUtil.hexStringToByte(strMACInputData));
+        macBundle.putInt("key_type",KEYTYPE_DUKPT_DES /*PosApplication.DUKPT_MAK*/);
+        //byte[]x=HexUtil.StringToByte(strMACInputData);
+        macBundle.putByteArray("data", bMACInputData);//HexUtil.StringToByte(strMACInputData));
         macBundle.putByteArray("random", null);
         macBundle.putInt("type", 0x00);
 
@@ -255,16 +297,16 @@ Load Last Terminal Data from Terminal Operation Data Table
             Log.i(TAG,"getDUKPTKsn for MAC with KSN Value [ "+HexUtil.bcd2str(byteCurrentKSN)+" ] and m_WorkingKey  ["+m_WorkKey+" ]");
 
         }
-            catch (RemoteException e) {
+        catch (RemoteException e) {
             e.printStackTrace();
         }
-       try {
-           iRetRes = pinpad.getMac(macBundle, byteMACBlock);
-           // MAC block should be padded with FF after firt four bytes A8451D92FFFFFFFF
-           Log.i(TAG,"getMac  Returned ["+iRetRes+" ]");
-       }catch (RemoteException e) {
-           e.printStackTrace();
-       }
+        try {
+            iRetRes = pinpad.getMac(macBundle, byteMACBlock);
+            // MAC block should be padded with FF after firt four bytes A8451D92FFFFFFFF
+            Log.i(TAG,"getMac  Returned ["+iRetRes+" ]");
+        }catch (RemoteException e) {
+            e.printStackTrace();
+        }
 
 
 
@@ -282,7 +324,8 @@ Load Last Terminal Data from Terminal Operation Data Table
         {
             //showMessage(getResources().getString(R.string.pin_mac_919_mac_success1) + HexUtil.bcd2str(mac));
 
-            strMACBLOCK = HexUtil.bcd2str(byteMACBlock);
+            //strMACBLOCK = HexUtil.bcd2str(byteMACBlock);
+            strMACBLOCK=BCDASCII.bytesToHexString(byteMACBlock);
             Log.i(TAG,"getMac Succeed with return [ "+R.string.MAC_Success+"] and Value ["+strMACBLOCK+"]");
         }
 
@@ -293,20 +336,21 @@ Load Last Terminal Data from Terminal Operation Data Table
 
     public static byte[] getKSN() {
 
-        byte[] byteCurrentKSN;
-        boolean bNewksnflag = false;
-        if (PosApplication.getApp().oGPosTransaction.m_sTrxPIN == null)
-            bNewksnflag = true;
+        byte[] byteCurrentKSN ;
+        boolean bNewksnflag=false;
+        if(PosApplication.getApp().oGPosTransaction.m_sTrxPIN==null || PosApplication.getApp().oGPosTransaction.m_enmTrxType== POSTransaction.TranscationType.TMS_FILE_DOWNLOAD
+                || PosApplication.getApp().oGPosTransaction.m_enmTrxType== POSTransaction.TranscationType.AUTHORISATION_ADVICE || PosApplication.getApp().oGPosTransaction.m_enmTrxType== POSTransaction.TranscationType.PURCHASE_ADVICE)
+            bNewksnflag=true;
 
         try {
             byteCurrentKSN = pinpad.getDUKPTKsn(m_WorkKey, bNewksnflag);
             return byteCurrentKSN;
-        } catch (RemoteException e) {
+        }catch (RemoteException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
 
-        return null;
+    return null;
 
     }
 
