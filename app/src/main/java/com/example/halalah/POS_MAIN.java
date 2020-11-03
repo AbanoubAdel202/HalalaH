@@ -81,6 +81,9 @@ public class POS_MAIN implements SendReceiveListener , TCPListener  {
         Log.d(TAG, "POS_MAIN onSuccess: start");
         byte[] responseMTI = BytesUtil.subBytes(receivedPacket, 0, 4);
         String sresponseMTI = BCDASCII.asciiByteArray2String(responseMTI);
+
+
+        PosApplication.getApp().oGTerminal_Operation_Data.Response_Received_Time = ExtraUtil.Get_Time()+"000";
         if (sresponseMTI.equals("1434")) { //parse reversal
 
             Parse_reversal_Response(receivedPacket);

@@ -157,6 +157,8 @@ public class PinpadActivity extends Activity {
         param.putString("pan", cardNo);
         param.putString("tips", "RMB:" + amount);
         param.putBoolean("is_lkl", false);
+        param.putString("input_pin_mode", "4,5,6,7,8,9,10,11,12");  // Adding 0 for PIN by pass on Visa or MasterCard
+        param.putInt("timeout",60);
         return param;
     }
 
@@ -184,6 +186,8 @@ public class PinpadActivity extends Activity {
         bundle.putString("pan", PosApplication.getApp().oGPosTransaction.m_sPAN);
         bundle.putString("tips", PosApplication.getApp().oGPosTransaction.m_sTrxAmount);
         bundle.putBoolean("is_lkl", false);
+        bundle.putString("input_pin_mode", "0,4,5,6,7,8,9,10,11,12");
+        bundle.putInt("timeout",60);
 
         return bundle;
     }

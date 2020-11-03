@@ -2132,6 +2132,15 @@ public class POSTransaction implements Serializable {
         m_sTerminalStatus=m_sTerminalStatus.concat("16"+PosApplication.getApp().oGTerminal_Operation_Data.Connection_Details); //Connection Priority ‘01’ Primary ‘02’ Secondary,   Network Service Provider (NSP) ‘01’ iNET ‘02’ Mobily ‘03’ Zain ‘04’ Sky Band ‘05’ Geidea ,   Provider ‘01’ STC ‘02’ Mobily ‘03’ Zain ‘04’ Sky Band  , Connection Method ‘01’ Dial-up ‘02’ SIM ‘03’ TCP/IP ‘04’ VSAT ‘05’ DSL ‘06’ WiFi
 
 
+
+        //updating operation data for next transaction and to get times for current transactions for reciepts if needed
+        // HHMMSSsss     //MMDDhhmmss
+        String sentdatetime = PosApplication.getApp().oGPosTransaction.m_sTrxDateTime;
+        PosApplication.getApp().oGTerminal_Operation_Data.Request_Sent_Time = sentdatetime.substring(4)+"000";  // or it can be set to Extrautil.gettime()
+
+
+
+
 /*
         ///for response
         //Terminal Online Flag
