@@ -260,6 +260,8 @@ public class MainActivity extends AppCompatActivity implements ITransaction.View
                 String latitude = "Latitude: " + loc.getLatitude();
                 Log.v("latitude", latitude);
 
+                //todo format as needed for longand lat
+                //PosApplication.getApp().oGTerminal_Operation_Data.GPS_Location_Coordinates=
                 /*------- To get city name from coordinates -------- */
                 String cityName = null;
                 Geocoder gcd = new Geocoder(getBaseContext(), Locale.ENGLISH);
