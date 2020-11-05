@@ -86,7 +86,6 @@ public class MainActivity extends AppCompatActivity implements ITransaction.View
     private TCPCommunicator tcpClient;
 
     private boolean isRegistrationInProgress;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
