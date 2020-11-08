@@ -42,6 +42,9 @@ import org.parceler.Parcels;
 public class RegistrationActivity extends AppCompatActivity implements View.OnClickListener {
 
     RegistrationData mRegistrationData;
+    private final int DONE_BUTTON=16;
+    private final int CLEAR_BUTTON=-5;
+    private final int BACK_BUTTON=55002;
 
     private CommunicationsHandler mCommunicationsHandler;
     private ActivityRegistrationBinding binding;
@@ -72,16 +75,16 @@ public class RegistrationActivity extends AppCompatActivity implements View.OnCl
         KeyboardView.OnKeyboardActionListener mOnKeyboardActionListener = new KeyboardView.OnKeyboardActionListener() {
             @Override
             public void onKey(int primaryCode, int[] keyCodes) {
-                if (primaryCode == 55002) {
+                if (primaryCode == BACK_BUTTON) {
                     binding.etTerminalSerial.setText(binding.etTerminalSerial.getText().delete(binding.etTerminalSerial.getText().length() - 1, binding.etTerminalSerial.getText().length()));
                     stringBuilder.setLength(stringBuilder.length() - 1);
 
-                } else if (primaryCode == 16) {
+                } else if (primaryCode == DONE_BUTTON) {
                     mCustomKeyboard.hideCustomKeyboard();
                     binding.btnProceed.setVisibility(View.VISIBLE);
                     binding.btnConnection.setVisibility(View.VISIBLE);
 
-                } else if (primaryCode == -5) {
+                } else if (primaryCode == CLEAR_BUTTON) {
                     stringBuilder.delete(0, binding.etTerminalSerial.length());
                     binding.etTerminalSerial.setText("");
                 } else {
