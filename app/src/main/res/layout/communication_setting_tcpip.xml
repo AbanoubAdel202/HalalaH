@@ -219,18 +219,23 @@
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
                 android:layout_marginLeft="20dp"
+                android:textColor="@color/green"
                 android:gravity="center_vertical"
+                android:textSize="17dp"
                 android:text="@string/ssl_certificate_file"
                 android:textAppearance="?android:attr/textAppearanceLarge" />
 
-            <EditText
+            <CheckBox
                 android:id="@+id/et_ssl_certificate_file"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_alignParentBottom="true"
-                android:layout_marginLeft="20dp"
+                android:layout_gravity="center"
+                android:layout_marginLeft="60dp"
                 android:layout_toRightOf="@+id/tpdu_tip"
                 android:background="@null"
+                android:gravity="center"
+                android:textColor="@color/yellow"
+
                 android:singleLine="true"
                 android:textSize="20sp" />
         </LinearLayout>

@@ -340,8 +340,8 @@
     <string name="terminal_registration">Terminal Registration</string>
     <string name="terminal_serial_id">Terminal serial id (TRSMID)</string>
     <string name="connection_settings">Connection Settings</string>
-    <string name="vendor_key_index">Vendor Key Index</string>
-    <string name="sama_key_index"> Sama Key Index</string>
+    <string name="vendor_key_index">HALA KEY INDEX</string>
+    <string name="sama_key_index"> SAMA KEY INDEX</string>
     <string name="proceed">Proceed</string>
     <string name="invalid_trsmid">Invalid TRSMID</string>
     <string name="random_length">Random length (in bytes)</string>
@@ -372,6 +372,7 @@
     <string name="SADAD">SADAD</string>
     <string name="Auth_void">Authorization void</string>
     <string name="Auth_ext">Authorization Extension</string>
+    <string name="select_connection_type">select connection type</string>
 
     <string-array name="key_indicies">
         <item>    00    </item>
@@ -379,8 +380,8 @@
     </string-array>
 
     <string-array name="connection_types">
-        <item>    Wifi    </item>
-        <item>    Gprs    </item>
+        <item>     WIFI    </item>
+        <item>      GPRS  </item>
     </string-array>
 
 </resources>

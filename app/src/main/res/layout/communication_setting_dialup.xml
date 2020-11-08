@@ -22,6 +22,9 @@
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
                 android:layout_marginLeft="20dp"
+                android:background="@drawable/input_border"
+
+                android:layout_gravity=""
                 android:gravity="center_vertical"
                 android:text="@string/phone_number"
                 android:textAppearance="?android:attr/textAppearanceLarge" />
@@ -32,8 +35,11 @@
                 android:layout_height="wrap_content"
                 android:layout_alignParentBottom="true"
                 android:layout_marginLeft="20dp"
+                android:background="@drawable/input_border"
+
+                android:layout_gravity="center"
+
                 android:layout_toRightOf="@+id/host_ip_1_tip"
-                android:background="@null"
                 android:singleLine="true"
                 android:textSize="20sp" />
         </LinearLayout>
@@ -60,8 +66,9 @@
                 android:layout_height="wrap_content"
                 android:layout_alignParentBottom="true"
                 android:layout_marginLeft="20dp"
+
                 android:layout_toRightOf="@+id/host_port_1_tip"
-                android:background="@null"
+                android:background="@drawable/input_border"
                 android:singleLine="true"
                 android:textSize="20sp" />
         </LinearLayout>
@@ -89,7 +96,7 @@
                 android:layout_alignParentBottom="true"
                 android:layout_marginLeft="20dp"
                 android:layout_toRightOf="@+id/host_ip_2_tip"
-                android:background="@null"
+                android:background="@drawable/input_border"
                 android:singleLine="true"
                 android:textSize="20sp" />
         </LinearLayout>
@@ -117,7 +124,7 @@
                 android:layout_alignParentBottom="true"
                 android:layout_marginLeft="20dp"
                 android:layout_toRightOf="@+id/host_port_2_tip"
-                android:background="@null"
+                android:background="@drawable/input_border"
                 android:singleLine="true"
                 android:textSize="20sp" />
         </LinearLayout>
@@ -145,7 +152,7 @@
                 android:layout_alignParentBottom="true"
                 android:layout_marginLeft="20dp"
                 android:layout_toRightOf="@+id/tpdu_tip"
-                android:background="@null"
+                android:background="@drawable/input_border"
                 android:singleLine="true"
                 android:textSize="20sp" />
         </LinearLayout>
@@ -173,7 +180,7 @@
                 android:layout_alignParentBottom="true"
                 android:layout_marginLeft="20dp"
                 android:layout_toRightOf="@+id/tpdu_tip"
-                android:background="@null"
+                android:background="@drawable/input_border"
                 android:singleLine="true"
                 android:textSize="20sp" />
         </LinearLayout>
@@ -201,7 +208,7 @@
                 android:layout_alignParentBottom="true"
                 android:layout_marginLeft="20dp"
                 android:layout_toRightOf="@+id/tpdu_tip"
-                android:background="@null"
+                android:background="@drawable/input_border"
                 android:singleLine="true"
                 android:textSize="20sp" />
         </LinearLayout>
@@ -230,7 +237,7 @@
                 android:layout_alignParentBottom="true"
                 android:layout_marginLeft="20dp"
                 android:layout_toRightOf="@+id/tpdu_tip"
-                android:background="@null"
+                android:background="@drawable/input_border"
                 android:singleLine="true"
                 android:textSize="20sp" />
         </LinearLayout>

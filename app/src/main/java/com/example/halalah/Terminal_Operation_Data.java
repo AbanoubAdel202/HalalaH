@@ -184,7 +184,7 @@ public class Terminal_Operation_Data implements Serializable {
         TMS_endcount = 0;
         m_TMS_Downloaded = false;
         //communication
-        Hostip = "192.168.8.154";
+        Hostip = "192.168.8.119";
         Hostport = 2030;
 
 

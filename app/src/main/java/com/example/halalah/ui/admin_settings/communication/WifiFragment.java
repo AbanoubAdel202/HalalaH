@@ -71,7 +71,7 @@ public class WifiFragment extends Fragment implements ISaveConnection {
         et_network_tcp_port = rootView.findViewById(R.id.et_network_tcp_port);
         et_count_access_retries = rootView.findViewById(R.id.et_count_access_retries);
         et_response_timeout = rootView.findViewById(R.id.et_response_timeout);
-        et_ssl_certificate_file = rootView.findViewById(R.id.et_ssl_certificate_file);
+//        et_ssl_certificate_file = rootView.findViewById(R.id.et_ssl_certificate_file);
 
         sharedPreferencesManager = new SharedPreferencesManager(getActivity());
 
@@ -80,7 +80,7 @@ public class WifiFragment extends Fragment implements ISaveConnection {
             et_network_tcp_port.setText(mConnection.Network_TCP_Support);
             et_count_access_retries.setText(mConnection.Count_Access_Retries);
             et_response_timeout.setText(mConnection.Response_Time_Out);
-            et_ssl_certificate_file.setText(mConnection.SSL_Certificate_File);
+         ///   et_ssl_certificate_file.setText(mConnection.SSL_Certificate_File);
             et_tpdu.setText(sharedPreferencesManager.getTPDU());
         }
 

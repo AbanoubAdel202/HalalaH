@@ -9,17 +9,15 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <com.google.android.material.textfield.TextInputLayout
-            android:layout_width="match_parent"
-            android:layout_height="60dp"
-            android:layout_marginTop="10dp"
-            android:orientation="horizontal">
+
 
             <EditText
                 android:id="@+id/et_tpdu"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_height="60dp"
                 android:layout_alignParentBottom="true"
+                android:gravity="center"
+android:background="@drawable/input_border"
                 android:layout_marginLeft="4dp"
                 android:layout_toRightOf="@+id/host_port_2_tip"
                 android:hint="@string/tpdu_value"
@@ -27,19 +25,15 @@
                 android:singleLine="true"
                 android:textSize="20sp" />
 
-        </com.google.android.material.textfield.TextInputLayout>
-
-        <com.google.android.material.textfield.TextInputLayout
-            android:layout_width="match_parent"
-            android:layout_height="60dp"
-            android:layout_marginTop="10dp"
-            android:orientation="horizontal">
 
             <EditText
                 android:id="@+id/et_network_ip_address"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_height="60dp"
                 android:layout_alignParentBottom="true"
+                android:gravity="center"
+                android:background="@drawable/input_border"
+android:layout_marginTop="10dp"
                 android:layout_marginLeft="4dp"
                 android:layout_toRightOf="@+id/host_port_2_tip"
                 android:digits="0123456789."
@@ -48,38 +42,34 @@
                 android:singleLine="true"
                 android:textSize="20sp" />
 
-        </com.google.android.material.textfield.TextInputLayout>
 
-        <com.google.android.material.textfield.TextInputLayout
-            android:layout_width="match_parent"
-            android:layout_height="60dp"
-            android:layout_marginTop="10dp"
-            android:orientation="horizontal">
 
             <EditText
                 android:id="@+id/et_network_tcp_port"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_height="60dp"
                 android:layout_alignParentBottom="true"
                 android:layout_marginLeft="4dp"
+                android:gravity="center"
+                android:background="@drawable/input_border"
+                android:layout_marginTop="10dp"
+
                 android:layout_toRightOf="@+id/host_ip_1_tip"
                 android:hint="@string/network_tcp_support"
                 android:inputType="number"
                 android:singleLine="true"
                 android:textSize="20sp" />
-        </com.google.android.material.textfield.TextInputLayout>
 
-        <com.google.android.material.textfield.TextInputLayout
-            android:layout_width="match_parent"
-            android:layout_height="60dp"
-            android:layout_marginTop="10dp"
-            android:orientation="horizontal">
 
             <EditText
                 android:id="@+id/et_count_access_retries"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_height="60dp"
                 android:layout_alignParentBottom="true"
+                android:gravity="center"
+                android:background="@drawable/input_border"
+                android:layout_marginTop="10dp"
+
                 android:layout_marginLeft="4dp"
                 android:layout_toRightOf="@+id/host_port_1_tip"
                 android:hint="@string/Count_Access_Retries"
@@ -87,47 +77,56 @@
                 android:singleLine="true"
                 android:textSize="20sp" />
 
-        </com.google.android.material.textfield.TextInputLayout>
-
-        <com.google.android.material.textfield.TextInputLayout
-            android:layout_width="match_parent"
-            android:layout_height="60dp"
-            android:layout_marginTop="10dp"
-            android:orientation="horizontal">
 
             <EditText
                 android:id="@+id/et_response_timeout"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_height="60dp"
                 android:layout_alignParentBottom="true"
                 android:layout_marginLeft="4dp"
                 android:layout_toRightOf="@+id/tpdu_tip"
+                android:gravity="center"
+                android:background="@drawable/input_border"
+                android:layout_marginTop="10dp"
+
                 android:hint="@string/response_timeout"
                 android:inputType="number"
                 android:singleLine="true"
-                android:textSize="20sp" />
-        </com.google.android.material.textfield.TextInputLayout>
+                android:textSize="18sp" />
 
-        <com.google.android.material.textfield.TextInputLayout
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="60dp"
-            android:layout_marginTop="10dp"
-            android:layout_marginBottom="16dp"
             android:orientation="horizontal"
-            android:visibility="gone">
+            android:layout_height="wrap_content">
 
-            <EditText
-                android:id="@+id/et_ssl_certificate_file"
-                android:layout_width="match_parent"
+            <TextView
+                android:id="@+id/ssl_certificate_file"
+                android:layout_width="wrap_content"
                 android:layout_height="match_parent"
-                android:layout_alignParentBottom="true"
-                android:layout_marginLeft="4dp"
+                android:layout_marginLeft="20dp"
+                android:layout_marginTop="10dp"
+                android:textSize="17dp"
+                android:gravity="center_vertical"
+                android:textColor="@color/green"
+                android:text="@string/ssl_certificate_file"
+                android:textAppearance="?android:attr/textAppearanceLarge" />
+
+            <CheckBox
+                android:id="@+id/et_ssl_certificate_file"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginLeft="130dp"
                 android:layout_toRightOf="@+id/tpdu_tip"
                 android:background="@null"
-                android:hint="@string/ssl_certificate_file"
+                android:layout_marginTop="5dp"
+                android:gravity="center"
+                android:textColor="@color/yellow"
                 android:singleLine="true"
                 android:textSize="20sp" />
-        </com.google.android.material.textfield.TextInputLayout>
+
+        </LinearLayout>
+
 
     </LinearLayout>
 </ScrollView>

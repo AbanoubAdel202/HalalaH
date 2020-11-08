@@ -7,6 +7,13 @@
     android:padding="8dp"
     tools:context=".registration.view.RegistrationActivity">
 
+    <include
+        android:id="@+id/toolbar"
+        layout="@layout/toolbar_layout"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
     <TextView
         android:id="@+id/title"
         style="@style/TextAppearance.AppCompat.Large"
@@ -14,82 +21,73 @@
         android:layout_height="wrap_content"
         android:layout_margin="8dp"
         android:padding="8dp"
+        android:textStyle="bold"
+        android:textColor="@color/yellow"
+        android:layout_marginTop="18dp"
         android:text="@string/terminal_registration"
         android:textAlignment="center"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@+id/toolbar" />
 
-    <TextView
-        android:id="@+id/terminal_type_label"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/vendor_terminal_type"
-        android:visibility="gone"
-        app:layout_constraintTop_toBottomOf="@+id/title" />
 
     <EditText
-        android:id="@+id/et_terminal_type"
+        android:id="@+id/et_terminal_serial"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:enabled="false"
-        android:text="11"
-        android:textAlignment="center"
-        android:visibility="gone"
-        app:layout_constraintTop_toBottomOf="@+id/terminal_type_label" />
+        android:layout_height="44dp"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="100dp"
+        android:windowSoftInputMode="stateHidden"
+        android:hint="@string/terminal_serial_id"
 
-
-    <TextView
-        android:id="@+id/terminal_2_label"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/terminal_serial_id"
-        app:layout_constraintTop_toBottomOf="@+id/et_terminal_type" />
-
-    <EditText
-        android:id="@+id/et_trsmid"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:digits="0123456789ABCDEFabcdef"
-        android:hint="TRSMID"
+        android:background="@drawable/input_border"
+        android:gravity="center"
         android:maxLength="6"
         android:textAlignment="center"
-        app:layout_constraintTop_toBottomOf="@+id/terminal_2_label" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/toolbar" />
 
     <TextView
-        android:id="@+id/terminal_3_label"
+        android:id="@+id/vendor_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
+        android:layout_marginStart="60dp"
+        android:layout_marginTop="20dp"
+        android:gravity="center"
         android:text="@string/vendor_key_index"
+        android:textSize="15dp"
+        android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="@id/vendor_sp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/et_trsmid" />
+        app:layout_constraintTop_toBottomOf="@+id/et_terminal_serial" />
 
     <Spinner
         android:id="@+id/vendor_sp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="20dp"
         android:entries="@array/key_indicies"
         android:textAlignment="center"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@id/terminal_3_label"
-        app:layout_constraintTop_toBottomOf="@+id/et_trsmid" />
+        app:layout_constraintStart_toEndOf="@id/vendor_title"
+        app:layout_constraintTop_toBottomOf="@+id/et_terminal_serial" />
 
     <TextView
-        android:id="@+id/terminal_4_label"
+        android:id="@+id/sama_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
+        android:layout_marginStart="60dp"
+        android:layout_marginTop="20dp"
         android:text="@string/sama_key_index"
+        android:textSize="15dp"
+        android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/terminal_3_label" />
+        app:layout_constraintTop_toBottomOf="@+id/vendor_title" />
 
     <Spinner
         android:id="@+id/sama_sp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="20dp"
         android:entries="@array/key_indicies"
         android:textAlignment="center"
         app:layout_constraintEnd_toEndOf="@id/vendor_sp"
@@ -100,59 +98,65 @@
         android:id="@+id/random_length_label"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:gravity="center"
         android:text="@string/random_length"
         android:visibility="gone"
         app:layout_constraintTop_toBottomOf="@+id/sama_sp" />
 
-    <EditText
-        android:id="@+id/et_random_length"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:digits="1234567890"
-        android:hint="TRSMID"
-        android:inputType="number"
-        android:maxLength="6"
-        android:text="16"
-        android:textAlignment="center"
-        android:visibility="gone"
-        app:layout_constraintTop_toBottomOf="@+id/random_length_label" />
 
-    <TextView
+    <Button
         android:id="@+id/btn_connection"
-        style="@style/TextAppearance.AppCompat.Medium"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="40dp"
+        android:layout_marginBottom="10dp"
+        android:background="@drawable/button_border_green"
         android:padding="8dp"
         android:paddingTop="8dp"
         android:paddingBottom="8dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+
         android:text="Connection Settings"
         android:textAlignment="center"
+        android:textColor="@color/wit"
+        android:textSize="20dp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toTopOf="@+id/btn_proceed"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/et_random_length" />
+
+        />
 
     <Button
         android:id="@+id/btn_proceed"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
-        android:padding="8dp"
-        android:paddingTop="8dp"
-        android:paddingBottom="8dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+
+        android:layout_marginTop="156dp"
+
+        android:layout_marginBottom="20dp"
+        android:background="@drawable/button_border"
         android:text="@string/proceed"
         android:textAlignment="center"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/btn_connection" />
+        android:textColor="@color/wit"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
 
-    <Button
-        android:id="@+id/Passregisteration"
+
+    <android.inputmethodservice.KeyboardView
+        android:id="@+id/keyboardview"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
-        android:text=" Bypass"
-        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/btn_proceed" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:visibility="gone" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

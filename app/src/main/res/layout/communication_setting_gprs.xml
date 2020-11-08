@@ -24,6 +24,9 @@
                 android:layout_toRightOf="@+id/host_port_2_tip"
                 android:hint="@string/tpdu_value"
                 android:inputType="number"
+                android:gravity="center"
+                android:background="@drawable/input_border"
+                android:textColor="@color/yellow"
                 android:singleLine="true"
                 android:textSize="20sp" />
 
@@ -39,6 +42,9 @@
                 android:id="@+id/et_dial_Number"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:background="@drawable/input_border"
+                android:textColor="@color/dark"
+                android:gravity="center"
                 android:layout_alignParentBottom="true"
                 android:layout_toRightOf="@+id/host_ip_1_tip"
                 android:hint="@string/dial_Number"
@@ -56,6 +62,10 @@
                 android:id="@+id/et_access_point_name"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:background="@drawable/input_border"
+                android:textColor="@color/dark"
+                android:gravity="center"
+
                 android:layout_alignParentBottom="true"
                 android:layout_toRightOf="@+id/host_port_1_tip"
                 android:hint="@string/access_point_name"
@@ -65,7 +75,7 @@
 
         <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="60dp"
             android:layout_marginTop="10dp"
             android:orientation="horizontal">
 
@@ -74,6 +84,10 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_alignParentBottom="true"
+                android:background="@drawable/input_border"
+                android:textColor="@color/dark"
+                android:gravity="center"
+
                 android:layout_toRightOf="@+id/host_ip_2_tip"
                 android:hint="@string/connect_time"
                 android:singleLine="true"
@@ -90,6 +104,10 @@
                 android:id="@+id/et_network_ip_address"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:background="@drawable/input_border"
+                android:textColor="@color/dark"
+                android:gravity="center"
+
                 android:layout_alignParentBottom="true"
                 android:layout_toRightOf="@+id/host_port_2_tip"
                 android:hint="@string/network_ip_address"
@@ -110,6 +128,10 @@
                 android:layout_alignParentBottom="true"
                 android:layout_toRightOf="@+id/tpdu_tip"
                 android:hint="@string/network_tcp_port"
+                android:background="@drawable/input_border"
+                android:textColor="@color/dark"
+                android:gravity="center"
+
                 android:singleLine="true"
                 android:textSize="20sp" />
 
@@ -126,6 +148,10 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_alignParentBottom="true"
+                android:background="@drawable/input_border"
+                android:textColor="@color/dark"
+                android:gravity="center"
+
                 android:layout_toRightOf="@+id/tpdu_tip"
                 android:hint="@string/dial_attempts"
                 android:singleLine="true"
@@ -142,6 +168,10 @@
                 android:id="@+id/et_response_timeout"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:background="@drawable/input_border"
+                android:textColor="@color/dark"
+                android:gravity="center"
+
                 android:layout_alignParentBottom="true"
                 android:layout_toRightOf="@+id/tpdu_tip"
                 android:hint="@string/response_timeout"
@@ -161,6 +191,9 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_alignParentBottom="true"
+                android:background="@drawable/input_border"
+                android:textColor="@color/dark"
+
                 android:layout_toRightOf="@+id/tpdu_tip"
                 android:hint="@string/ssl_certificate_file"
                 android:singleLine="true"

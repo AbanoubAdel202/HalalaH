@@ -59,6 +59,7 @@ import com.topwise.cloudpos.aidl.led.AidlLed;
 import com.topwise.cloudpos.aidl.pinpad.AidlPinpad;
 
 import org.parceler.Parcels;
+
 import androidx.core.app.ActivityCompat;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
@@ -84,30 +85,35 @@ public class MainActivity extends AppCompatActivity implements ITransaction.View
     ProgressDialog mProgressDialog2;
     AlertDialog.Builder builder;
     private TCPCommunicator tcpClient;
+    String currentcount = "";
+    String endCount = "";
 
+    private ProgressDialog mProgress;
     private boolean isRegistrationInProgress;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        mProgress = new ProgressDialog(this);
 //        CommunicationInfo communicationInfo = new CommunicationInfo(this);
- //       communicationInfo.setHostIP("192.168.8.138");
+        //       communicationInfo.setHostIP("192.168.8.138");
 //        communicationInfo.setHostPort("1001");
 //        communicationInfo.setTPDU("6000230000");
         builder = new AlertDialog.Builder(this);
 
 
         TextView date = findViewById(R.id.Date);
-        TextView time =findViewById(R.id.TIME);
+        TextView time = findViewById(R.id.TIME);
         TextView status = findViewById(R.id.Status);
         context = getApplicationContext();
         // Mostafa 21/4/2020 added to time and date for action bar
         Date d = new Date();
-        CharSequence s  = DateFormat.format("MMMM d, yyyy ", d.getTime());
+        CharSequence s = DateFormat.format("MMMM d, yyyy ", d.getTime());
         date.setText(s);
-        CharSequence t = DateFormat.format("HH:MM",d.getTime());
+        CharSequence t = DateFormat.format("HH:MM", d.getTime());
         time.setText(t);
 
         PosApplication.getApp().getDeviceManager();
@@ -118,7 +124,7 @@ public class MainActivity extends AppCompatActivity implements ITransaction.View
         // Passing each menu ID as a set of Ids because each
         // menu should be considered as top level destinations.
         mAppBarConfiguration = new AppBarConfiguration.Builder(
-                R.id.nav_transaction, R.id.nav_Merchant, R.id.nav_totals,R.id.nav_reports,R.id.nav_setting)
+                R.id.nav_transaction, R.id.nav_Merchant, R.id.nav_totals, R.id.nav_reports, R.id.nav_setting)
                 .setDrawerLayout(drawer)
                 .build();
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
@@ -154,7 +160,6 @@ public class MainActivity extends AppCompatActivity implements ITransaction.View
         StartMADA_APP();*/
 
 
-
     }
 
     @Override
@@ -175,12 +180,11 @@ public class MainActivity extends AppCompatActivity implements ITransaction.View
     public void onBackPressed() {
         PosApplication.getApp().oGPosTransaction.Reset();
 
-       //Toast.makeText(this,"This is Home Screen",Toast.LENGTH_LONG).show();
-
 
     }
+
     @Override
-    public void onUserInteraction(){
+    public void onUserInteraction() {
 
         // if we need to do someting if user interacting
         //listen for user action
@@ -193,7 +197,7 @@ public class MainActivity extends AppCompatActivity implements ITransaction.View
         PosApplication.getApp().oGPosTransaction.Reset();
         POS_MAIN.load_TermData();
         checkRegistration();
-        if(PosApplication.getApp().oGTerminal_Operation_Data.bDeSAF_flag) {
+        if (PosApplication.getApp().oGTerminal_Operation_Data.bDeSAF_flag) {
             if (PosApplication.getApp().oGTerminal_Operation_Data.saf_info.CheckSAFLimits()) {
                 //todo "make Temp screen service unavailable"
 
@@ -212,20 +216,6 @@ public class MainActivity extends AppCompatActivity implements ITransaction.View
         //POS_MAIN.load_TermData();
         Getlocation();
 
-        /*new Thread(() -> {
-            SystemClock.sleep(1000);
-            if(!PosApplication.getApp().oGTerminal_Operation_Data.m_TMS_Downloaded)
-              //  DownLoadParM();//Dummy TMS download
-            //downLoadKeys();
-
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    hideLoading();
-                }
-            });
-        }).start();*/
-
         return true;
 
 
@@ -237,13 +227,6 @@ public class MainActivity extends AppCompatActivity implements ITransaction.View
 
         boolean GpsStatus = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
             return;
         }
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 10, new LocationListener() {
@@ -271,8 +254,7 @@ public class MainActivity extends AppCompatActivity implements ITransaction.View
                         System.out.println(addresses.get(0).getLocality());
                         cityName = addresses.get(0).getLocality();
                     }
-                }
-                catch (IOException e) {
+                } catch (IOException e) {
                     e.printStackTrace();
                 }
                 String s = longitude + "\n" + latitude + "\n\nMy Current City is: "
@@ -297,15 +279,14 @@ public class MainActivity extends AppCompatActivity implements ITransaction.View
         });
 
 
-
     }
 
-    private void DownloadTMS()
-    {
+    private void DownloadTMS() {
         preConnect();
-        PosApplication.getApp().oGPosTransaction.m_enmTrxType= POSTransaction.TranscationType.TMS_FILE_DOWNLOAD;
-        PosApplication.getApp().oGPOS_MAIN.StartTMSDownload(false ,this);
+        PosApplication.getApp().oGPosTransaction.m_enmTrxType = POSTransaction.TranscationType.TMS_FILE_DOWNLOAD;
+        PosApplication.getApp().oGPOS_MAIN.StartTMSDownload(false, this);
     }
+
     private void preConnect() {
         // open socket to be ready to sending/receiving financial messages
       /*  CommunicationInfo communicationInfo = new CommunicationInfo(this);
@@ -313,35 +294,33 @@ public class MainActivity extends AppCompatActivity implements ITransaction.View
         CommunicationsHandler.getInstance(communicationInfo, caInputStream).connect();*/
 
         tcpClient = TCPCommunicator.getInstance();
-        tcpClient.init( PosApplication.getApp().oGTerminal_Operation_Data.Hostip, PosApplication.getApp().oGTerminal_Operation_Data.Hostport);
-       // TCPCommunicator.closeStreams();
+        tcpClient.init(PosApplication.getApp().oGTerminal_Operation_Data.Hostip, PosApplication.getApp().oGTerminal_Operation_Data.Hostport);
+        // TCPCommunicator.closeStreams();
     }
 
 
-    private void StartMADA_APP()
-    {
+    private void StartMADA_APP() {
 
         //Load_Terminal_operation_data();
         Initialize_Security();
-       // checkRegistration();
-        if(PosApplication.getApp().oGTerminal_Operation_Data.m_TMS_Downloaded)
-          POS_MAIN.Get_Terminal_Transaction_limits();
-
+        // checkRegistration();
+        if (PosApplication.getApp().oGTerminal_Operation_Data.m_TMS_Downloaded)
+            POS_MAIN.Get_Terminal_Transaction_limits();
     }
 
     private void checkRegistration() {
         if (isRegistrationInProgress) {
-            showLoading("Registering terminal. Please wait ...");
+            //  showLoading("Registering terminal. Please wait ...");
             return;
         }
         boolean bRegistered = PosApplication.getApp().oGTerminal_Operation_Data.m_bregistered;
 
-        if (bRegistered==true) {
-        //if (true) {
+        if (bRegistered == true) {
+            //if (true) {
             //Initialize_EMV_Configuration();
             Initialize_CTLS_configuration();
-           // if(!PosApplication.getApp().oGTerminal_Operation_Data.m_TMS_Downloaded)
-                //DownloadTMS();
+            // if(!PosApplication.getApp().oGTerminal_Operation_Data.m_TMS_Downloaded)
+            //DownloadTMS();
             hideLoading();
         } else {
             showRegistrationScreen();
@@ -362,15 +341,15 @@ public class MainActivity extends AppCompatActivity implements ITransaction.View
             mProgressDialog.dismiss();
         }
     }
-    private void Initialize_Security()
-    {
+
+    private void Initialize_Security() {
         //DUKPT_KEY.InitilizeDUKPT("0123456789ABCDEFFEDCBA9876543210", BCDASCII.bytesToHexString(PosApplication.getApp().oGTerminal_Operation_Data.m_CurrentKSN));
         DUKPT_KEY.InitilizeDUKPT(PosApplication.getApp().oGTerminal_Operation_Data.m_szBDK, BCDASCII.bytesToHexString(PosApplication.getApp().oGTerminal_Operation_Data.m_CurrentKSN));
 
         //todo initialize security parameter
     }
-    private void Initialize_EMV_Configuration()
-    {
+
+    private void Initialize_EMV_Configuration() {
         EmvManager mEMVmanager = EmvManager.getInstance();
 
         EmvTerminalInfo EMVterminalParam = new EmvTerminalInfo();
@@ -383,14 +362,15 @@ public class MainActivity extends AppCompatActivity implements ITransaction.View
 
 
     }
-    private void Initialize_CTLS_configuration()
-    {
+
+    private void Initialize_CTLS_configuration() {
         //todo initialize contactless parameters
     }
-    private void Load_Terminal_operation_data()
-    {
-        PosApplication.getApp().oGTerminal_Operation_Data=SaveLoadFile.loadTeminal_operation_Data();
+
+    private void Load_Terminal_operation_data() {
+        PosApplication.getApp().oGTerminal_Operation_Data = SaveLoadFile.loadTeminal_operation_Data();
     }
+
     @Override
     public void showRegistrationScreen() {
         Intent intent = new Intent(this, RegistrationActivity.class);
@@ -403,18 +383,33 @@ public class MainActivity extends AppCompatActivity implements ITransaction.View
     public void showTMSupdateScreen() {
 
         isRegistrationInProgress = false;
-
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
+                hideLoading();
+                mProgress.setCancelable(false);
+                mProgress.setIcon(R.drawable.hala_logo);
+                mProgress.setMessage("Download Tms Filles ");
+                mProgress.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+                mProgress.setMax(45);
+                mProgress.show();
+                final Thread t = new Thread() {
+                    @Override
+                    public void run() {
+                        int jumpTime = 0;
+                        endCount = Integer.toString(PosApplication.getApp().oGTerminal_Operation_Data.TMS_endcount);
+                        currentcount = Integer.toString(PosApplication.getApp().oGTerminal_Operation_Data.TMS_currentcount);
+                        jumpTime += Integer.parseInt(currentcount);
+                        mProgress.setProgress(jumpTime);
 
+                        if (currentcount == endCount) {
+                            mProgress.dismiss();
+                        }
+                    }
 
-                String currentcount = Integer.toString(PosApplication.getApp().oGTerminal_Operation_Data.TMS_currentcount);
-                String endCount = Integer.toString(PosApplication.getApp().oGTerminal_Operation_Data.TMS_endcount);
-                mProgressDialog.setMessage("Downloading: " + currentcount + " OF" + endCount);
-                if(currentcount == endCount) {
-                    hideLoading();
-                }
+                };
+                t.start();
+
             }
         });
 
@@ -482,47 +477,44 @@ public class MainActivity extends AppCompatActivity implements ITransaction.View
                     PosApplication.getApp().oGTerminal_Registeration.StartRegistrationProcess(
                             PosApplication.getApp().oGPosTransaction, this);
                 } else {
-                    if(resultCode == RESULT_CANCELED)
-                    {
-                        PosApplication.getApp().oGTerminal_Operation_Data.m_bregistered=true;
+                    if (resultCode == RESULT_CANCELED) {
+                        PosApplication.getApp().oGTerminal_Operation_Data.m_bregistered = true;
                     }
                     showError(R.string.registration_error);
                 }
                 break;
 
 
-
-
         }
     }
 
-    public void showalert(String message){
+    public void showalert(String message) {
 
-                //Uncomment the below code to Set the message and title from the strings.xml file
-                builder.setMessage(message) .setTitle("error registeration");
+        //Uncomment the below code to Set the message and title from the strings.xml file
+        builder.setMessage(message).setTitle("error registeration");
 
-                //Setting message manually and performing action on button click
-                builder.setMessage("not registered ")
-                        .setCancelable(false)
-                        .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int id) {
-                                finish();
+        //Setting message manually and performing action on button click
+        builder.setMessage("not registered ")
+                .setCancelable(false)
+                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        finish();
 
-                            }
-                        })
-                        .setNegativeButton("No", new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int id) {
-                                //  Action for 'NO' Button
-                                dialog.cancel();
+                    }
+                })
+                .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        //  Action for 'NO' Button
+                        dialog.cancel();
 
-                            }
-                        });
-                //Creating dialog box
-                AlertDialog alert = builder.create();
-                //Setting the title manually
-                alert.setTitle("Error registeration");
-                alert.show();
-            }
+                    }
+                });
+        //Creating dialog box
+        AlertDialog alert = builder.create();
+        //Setting the title manually
+        alert.setTitle("Error registeration");
+        alert.show();
+    }
 
 
 }

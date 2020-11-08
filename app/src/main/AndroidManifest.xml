@@ -72,6 +72,7 @@
         </activity>
         <activity
             android:name=".registration.view.RegistrationActivity"
+
             />
         <activity
             android:name=".ui.transactions.Authorization.AuthAdvice.authAdviceTypeActivity"
